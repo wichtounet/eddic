@@ -47,7 +47,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
 
     //First, try to take a register that doesn't need to be spilled (variable has not modified)
     for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[remaining]->position().isTemporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
+        if(!registers.reserved(remaining) && !registers[remaining]->position().is_temporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
             if(!manager.is_written(registers[remaining])){
                 reg = remaining;
                 found = true;
@@ -59,7 +59,7 @@ Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
     //If there is no registers that doesn't need to be spilled, take the first one not reserved 
     if(!found){
         for(Reg remaining : registers){
-            if(!registers.reserved(remaining) && !registers[remaining]->position().isTemporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
+            if(!registers.reserved(remaining) && !registers[remaining]->position().is_temporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
                 reg = remaining;
                 found = true;
                 break;
@@ -140,7 +140,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
                 ltac::add_instruction(manager.function, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.function, mov, ltac::Address("V" + position.name()), reg);
-            } else if(position.isTemporary()){
+            } else if(position.is_temporary()){
                 //If the variable is live, move it to another register, else do nothing
                 if(manager.is_live(variable)){
                     registers.remove(variable);
@@ -173,7 +173,7 @@ void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
         if(!registers.reserved(reg) && registers.used(reg)){
             auto variable = registers[reg];
 
-            if(!variable->position().isTemporary()){
+            if(!variable->position().is_temporary()){
                 manager.spills(reg);    
             }
         }
@@ -216,7 +216,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             auto position = variable->position();
 
             //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.isTemporary());
+            assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
@@ -243,7 +243,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             auto position = variable->position();
 
             //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.isTemporary());
+            assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
@@ -276,7 +276,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             auto position = variable->position();
 
             //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.isTemporary());
+            assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
@@ -314,7 +314,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             auto position = variable->position();
 
             //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.isTemporary());
+            assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
                 ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));

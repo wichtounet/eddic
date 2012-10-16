@@ -37,7 +37,7 @@ struct CollectTemporary : public boost::static_visitor<> {
     CollectTemporary(std::shared_ptr<mtac::Function> function) : function(function) {}
 
     void updateTemporary(std::shared_ptr<Variable> variable){
-        if(variable && variable->position().isTemporary()){
+        if(variable && variable->position().is_temporary()){
             if(usage.find(variable) == usage.end()){
                 usage[variable] = block;
             } else if(usage[variable] != block){
@@ -107,7 +107,7 @@ unsigned int count_temporaries(Container& container){
     unsigned int count = 0;
     
     for(auto v : container){
-        if(v && v->position().isTemporary()){
+        if(v && v->position().is_temporary()){
             ++count;
         }
     }
@@ -151,7 +151,7 @@ bool mtac::allocate_temporary::operator()(std::shared_ptr<mtac::Program> program
                     auto end = values.end();
 
                     for(unsigned int i = 0; i <= (registers - temporaries + 1) && it != end;){
-                        if((*it) && (*it)->type()->is_pointer() && (*it)->position().isTemporary()){
+                        if((*it) && (*it)->type()->is_pointer() && (*it)->position().is_temporary()){
                             ++count;
                             function->context->storeTemporary(*it);
                             ++i;

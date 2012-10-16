@@ -70,7 +70,7 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable> source){
     std::string name = "g_" + source->name() + "_" + toString(temporary++);
     
-    if(source->position().isTemporary()){
+    if(source->position().is_temporary()){
         Position position(PositionType::TEMPORARY);
 
         auto var = std::make_shared<Variable>(name, source->type(), position); 
@@ -164,7 +164,7 @@ void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
     log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
 
     //If its a temporary, no need to recalculate positions
-    if(!var->position().isTemporary()){
+    if(!var->position().is_temporary()){
         reallocate_storage();
     }
 }

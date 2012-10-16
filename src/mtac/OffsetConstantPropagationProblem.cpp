@@ -73,7 +73,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, Pr
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
             auto variable = *ptr;
 
-            if (variable->position().isTemporary()){
+            if (variable->position().is_temporary()){
                 it = result.values().erase(it);
             } else {
                 ++it;

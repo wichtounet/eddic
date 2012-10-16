@@ -52,7 +52,7 @@ std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<
 }
 
 ltac::Register eddic::ltac::to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
-    if(var->position().isTemporary()){
+    if(var->position().is_temporary()){
         return manager.get_reg_no_move(var);
     } else {
         return manager.get_reg(var);
@@ -80,7 +80,7 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
 
     ltac::Argument operator()(std::shared_ptr<Variable> variable) const {
         if(ltac::is_float_var(variable)){
-            if(variable->position().isTemporary()){
+            if(variable->position().is_temporary()){
                 return manager.get_float_reg_no_move(variable);
             } else {
                 return manager.get_float_reg(variable);

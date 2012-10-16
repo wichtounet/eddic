@@ -33,7 +33,7 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
             auto variable = *ptr;
 
-            if (variable->position().isTemporary()){
+            if (variable->position().is_temporary()){
                 it = result.values().erase(it);
             } else {
                 ++it;
@@ -190,7 +190,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
                 if(mtac::isVariable(results[quadruple->result])){
                     auto var = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
 
-                    if(!var->position().isTemporary()){
+                    if(!var->position().is_temporary()){
                         quadruple->result = var;
                     }
                 }

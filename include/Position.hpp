@@ -72,7 +72,7 @@ class Position {
          * Indicates if this position is temporary. 
          * \return true if this position is temporary, otherwise false. 
          */
-        bool isTemporary() const;
+        bool is_temporary() const;
 
         /*!
          * Indicates if this position is a parameter stored in a register. 

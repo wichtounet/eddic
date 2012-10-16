@@ -254,7 +254,7 @@ bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
         auto position = var->position();
         auto type = var->type();
 
-        if((position.isTemporary() || position.isStack()) && (type->is_standard_type() || type->is_pointer()) && type != STRING){
+        if((position.is_temporary() || position.isStack()) && (type->is_standard_type() || type->is_pointer()) && type != STRING){
             if(is_written_once(var, function)){
                 auto targets = get_targets(var, function);
 
@@ -275,7 +275,7 @@ bool mtac::remove_aliases::operator()(std::shared_ptr<mtac::Function> function){
                     }
                 } 
 
-                if(position.isTemporary()){
+                if(position.is_temporary()){
                     auto sources = get_sources(var, function);
 
                     if(pointer_escaped->find(var) == pointer_escaped->end()){

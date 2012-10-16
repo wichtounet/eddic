@@ -141,7 +141,7 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
             return ltac::Address("V" + position.name(), offsetReg);
         } 
 
-        assert(position.isTemporary());
+        assert(position.is_temporary());
 
         auto reg = manager.get_reg(var);
         return ltac::Address(reg, offsetReg);

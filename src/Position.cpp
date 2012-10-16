@@ -29,7 +29,7 @@ bool Position::is_const() const {
     return m_type == PositionType::CONST;
 }
 
-bool Position::isTemporary() const {
+bool Position::is_temporary() const {
     return m_type == PositionType::TEMPORARY;
 }
 
