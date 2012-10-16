@@ -22,7 +22,8 @@ enum class PositionType : unsigned int {
     PARAMETER,          /**< A parameter */
     GLOBAL,             /**< A global variable */
     CONST,              /**< A const variable. Not stored. Will be replaced in each usage */
-    TEMPORARY,          /**< A temporary, used only in three-address-code. Not stored. */
+    VARIABLE,           /**< A variable that has not been allocated a stack position */
+    TEMPORARY,          /**< A temporary, with no stack position */
     REGISTER,           /**< A variable stored in a register. */
     PARAM_REGISTER      /**< A param stored in a register. */
 };
@@ -84,6 +85,12 @@ class Position {
          * \return true if this position is a variable stored in a register, otherwise false. 
          */
         bool is_register() const;
+
+        /*!
+         * Indicates if this position is a variable, not yet allocated a stack position.
+         * \return true if this position is a variable, otherwise false. 
+         */
+        bool is_variable() const;
 
         /*!
          * Returns the type of the position. 

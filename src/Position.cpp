@@ -37,6 +37,10 @@ bool Position::isParamRegister() const {
     return m_type == PositionType::PARAM_REGISTER;
 }
 
+bool Position::is_variable() const {
+    return m_type == PositionType::VARIABLE;
+}
+
 bool Position::is_register() const {
     return m_type == PositionType::REGISTER;
 }
