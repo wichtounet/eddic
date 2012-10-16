@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ltac {
 
+/*!
+ * \struct FloatRegister
+ * Represents a symbolic hard float register in the LTAC Representation. 
+ */
 struct FloatRegister {
     unsigned short reg;
 

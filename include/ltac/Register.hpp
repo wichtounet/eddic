@@ -18,7 +18,7 @@ namespace ltac {
 
 /*!
  * \struct Register
- * Represents a symbolic register in the LTAC Representation. 
+ * Represents a symbolic hard register in the LTAC Representation. 
  */
 struct Register {
     unsigned short reg;
