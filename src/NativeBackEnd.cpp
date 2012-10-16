@@ -17,6 +17,7 @@
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
 #include "ltac/aggregates.hpp"
+#include "ltac/prologue.hpp"
 
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"
@@ -38,6 +39,10 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     //Generate LTAC Code
     ltac::Compiler ltacCompiler(platform, configuration);
     ltacCompiler.compile(mtac_program, ltac_program, float_pool);
+
+    //TODO Register allocation
+    
+    ltac::generate_prologue_epilogue(ltac_program, configuration);
 
     if(configuration->option_defined("fpeephole-optimization")){
         optimize(ltac_program, platform);

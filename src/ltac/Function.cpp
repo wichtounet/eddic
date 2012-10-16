@@ -23,7 +23,6 @@ void ltac::Function::add(ltac::Statement statement){
     _basic_blocks.back()->statements.push_back(statement);
 }
 
-
 ltac::Function::BlockPtr ltac::Function::current_bb(){
     return _basic_blocks.back();
 }
@@ -31,6 +30,11 @@ ltac::Function::BlockPtr ltac::Function::current_bb(){
 ltac::Function::BlockPtr ltac::Function::new_bb(){
     _basic_blocks.push_back(std::make_shared<ltac::BasicBlock>(_basic_blocks.size() + 1));
     return _basic_blocks.back();
+}
+
+ltac::Function::BlockPtr ltac::Function::new_bb_in_front(){
+    _basic_blocks.push_front(std::make_shared<ltac::BasicBlock>(_basic_blocks.size() + 1));
+    return _basic_blocks.front();
 }
 
 ltac::Function::BlockList& ltac::Function::basic_blocks(){

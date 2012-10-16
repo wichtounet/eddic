@@ -36,6 +36,7 @@ class Function {
 
         BlockPtr current_bb();
         BlockPtr new_bb();
+        BlockPtr new_bb_in_front();
 
         BlockList& basic_blocks();
 

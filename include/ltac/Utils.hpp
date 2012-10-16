@@ -47,6 +47,11 @@ std::shared_ptr<Variable> get_variable(Variant& variant){
     return boost::get<std::shared_ptr<Variable>>(variant);
 }
 
+std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op);
+std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1);
+std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2);
+std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3);
+
 std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op);
 std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1);
 std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2);

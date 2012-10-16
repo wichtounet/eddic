@@ -72,39 +72,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
     compiler->platform = platform;
     compiler->configuration = configuration;
 
-    target_function->new_bb();
-
-    auto size = src_function->context->size();
-
-    //Enter stack frame
-    if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(target_function, ltac::Operator::ENTER);
-    }
-
-    //Alloc stack space for locals
-    ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
-    compiler->bp_offset += size;
-    
-    auto iter = src_function->context->begin();
-    auto end = src_function->context->end();
-
-    for(; iter != end; iter++){
-        auto var = iter->second;
-
-        //ONly stack variables needs to be cleared
-        if(var->position().isStack()){
-            auto type = var->type();
-            int position = var->position().offset();
-
-            if(type->is_array() && type->has_elements()){
-                ltac::add_instruction(target_function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size(platform)), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
-            } else if(type->is_custom_type()){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size(platform) / INT->size(platform)));
-            }
-        }
-    }
-    
     //Compute Liveness
     mtac::LiveVariableAnalysisProblem problem;
     compiler->manager.liveness = mtac::data_flow(src_function, problem);
@@ -135,16 +102,4 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::
             compiler->end_basic_block();
         }
     }
-    
-    target_function->new_bb();
-    
-    ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
-    compiler->bp_offset -= size;
-        
-    //Leave stack frame
-    if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(target_function, ltac::Operator::LEAVE);
-    }
-
-    ltac::add_instruction(target_function, ltac::Operator::RET);
 }

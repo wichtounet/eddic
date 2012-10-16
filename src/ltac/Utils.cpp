@@ -27,6 +27,30 @@ bool eddic::ltac::is_int_var(std::shared_ptr<Variable> variable){
     return variable->type() == INT;
 }
 
+std::shared_ptr<ltac::Instruction> ltac::add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op){
+    auto instruction = std::make_shared<ltac::Instruction>(op);
+    bb->statements.push_back(instruction);
+    return instruction;
+}
+
+std::shared_ptr<ltac::Instruction> ltac::add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1);
+    bb->statements.push_back(instruction);
+    return instruction;
+}
+
+std::shared_ptr<ltac::Instruction> ltac::add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2);
+    bb->statements.push_back(instruction);
+    return instruction;
+}
+
+std::shared_ptr<ltac::Instruction> ltac::add_instruction(std::shared_ptr<ltac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
+    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3);
+    bb->statements.push_back(instruction);
+    return instruction;
+}
+
 std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op){
     auto instruction = std::make_shared<ltac::Instruction>(op);
     function->add(instruction);
