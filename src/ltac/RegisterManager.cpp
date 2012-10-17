@@ -450,18 +450,6 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
     }
 }
 
-void ltac::RegisterManager::collect_variables(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
-    for(auto& variable : definition->context->stored_variables()){
-        if(variable->position().is_register()){
-            if(mtac::is_single_int_register(variable->type())){
-                registers.setLocation(variable, ltac::Register(descriptor->int_variable_register(variable->position().offset())));
-            } else if(mtac::is_single_float_register(variable->type())){
-                float_registers.setLocation(variable, ltac::FloatRegister(descriptor->float_variable_register(variable->position().offset())));
-            }
-        }
-    }
-}
-
 void ltac::RegisterManager::restore_pushed_registers(){
     //Restore the int parameters in registers (in the reverse order they were pushed)
     for(auto& reg : boost::adaptors::reverse(int_pushed)){

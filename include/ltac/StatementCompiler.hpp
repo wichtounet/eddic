@@ -48,7 +48,6 @@ class StatementCompiler : public boost::static_visitor<> {
         void reset();
         void end_basic_block();
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
-        void collect_variables(std::shared_ptr<eddic::Function> definition);
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);
