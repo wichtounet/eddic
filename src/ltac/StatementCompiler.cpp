@@ -449,6 +449,23 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
     function->add(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
 }
 
+ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset){
+    auto reg = manager.get_free_pseudo_reg();
+
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, offset));
+    
+    return reg;
+}
+
+ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
+    auto reg = manager.get_free_pseudo_reg();
+    
+    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, 0));
+    ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
+    
+    return reg;
+}
+
 inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
     auto reg = manager.get_free_reg();
     
@@ -1182,12 +1199,13 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
     assert(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1));
     auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
-    auto reg = manager.get_reg_no_move(quadruple->result);
+    auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
 
     //TODO This should probably be done directly in get_address_in_reg
+
     //The pointer has to be dereferenced
     if(variable->type()->is_pointer()){
-        auto ptr_reg = manager.get_reg(variable);
+        auto ptr_reg = manager.get_pseudo_reg(variable);
 
         if(mtac::is<int>(*quadruple->arg2)){
             int offset = boost::get<int>(*quadruple->arg2);
@@ -1195,26 +1213,25 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
         } else {
             assert(ltac::is_variable(*quadruple->arg2));
 
-            auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
+            auto offset = manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg2));
             ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address(ptr_reg, offset));
         }
     } else {
         if(mtac::is<int>(*quadruple->arg2)){
             int offset = boost::get<int>(*quadruple->arg2);
 
-            auto reg2 = register_guard<ltac::Register>(get_address_in_reg(variable, offset), manager);
-
+            auto reg2 = get_address_in_pseudo_reg(variable, offset);
             ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
         } else {
             assert(ltac::is_variable(*quadruple->arg2));
 
             auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
-            auto reg2 = register_guard<ltac::Register>(get_address_in_reg2(variable, offset), manager);
+            auto reg2 = get_address_in_pseudo_reg2(variable, offset);
 
             ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);
         }
     }
-                
+    
     manager.set_written(quadruple->result);
 }
 
