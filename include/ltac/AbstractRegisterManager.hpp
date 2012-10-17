@@ -15,6 +15,7 @@
 #include "ltac/FloatRegister.hpp"
 
 #include "asm/Registers.hpp"
+#include "asm/PseudoRegisters.hpp"
 
 namespace eddic {
 
@@ -44,6 +45,10 @@ class AbstractRegisterManager {
         //The registers
         as::Registers<ltac::Register> registers;
         as::Registers<ltac::FloatRegister> float_registers;
+
+        //The pseudo registers
+        as::PseudoRegisters<ltac::PseudoRegister> pseudo_registers;
+        as::PseudoRegisters<ltac::PseudoFloatRegister> pseudo_float_registers;
 };
 
 } //end of ltac
