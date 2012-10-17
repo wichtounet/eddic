@@ -159,6 +159,14 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
    std::string operator()(ltac::FloatRegister& reg) const {
         return "fr" + ::toString(reg.reg);
    }
+
+   std::string operator()(ltac::PseudoRegister& reg) const {
+        return "pr" + ::toString(reg.reg);
+   }
+   
+   std::string operator()(ltac::PseudoFloatRegister& reg) const {
+        return "pfr" + ::toString(reg.reg);
+   }
    
    std::string operator()(ltac::Register& reg) const {
        if(reg == ltac::SP){

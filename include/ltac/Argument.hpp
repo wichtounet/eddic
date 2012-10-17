@@ -23,7 +23,18 @@ namespace eddic {
 
 namespace ltac {
 
-typedef boost::variant<eddic::ltac::FloatRegister, eddic::ltac::Register, eddic::ltac::Address, std::string, double, int> Argument;
+typedef boost::variant<
+        /* Hard Registers */
+        eddic::ltac::FloatRegister, eddic::ltac::Register, 
+        /* Pseudo Registers */
+        eddic::ltac::PseudoFloatRegister, eddic::ltac::PseudoRegister, 
+        /* Address */
+        eddic::ltac::Address, 
+        /* Literals */
+        std::string, 
+        /* Constants */
+        double, int
+    > Argument;
 
 } //end of ltac
 
