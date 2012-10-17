@@ -108,6 +108,16 @@ Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, b
 
     return reg;
 }
+
+template<typename Reg> 
+Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable> variable){
+    //The variable is already in a register
+    if(registers.inRegister(variable)){
+        return registers[variable];
+    }
+
+    return registers.get_new_reg();
+}
     
 template<typename Reg>
 void safe_move(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, Reg reg, ltac::RegisterManager& manager){
@@ -329,6 +339,32 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
         auto label = float_pool->label(*ptr);
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
+}
+        
+ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
+    auto reg = ::get_pseudo_reg(pseudo_registers, var);
+    //TODO MOVE
+    pseudo_registers.setLocation(var, reg);
+    return reg;
+}
+
+ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_ptr<Variable> var){
+    auto reg = ::get_pseudo_reg(pseudo_registers, var);
+    pseudo_registers.setLocation(var, reg);
+    return reg;
+}
+
+ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::shared_ptr<Variable> var){
+    auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
+    //MOVE
+    pseudo_float_registers.setLocation(var, reg);
+    return reg;
+}
+
+ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var){
+    auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
+    pseudo_float_registers.setLocation(var, reg);
+    return reg;
 }
 
 ltac::Register ltac::RegisterManager::get_reg(std::shared_ptr<Variable> var){

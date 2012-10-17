@@ -98,17 +98,20 @@ Reg PseudoRegisters<Reg>::operator[](const std::shared_ptr<Variable> variable){
 }
 
 template<typename Reg>
+Reg PseudoRegisters<Reg>::get_new_reg(){
+    return Reg(current_reg++);
+}
+
+template<typename Reg>
 void PseudoRegisters<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg reg){
     variables[variable] = reg;
     
-    assert((*this)[(*this)[variable]] == variable);
     assert(inRegister(variable, reg));
 }
 
 template<typename Reg>
 void PseudoRegisters<Reg>::remove(std::shared_ptr<Variable> variable){
     assert(inRegister(variable));
-    assert((*this)[(*this)[variable]] == variable);
 
     variables.erase(variable);
 }

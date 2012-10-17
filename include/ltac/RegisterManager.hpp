@@ -62,6 +62,12 @@ class RegisterManager : public AbstractRegisterManager {
 
         void reset();
 
+        ltac::PseudoRegister get_pseudo_reg(std::shared_ptr<Variable> var);
+        ltac::PseudoRegister get_pseudo_reg_no_move(std::shared_ptr<Variable> var);
+        ltac::PseudoFloatRegister get_pseudo_float_reg(std::shared_ptr<Variable> var);
+        ltac::PseudoFloatRegister get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var);
+
+        //TODO Could probably be removed
         ltac::Register get_reg(std::shared_ptr<Variable> var);
         ltac::Register get_reg_no_move(std::shared_ptr<Variable> var);
         ltac::FloatRegister get_float_reg(std::shared_ptr<Variable> var);
