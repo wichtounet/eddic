@@ -1249,7 +1249,7 @@ void ltac::StatementCompiler::compile_NOT(std::shared_ptr<mtac::Quadruple> quadr
 }
 
 void ltac::StatementCompiler::compile_AND(std::shared_ptr<mtac::Quadruple> quadruple){
-    auto reg = manager.get_reg_no_move(quadruple->result);
+    auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
     manager.copy(*quadruple->arg1, reg);
     ltac::add_instruction(function, ltac::Operator::AND, reg, boost::get<int>(*quadruple->arg2));
 }
@@ -1263,41 +1263,20 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
         } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
             auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
-            auto reg = manager.get_float_reg(variable);
-            if(reg != ltac::FloatRegister(descriptor->float_return_register())){
-                manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
-                ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
-            }
+            auto reg = manager.get_pseudo_float_reg(variable);
+            
+            manager.spills(ltac::FloatRegister(descriptor->float_return_register()));
+            ltac::add_instruction(function, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
         } else {
             auto reg1 = ltac::Register(descriptor->int_return_register1());
             auto reg2 = ltac::Register(descriptor->int_return_register2());
 
             manager.spills_if_necessary(reg1, *quadruple->arg1);
-
-            bool necessary = true;
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                if(manager.in_register(*ptr, reg1)){
-                    necessary = false;
-                }
-            }    
-
-            if(necessary){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
-            }
+            ltac::add_instruction(function, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
 
             if(quadruple->arg2){
                 manager.spills_if_necessary(reg2, *quadruple->arg2);
-
-                necessary = true;
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg2)){
-                    if(manager.in_register(*ptr, reg2)){
-                        necessary = false;
-                    }
-                }    
-
-                if(necessary){
-                    ltac::add_instruction(function, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
-                }
+                ltac::add_instruction(function, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
             }
         }
     }

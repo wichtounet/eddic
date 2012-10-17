@@ -77,6 +77,9 @@ class RegisterManager : public AbstractRegisterManager {
 
         void copy(mtac::Argument argument, ltac::FloatRegister reg);
         void copy(mtac::Argument argument, ltac::Register reg);
+        
+        void copy(mtac::Argument argument, ltac::PseudoFloatRegister reg);
+        void copy(mtac::Argument argument, ltac::PseudoRegister reg);
 
         void move(mtac::Argument argument, ltac::Register reg);
         void move(mtac::Argument argument, ltac::FloatRegister reg);

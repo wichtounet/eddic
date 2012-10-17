@@ -209,6 +209,46 @@ bool ltac::RegisterManager::in_reg(std::shared_ptr<Variable> var){
     return registers.inRegister(var);
 }
 
+void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegister reg){
+    assert(ltac::is_variable(argument) || mtac::isFloat(argument));
+
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+        auto variable = *ptr;
+        
+        //If the variable is hold in a register, just move the register value
+        if(pseudo_float_registers.inRegister(variable)){
+            auto old_reg = pseudo_float_registers[variable];
+
+            ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
+        } else {
+            //TODO
+            ASSERT_PATH_NOT_TAKEN("");
+        }
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
+    }
+}
+
+void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
+        auto variable = *ptr;
+
+        //If the variable is hold in a register, just move the register value
+        if(pseudo_registers.inRegister(variable)){
+            auto old_reg = pseudo_registers[variable];
+
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
+        } else {
+            //TODO
+            ASSERT_PATH_NOT_TAKEN("");
+        } 
+    } else {
+        //If it's a constant (int, double, string), just move it
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument, *this));
+    }
+}
+
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister reg){
     assert(ltac::is_variable(argument) || mtac::isFloat(argument));
 
