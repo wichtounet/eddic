@@ -92,6 +92,9 @@ class RegisterManager : public AbstractRegisterManager {
 
         ltac::Register get_free_reg();
         ltac::FloatRegister get_free_float_reg();
+        
+        ltac::PseudoRegister get_free_pseudo_reg();
+        ltac::PseudoFloatRegister get_free_pseudo_float_reg();
 
         void spills_all();
 

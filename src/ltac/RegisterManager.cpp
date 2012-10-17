@@ -528,6 +528,14 @@ void ltac::RegisterManager::spills_all(){
     ::spills_all(float_registers, *this);
 }
 
+ltac::PseudoRegister ltac::RegisterManager::get_free_pseudo_reg(){
+    return pseudo_registers.get_new_reg();
+}
+
+ltac::PseudoFloatRegister ltac::RegisterManager::get_free_pseudo_float_reg(){
+    return pseudo_float_registers.get_new_reg();
+}
+
 ltac::Register ltac::RegisterManager::get_free_reg(){
     log::emit<Trace>("Registers") << "Get a free reg" << log::endl;
     auto reg = ::get_free_reg(registers, *this);
