@@ -80,6 +80,9 @@ class RegisterManager : public AbstractRegisterManager {
 
         void move(mtac::Argument argument, ltac::Register reg);
         void move(mtac::Argument argument, ltac::FloatRegister reg);
+        
+        void move(mtac::Argument argument, ltac::PseudoRegister reg);
+        void move(mtac::Argument argument, ltac::PseudoFloatRegister reg);
 
         void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
         void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
