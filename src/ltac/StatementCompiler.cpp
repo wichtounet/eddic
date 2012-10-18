@@ -721,13 +721,17 @@ void ltac::StatementCompiler::compile_ADD(std::shared_ptr<mtac::Quadruple> quadr
 
         if(ltac::is_variable(*quadruple->arg1)){
             if(ltac::is_variable(*quadruple->arg2)){
-                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), to_register(ltac::get_variable(*quadruple->arg2))));
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(
+                            manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)), 
+                            manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg2))));
             } else {
-                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(
+                            manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)), boost::get<int>(*quadruple->arg2)));
             }
         } else {
             if(ltac::is_variable(*quadruple->arg2)){
-                ltac::add_instruction(function, ltac::Operator::LEA, reg, ltac::Address(to_register(ltac::get_variable(*quadruple->arg2)), boost::get<int>(*quadruple->arg1)));
+                ltac::add_instruction(function, ltac::Operator::LEA, reg, 
+                        ltac::Address(manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg2)), boost::get<int>(*quadruple->arg1)));
             } else {
                 ltac::add_instruction(function, ltac::Operator::MOV, reg, boost::get<int>(*quadruple->arg1) + boost::get<int>(*quadruple->arg2));
             }

@@ -40,6 +40,9 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     ltac::Compiler ltacCompiler(platform, configuration);
     ltacCompiler.compile(mtac_program, ltac_program, float_pool);
 
+    ltac::Printer printer;
+    printer.print(ltac_program);
+
     //TODO Register allocation
     
     ltac::generate_prologue_epilogue(ltac_program, configuration);
