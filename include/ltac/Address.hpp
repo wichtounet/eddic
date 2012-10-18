@@ -8,9 +8,12 @@
 #ifndef LTAC_ADDRESS_H
 #define LTAC_ADDRESS_H
 
+#include "variant.hpp"
+
 #include <boost/optional.hpp>
 
 #include "ltac/Register.hpp"
+#include "ltac/PseudoRegister.hpp"
 
 namespace eddic {
 

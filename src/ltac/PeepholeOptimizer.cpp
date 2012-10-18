@@ -318,11 +318,11 @@ inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::S
                 bool possible = true;
 
                 if(auto* ptr = boost::get<ltac::Address>(&*i1->arg2)){
-                    if(ptr->base_register && *ptr->base_register == reg11){
+                    if(ptr->base_register && boost::get<ltac::Register>(*ptr->base_register) == reg11){
                         possible = false;
                     }
                     
-                    if(ptr->scaled_register && *ptr->scaled_register == reg11){
+                    if(ptr->scaled_register && boost::get<ltac::Register>(*ptr->scaled_register) == reg11){
                         possible = false;
                     }
                 }
@@ -619,11 +619,11 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
             auto address = boost::get<ltac::Address>(*arg);
 
             if(address.scaled_register){
-                usage.insert(*address.scaled_register);
+                usage.insert(boost::get<ltac::Register>(*address.scaled_register));
             }
             
             if(address.base_register){
-                usage.insert(*address.base_register);
+                usage.insert(boost::get<ltac::Register>(*address.base_register));
             }
         }
     }   

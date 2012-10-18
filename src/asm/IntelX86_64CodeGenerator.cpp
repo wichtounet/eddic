@@ -58,6 +58,14 @@ struct X86_64StringConverter : public as::StringConverter, public boost::static_
     std::string operator()(const std::string& value) const {
         return value;
     }
+    
+    std::string operator()(ltac::PseudoRegister&) const {
+        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
+    }
+
+    std::string operator()(ltac::PseudoFloatRegister&) const {
+        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
+    }
 
     std::string operator()(double value) const {
         std::stringstream ss;

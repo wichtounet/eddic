@@ -24,7 +24,7 @@ struct PseudoRegister {
     PseudoRegister();
     PseudoRegister(unsigned short);
     
-    operator int();
+    explicit operator int();
 
     bool operator<(const PseudoRegister& rhs) const;
     bool operator>(const PseudoRegister& rhs) const;

@@ -16,6 +16,8 @@
 #include "ltac/Address.hpp"
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 namespace eddic {
 
@@ -23,9 +25,12 @@ namespace as {
 
 struct StringConverter {
     std::string address_to_string(eddic::ltac::Address& address) const;
+    std::string register_to_string(eddic::ltac::AddressRegister& reg) const;
 
     virtual std::string operator()(ltac::Register& reg) const = 0;
     virtual std::string operator()(ltac::FloatRegister& reg) const = 0;
+    virtual std::string operator()(ltac::PseudoRegister& reg) const = 0;
+    virtual std::string operator()(ltac::PseudoFloatRegister& reg) const = 0;
 };
 
 } //end of namespace as

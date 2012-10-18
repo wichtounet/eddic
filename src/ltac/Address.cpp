@@ -21,7 +21,7 @@ ltac::Address::Address(const std::string& absolute) : absolute(absolute) {
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute, ltac::Register reg) : base_register(reg), absolute(absolute) {
+ltac::Address::Address(const std::string& absolute, ltac::AddressRegister reg) : base_register(reg), absolute(absolute) {
     //Nothing to init    
 }
 
@@ -29,15 +29,15 @@ ltac::Address::Address(const std::string& absolute, int displacement) : displace
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, int displacement) : base_register(reg), displacement(displacement) {
+ltac::Address::Address(ltac::AddressRegister reg, int displacement) : base_register(reg), displacement(displacement) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, ltac::Register scaled) : base_register(reg), scaled_register(scaled) {
+ltac::Address::Address(ltac::AddressRegister reg, ltac::AddressRegister scaled) : base_register(reg), scaled_register(scaled) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::Register reg, ltac::Register scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
+ltac::Address::Address(ltac::AddressRegister reg, ltac::AddressRegister scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
     //Nothing to init    
 }
 
