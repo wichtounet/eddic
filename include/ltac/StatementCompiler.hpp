@@ -68,7 +68,7 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         ltac::Address stack_address(int offset);
-        ltac::Address stack_address(ltac::Register offsetReg, int offset);
+        ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset);
    
     private:
         //The function being compiled
