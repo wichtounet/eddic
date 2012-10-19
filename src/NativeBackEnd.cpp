@@ -28,9 +28,6 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     //Prepare the float pool
     auto float_pool = std::make_shared<FloatPool>();
 
-    //Create a new LTAC program
-    auto ltac_program = std::make_shared<ltac::Program>();
-
     //Generate LTAC Code
     ltac::Compiler ltacCompiler(platform, configuration);
     ltacCompiler.compile(mtac_program, float_pool);

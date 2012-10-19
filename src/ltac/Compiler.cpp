@@ -69,11 +69,11 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
 
     //Enter stack frame
     if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(function, ltac::Operator::ENTER);
+        ltac::add_instruction(function->entry_bb(), ltac::Operator::ENTER);
     }
 
     //Alloc stack space for locals
-    ltac::add_instruction(function, ltac::Operator::SUB, ltac::SP, size);
+    ltac::add_instruction(function->entry_bb(), ltac::Operator::SUB, ltac::SP, size);
     compiler->bp_offset += size;
     
     auto iter = function->context->begin();
@@ -88,10 +88,10 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
             int position = var->position().offset();
 
             if(type->is_array() && type->has_elements()){
-                ltac::add_instruction(function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
-                ltac::add_instruction(function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size(platform)), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
+                ltac::add_instruction(function->entry_bb(), ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
+                ltac::add_instruction(function->entry_bb(), ltac::Operator::MEMSET, compiler->stack_address(position + INT->size(platform)), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
             } else if(type->is_custom_type()){
-                ltac::add_instruction(function, ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size(platform) / INT->size(platform)));
+                ltac::add_instruction(function->entry_bb(), ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size(platform) / INT->size(platform)));
             }
         }
     }
@@ -103,6 +103,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
 
     //Then we compile each of them
     for(auto block : function){
+        compiler->bb = block;
+
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
             (*compiler)(block->label);
@@ -125,13 +127,13 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
         }
     }
     
-    ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, size);
+    ltac::add_instruction(function->exit_bb(), ltac::Operator::ADD, ltac::SP, size);
     compiler->bp_offset -= size;
         
     //Leave stack frame
     if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(function, ltac::Operator::LEAVE);
+        ltac::add_instruction(function->exit_bb(), ltac::Operator::LEAVE);
     }
 
-    ltac::add_instruction(function, ltac::Operator::RET);
+    ltac::add_instruction(function->exit_bb(), ltac::Operator::RET);
 }
