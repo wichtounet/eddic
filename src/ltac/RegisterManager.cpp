@@ -215,15 +215,10 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
         
-        //If the variable is hold in a register, just move the register value
-        if(pseudo_float_registers.inRegister(variable)){
-            auto old_reg = pseudo_float_registers[variable];
+        assert(pseudo_float_registers.inRegister(variable));
+        auto old_reg = pseudo_float_registers[variable];
 
-            ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
-        } else {
-            //TODO
-            ASSERT_PATH_NOT_TAKEN("");
-        }
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
     } else if(auto* ptr = boost::get<double>(&argument)){
         auto label = float_pool->label(*ptr);
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
@@ -233,18 +228,11 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
-        
-        log::emit<Trace>("Registers") << "Copy " << variable->name() << log::endl;
 
-        //If the variable is hold in a register, just move the register value
-        if(pseudo_registers.inRegister(variable)){
-            auto old_reg = pseudo_registers[variable];
+        assert(pseudo_registers.inRegister(variable));
+        auto old_reg = pseudo_registers[variable];
 
-            ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
-        } else {
-            //TODO
-            ASSERT_PATH_NOT_TAKEN("");
-        } 
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
     } else {
         //If it's a constant (int, double, string), just move it
         ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument, *this));
