@@ -23,11 +23,6 @@ class FunctionContext;
 
 namespace mtac {
 
-enum class Mode : unsigned int {
-    MTAC,
-    LTAC
-};
-
 class Loop;
 
 class Function : public std::enable_shared_from_this<Function> {
@@ -73,8 +68,6 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::size_t bb_count();
         std::size_t size();
-
-        Mode mode = Mode::MTAC;
 
     private:
         //Before being partitioned, the function has only statement
