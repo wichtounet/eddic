@@ -207,7 +207,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 if(variable->position().isGlobal()){
                     return {variable->type()->elements()};
-                } else if(variable->position().isStack() && variable->type()->has_elements()){
+                } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
                     return {variable->type()->elements()};
                 } else if(variable->position().isParameter() || variable->position().isStack()){
                     auto t1 = function->context->new_temporary(INT);

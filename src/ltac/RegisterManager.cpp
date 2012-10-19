@@ -301,21 +301,10 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::PseudoRegister r
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
 
-        //If the variable is hold in a register, just move the register value
-        if(pseudo_registers.inRegister(variable)){
-            auto old_reg = pseudo_registers[variable];
+        assert(pseudo_registers.inRegister(variable));
+        auto old_reg = pseudo_registers[variable];
 
-            //Only if the variable is not already on the same register 
-            if(old_reg != reg){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
-
-                //There is nothing in the old register
-                pseudo_registers.remove(variable);
-            }
-        } else {
-            //TODO
-            ASSERT_PATH_NOT_TAKEN("");     
-        } 
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
 
         //The variable is now held in the new register
         pseudo_registers.setLocation(variable, reg);
@@ -332,21 +321,10 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::PseudoFloatRegis
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
 
-        //If the variable is hold in a register, just move the register value
-        if(pseudo_float_registers.inRegister(variable)){
-            auto old_reg = pseudo_float_registers[variable];
+        assert(pseudo_registers.inRegister(variable));
+        auto old_reg = pseudo_float_registers[variable];
 
-            //Only if the variable is not already on the same register 
-            if(old_reg != reg){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
-
-                //There is nothing in the old register
-                pseudo_float_registers.remove(variable);
-            }
-        } else {
-            //TODO
-            ASSERT_PATH_NOT_TAKEN("");     
-        }
+        ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
 
         //The variable is now held in the new register
         pseudo_float_registers.setLocation(variable, reg);
