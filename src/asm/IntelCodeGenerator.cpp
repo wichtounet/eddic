@@ -7,7 +7,7 @@
 
 #include "asm/IntelCodeGenerator.hpp"
 
-#include "ltac/Program.hpp"
+#include "mtac/Program.hpp"
 
 #include "AssemblyFileWriter.hpp"
 #include "assert.hpp"
@@ -22,7 +22,7 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
 
-void as::IntelCodeGenerator::generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
