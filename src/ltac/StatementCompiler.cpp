@@ -433,28 +433,11 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::sha
     return reg;
 }
 
-ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
+ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::PseudoRegister offset){
     auto reg = manager.get_free_pseudo_reg();
     
     ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, 0));
     ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    
-    return reg;
-}
-
-inline ltac::Register ltac::StatementCompiler::get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset){
-    auto reg = manager.get_free_reg();
-    
-    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, 0));
-    ltac::add_instruction(function, ltac::Operator::ADD, reg, offset);
-    
-    return reg;
-}
-
-inline ltac::Register ltac::StatementCompiler::get_address_in_reg(std::shared_ptr<Variable> var, int offset){
-    auto reg = manager.get_free_reg();
-
-    ltac::add_instruction(function, ltac::Operator::LEA, reg, address(var, offset));
     
     return reg;
 }
@@ -814,6 +797,8 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
 
     manager.spills(ltac::Register(descriptor->d_register()));
     manager.reserve(ltac::Register(descriptor->d_register()));
+        
+    auto EAX = ltac::Register(descriptor->a_register());
 
     //Form x = x / y
     if(*quadruple->arg1 == quadruple->result){
@@ -823,27 +808,25 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
     } 
     //Form x = y / z (y: variable)
     else if(ltac::is_variable(*quadruple->arg1)){
-        auto A = ltac::Register(descriptor->a_register());
+        manager.spills(EAX);
+        manager.reserve(EAX);
 
-        manager.spills(A);
-        manager.reserve(A);
-
-        manager.copy(ltac::get_variable(*quadruple->arg1), A);
+        manager.copy(ltac::get_variable(*quadruple->arg1), EAX);
 
         div_eax(quadruple);
 
-        manager.release(A);
-        manager.setLocation(quadruple->result, A);
+        manager.release(EAX);
+        manager.setLocation(quadruple->result, EAX);
     } else {
-        manager.spills(ltac::Register(descriptor->a_register()));
-        manager.reserve(ltac::Register(descriptor->a_register()));
+        manager.spills(EAX);
+        manager.reserve(EAX);
 
-        manager.copy(*quadruple->arg1, ltac::Register(descriptor->a_register()));
+        manager.copy(*quadruple->arg1, EAX);
 
         div_eax(quadruple);
 
-        manager.release(ltac::Register(descriptor->a_register()));
-        manager.setLocation(quadruple->result, ltac::Register(descriptor->a_register()));
+        manager.release(EAX);
+        manager.setLocation(quadruple->result, EAX);
     }
 
     manager.release(ltac::Register(descriptor->d_register()));
@@ -1178,7 +1161,7 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 
     auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
 
-    //TODO This should probably be done directly in get_address_in_reg
+    //TODO This should probably be done directly in get_address_in_pseudo_reg
 
     //The pointer has to be dereferenced
     if(variable->type()->is_pointer()){
@@ -1202,7 +1185,7 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
         } else {
             assert(ltac::is_variable(*quadruple->arg2));
 
-            auto offset = manager.get_reg(ltac::get_variable(*quadruple->arg2));
+            auto offset = manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg2));
             auto reg2 = get_address_in_pseudo_reg2(variable, offset);
 
             ltac::add_instruction(function, ltac::Operator::MOV, reg, reg2);

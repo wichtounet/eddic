@@ -90,12 +90,8 @@ class StatementCompiler : public boost::static_visitor<> {
         
         ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         
-        //TODO Could probably be removed
-        ltac::Register get_address_in_reg(std::shared_ptr<Variable> var, int offset);
-        ltac::Register get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset);
-        
         ltac::PseudoRegister get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset);
-        ltac::PseudoRegister get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::Register offset);
+        ltac::PseudoRegister get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::PseudoRegister offset);
 
         ltac::Argument to_arg(mtac::Argument argument);
         

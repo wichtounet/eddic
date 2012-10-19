@@ -416,7 +416,6 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     move(var, reg);
-    pseudo_registers.setLocation(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
@@ -431,7 +430,6 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     move(var, reg);
-    pseudo_float_registers.setLocation(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
@@ -440,34 +438,6 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
-    return reg;
-}
-
-ltac::Register ltac::RegisterManager::get_reg(std::shared_ptr<Variable> var){
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << log::endl;
-    auto reg = ::get_reg(registers, var, true, *this);
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
-    return reg;
-}
-
-ltac::Register ltac::RegisterManager::get_reg_no_move(std::shared_ptr<Variable> var){
-    log::emit<Trace>("Registers") << "Get reg no move for " << var->name() << log::endl;
-    auto reg = ::get_reg(registers, var, false, *this);
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
-    return reg;
-}
-
-ltac::FloatRegister ltac::RegisterManager::get_float_reg(std::shared_ptr<Variable> var){
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << log::endl;
-    auto reg = ::get_reg(float_registers, var, true, *this);
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
-    return reg;
-}
-
-ltac::FloatRegister ltac::RegisterManager::get_float_reg_no_move(std::shared_ptr<Variable> var){
-    log::emit<Trace>("Registers") << "Get reg no move for " << var->name() << log::endl;
-    auto reg = ::get_reg(float_registers, var, false, *this);
-    log::emit<Trace>("Registers") << "Get reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
