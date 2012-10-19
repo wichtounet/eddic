@@ -636,18 +636,24 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, total);
     bp_offset -= total;
 
+    //The copies should be cleaned by the optimizations
+
     if(call->return_){
         if(call->return_->type() == FLOAT){
-            manager.setLocation(call->return_, ltac::FloatRegister(descriptor->float_return_register()));
+            auto reg = manager.get_pseudo_float_reg_no_move(call->return_);
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::FloatRegister(descriptor->float_return_register()));
         } else {
-            manager.setLocation(call->return_, ltac::Register(descriptor->int_return_register1()));
+            auto reg = manager.get_pseudo_reg_no_move(call->return_);
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Register(descriptor->int_return_register1()));
         }
 
         manager.set_written(call->return_);
     }
 
     if(call->return2_){
-        manager.setLocation(call->return2_, ltac::Register(descriptor->int_return_register2()));
+        auto reg = manager.get_pseudo_reg_no_move(call->return2_);
+        ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Register(descriptor->int_return_register2()));
+
         manager.set_written(call->return2_);
     }
 

@@ -241,8 +241,8 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         auto variable = *ptr;
         
         //If the variable is hold in a register, just move the register value
-        if(pseudo_float_registers.inRegister(variable)){
-            auto old_reg = pseudo_float_registers[variable];
+        if(pseudo_registers.inRegister(variable)){
+            auto old_reg = pseudo_registers[variable];
             ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
         } else {
             auto position = variable->position();
@@ -416,12 +416,15 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     move(var, reg);
+    pseudo_registers.setLocation(var, reg);
+    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
+    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
@@ -429,12 +432,14 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::share
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     move(var, reg);
     pseudo_float_registers.setLocation(var, reg);
+    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
+    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
     return reg;
 }
 
