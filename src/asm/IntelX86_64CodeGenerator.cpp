@@ -332,7 +332,7 @@ void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> funct
     X86_64StatementCompiler compiler(writer);
     
     for(auto& bb : function->basic_blocks()){
-        visit_each(compiler, bb->statements);
+        visit_each(compiler, bb->l_statements);
     }
 }
 

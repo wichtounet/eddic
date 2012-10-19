@@ -20,7 +20,7 @@ std::string ltac::Function::getName() const {
 void ltac::Function::add(ltac::Statement statement){
     assert(current_bb());
 
-    _basic_blocks.back()->statements.push_back(statement);
+    _basic_blocks.back()->l_statements.push_back(statement);
 }
 
 

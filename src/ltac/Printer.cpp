@@ -245,7 +245,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::BasicBlock> bb){
         out << "B" << bb->index << ":" << std::endl;
 
-        visit_each(*this, bb->statements);
+        visit_each(*this, bb->l_statements);
     }
 
     void operator()(const ltac::Statement& statement){

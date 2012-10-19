@@ -326,7 +326,7 @@ void as::IntelX86CodeGenerator::compile(std::shared_ptr<ltac::Function> function
     X86StatementCompiler compiler(writer);
 
     for(auto& bb : function->basic_blocks()){
-        visit_each(compiler, bb->statements);
+        visit_each(compiler, bb->l_statements);
     }
 }
 

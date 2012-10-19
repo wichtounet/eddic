@@ -388,7 +388,7 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform plat
     bool optimized = false;
     
     for(auto& bb : function->basic_blocks()){
-        auto& statements = bb->statements;
+        auto& statements = bb->l_statements;
 
         if(statements.empty()){
             continue;
@@ -446,7 +446,7 @@ bool constant_propagation(std::shared_ptr<ltac::Function> function){
     bool optimized = false;
 
     for(auto& bb : function->basic_blocks()){
-        auto& statements = bb->statements;
+        auto& statements = bb->l_statements;
 
         std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
 
@@ -522,7 +522,7 @@ bool copy_propagation(std::shared_ptr<ltac::Function> function, Platform platfor
     bool optimized = false;
 
     for(auto& bb : function->basic_blocks()){
-        auto& statements = bb->statements;
+        auto& statements = bb->l_statements;
 
         std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
 
@@ -634,7 +634,7 @@ RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function, P
     add_escaped_registers(usage, function, platform);
 
     for(auto& bb : function->basic_blocks()){
-        for(auto& statement : bb->statements){
+        for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 auto instruction = *ptr;
 
@@ -669,7 +669,7 @@ bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform pl
     bool optimized = false;
 
     for(auto& bb : function->basic_blocks()){
-        auto& statements = bb->statements;
+        auto& statements = bb->l_statements;
 
         RegisterUsage usage; 
         add_escaped_registers(usage, function, platform);
@@ -778,10 +778,10 @@ bool move_forward(BIt& bit, BIt& bend, It& it, It& end){
         
         auto& bb = *bit;
 
-        it = bb->statements.begin();
-        end = bb->statements.end();
+        it = bb->l_statements.begin();
+        end = bb->l_statements.end();
 
-        if(bb->statements.empty()){
+        if(bb->l_statements.empty()){
             return move_forward(bit, bend, it, end);
         }
 
@@ -807,8 +807,8 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
 
     auto& bb = *bit;
 
-    auto it = bb->statements.begin();
-    auto end = bb->statements.end();
+    auto it = bb->l_statements.begin();
+    auto end = bb->l_statements.end();
 
     while(true){
         if(it == end){

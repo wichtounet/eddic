@@ -19,7 +19,7 @@ namespace ltac {
 class BasicBlock {
     public:
         int index;
-        std::vector<ltac::Statement> statements;
+        std::vector<ltac::Statement> l_statements;
 
         BasicBlock(int index);
 };
