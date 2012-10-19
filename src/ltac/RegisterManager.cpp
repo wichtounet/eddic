@@ -215,12 +215,23 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
         
-        assert(pseudo_float_registers.inRegister(variable));
-        auto old_reg = pseudo_float_registers[variable];
+        //If the variable is hold in a register, just move the register value
+        if(pseudo_float_registers.inRegister(variable)){
+            auto old_reg = pseudo_float_registers[variable];
+            ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
+        } else {
+            auto position = variable->position();
 
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
-    } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
+            assert(position.isGlobal() || position.isParameter());
+
+            if(position.isParameter()){
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
+            } else if(position.isGlobal()){
+                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
+            } 
+        }
+    } else {
+        auto label = float_pool->label(boost::get<double>(argument));
         ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
@@ -228,11 +239,22 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
+        
+        //If the variable is hold in a register, just move the register value
+        if(pseudo_float_registers.inRegister(variable)){
+            auto old_reg = pseudo_float_registers[variable];
+            ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
+        } else {
+            auto position = variable->position();
 
-        assert(pseudo_registers.inRegister(variable));
-        auto old_reg = pseudo_registers[variable];
+            assert(position.isGlobal() || position.isParameter());
 
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
+            if(position.isParameter()){
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
+            } else if(position.isGlobal()){
+                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+            } 
+        }
     } else {
         //If it's a constant (int, double, string), just move it
         ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument, *this));
@@ -298,40 +320,23 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
 }
 
 void ltac::RegisterManager::move(mtac::Argument argument, ltac::PseudoRegister reg){
+    copy(argument, reg);
+
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        assert(pseudo_registers.inRegister(variable));
-        auto old_reg = pseudo_registers[variable];
-
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
-
         //The variable is now held in the new register
-        pseudo_registers.setLocation(variable, reg);
-
-    } else {
-        //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument, *this));
+        pseudo_registers.setLocation(*ptr, reg);
     }
 }
 
 void ltac::RegisterManager::move(mtac::Argument argument, ltac::PseudoFloatRegister reg){
     assert(ltac::is_variable(argument) || mtac::isFloat(argument));
+    
+    copy(argument, reg);
 
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        assert(pseudo_registers.inRegister(variable));
-        auto old_reg = pseudo_float_registers[variable];
-
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
-
         //The variable is now held in the new register
-        pseudo_float_registers.setLocation(variable, reg);
-    } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
-    }
+        pseudo_float_registers.setLocation(*ptr, reg);
+    } 
 }
 
 void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
