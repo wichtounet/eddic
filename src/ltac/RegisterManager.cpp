@@ -120,19 +120,6 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
 }
     
 template<typename Reg>
-void safe_move(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, Reg reg, ltac::RegisterManager& manager){
-    if(registers.used(reg)){
-        if(registers[reg] != variable){
-            manager.spills(reg);
-
-            manager.move(variable, reg);
-        }
-    } else {
-        manager.move(variable, reg);
-    }
-}
-    
-template<typename Reg>
 void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::RegisterManager& manager){
     //If the register is not used, there is nothing to spills
     if(registers.used(reg)){
@@ -171,22 +158,6 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
 
         //The variable has not been written now
         manager.written.erase(variable);
-    }
-}
-
-template<typename Reg>
-void spills_all(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
-    log::emit<Trace>("Registers") << "Spills all" << log::endl;
-
-    for(auto reg : registers){
-        //The register can be reserved if the ending occurs in a special break case
-        if(!registers.reserved(reg) && registers.used(reg)){
-            auto variable = registers[reg];
-
-            if(!variable->position().is_temporary()){
-                manager.spills(reg);    
-            }
-        }
     }
 }
 
@@ -441,16 +412,6 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     return reg;
 }
 
-void ltac::RegisterManager::safe_move(std::shared_ptr<Variable> variable, ltac::Register reg){
-    log::emit<Trace>("Registers") << "Safe move " << variable->name() << " in " << reg << log::endl;
-    return ::safe_move(registers, variable, reg, *this);
-}
-
-void ltac::RegisterManager::safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
-    log::emit<Trace>("Registers") << "Safe move " << variable->name() << " in " << reg << log::endl;
-    return ::safe_move(float_registers, variable, reg, *this);
-}
-
 void ltac::RegisterManager::spills(ltac::Register reg){
     log::emit<Trace>("Registers") << "Spills Register " << reg << log::endl;
     ::spills(registers, reg, ltac::Operator::MOV, *this);
@@ -459,21 +420,6 @@ void ltac::RegisterManager::spills(ltac::Register reg){
 void ltac::RegisterManager::spills(ltac::FloatRegister reg){
     log::emit<Trace>("Registers") << "Spills Float Register " << reg << log::endl;
     ::spills(float_registers, reg, ltac::Operator::FMOV, *this);
-}
-
-void ltac::RegisterManager::spills_if_necessary(ltac::Register reg, mtac::Argument arg){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-        if(!registers.inRegister(*ptr, reg)){
-            spills(reg);
-        }
-    } else {
-        spills(reg);
-    }
-}
-
-void ltac::RegisterManager::spills_all(){
-    ::spills_all(registers, *this);
-    ::spills_all(float_registers, *this);
 }
 
 ltac::PseudoRegister ltac::RegisterManager::get_free_pseudo_reg(){
@@ -581,18 +527,6 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, c
 
                     if(mtac::is_single_float_register(type) && position <= maxFloat){
                         overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
-                    }
-                }
-            }
-
-            if(param->function->context){
-                for(auto variable : param->function->context->stored_variables()){
-                    if(variable->position().is_register()){
-                        if(variable->type() == INT){
-                            overriden_registers.insert(ltac::Register(variable->position().offset()));
-                        } else {
-                            overriden_float_registers.insert(ltac::FloatRegister(variable->position().offset()));
-                        }
                     }
                 }
             }

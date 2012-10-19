@@ -81,21 +81,14 @@ class RegisterManager : public AbstractRegisterManager {
         void move(mtac::Argument argument, ltac::PseudoRegister reg);
         void move(mtac::Argument argument, ltac::PseudoFloatRegister reg);
 
-        void safe_move(std::shared_ptr<Variable> variable, ltac::Register reg);
-        void safe_move(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
-
         ltac::Register get_free_reg();
         ltac::FloatRegister get_free_float_reg();
         
         ltac::PseudoRegister get_free_pseudo_reg();
         ltac::PseudoFloatRegister get_free_pseudo_float_reg();
 
-        void spills_all();
-
         void spills(ltac::Register reg);
         void spills(ltac::FloatRegister reg);
-
-        void spills_if_necessary(ltac::Register reg, mtac::Argument arg);
 
         bool is_written(std::shared_ptr<Variable> variable);
         void set_written(std::shared_ptr<Variable> variable);
