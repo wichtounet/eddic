@@ -57,7 +57,7 @@ std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Functio
 std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2);
 std::shared_ptr<ltac::Instruction> add_instruction(std::shared_ptr<ltac::Function> function, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3);
 
-ltac::Register to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
+ltac::PseudoRegister to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
 ltac::Argument to_arg(mtac::Argument argument, ltac::RegisterManager& manager);
 
 } //end of ltac

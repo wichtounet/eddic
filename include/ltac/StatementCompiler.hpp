@@ -88,7 +88,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void div_eax(std::shared_ptr<mtac::Quadruple> quadruple);
         void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple);
         
-        ltac::Register to_register(std::shared_ptr<Variable> var);
+        ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         
         //TODO Could probably be removed
         ltac::Register get_address_in_reg(std::shared_ptr<Variable> var, int offset);

@@ -43,7 +43,7 @@ void ltac::StatementCompiler::collect_parameters(std::shared_ptr<eddic::Function
     manager.collect_parameters(definition, descriptor);
 }
 
-ltac::Register ltac::StatementCompiler::to_register(std::shared_ptr<Variable> var){
+ltac::PseudoRegister ltac::StatementCompiler::to_register(std::shared_ptr<Variable> var){
     return ltac::to_register(var, manager);
 }
 
