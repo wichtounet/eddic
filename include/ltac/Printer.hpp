@@ -11,7 +11,7 @@
 #include <memory>
 #include <iostream>
 
-#include "ltac/Program.hpp"
+#include "mtac/Program.hpp"
 
 namespace eddic {
 
@@ -22,8 +22,8 @@ namespace ltac {
  * \brief Utility class to print the three-address-code representation on the console. 
  */
 struct Printer {
-    void print(std::shared_ptr<ltac::Program> program) const ;
-    void print(std::shared_ptr<ltac::Function> function) const ;
+    void print(std::shared_ptr<mtac::Program> program) const ;
+    void print(std::shared_ptr<mtac::Function> function) const ;
     void print(ltac::Statement& statement) const ;
 };
 

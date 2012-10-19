@@ -384,10 +384,10 @@ inline bool is_nop(ltac::Statement& statement){
     return false;
 }
 
-bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform platform){
+bool basic_optimizations(std::shared_ptr<mtac::Function> function, Platform platform){
     bool optimized = false;
     
-    for(auto& bb : function->basic_blocks()){
+    for(auto& bb : function){
         auto& statements = bb->l_statements;
 
         if(statements.empty()){
@@ -442,10 +442,10 @@ bool basic_optimizations(std::shared_ptr<ltac::Function> function, Platform plat
     return optimized;
 }
 
-bool constant_propagation(std::shared_ptr<ltac::Function> function){
+bool constant_propagation(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
-    for(auto& bb : function->basic_blocks()){
+    for(auto& bb : function){
         auto& statements = bb->l_statements;
 
         std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
@@ -516,12 +516,12 @@ void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::Registe
     }
 }
 
-bool copy_propagation(std::shared_ptr<ltac::Function> function, Platform platform){
+bool copy_propagation(std::shared_ptr<mtac::Function> function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
 
     bool optimized = false;
 
-    for(auto& bb : function->basic_blocks()){
+    for(auto& bb : function){
         auto& statements = bb->l_statements;
 
         std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
@@ -589,7 +589,7 @@ void add_param_registers(RegisterUsage& usage, Platform platform){
     usage.insert(ltac::BP);
 }
 
-void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<ltac::Function> function, Platform platform){
+void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<mtac::Function> function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
     if(function->definition->returnType == STRING){
@@ -629,11 +629,11 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
-RegisterUsage collect_register_usage(std::shared_ptr<ltac::Function> function, Platform platform){
+RegisterUsage collect_register_usage(std::shared_ptr<mtac::Function> function, Platform platform){
     RegisterUsage usage;
     add_escaped_registers(usage, function, platform);
 
-    for(auto& bb : function->basic_blocks()){
+    for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 auto instruction = *ptr;
@@ -665,10 +665,10 @@ inline bool one_of(const T& value, const std::vector<T>& container){
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-bool dead_code_elimination(std::shared_ptr<ltac::Function> function, Platform platform){
+bool dead_code_elimination(std::shared_ptr<mtac::Function> function, Platform platform){
     bool optimized = false;
 
-    for(auto& bb : function->basic_blocks()){
+    for(auto& bb : function){
         auto& statements = bb->l_statements;
 
         RegisterUsage usage; 
@@ -791,7 +791,7 @@ bool move_forward(BIt& bit, BIt& bend, It& it, It& end){
     return false;
 }
 
-bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platform){
+bool conditional_move(std::shared_ptr<mtac::Function> function, Platform platform){
     bool optimized = false;
 
     RegisterUsage usage = collect_register_usage(function, platform);
@@ -801,9 +801,8 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
         return optimized;
     }
 
-    auto& basic_blocks = function->basic_blocks();
-    auto bit = basic_blocks.begin();
-    auto bend = basic_blocks.end();
+    auto bit = function->begin();
+    auto bend = function->end();
 
     auto& bb = *bit;
 
@@ -923,7 +922,7 @@ bool conditional_move(std::shared_ptr<ltac::Function> function, Platform platfor
     return optimized;
 }
 
-bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> function){
+bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
     if(log::enabled<Debug>()){
         if(b){
             log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
@@ -941,7 +940,7 @@ bool debug(const std::string& name, bool b, std::shared_ptr<ltac::Function> func
 
 } //end of anonymous namespace
 
-void eddic::ltac::optimize(std::shared_ptr<ltac::Program> program, Platform platform){
+void eddic::ltac::optimize(std::shared_ptr<mtac::Program> program, Platform platform){
     PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){

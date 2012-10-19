@@ -35,14 +35,17 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     ltac::Compiler ltacCompiler(platform, configuration);
     ltacCompiler.compile(mtac_program, ltac_program, float_pool);
 
+    //Switch to LTAC Mode
+    mtac_program->mode = mtac::Mode::LTAC;
+
     if(configuration->option_defined("fpeephole-optimization")){
-        optimize(ltac_program, platform);
+        ltac::optimize(mtac_program, platform);
     }
 
     //If asked by the user, print the Three Address code representation
     if(configuration->option_defined("ltac") || configuration->option_defined("ltac-only")){
         ltac::Printer printer;
-        printer.print(ltac_program);
+        printer.print(mtac_program);
     }
 
     if(!configuration->option_defined("ltac-only")){
