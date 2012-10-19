@@ -21,7 +21,6 @@
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
-#include "ltac/Program.hpp"
 #include "ltac/AbstractRegisterManager.hpp"
 
 namespace eddic {
