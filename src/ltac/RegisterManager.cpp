@@ -233,6 +233,8 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
+        
+        log::emit<Trace>("Registers") << "Copy " << variable->name() << log::endl;
 
         //If the variable is hold in a register, just move the register value
         if(pseudo_registers.inRegister(variable)){

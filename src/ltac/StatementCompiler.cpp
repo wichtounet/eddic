@@ -1211,7 +1211,7 @@ void ltac::StatementCompiler::compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple
 }
 
 void ltac::StatementCompiler::compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){
-    auto reg = manager.get_free_pseudo_reg();
+    auto reg = manager.get_free_pseudo_float_reg();
     manager.copy(*quadruple->arg2, reg);
     ltac::add_instruction(function, ltac::Operator::FMOV, address(quadruple->result, *quadruple->arg1), reg);
 }
