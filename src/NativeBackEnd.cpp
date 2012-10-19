@@ -33,7 +33,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
 
     //Generate LTAC Code
     ltac::Compiler ltacCompiler(platform, configuration);
-    ltacCompiler.compile(mtac_program, ltac_program, float_pool);
+    ltacCompiler.compile(mtac_program, float_pool);
 
     //Switch to LTAC Mode
     mtac_program->mode = mtac::Mode::LTAC;
