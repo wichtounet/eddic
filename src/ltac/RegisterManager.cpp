@@ -137,7 +137,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
                 ltac::add_instruction(manager.access_compiler()->bb, mov, manager.access_compiler()->stack_address(position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.access_compiler()->bb, mov, ltac::Address("V" + position.name()), reg);
-            } else if(position.isTemporary()){
+            } else if(position.is_temporary()){
                 //If the variable is live, move it to another register, else do nothing
                 if(manager.is_live(variable)){
                     registers.remove(variable);
@@ -189,21 +189,21 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
         //If the variable is hold in a register, just move the register value
         if(pseudo_float_registers.inRegister(variable)){
             auto old_reg = pseudo_float_registers[variable];
-            ltac::add_instruction(function, ltac::Operator::FMOV, reg, old_reg);
+            ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             assert(position.isGlobal() || position.isParameter());
 
             if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
     } else {
         auto label = float_pool->label(boost::get<double>(argument));
-        ltac::add_instruction(function, ltac::Operator::FMOV, reg, ltac::Address(label));
+        ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
@@ -214,21 +214,21 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         //If the variable is hold in a register, just move the register value
         if(pseudo_registers.inRegister(variable)){
             auto old_reg = pseudo_registers[variable];
-            ltac::add_instruction(function, ltac::Operator::MOV, reg, old_reg);
+            ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             assert(position.isGlobal() || position.isParameter());
 
             if(position.isParameter()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(function, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
         }
     } else {
         //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(function, ltac::Operator::MOV, reg, to_arg(argument, *this));
+        ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
     }
 }
 

@@ -22,7 +22,7 @@ ltac::Address stack_address(int offset, bool omit_fp){
     }
 }
 
-void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> mtac_program, std::shared_ptr<Configuration> configuration){
+void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_program, std::shared_ptr<Configuration> configuration){
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
     auto platform = ltac_program->context->target_platform();
 
@@ -31,7 +31,7 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> mtac_progra
 
         //1. Generate prologue
         
-        auto bb = function->new_bb_in_front();
+        auto bb = function->entry_bb();
     
         //Enter stack frame
         if(!omit_fp){
@@ -70,15 +70,15 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> mtac_progra
 
         //2. Generate epilogue
 
-        function->new_bb();
+        bb = function->exit_bb();
 
-        ltac::add_instruction(function, ltac::Operator::ADD, ltac::SP, size);
+        ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, size);
 
         //Leave stack frame
         if(!omit_fp){
-            ltac::add_instruction(function, ltac::Operator::LEAVE);
+            ltac::add_instruction(bb, ltac::Operator::LEAVE);
         }
 
-        ltac::add_instruction(function, ltac::Operator::RET);
+        ltac::add_instruction(bb, ltac::Operator::RET);
     }
 }

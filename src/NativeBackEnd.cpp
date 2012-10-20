@@ -30,7 +30,6 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     //Prepare the float pool
     auto float_pool = std::make_shared<FloatPool>();
 
-<<<<<<< HEAD
     //Allocate stack positions for aggregates that have not been allocated
     ltac::allocate_aggregates(mtac_program);
 
@@ -42,7 +41,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     mtac_program->mode = mtac::Mode::LTAC;
 
     ltac::Printer printer;
-    printer.print(ltac_program);
+    printer.print(mtac_program);
 
     //TODO Register allocation
     

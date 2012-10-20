@@ -65,40 +65,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
     compiler->platform = platform;
     compiler->configuration = configuration;
 
-<<<<<<< HEAD
-=======
-    auto size = function->context->size();
-
-    //Enter stack frame
-    if(!configuration->option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(function->entry_bb(), ltac::Operator::ENTER);
-    }
-
-    //Alloc stack space for locals
-    ltac::add_instruction(function->entry_bb(), ltac::Operator::SUB, ltac::SP, size);
-    compiler->bp_offset += size;
-    
-    auto iter = function->context->begin();
-    auto end = function->context->end();
-
-    for(; iter != end; iter++){
-        auto var = iter->second;
-
-        //ONly stack variables needs to be cleared
-        if(var->position().isStack()){
-            auto type = var->type();
-            int position = var->position().offset();
-
-            if(type->is_array() && type->has_elements()){
-                ltac::add_instruction(function->entry_bb(), ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
-                ltac::add_instruction(function->entry_bb(), ltac::Operator::MEMSET, compiler->stack_address(position + INT->size(platform)), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
-            } else if(type->is_custom_type()){
-                ltac::add_instruction(function->entry_bb(), ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size(platform) / INT->size(platform)));
-            }
-        }
-    }
-    
->>>>>>> develop
     //Compute Liveness
     mtac::LiveVariableAnalysisProblem problem;
     compiler->manager.liveness = mtac::data_flow(function, problem);
@@ -115,7 +81,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
     
         //Handle parameters and register-allocated variables
         compiler->reset();
-        compiler->collect_parameters(src_function->definition);
+        compiler->collect_parameters(function->definition);
     
         for(unsigned int i = 0; i < block->statements.size(); ++i){
             auto& statement = block->statements[i];
