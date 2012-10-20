@@ -228,24 +228,26 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     DebugVisitor(std::ostream& out) : out(out) {}
 
-    void operator()(std::shared_ptr<ltac::Program> program){
+    void operator()(std::shared_ptr<mtac::Program> program){
         out << "LTAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<ltac::Function> function){
+    void operator()(std::shared_ptr<mtac::Function> function){
         out << "Function " << function->getName() << std::endl;
 
-        visit_each_non_variant(*this, function->basic_blocks());
+        for(auto& bb : function){
+            visit_non_variant(*this, bb);
+        }
 
         out << std::endl;
     }
     
-    void operator()(std::shared_ptr<ltac::BasicBlock> bb){
+    void operator()(std::shared_ptr<mtac::BasicBlock> bb){
         out << "B" << bb->index << ":" << std::endl;
 
-        visit_each(*this, bb->statements);
+        visit_each(*this, bb->l_statements);
     }
 
     void operator()(const ltac::Statement& statement){
@@ -280,12 +282,12 @@ void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    visit(visitor, statement); 
 }
 
-void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
+void ltac::Printer::print(std::shared_ptr<mtac::Program> program) const {
    DebugVisitor visitor(std::cout);
    visitor(program); 
 }
 
-void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
+void ltac::Printer::print(std::shared_ptr<mtac::Function> function) const {
    DebugVisitor visitor(std::cout);
    visitor(function); 
 }

@@ -16,10 +16,17 @@ struct GlobalContext;
 
 namespace mtac {
 
+enum class Mode : unsigned int {
+    MTAC,
+    LTAC
+};
+
 struct Program {
     std::shared_ptr<GlobalContext> context;
 
     std::vector<std::shared_ptr<Function>> functions;
+
+    Mode mode = Mode::MTAC;
 };
 
 } //end of mtac

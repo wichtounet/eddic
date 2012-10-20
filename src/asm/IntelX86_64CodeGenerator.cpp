@@ -14,7 +14,7 @@
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
 
-#include "ltac/Program.hpp"
+#include "mtac/Program.hpp"
 
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
@@ -326,13 +326,13 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
+void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<mtac::Function> function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
     
-    for(auto& bb : function->basic_blocks()){
-        visit_each(compiler, bb->statements);
+    for(auto& bb : function){
+        visit_each(compiler, bb->l_statements);
     }
 }
 

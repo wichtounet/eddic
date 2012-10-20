@@ -15,8 +15,6 @@
 #include "Platform.hpp"
 #include "Options.hpp"
 
-#include "ltac/Program.hpp"
-
 #include "mtac/Program.hpp"
 
 namespace eddic {
@@ -37,10 +35,10 @@ class Compiler {
          * \param target The target LTAC Program. 
          * \param float_pool The float pool to use. 
          */
-        void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool);
+        void compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<FloatPool> float_pool);
     
     private:
-        void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool);
+        void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<FloatPool> float_pool);
 
         std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
         Platform platform;

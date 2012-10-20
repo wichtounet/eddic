@@ -18,7 +18,6 @@
 
 #include "mtac/Program.hpp"
 
-#include "ltac/Program.hpp"
 #include "ltac/RegisterManager.hpp"
 
 namespace eddic {
@@ -32,7 +31,7 @@ class StatementCompiler : public boost::static_visitor<> {
         std::shared_ptr<Configuration> configuration;
 
         StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-                std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
+                std::shared_ptr<mtac::Function> function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -68,12 +67,14 @@ class StatementCompiler : public boost::static_visitor<> {
 
         ltac::RegisterManager manager;
 
+        std::shared_ptr<mtac::BasicBlock> bb;
+
         ltac::Address stack_address(int offset);
         ltac::Address stack_address(ltac::Register offsetReg, int offset);
    
     private:
         //The function being compiled
-        std::shared_ptr<ltac::Function> function;
+        std::shared_ptr<mtac::Function> function;
 
         std::shared_ptr<FloatPool> float_pool;
 
