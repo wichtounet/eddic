@@ -30,31 +30,32 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     //Prepare the float pool
     auto float_pool = std::make_shared<FloatPool>();
 
-    //Create a new LTAC program
-    auto ltac_program = std::make_shared<ltac::Program>();
-
+<<<<<<< HEAD
     //Allocate stack positions for aggregates that have not been allocated
     ltac::allocate_aggregates(mtac_program);
 
     //Generate LTAC Code
     ltac::Compiler ltacCompiler(platform, configuration);
-    ltacCompiler.compile(mtac_program, ltac_program, float_pool);
+    ltacCompiler.compile(mtac_program, float_pool);
+
+    //Switch to LTAC Mode
+    mtac_program->mode = mtac::Mode::LTAC;
 
     ltac::Printer printer;
     printer.print(ltac_program);
 
     //TODO Register allocation
     
-    ltac::generate_prologue_epilogue(ltac_program, configuration);
+    ltac::generate_prologue_epilogue(mtac_program, configuration);
 
     if(configuration->option_defined("fpeephole-optimization")){
-        optimize(ltac_program, platform);
+        ltac::optimize(mtac_program, platform);
     }
 
     //If asked by the user, print the Three Address code representation
     if(configuration->option_defined("ltac") || configuration->option_defined("ltac-only")){
         ltac::Printer printer;
-        printer.print(ltac_program);
+        printer.print(mtac_program);
     }
 
     if(!configuration->option_defined("ltac-only")){
@@ -69,7 +70,7 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
         auto generator = factory.get(platform, writer, mtac_program->context);
 
         //Generate the code from the LTAC Program
-        generator->generate(ltac_program, get_string_pool(), float_pool); 
+        generator->generate(mtac_program, get_string_pool(), float_pool); 
 
         //Write the output
         writer.write(); 

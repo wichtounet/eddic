@@ -14,7 +14,6 @@
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 
-#include "ltac/Program.hpp"
 #include "ltac/RegisterManager.hpp"
 
 namespace eddic {

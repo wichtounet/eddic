@@ -20,7 +20,7 @@ class AssemblyFileWriter;
 class GlobalContext;
 class Function;
 
-namespace ltac {
+namespace mtac {
 
 class Function;
 
@@ -36,7 +36,7 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
         
-        void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
+        void generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
         std::shared_ptr<GlobalContext> context;
@@ -45,7 +45,7 @@ class IntelCodeGenerator : public CodeGenerator {
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(std::shared_ptr<ltac::Function> function) = 0;
+        virtual void compile(std::shared_ptr<mtac::Function> function) = 0;
 
         virtual void defineDataSection() = 0;
 

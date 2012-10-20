@@ -12,13 +12,13 @@
 
 #include "Options.hpp"
 
-#include "ltac/Program.hpp"
+#include "mtac/Program.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void generate_prologue_epilogue(std::shared_ptr<ltac::Program> ltac_program, std::shared_ptr<Configuration> configuration);
+void generate_prologue_epilogue(std::shared_ptr<mtac::Program> mtac_program, std::shared_ptr<Configuration> configuration);
 
 } //end of ltac
 

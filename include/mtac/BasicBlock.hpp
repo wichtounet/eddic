@@ -11,6 +11,7 @@
 #include "variant.hpp"
 
 #include "mtac/Statement.hpp"
+#include "ltac/Statement.hpp"
 
 namespace eddic {
 
@@ -56,7 +57,9 @@ class BasicBlock {
         std::string label;  /*!< The label of the block */
         std::shared_ptr<FunctionContext> context = nullptr;     /*!< The context of the enclosing function. */
 
-        std::vector<mtac::Statement> statements;  /*!< The statements inside the basic block. */
+        std::vector<mtac::Statement> statements;    /*!< The MTAC statements inside the basic block. */
+        
+        std::vector<ltac::Statement> l_statements;  /*!< The LTAC statements inside the basic block. */
 
         /* Doubly-linked list  */
 

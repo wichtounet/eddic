@@ -22,7 +22,7 @@ ltac::Address stack_address(int offset, bool omit_fp){
     }
 }
 
-void ltac::generate_prologue_epilogue(std::shared_ptr<ltac::Program> ltac_program, std::shared_ptr<Configuration> configuration){
+void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> mtac_program, std::shared_ptr<Configuration> configuration){
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
     auto platform = ltac_program->context->target_platform();
 

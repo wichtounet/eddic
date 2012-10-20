@@ -16,7 +16,7 @@ class FloatPool;
 class StringPool;
 class AssemblyFileWriter;
 
-namespace ltac {
+namespace mtac {
 
 class Program;
 
@@ -41,7 +41,7 @@ class CodeGenerator {
          * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
          */
-        virtual void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
+        virtual void generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

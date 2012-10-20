@@ -12,13 +12,13 @@
 
 #include "Platform.hpp"
 
-#include "ltac/Program.hpp"
+#include "mtac/Program.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void optimize(std::shared_ptr<ltac::Program> program, Platform platform);
+void optimize(std::shared_ptr<mtac::Program> program, Platform platform);
 
 } //end of ltac
 
