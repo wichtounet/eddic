@@ -21,7 +21,6 @@
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
-
 #include "ltac/Utils.hpp"
 
 using namespace eddic;
