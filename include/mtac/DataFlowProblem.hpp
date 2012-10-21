@@ -25,11 +25,16 @@ struct DataFlowResults {
     
     std::unordered_map<mtac::Statement, Domain> OUT_S;
     std::unordered_map<mtac::Statement, Domain> IN_S;
+    
+    std::unordered_map<ltac::Statement, Domain> OUT_LS;
+    std::unordered_map<ltac::Statement, Domain> IN_LS;
 };
 
 enum class DataFlowType : unsigned int {
-    Forward,    //Common forward data-flow problem
-    Backward    //Common backward data-flow problem
+    Forward,        //Common forward data-flow problem in MTAC
+    Backward,       //Common backward data-flow problem in MTAC
+    Low_Forward,    //Common forward data-flow problem in LTAC
+    Low_Backward    //Common backward data-flow problem in LTAC
 };
 
 template<DataFlowType Type, typename DomainValues>
@@ -43,6 +48,7 @@ struct DataFlowProblem {
     virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
+    virtual bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
 
     ProblemDomain top_element(){
         return ProblemDomain();

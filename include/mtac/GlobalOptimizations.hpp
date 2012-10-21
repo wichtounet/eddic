@@ -21,17 +21,6 @@ namespace eddic {
 
 namespace mtac {
 
-template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
-    if(Type == DataFlowType::Forward){
-        return forward_data_flow(function, problem);
-    } else if(Type == DataFlowType::Backward){
-        return backward_data_flow(function, problem);
-    } else {
-        ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
-    }
-}
-
 template<typename Left, typename Right>
 inline void assign(Left& old, Right&& value, bool& changes){
     if(old.top()){
@@ -43,7 +32,30 @@ inline void assign(Left& old, Right&& value, bool& changes){
     old = value;
 }
 
-template<DataFlowType Type, typename DomainValues>
+template<typename P, typename O, typename I, typename OS, typename IS, typename Statements>
+inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    if(statements.size() > 0){
+        IN_S[statements.front()] = IN[B];
+
+        for(unsigned i = 0; i < statements.size(); ++i){
+            auto& statement = statements[i];
+
+            assign(OUT_S[statement], problem.transfer(B, statement, IN_S[statement]), changes);
+
+            //The entry value of the next statement are the exit values of the current statement
+            if(i != statements.size() - 1){
+                IN_S[statements[i+1]] = OUT_S[statement];
+            }
+        }
+
+        assign(OUT[B], OUT_S[statements.back()], changes);
+    } else {
+        //If the basic block is empty, the OUT values are the IN values
+        assign(OUT[B], IN[B], changes);
+    }
+}
+
+template<bool Low, DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
@@ -54,6 +66,9 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
+    
+    auto& OUT_LS = results->OUT_LS;
+    auto& IN_LS = results->IN_LS;
 
     OUT[function->entry_bb()] = problem.Boundary(function);
     log::emit<Dev>("Data-Flow") << "OUT[" << *function->entry_bb() << "] set to " << OUT[function->entry_bb()] << log::endl;
@@ -85,26 +100,10 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                 
                 log::emit<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
-                auto& statements = B->statements;
-
-                if(statements.size() > 0){
-                    IN_S[statements.front()] = IN[B];
-
-                    for(unsigned i = 0; i < statements.size(); ++i){
-                        auto& statement = statements[i];
-
-                        assign(OUT_S[statement], problem.transfer(B, statement, IN_S[statement]), changes);
-
-                        //The entry value of the next statement are the exit values of the current statement
-                        if(i != statements.size() - 1){
-                            IN_S[statements[i+1]] = OUT_S[statement];
-                        }
-                    }
-                    
-                    assign(OUT[B], OUT_S[statements.back()], changes);
+                if(Low){
+                    forward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
                 } else {
-                    //If the basic block is empty, the OUT values are the IN values
-                    assign(OUT[B], IN[B], changes);
+                    forward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
                 }
             }
         }
@@ -113,7 +112,37 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     return results;
 }
 
-template<DataFlowType Type, typename DomainValues>
+template<typename P, typename O, typename I, typename OS, typename IS, typename Statements>
+inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    if(statements.size() > 0){
+        log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
+        assign(OUT_S[statements.back()], OUT[B], changes);
+        log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
+
+        for(unsigned i = statements.size() - 1; i > 0; --i){
+            auto& statement = statements[i];
+
+            log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement] << log::endl;
+            assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
+            log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] after transfer " << IN_S[statement] << log::endl;
+
+            log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1]] << log::endl;
+            OUT_S[statements[i-1]] = IN_S[statement];
+            log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after transfer " << OUT_S[statements[i - 1]] << log::endl;
+        }
+
+        log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0]] << log::endl;
+        assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);
+        log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] after transfer " << IN_S[statements[0]] << log::endl;
+
+        assign(IN[B], IN_S[statements.front()], changes);
+    } else {
+        //If the basic block is empty, the IN values are the OUT values
+        assign(IN[B], OUT[B], changes);
+    }
+}
+
+template<bool Low, DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
@@ -155,33 +184,10 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                 
                 log::emit<Dev>("Data-Flow") << "OUT[B] after " << OUT[B] << log::endl;
 
-                auto& statements = B->statements;
-
-                if(statements.size() > 0){
-                    log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
-                    assign(OUT_S[statements.back()], OUT[B], changes);
-                    log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
-
-                    for(unsigned i = statements.size() - 1; i > 0; --i){
-                        auto& statement = statements[i];
-
-                        log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement] << log::endl;
-                        assign(IN_S[statement], problem.transfer(B, statement, OUT_S[statement]), changes);
-                        log::emit<Dev>("Data-Flow") << "IN_S[" << i << "] after transfer " << IN_S[statement] << log::endl;
-                        
-                        log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1]] << log::endl;
-                        OUT_S[statements[i-1]] = IN_S[statement];
-                        log::emit<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after transfer " << OUT_S[statements[i - 1]] << log::endl;
-                    }
-                        
-                    log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0]] << log::endl;
-                    assign(IN_S[statements[0]], problem.transfer(B, statements[0], OUT_S[statements[0]]), changes);
-                    log::emit<Dev>("Data-Flow") << "IN_S[" << 0 << "] after transfer " << IN_S[statements[0]] << log::endl;
-                    
-                    assign(IN[B], IN_S[statements.front()], changes);
+                if(Low){
+                    backward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
                 } else {
-                    //If the basic block is empty, the IN values are the OUT values
-                    assign(IN[B], OUT[B], changes);
+                    backward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
                 }
                 
                 log::emit<Dev>("Data-Flow") << "IN[B] after transfer " << IN[B] << log::endl;
@@ -190,6 +196,21 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     }
 
     return results;
+}
+
+template<DataFlowType Type, typename DomainValues>
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
+    if(Type == DataFlowType::Forward){
+        return forward_data_flow<false>(function, problem);
+    } else if(Type == DataFlowType::Backward){
+        return backward_data_flow<false>(function, problem);
+    } else if(Type == DataFlowType::Low_Forward){
+        return forward_data_flow<true>(function, problem);
+    } else if(Type == DataFlowType::Low_Backward){
+        return backward_data_flow<true>(function, problem);
+    } else {
+        ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
+    }
 }
 
 } //end of mtac
