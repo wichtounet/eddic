@@ -18,6 +18,7 @@
 #include "ltac/Printer.hpp"
 #include "ltac/aggregates.hpp"
 #include "ltac/prologue.hpp"
+#include "ltac/RegisterAllocator.hpp"
 
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"
@@ -43,7 +44,10 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     ltac::Printer printer;
     printer.print(mtac_program);
 
-    //TODO Register allocation
+    //Allocate pseudo registers into hard registers
+    ltac::register_allocation(mtac_program, platform);
+
+    printer.print(mtac_program);
     
     ltac::generate_prologue_epilogue(mtac_program, configuration);
 
