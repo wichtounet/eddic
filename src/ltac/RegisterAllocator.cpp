@@ -5,10 +5,19 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "mtac/GlobalOptimizations.hpp"
+
 #include "ltac/RegisterAllocator.hpp"
+#include "ltac/LiveRegistersProblem.hpp"
 
 using namespace eddic;
 
 void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
-    
+    for(auto& function : program->functions){
+        //Compute Liveness
+        ltac::LiveRegistersProblem problem;
+        auto live_results = mtac::data_flow(function, problem);
+
+        //TODO Build interference graph
+    }
 }

@@ -42,6 +42,10 @@ struct LiveRegisterValues {
     void erase(PseudoFloatRegister reg){
         float_registers.erase(reg);
     }
+
+    std::size_t size(){
+       return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
+    }
 };
 
 std::ostream& operator<<(std::ostream& stream, LiveRegisterValues& expression);
