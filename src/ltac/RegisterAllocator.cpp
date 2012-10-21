@@ -9,6 +9,7 @@
 
 #include "ltac/RegisterAllocator.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
+#include "ltac/interference_graph.hpp"
 
 using namespace eddic;
 
@@ -19,5 +20,8 @@ void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform 
         auto live_results = mtac::data_flow(function, problem);
 
         //TODO Build interference graph
+    
+        std::size_t size = 100; //TODO Get that from the function
+        interference_graph graph(size);
     }
 }
