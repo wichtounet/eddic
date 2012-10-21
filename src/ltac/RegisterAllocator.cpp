@@ -13,15 +13,22 @@
 
 using namespace eddic;
 
+namespace {
+
+void build_interference_graph(ltac::interference_graph& graph, std::shared_ptr<mtac::DataFlowResults<mtac::Domain<ltac::LiveRegisterValues>>> live_results){
+    
+}
+
+} //end of anonymous namespace
+
 void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
     for(auto& function : program->functions){
         //Compute Liveness
         ltac::LiveRegistersProblem problem;
         auto live_results = mtac::data_flow(function, problem);
-
-        //TODO Build interference graph
     
-        std::size_t size = 100; //TODO Get that from the function
+        std::size_t size = function->pseudo_registers(); 
         interference_graph graph(size);
+        build_interference_graph(graph, live_results);
     }
 }

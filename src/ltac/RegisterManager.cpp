@@ -585,3 +585,7 @@ std::shared_ptr<ltac::StatementCompiler> ltac::RegisterManager::access_compiler(
 
     ASSERT_PATH_NOT_TAKEN("The shared_ptr on StatementCompiler has expired");
 }
+
+int ltac::RegisterManager::last_pseudo_reg(){
+    return pseudo_registers.last_reg();
+}

@@ -94,4 +94,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
             compiler->end_basic_block();
         }
     }
+
+    function->set_pseudo_registers(compiler->manager.last_pseudo_reg());
 }

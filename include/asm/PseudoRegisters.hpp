@@ -68,6 +68,7 @@ class PseudoRegisters {
         void remove(std::shared_ptr<Variable> variable);
 
         Reg get_new_reg();
+        int last_reg();
 
     private:
         int current_reg = 0;
@@ -77,6 +78,11 @@ class PseudoRegisters {
 template<typename Reg>
 PseudoRegisters<Reg>::PseudoRegisters() {
     //Nothing to do
+}
+        
+template<typename Reg>
+int PseudoRegisters<Reg>::last_reg() {
+    return current_reg;
 }
 
 template<typename Reg>

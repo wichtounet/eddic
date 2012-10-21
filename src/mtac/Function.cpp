@@ -209,6 +209,14 @@ std::size_t mtac::Function::bb_count(){
     return count;
 }
 
+std::size_t mtac::Function::pseudo_registers(){
+    return last_pseudo_registers;
+}
+
+void mtac::Function::set_pseudo_registers(std::size_t pseudo_registers){
+    this->last_pseudo_registers = pseudo_registers;
+}
+
 std::size_t mtac::Function::size(){
     std::size_t size = 0;
 

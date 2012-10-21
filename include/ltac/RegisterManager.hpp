@@ -104,6 +104,8 @@ class RegisterManager : public AbstractRegisterManager {
         void restore_pushed_registers();
 
         std::shared_ptr<StatementCompiler> access_compiler();
+
+        int last_pseudo_reg();
     
     private: 
         mtac::Statement current;
