@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "variant.hpp"
+#include "assert.hpp"
 #include "Platform.hpp"
 
 #include "mtac/pass_traits.hpp"
@@ -40,9 +41,12 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
         ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
 
         ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+
         ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
+        ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock>, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
 
         bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+        bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
 
     private:
         std::shared_ptr<StringPool> string_pool;

@@ -55,6 +55,28 @@ inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, S
     }
 }
 
+template<bool Low, typename P, typename R>
+inline typename boost::enable_if_c<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_LS = results->OUT_LS;
+    auto& IN_LS = results->IN_LS;
+
+    forward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
+}
+
+template<bool Low, typename P, typename R>
+inline typename boost::disable_if_c<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
+
+    forward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
+}
+
 template<bool Low, DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
@@ -63,12 +85,6 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
     
     auto& OUT = results->OUT;
     auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
-    
-    auto& OUT_LS = results->OUT_LS;
-    auto& IN_LS = results->IN_LS;
 
     OUT[function->entry_bb()] = problem.Boundary(function);
     log::emit<Dev>("Data-Flow") << "OUT[" << *function->entry_bb() << "] set to " << OUT[function->entry_bb()] << log::endl;
@@ -100,11 +116,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
                 
                 log::emit<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
-                if(Low){
-                    forward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
-                } else {
-                    forward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
-                }
+                forward_statements<Low>(problem, results, B, changes);
             }
         }
     }
@@ -142,6 +154,28 @@ inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, 
     }
 }
 
+template<bool Low, typename P, typename R>
+inline typename boost::enable_if_c<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_LS = results->OUT_LS;
+    auto& IN_LS = results->IN_LS;
+
+    backward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
+}
+
+template<bool Low, typename P, typename R>
+inline typename boost::disable_if_c<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+    
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
+
+    backward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
+}
+
 template<bool Low, DataFlowType Type, typename DomainValues>
 std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(std::shared_ptr<mtac::Function> function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
@@ -150,9 +184,6 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     
     auto& OUT = results->OUT;
     auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
 
     IN[function->exit_bb()] = problem.Boundary(function);
     log::emit<Dev>("Data-Flow") << "IN[" << *function->exit_bb() << "] set to " << IN[function->exit_bb()] << log::endl;
@@ -184,11 +215,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                 
                 log::emit<Dev>("Data-Flow") << "OUT[B] after " << OUT[B] << log::endl;
 
-                if(Low){
-                    backward_statements(problem, OUT, IN, OUT_LS, IN_LS, B->l_statements, B, changes);
-                } else {
-                    backward_statements(problem, OUT, IN, OUT_S, IN_S, B->statements, B, changes);
-                }
+                backward_statements<Low>(problem, results, B, changes);
                 
                 log::emit<Dev>("Data-Flow") << "IN[B] after transfer " << IN[B] << log::endl;
             }

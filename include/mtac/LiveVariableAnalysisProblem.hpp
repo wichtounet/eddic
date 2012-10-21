@@ -11,6 +11,8 @@
 #include <unordered_set>
 #include <memory>
 
+#include "assert.hpp"
+
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
@@ -60,8 +62,10 @@ struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backwa
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock>, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results) override;
+    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
 };
 
 } //end of mtac
