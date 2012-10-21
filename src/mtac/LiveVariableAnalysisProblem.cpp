@@ -123,7 +123,7 @@ struct LivenessCollector : public boost::static_visitor<> {
     }
 };
 
-}
+} //End of anonymous namespace
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
     auto in = out;

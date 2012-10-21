@@ -10,6 +10,9 @@
 
 #include <unordered_set>
 #include <memory>
+#include <iostream>
+
+#include "assert.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
 
@@ -33,7 +36,7 @@ struct LiveRegisterValues {
     }
     
     void erase(PseudoRegister reg){
-        float_registers.erase(reg);
+        registers.erase(reg);
     }
     
     void erase(PseudoFloatRegister reg){
@@ -43,14 +46,16 @@ struct LiveRegisterValues {
 
 std::ostream& operator<<(std::ostream& stream, LiveRegisterValues& expression);
 
-struct LiveRegistersProblem : public DataFlowProblem<DataFlowType::Backward, LiveRegisterValues> {
+struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Backward, LiveRegisterValues> {
     ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
     ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
-    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, ltac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock>, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
     
-    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results) override;
+    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
+    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
 };
 
 } //end of mtac

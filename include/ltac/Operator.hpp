@@ -82,6 +82,8 @@ enum class Operator : unsigned int {
     NOP
 };
 
+bool erase_result(ltac::Operator op);
+
 } //end of ltac
 
 } //end of eddic
