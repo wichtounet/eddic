@@ -16,20 +16,23 @@ namespace ltac {
 
 class bit_matrix;
 
-struct sub_bit_matrix {
-    unsigned int i;
-    bit_matrix& matrix;
+class sub_bit_matrix {
+    public:
+        sub_bit_matrix(bit_matrix& matrix, std::size_t i);
+        bool operator[](std::size_t j);
 
-    bool operator[](std::size_t j);
+    private:
+        bit_matrix& matrix;
+        std::size_t i;
 };
 
 class bit_matrix {
     public:
         bit_matrix(std::size_t size);
 
-        bool set(int i, int j);
-        bool clear(int i, int j);
-        bool is_set(int i, int j);
+        void set(std::size_t i, std::size_t j);
+        void clear(std::size_t i, std::size_t j);
+        bool is_set(std::size_t i, std::size_t j);
 
         sub_bit_matrix operator[](std::size_t i);
         
