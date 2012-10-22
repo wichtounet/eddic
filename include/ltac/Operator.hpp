@@ -27,6 +27,7 @@ enum class Operator : unsigned int {
 
     //Return from function
     RET,
+    PRE_RET,
 
     //Comparisons
     CMP_INT,

@@ -1223,7 +1223,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     //The basic block must be ended before the jump
     end_basic_block();
 
-    //TODO Add a placeholder for NON-Resolved RET
+    ltac::add_instruction(bb, ltac::Operator::PRE_RET);
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){

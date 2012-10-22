@@ -80,5 +80,30 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
         }
 
         ltac::add_instruction(bb, ltac::Operator::RET);
+        
+        //3. Generate epilogue for each unresolved RET
+        
+        for(auto& bb : function){
+            auto it = iterate(bb->l_statements);
+
+            while(it.has_next()){
+                auto statement = *it;
+
+                if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                    if((*ptr)->op == ltac::Operator::PRE_RET){
+                        (*ptr)->op = ltac::Operator::RET;
+
+                        //Leave stack frame
+                        if(!omit_fp){
+                            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::LEAVE));
+                        }
+
+                        it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
+                    }
+                }
+
+                ++it;
+            }
+        }
     }
 }

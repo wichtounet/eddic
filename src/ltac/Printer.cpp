@@ -33,6 +33,8 @@ std::string to_string(ltac::Operator op){
             return "LEAVE"; 
         case ltac::Operator::RET:
             return "RET"; 
+        case ltac::Operator::PRE_RET:
+            return "PRE_RET"; 
         case ltac::Operator::CMP_INT:
             return "CMP_INT"; 
         case ltac::Operator::CMP_FLOAT:
