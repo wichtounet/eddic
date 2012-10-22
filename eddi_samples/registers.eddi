@@ -1,0 +1,13 @@
+//Tests for register allocation
+
+void main(){
+   println(max(5, 7));
+}
+
+int max(int i, int j){
+    if(i > j){
+        return i;
+    } else {
+        return j;
+    }
+}
