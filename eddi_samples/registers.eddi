@@ -2,12 +2,35 @@
 
 void main(){
    println(max(5, 7));
+
+   several();
 }
 
+//Test that returns are resolved
 int max(int i, int j){
     if(i > j){
         return i;
     } else {
         return j;
     }
+}
+
+void several(){
+    int a = 5;
+    int b = 9;
+    int c = 66;
+
+    println(a);
+    println(b);
+    println(c);
+    println(a);
+
+    a += c;
+    int d = b;
+
+    println(a);
+    println(b);
+    println(c);
+    println(d);
+    println(a);
 }
