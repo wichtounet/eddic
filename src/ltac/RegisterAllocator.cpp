@@ -23,7 +23,10 @@ void renumber(mtac::function_p function){
     //TODO
 }
 
-void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function, std::shared_ptr<mtac::DataFlowResults<mtac::Domain<ltac::LiveRegisterValues>>> live_results){
+void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function){
+    ltac::LiveRegistersProblem problem;
+    auto live_results = mtac::data_flow(function, problem);
+
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             auto& live_registers = live_results->OUT_LS[statement].values().registers;
@@ -172,13 +175,10 @@ void register_allocation(mtac::function_p function, Platform platform){
 
         //2. Build
 
-        ltac::LiveRegistersProblem problem;
-        auto live_results = mtac::data_flow(function, problem);
-
         std::size_t size = function->pseudo_registers(); 
 
         ltac::interference_graph graph(size);
-        build_interference_graph(graph, function, live_results);
+        build_interference_graph(graph, function);
 
         //3. Coalesce
 
