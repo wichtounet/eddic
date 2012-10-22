@@ -91,6 +91,48 @@ void spill_code(ltac::interference_graph& graph, mtac::function_p function, std:
     //TODO
 }
 
+template<typename Opt>
+void update_reg(Opt& reg, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
+    if(reg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
+            reg = register_allocation[*ptr];
+        }
+    }
+}
+
+template<typename Opt>
+void update(Opt& arg, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
+    if(arg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
+            arg = register_allocation[*ptr];
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            update_reg(ptr->base_register, register_allocation);
+            update_reg(ptr->scaled_register, register_allocation);
+        }
+    }
+}
+
+void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation){
+    std::unordered_map<ltac::PseudoRegister, ltac::Register> register_allocation;
+
+    for(auto& pair : allocation){
+        auto pseudo = ltac::PseudoRegister(pair.first);
+        auto hard = ltac::Register(pair.second);
+
+        register_allocation[pseudo] = hard;
+    }
+
+    for(auto& bb : function){
+        for(auto& statement : bb->l_statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                update((*ptr)->arg1, register_allocation);
+                update((*ptr)->arg2, register_allocation);
+                update((*ptr)->arg3, register_allocation);
+            }
+        }
+    }
+}
+
 void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::stack<std::size_t>& order){
     std::unordered_map<std::size_t, std::size_t> allocation;
     
@@ -114,14 +156,13 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
             }
 
             if(!found){
-                std::cout << "allocate " << reg << " = " << color << std::endl;
                 allocation[reg] = color;
                 break;
             }
         }
     }
 
-    //TODO
+    replace_registers(function, allocation);
 }
 
 void register_allocation(mtac::function_p function, Platform platform){
