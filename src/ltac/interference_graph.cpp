@@ -9,7 +9,7 @@
 
 using namespace eddic;
 
-ltac::interference_graph::interference_graph(std::size_t size) : m_size(size), matrix(size){
+ltac::interference_graph::interference_graph(std::size_t size) : m_size(size), matrix(size), degrees(size, 0) {
     //Nothing
 }
 
@@ -27,19 +27,22 @@ void ltac::interference_graph::remove_node(std::size_t i){
         matrix.clear(i, j);
         matrix.clear(j, i);
 
-        auto a = adjacency_vectors[j];
-        a.erase(std::remove_if(a.begin(), a.end(), [=](std::size_t n){ return n == i; }), a.end());
+        --degrees[j];
     }
-    
-    adjacency_vectors[i].clear();
+
+    degrees[i] = 0;
 }
 
 std::size_t ltac::interference_graph::degree(std::size_t i){
     return adjacency_vectors[i].size();
 }
 
+std::vector<std::size_t>& ltac::interference_graph::neighbors(std::size_t i){
+    return adjacency_vectors[i];
+}
+
 void ltac::interference_graph::build_adjacency_vectors(){
-    adjacency_vectors.reserve(size());
+    adjacency_vectors.resize(size());
 
     for(std::size_t i = 0; i < size(); ++i){
         for(std::size_t j = 0; j < size(); ++j){
@@ -47,5 +50,9 @@ void ltac::interference_graph::build_adjacency_vectors(){
                 adjacency_vectors[i].push_back(j);
             }
         }
+    }
+
+    for(std::size_t i = 0; i < size(); ++i){
+        degrees[i] = adjacency_vectors[i].size();
     }
 }

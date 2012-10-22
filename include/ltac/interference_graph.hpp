@@ -22,14 +22,17 @@ class interference_graph {
         void remove_node(std::size_t i);
 
         std::size_t degree(std::size_t i);
+        std::vector<std::size_t>& neighbors(std::size_t i);
 
         void build_adjacency_vectors();
         std::size_t size();
 
     private:
         std::size_t m_size;
+
         bit_matrix matrix;
         std::vector<std::vector<std::size_t>> adjacency_vectors;
+        std::vector<std::size_t> degrees;
 };
 
 } //end of ltac

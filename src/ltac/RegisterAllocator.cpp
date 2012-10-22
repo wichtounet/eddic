@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <stack>
+
 #include "PerfsTimer.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
@@ -53,7 +55,7 @@ void spill_costs(ltac::interference_graph& graph, mtac::function_p function){
     //TODO
 }
 
-void simplify(ltac::interference_graph& graph, Platform platform, std::vector<std::size_t>& spilled){
+void simplify(ltac::interference_graph& graph, Platform platform, std::vector<std::size_t>& spilled, std::stack<std::size_t>& order){
     std::set<std::size_t> n;
     for(std::size_t r = 0; r < graph.size(); ++r){
         n.insert(r);
@@ -80,6 +82,8 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
 
         n.erase(node);
         graph.remove_node(node);
+
+        order.push(node);
     }
 }
 
@@ -87,7 +91,36 @@ void spill_code(ltac::interference_graph& graph, mtac::function_p function, std:
     //TODO
 }
 
-void select(ltac::interference_graph& graph, mtac::function_p function){
+void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::stack<std::size_t>& order){
+    std::unordered_map<std::size_t, std::size_t> allocation;
+    
+    auto descriptor = getPlatformDescriptor(platform);
+    auto colors = descriptor->symbolic_registers();
+
+    while(!order.empty()){
+        std::size_t reg = order.top();
+        order.pop();
+
+        for(auto color : colors){
+            bool found = false;
+
+            for(auto neighbor : graph.neighbors(reg)){
+                if(allocation.count(neighbor)){
+                    if(allocation[neighbor] == color){
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!found){
+                std::cout << "allocate " << reg << " = " << color << std::endl;
+                allocation[reg] = color;
+                break;
+            }
+        }
+    }
+
     //TODO
 }
 
@@ -113,14 +146,15 @@ void register_allocation(mtac::function_p function, Platform platform){
 
         //5. Simplify
         std::vector<std::size_t> spilled;
-        simplify(graph, platform, spilled);
+        std::stack<std::size_t> order;
+        simplify(graph, platform, spilled, order);
 
         if(!spilled.empty()){
             //6. Spill code
             spill_code(graph, function, spilled);
         } else {
             //7. Select
-            select(graph, function);
+            select(graph, function, platform, order);
 
             return;
         }
