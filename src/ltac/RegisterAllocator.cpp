@@ -15,6 +15,10 @@ using namespace eddic;
 
 namespace {
 
+void renumber(std::shared_ptr<mtac::Function> function){
+    //TODO
+}
+
 void build_interference_graph(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function, std::shared_ptr<mtac::DataFlowResults<mtac::Domain<ltac::LiveRegisterValues>>> live_results){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
@@ -43,16 +47,61 @@ void build_interference_graph(ltac::interference_graph& graph, std::shared_ptr<m
     graph.build_adjacency_vectors();
 }
 
+void spill_costs(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+    //TODO
+}
+
+bool simplify(ltac::interference_graph& graph){
+    bool spills = false;
+
+    return spills;
+}
+
+void spill_code(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+    //TODO
+}
+
+void select(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+    //TODO
+}
+
+void register_allocation(std::shared_ptr<mtac::Function> function, Platform platform){
+    while(true){
+        //1. Renumber
+        renumber(function);
+
+        //2. Build
+
+        ltac::LiveRegistersProblem problem;
+        auto live_results = mtac::data_flow(function, problem);
+
+        std::size_t size = function->pseudo_registers(); 
+
+        ltac::interference_graph graph(size);
+        build_interference_graph(graph, function, live_results);
+
+        //3. Coalesce
+
+        //4. Spill costs
+        spill_costs(graph, function);
+
+        //5. Simplify
+        if(simplify(graph)){
+            //6. Spill code
+            spill_code(graph, function);
+        } else {
+            //7. Select
+            select(graph, function);
+
+            return;
+        }
+    }
+}
+
 } //end of anonymous namespace
 
 void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
     for(auto& function : program->functions){
-        //Compute Liveness
-        ltac::LiveRegistersProblem problem;
-        auto live_results = mtac::data_flow(function, problem);
-    
-        std::size_t size = function->pseudo_registers(); 
-        interference_graph graph(size);
-        build_interference_graph(graph, function, live_results);
+        ::register_allocation(function, platform);
     }
 }
