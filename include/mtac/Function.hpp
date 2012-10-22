@@ -88,6 +88,8 @@ class Function : public std::enable_shared_from_this<Function> {
         std::string name;
 };
 
+typedef std::shared_ptr<mtac::Function> function_p;
+
 basic_block_iterator begin(std::shared_ptr<mtac::Function> function);
 basic_block_iterator end(std::shared_ptr<mtac::Function> function);
 

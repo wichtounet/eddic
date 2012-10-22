@@ -15,11 +15,11 @@ using namespace eddic;
 
 namespace {
 
-void renumber(std::shared_ptr<mtac::Function> function){
+void renumber(mtac::function_p function){
     //TODO
 }
 
-void build_interference_graph(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function, std::shared_ptr<mtac::DataFlowResults<mtac::Domain<ltac::LiveRegisterValues>>> live_results){
+void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function, std::shared_ptr<mtac::DataFlowResults<mtac::Domain<ltac::LiveRegisterValues>>> live_results){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             auto& live_registers = live_results->OUT_LS[statement].values().registers;
@@ -47,7 +47,7 @@ void build_interference_graph(ltac::interference_graph& graph, std::shared_ptr<m
     graph.build_adjacency_vectors();
 }
 
-void spill_costs(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+void spill_costs(ltac::interference_graph& graph, mtac::function_p function){
     //TODO
 }
 
@@ -57,15 +57,15 @@ bool simplify(ltac::interference_graph& graph){
     return spills;
 }
 
-void spill_code(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+void spill_code(ltac::interference_graph& graph, mtac::function_p function){
     //TODO
 }
 
-void select(ltac::interference_graph& graph, std::shared_ptr<mtac::Function> function){
+void select(ltac::interference_graph& graph, mtac::function_p function){
     //TODO
 }
 
-void register_allocation(std::shared_ptr<mtac::Function> function, Platform platform){
+void register_allocation(mtac::function_p function, Platform platform){
     while(true){
         //1. Renumber
         renumber(function);
