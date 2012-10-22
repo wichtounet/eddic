@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "PerfsTimer.hpp"
+
 #include "mtac/GlobalOptimizations.hpp"
 
 #include "ltac/RegisterAllocator.hpp"
@@ -128,6 +130,8 @@ void register_allocation(mtac::function_p function, Platform platform){
 } //end of anonymous namespace
 
 void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+    PerfsTimer timer("Register allocation");
+
     for(auto& function : program->functions){
         ::register_allocation(function, platform);
     }
