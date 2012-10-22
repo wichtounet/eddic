@@ -28,9 +28,9 @@ FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_pt
 }
 
 int FunctionContext::size() const {
-    auto size = -currentPosition;
+    int size = -currentPosition;
 
-    if(size == -INT->size(platform)){
+    if(size == static_cast<int>(INT->size(platform))){
         return 0;
     }
 
@@ -42,6 +42,7 @@ int FunctionContext::stack_position(){
 }
 
 void FunctionContext::set_stack_position(int current){
+    std::cout << current << std::endl;
     currentPosition = current;
 }
 

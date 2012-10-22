@@ -30,7 +30,6 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
     private:
         int currentPosition;
         int currentParameter;
-        int m_size;
         int temporary = 1;
         int generated = 0;
         Platform platform;
