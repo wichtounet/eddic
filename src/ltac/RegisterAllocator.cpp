@@ -51,13 +51,37 @@ void spill_costs(ltac::interference_graph& graph, mtac::function_p function){
     //TODO
 }
 
-bool simplify(ltac::interference_graph& graph){
-    bool spills = false;
+void simplify(ltac::interference_graph& graph, Platform platform, std::vector<std::size_t>& spilled){
+    std::set<std::size_t> n;
+    for(std::size_t r = 0; r < graph.size(); ++r){
+        n.insert(r);
+    }
 
-    return spills;
+    auto descriptor = getPlatformDescriptor(platform);
+    auto K = descriptor->number_of_registers();
+
+    while(!n.empty()){
+        std::size_t node;
+        bool found = false;
+
+        for(auto& candidate : n){
+            if(graph.degree(candidate) < K){
+                node = candidate;        
+                found = true;
+                break;
+            }
+        }
+        
+        if(!found){
+            //TODO Spills the node with the minimal cost
+        }
+
+        n.erase(node);
+        graph.remove_node(node);
+    }
 }
 
-void spill_code(ltac::interference_graph& graph, mtac::function_p function){
+void spill_code(ltac::interference_graph& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
     //TODO
 }
 
@@ -86,9 +110,12 @@ void register_allocation(mtac::function_p function, Platform platform){
         spill_costs(graph, function);
 
         //5. Simplify
-        if(simplify(graph)){
+        std::vector<std::size_t> spilled;
+        simplify(graph, platform, spilled);
+
+        if(!spilled.empty()){
             //6. Spill code
-            spill_code(graph, function);
+            spill_code(graph, function, spilled);
         } else {
             //7. Select
             select(graph, function);
