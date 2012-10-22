@@ -76,6 +76,7 @@ class BasicBlock {
 };
 
 std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
+std::ostream& operator<<(std::ostream& stream, std::shared_ptr<BasicBlock>& basic_block);
 
 mtac::BasicBlock::iterator begin(std::shared_ptr<mtac::BasicBlock> function);
 mtac::BasicBlock::iterator end(std::shared_ptr<mtac::BasicBlock> function);

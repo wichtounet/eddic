@@ -23,6 +23,14 @@ mtac::BasicBlock::iterator mtac::BasicBlock::end(){
     return statements.end();
 }
 
+std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<BasicBlock>& basic_block){
+    if(basic_block){
+        return stream << *basic_block;
+    } else {
+        return stream << "null_bb";
+    }
+}
+
 std::ostream& mtac::operator<<(std::ostream& stream, BasicBlock& block){
     if(block.index == -1){
         return stream << "ENTRY";
