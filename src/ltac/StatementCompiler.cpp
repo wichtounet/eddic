@@ -29,12 +29,6 @@ void ltac::StatementCompiler::set_current(mtac::Statement statement){
 
 void ltac::StatementCompiler::reset(){
     manager.reset();
-
-    ended = false;
-}
-
-void ltac::StatementCompiler::end_basic_block(){
-    ended = true;
 }
 
 void ltac::StatementCompiler::collect_parameters(std::shared_ptr<eddic::Function> definition){
@@ -150,16 +144,10 @@ void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argumen
 
         auto reg2 = manager.get_pseudo_reg(ltac::get_variable(arg2));
 
-        //The basic block must be ended before the jump
-        end_basic_block();
-
         ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
     } else {
         auto reg1 = manager.get_pseudo_reg(ltac::get_variable(arg1));
         auto reg2 = to_arg(arg2);
-
-        //The basic block must be ended before the jump
-        end_basic_block();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
     }
@@ -171,9 +159,6 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
 
     //If both args are variables
     if(isVariable(arg1) && isVariable(arg2)){
-        //The basic block must be ended before the jump
-        end_basic_block();
-
         auto reg1 = manager.get_pseudo_float_reg(ltac::get_variable(arg1));
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
 
@@ -184,18 +169,12 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
 
         manager.copy(arg2, reg2);
 
-        //The basic block must be ended before the jump
-        end_basic_block();
-
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
     } else if(isFloat(arg1) && isVariable(arg2)){
         auto reg1 = manager.get_free_pseudo_float_reg();
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
 
         manager.copy(arg1, reg1);
-
-        //The basic block must be ended before the jump
-        end_basic_block();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
     }
@@ -207,15 +186,9 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
 
         ltac::add_instruction(bb, ltac::Operator::MOV, reg, *ptr);
 
-        //The basic block must be ended before the jump
-        end_basic_block();
-
         ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
     } else {
         auto reg = manager.get_pseudo_reg(ltac::get_variable(arg1));
-
-        //The basic block must be ended before the jump
-        end_basic_block();
 
         ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
     }
@@ -404,9 +377,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
     manager.set_current(goto_);
-
-    //The basic block must be ended before the jump
-    end_basic_block();
 
     bb->l_statements.push_back(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
 }
@@ -1234,9 +1204,6 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
             }
         }
     }
-
-    //The basic block must be ended before the jump
-    end_basic_block();
 
     ltac::add_instruction(bb, ltac::Operator::PRE_RET);
 }

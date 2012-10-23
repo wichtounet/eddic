@@ -45,7 +45,6 @@ class StatementCompiler : public boost::static_visitor<> {
 
         void set_current(mtac::Statement statement);
         void reset();
-        void end_basic_block();
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
@@ -59,8 +58,6 @@ class StatementCompiler : public boost::static_visitor<> {
 
         void push(ltac::Argument arg);
         void pop(ltac::Argument arg);
-
-        bool ended = false;     //Is the basic block ended ?
 
         int bp_offset = 0;
 

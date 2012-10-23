@@ -88,11 +88,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shar
 
             visit(*compiler, statement);
         }
-
-        //end basic block
-        if(!compiler->ended){
-            compiler->end_basic_block();
-        }
     }
 
     function->set_pseudo_registers(compiler->manager.last_pseudo_reg());
