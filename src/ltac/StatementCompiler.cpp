@@ -1201,20 +1201,21 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     //A return without args is the same as exiting from the function
     if(quadruple->arg1){
         if(isFloat(*quadruple->arg1)){
-            manager.move(*quadruple->arg1, ltac::FloatRegister(descriptor->float_return_register()));
+            auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
+            manager.move(*quadruple->arg1, return_reg);
         } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
             auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
             auto reg = manager.get_pseudo_float_reg(variable);
+            auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             
-            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::FloatRegister(descriptor->float_return_register()), reg);
+            ltac::add_instruction(bb, ltac::Operator::FMOV, return_reg, reg);
         } else {
-            auto reg1 = ltac::Register(descriptor->int_return_register1());
-            auto reg2 = ltac::Register(descriptor->int_return_register2());
-
+            auto reg1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
             ltac::add_instruction(bb, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
 
             if(quadruple->arg2){
+                auto reg2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
             }
         }
