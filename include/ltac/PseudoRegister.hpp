@@ -20,9 +20,12 @@ namespace ltac {
  */
 struct PseudoRegister {
     unsigned short reg;
+    bool bound = false;
+    unsigned short binding;
 
     PseudoRegister();
     PseudoRegister(unsigned short);
+    PseudoRegister(unsigned short, unsigned short);
     
     explicit operator int();
 

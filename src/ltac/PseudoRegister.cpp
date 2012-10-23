@@ -17,6 +17,10 @@ ltac::PseudoRegister::PseudoRegister(unsigned short reg) : reg(reg) {
     //Nothing to init
 }
 
+ltac::PseudoRegister::PseudoRegister(unsigned short reg, unsigned short hard) : reg(reg), bound(true), binding(hard) {
+    //Nothing to init
+}
+
 ltac::PseudoRegister::operator int(){
     return reg;
 }

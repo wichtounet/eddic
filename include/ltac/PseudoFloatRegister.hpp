@@ -20,11 +20,14 @@ namespace ltac {
  */
 struct PseudoFloatRegister {
     unsigned short reg;
+    bool bound = false;
+    unsigned short binding;
 
     PseudoFloatRegister();
     PseudoFloatRegister(unsigned short);
+    PseudoFloatRegister(unsigned short, unsigned short);
 
-    operator int();
+    explicit operator int();
 
     bool operator<(const PseudoFloatRegister& rhs) const;
     bool operator>(const PseudoFloatRegister& rhs) const;
