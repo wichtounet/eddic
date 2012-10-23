@@ -54,6 +54,7 @@ class BasicBlock {
         void add(mtac::Statement statement);
 
         const int index;    /*!< The index of the block */
+        unsigned int depth = 0;
         std::string label;  /*!< The label of the block */
         std::shared_ptr<FunctionContext> context = nullptr;     /*!< The context of the enclosing function. */
 

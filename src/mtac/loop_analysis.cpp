@@ -53,12 +53,14 @@ struct DepthIncrementer : public boost::static_visitor<void> {
 void init_depth(std::shared_ptr<mtac::BasicBlock> bb){
     DepthInit init;
 
+    bb->depth = 0;
     visit_each(init, bb->statements);
 }
 
 void increase_depth(std::shared_ptr<mtac::BasicBlock> bb){
     DepthIncrementer incrementer;
 
+    ++bb->depth;
     visit_each(incrementer, bb->statements);
 }
 
