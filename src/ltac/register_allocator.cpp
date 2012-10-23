@@ -11,7 +11,7 @@
 
 #include "mtac/GlobalOptimizations.hpp"
 
-#include "ltac/RegisterAllocator.hpp"
+#include "ltac/register_allocator.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
 #include "ltac/interference_graph.hpp"
 

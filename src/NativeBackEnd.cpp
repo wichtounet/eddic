@@ -18,7 +18,7 @@
 #include "ltac/Printer.hpp"
 #include "ltac/aggregates.hpp"
 #include "ltac/prologue.hpp"
-#include "ltac/RegisterAllocator.hpp"
+#include "ltac/register_allocator.hpp"
 
 //Code generation
 #include "asm/CodeGeneratorFactory.hpp"
