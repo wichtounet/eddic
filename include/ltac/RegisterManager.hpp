@@ -85,6 +85,9 @@ class RegisterManager : public AbstractRegisterManager {
         
         ltac::PseudoRegister get_free_pseudo_reg();
         ltac::PseudoFloatRegister get_free_pseudo_float_reg();
+        
+        ltac::PseudoRegister get_bound_pseudo_reg(unsigned short hard);
+        ltac::PseudoFloatRegister get_bound_pseudo_float_reg(unsigned short hard);
 
         void spills(ltac::Register reg);
         void spills(ltac::FloatRegister reg);

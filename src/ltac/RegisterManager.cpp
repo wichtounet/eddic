@@ -412,6 +412,14 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     return reg;
 }
 
+ltac::PseudoRegister ltac::RegisterManager::get_bound_pseudo_reg(unsigned short hard){
+    return pseudo_registers.get_bound_reg(hard);
+}
+
+ltac::PseudoFloatRegister ltac::RegisterManager::get_bound_pseudo_float_reg(unsigned short hard){
+    return pseudo_float_registers.get_bound_reg(hard);
+}
+
 void ltac::RegisterManager::spills(ltac::Register reg){
     log::emit<Trace>("Registers") << "Spills Register " << reg << log::endl;
     ::spills(registers, reg, ltac::Operator::MOV, *this);

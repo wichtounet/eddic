@@ -9,11 +9,11 @@
 
 using namespace eddic;
 
-ltac::PseudoFloatRegister::PseudoFloatRegister(){
+ltac::PseudoFloatRegister::PseudoFloatRegister() : reg(0), bound(false), binding(0) {
     //Nothing to init
 }
 
-ltac::PseudoFloatRegister::PseudoFloatRegister(unsigned short reg) : reg(reg) {
+ltac::PseudoFloatRegister::PseudoFloatRegister(unsigned short reg) : reg(reg), bound(false), binding(0) {
     //Nothing to init
 }
 

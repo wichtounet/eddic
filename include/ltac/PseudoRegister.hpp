@@ -20,7 +20,7 @@ namespace ltac {
  */
 struct PseudoRegister {
     unsigned short reg;
-    bool bound = false;
+    bool bound;
     unsigned short binding;
 
     PseudoRegister();

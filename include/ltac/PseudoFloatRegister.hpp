@@ -20,7 +20,7 @@ namespace ltac {
  */
 struct PseudoFloatRegister {
     unsigned short reg;
-    bool bound = false;
+    bool bound;
     unsigned short binding;
 
     PseudoFloatRegister();

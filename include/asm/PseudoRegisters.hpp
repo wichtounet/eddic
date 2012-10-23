@@ -69,6 +69,8 @@ class PseudoRegisters {
 
         Reg get_new_reg();
         int last_reg();
+        
+        Reg get_bound_reg(unsigned short);
 
     private:
         int current_reg = 0;
@@ -101,6 +103,11 @@ Reg PseudoRegisters<Reg>::operator[](const std::shared_ptr<Variable> variable){
     assert(inRegister(variable));
 
     return variables[variable];
+}
+
+template<typename Reg>
+Reg PseudoRegisters<Reg>::get_bound_reg(unsigned short hard){
+    return Reg(current_reg++, hard);
 }
 
 template<typename Reg>
