@@ -4,6 +4,7 @@ void main(){
    println(max(5, 7));
 
    several();
+   spills();
 }
 
 //Test that returns are resolved
@@ -36,5 +37,21 @@ void several(){
 }
 
 void spills(){
+   int a1 = 5; 
+   int a2 = 5; 
+   int a3 = 5; 
+   int a4 = 5; 
+   int a5 = 5; 
+   int a6 = 5; 
+   int a7 = 5; 
+   int a8 = 5; 
     
+   println(a8);
+   println(a7);
+   println(a6);
+   println(a5);
+   println(a4);
+   println(a3);
+   println(a2);
+   println(a1);
 }
