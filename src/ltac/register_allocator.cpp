@@ -286,6 +286,8 @@ void register_allocation(mtac::function_p function, Platform platform){
         //TODO
 
         //4. Spill costs
+        //TODO Integrate spills costs in the interference graph
+        //TODO Store spill costs with std::size_t
         std::unordered_map<ltac::PseudoRegister, std::size_t> spill_costs;
         estimate_spill_costs(function, spill_costs);
 

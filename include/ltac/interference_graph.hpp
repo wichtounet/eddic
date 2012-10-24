@@ -43,7 +43,7 @@ class interference_graph {
 
         std::shared_ptr<bit_matrix> matrix;
         std::vector<std::vector<reg>> adjacency_vectors;
-        std::vector<reg> degrees;
+        std::vector<std::size_t> degrees;
 
         std::vector<ltac::PseudoRegister> index_to_pseudo; //Maps indices to pseudo regs
         std::unordered_map<ltac::PseudoRegister, std::size_t> pseudo_to_index; //Maps pseudo regs to indices
