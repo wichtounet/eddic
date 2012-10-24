@@ -18,56 +18,50 @@ using namespace eddic;
 
 namespace {
 
-//TODO Store the index in the pseudo for ease
-typedef std::vector<ltac::PseudoRegister> pseudo_reg; //Maps indices to pseudo regs
-typedef std::unordered_map<ltac::PseudoRegister, std::size_t> reg_pseudo; //Maps pseudo regs to indices
-
 void renumber(mtac::function_p function){
     //TODO
 }
 
 template<typename Opt>
-void gather_reg(Opt& reg, pseudo_reg& pseudo_registers, reg_pseudo& current){
+void gather_reg(Opt& reg, ltac::interference_graph& graph){
     if(reg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
-            if(!current.count(*ptr)){
-                current[*ptr] = pseudo_registers.size();
-                pseudo_registers.push_back(*ptr);
-            }
+            graph.gather(*ptr);
         }
     }
 }
 
 template<typename Opt>
-void gather(Opt& arg, pseudo_reg& pseudo_registers, reg_pseudo& current){
+void gather(Opt& arg, ltac::interference_graph& graph){
     if(arg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
-            if(!current.count(*ptr)){
-                current[*ptr] = pseudo_registers.size();
-                pseudo_registers.push_back(*ptr);
-            }
+            graph.gather(*ptr);
         } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
-            gather_reg(ptr->base_register, pseudo_registers, current);
-            gather_reg(ptr->scaled_register, pseudo_registers, current);
+            gather_reg(ptr->base_register, graph);
+            gather_reg(ptr->scaled_register, graph);
         }
     }
 }
 
-void gather_pseudo_regs(mtac::function_p function, pseudo_reg& pseudo_registers, reg_pseudo& current){
+void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                gather((*ptr)->arg1, pseudo_registers, current);
-                gather((*ptr)->arg2, pseudo_registers, current);
-                gather((*ptr)->arg3, pseudo_registers, current);
+                gather((*ptr)->arg1, graph);
+                gather((*ptr)->arg2, graph);
+                gather((*ptr)->arg3, graph);
             }
         }
     }
 
-    log::emit<Trace>("registers") << "Found " << pseudo_registers.size() << " pseudo registers" << log::endl;
+    log::emit<Trace>("registers") << "Found " << graph.size() << " pseudo registers" << log::endl;
 }
 
-void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function, reg_pseudo& registers_to_index){
+void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function){
+    //Init the graph structure with the current size
+    gather_pseudo_regs(function, graph);
+    graph.build_graph();
+
     ltac::LiveRegistersProblem problem;
     auto live_results = mtac::data_flow(function, problem);
 
@@ -84,7 +78,7 @@ void build_interference_graph(ltac::interference_graph& graph, mtac::function_p 
                     ++next;
 
                     while(next != end){
-                        graph.add_edge(registers_to_index[*it], registers_to_index[*next]);
+                        graph.add_edge(graph.convert(*it), graph.convert(*next));
 
                         ++next;
                     }
@@ -212,11 +206,11 @@ void update(Opt& arg, std::unordered_map<ltac::PseudoRegister, ltac::Register>& 
     }
 }
 
-void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, pseudo_reg& pseudo_registers){
+void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph& graph){
     std::unordered_map<ltac::PseudoRegister, ltac::Register> register_allocation;
 
     for(auto& pair : allocation){
-        register_allocation[pseudo_registers[pair.first]] = {pair.second};
+        register_allocation[graph.convert(pair.first)] = {pair.second};
     }
 
     for(auto& bb : function){
@@ -230,7 +224,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<std::size_t
     }
 }
 
-void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order, pseudo_reg& pseudo_registers){
+void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
     std::unordered_map<std::size_t, std::size_t> allocation;
     
     auto descriptor = getPlatformDescriptor(platform);
@@ -241,9 +235,9 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
     while(it.has_next()){
         auto reg = *it;
 
-        if(pseudo_registers[reg].bound){
-            log::emit<Trace>("registers") << "Alloc " << pseudo_registers[reg].binding << " to pseudo " << reg << " (bound)" << log::endl;
-            allocation[reg] = pseudo_registers[reg].binding;
+        if(graph.convert(reg).bound){
+            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << reg << " (bound)" << log::endl;
+            allocation[reg] = graph.convert(reg).binding;
             it.erase();
         } else {
             ++it;
@@ -266,8 +260,6 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
                 }
             }
 
-            std::cout << graph.neighbors(reg).size() << std::endl;
-
             if(!found){
                 log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << reg << log::endl;
                 allocation[reg] = color;
@@ -276,7 +268,7 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
         }
     }
 
-    replace_registers(function, allocation, pseudo_registers);
+    replace_registers(function, allocation, graph);
 }
 
 void register_allocation(mtac::function_p function, Platform platform){
@@ -287,16 +279,11 @@ void register_allocation(mtac::function_p function, Platform platform){
         renumber(function);
 
         //2. Build
-        reg_pseudo registers_to_index;
-        pseudo_reg registers;
-        gather_pseudo_regs(function, registers, registers_to_index);
-
-        //Starting from there, only the internal index is used (until 6/7 pass)
-
-        ltac::interference_graph graph(registers.size());
-        build_interference_graph(graph, function, registers_to_index);
+        ltac::interference_graph graph;
+        build_interference_graph(graph, function);
 
         //3. Coalesce
+        //TODO
 
         //4. Spill costs
         std::unordered_map<ltac::PseudoRegister, std::size_t> spill_costs;
@@ -312,7 +299,7 @@ void register_allocation(mtac::function_p function, Platform platform){
             spill_code(graph, function, spilled);
         } else {
             //7. Select
-            select(graph, function, platform, order, registers);
+            select(graph, function, platform, order);
 
             return;
         }

@@ -8,31 +8,45 @@
 #ifndef LTAC_INTERFERENCE_GRAPH_H
 #define LTAC_INTERFERENCE_GRAPH_H
 
+#include <memory>
+#include <vector>
+#include <unordered_map>
+
 #include "ltac/bit_matrix.hpp"
+#include "ltac/PseudoRegister.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
+typedef std::size_t reg;
+
 class interference_graph {
     public:
-        interference_graph(std::size_t size);
+        reg convert(const ltac::PseudoRegister& reg);
+        ltac::PseudoRegister convert(const reg& reg);
 
-        void add_edge(std::size_t i, std::size_t j);
-        void remove_node(std::size_t i);
+        void gather(const ltac::PseudoRegister& reg);
 
-        std::size_t degree(std::size_t i);
-        std::vector<std::size_t>& neighbors(std::size_t i);
+        void add_edge(reg i, reg j);
+        void remove_node(reg i);
 
+        reg degree(reg i);
+        std::vector<reg>& neighbors(reg i);
+
+        void build_graph();
         void build_adjacency_vectors();
         std::size_t size();
 
     private:
-        std::size_t m_size;
+        std::size_t m_size = 0;
 
-        bit_matrix matrix;
-        std::vector<std::vector<std::size_t>> adjacency_vectors;
-        std::vector<std::size_t> degrees;
+        std::shared_ptr<bit_matrix> matrix;
+        std::vector<std::vector<reg>> adjacency_vectors;
+        std::vector<reg> degrees;
+
+        std::vector<ltac::PseudoRegister> index_to_pseudo; //Maps indices to pseudo regs
+        std::unordered_map<ltac::PseudoRegister, std::size_t> pseudo_to_index; //Maps pseudo regs to indices
 };
 
 } //end of ltac
