@@ -162,7 +162,7 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
         std::size_t node;
         bool found = false;
 
-        for(auto& candidate : n){
+        for(auto candidate : n){
             if(graph.degree(candidate) < K){
                 node = candidate;        
                 found = true;
@@ -171,13 +171,24 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
         }
         
         if(!found){
-            //TODO Spills the node with the minimal cost
+            std::size_t min_cost = std::numeric_limits<std::size_t>::max();
+
+            for(auto candidate : n){
+               if(graph.spill_cost(candidate) < min_cost){
+                    min_cost = graph.spill_cost(candidate);
+                    node = candidate;
+               }
+            }
+
+            log::emit<Trace>("registers") << "Mark pseudo " << node << " to be spilled" << log::endl;
+
+            spilled.push_back(node);
+        } else {
+            order.push_back(node);
         }
 
         n.erase(node);
         graph.remove_node(node);
-
-        order.push_back(node);
     }
 }
 
