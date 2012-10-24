@@ -5,9 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <stack>
-
 #include "PerfsTimer.hpp"
+#include "logging.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
 
@@ -19,17 +18,20 @@ using namespace eddic;
 
 namespace {
 
-typedef std::vector<ltac::PseudoRegister> pseudo_reg;
+//TODO Store the index in the pseudo for ease
+typedef std::vector<ltac::PseudoRegister> pseudo_reg; //Maps indices to pseudo regs
+typedef std::unordered_map<ltac::PseudoRegister, std::size_t> reg_pseudo; //Maps pseudo regs to indices
 
 void renumber(mtac::function_p function){
     //TODO
 }
 
 template<typename Opt>
-void gather_reg(Opt& reg, pseudo_reg& pseudo_registers, std::unordered_set<ltac::PseudoRegister>& current){
+void gather_reg(Opt& reg, pseudo_reg& pseudo_registers, reg_pseudo& current){
     if(reg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
             if(!current.count(*ptr)){
+                current[*ptr] = pseudo_registers.size();
                 pseudo_registers.push_back(*ptr);
             }
         }
@@ -37,10 +39,11 @@ void gather_reg(Opt& reg, pseudo_reg& pseudo_registers, std::unordered_set<ltac:
 }
 
 template<typename Opt>
-void gather(Opt& arg, pseudo_reg& pseudo_registers, std::unordered_set<ltac::PseudoRegister>& current){
+void gather(Opt& arg, pseudo_reg& pseudo_registers, reg_pseudo& current){
     if(arg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
             if(!current.count(*ptr)){
+                current[*ptr] = pseudo_registers.size();
                 pseudo_registers.push_back(*ptr);
             }
         } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
@@ -50,11 +53,7 @@ void gather(Opt& arg, pseudo_reg& pseudo_registers, std::unordered_set<ltac::Pse
     }
 }
 
-void gather_pseudo_regs(mtac::function_p function, pseudo_reg& pseudo_registers){
-    pseudo_registers.reserve(function->pseudo_registers());
-
-    std::unordered_set<ltac::PseudoRegister> current;
-
+void gather_pseudo_regs(mtac::function_p function, pseudo_reg& pseudo_registers, reg_pseudo& current){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -64,9 +63,11 @@ void gather_pseudo_regs(mtac::function_p function, pseudo_reg& pseudo_registers)
             }
         }
     }
+
+    log::emit<Trace>("registers") << "Found " << pseudo_registers.size() << " pseudo registers" << log::endl;
 }
 
-void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function){
+void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function, reg_pseudo& registers_to_index){
     ltac::LiveRegistersProblem problem;
     auto live_results = mtac::data_flow(function, problem);
 
@@ -83,7 +84,7 @@ void build_interference_graph(ltac::interference_graph& graph, mtac::function_p 
                     ++next;
 
                     while(next != end){
-                        graph.add_edge(it->reg, next->reg);
+                        graph.add_edge(registers_to_index[*it], registers_to_index[*next]);
 
                         ++next;
                     }
@@ -160,6 +161,8 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
 
     auto descriptor = getPlatformDescriptor(platform);
     auto K = descriptor->number_of_registers();
+
+    log::emit<Trace>("registers") << "Attempt a " << K << "-coloring of the graph" << log::endl;
 
     while(!n.empty()){
         std::size_t node;
@@ -239,6 +242,7 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
         auto reg = *it;
 
         if(pseudo_registers[reg].bound){
+            log::emit<Trace>("registers") << "Alloc " << pseudo_registers[reg].binding << " to pseudo " << reg << " (bound)" << log::endl;
             allocation[reg] = pseudo_registers[reg].binding;
             it.erase();
         } else {
@@ -262,7 +266,10 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
                 }
             }
 
+            std::cout << graph.neighbors(reg).size() << std::endl;
+
             if(!found){
+                log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << reg << log::endl;
                 allocation[reg] = color;
                 break;
             }
@@ -273,16 +280,21 @@ void select(ltac::interference_graph& graph, mtac::function_p function, Platform
 }
 
 void register_allocation(mtac::function_p function, Platform platform){
+    log::emit<Trace>("registers") << "Allocate registers for function " << function->getName() << log::endl;
+
     while(true){
         //1. Renumber
         renumber(function);
 
         //2. Build
+        reg_pseudo registers_to_index;
         pseudo_reg registers;
-        gather_pseudo_regs(function, registers);
+        gather_pseudo_regs(function, registers, registers_to_index);
+
+        //Starting from there, only the internal index is used (until 6/7 pass)
 
         ltac::interference_graph graph(registers.size());
-        build_interference_graph(graph, function);
+        build_interference_graph(graph, function, registers_to_index);
 
         //3. Coalesce
 
