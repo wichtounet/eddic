@@ -72,7 +72,9 @@ void init_descriptions(){
         ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
         ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
 
-        ("ltac", "Print the low-level Three Address Code representation of the source")
+        ("ltac-pre", "Print the low-level Three Address Code representation of the source before allocation of registers")
+        ("ltac-alloc", "Print the low-level Three Address Code representation of the source before optimization")
+        ("ltac", "Print the final low-level Three Address Code representation of the source")
         ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)");
 
     po::options_description optimization("Optimization options");
