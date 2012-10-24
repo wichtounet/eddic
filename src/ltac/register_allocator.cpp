@@ -163,6 +163,7 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
         bool found = false;
 
         for(auto candidate : n){
+            log::emit<Dev>("registers") << "Degree(pr" << graph.convert(candidate).reg << ") = " << graph.degree(candidate) << log::endl;
             if(graph.degree(candidate) < K){
                 node = candidate;        
                 found = true;
@@ -307,6 +308,8 @@ void register_allocation(mtac::function_p function, Platform platform){
         if(!spilled.empty()){
             //6. Spill code
             spill_code(graph, function, spilled);
+
+            return;
         } else {
             //7. Select
             select(graph, function, platform, order);

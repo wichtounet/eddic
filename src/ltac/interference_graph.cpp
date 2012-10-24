@@ -55,7 +55,7 @@ void ltac::interference_graph::remove_node(std::size_t i){
 }
 
 std::size_t ltac::interference_graph::degree(std::size_t i){
-    return adjacency_vectors[i].size();
+    return degrees[i];
 }
 
 std::size_t& ltac::interference_graph::spill_cost(reg i){
@@ -72,14 +72,14 @@ void ltac::interference_graph::build_adjacency_vectors(){
     auto& matrix = *this->matrix;
 
     for(std::size_t i = 0; i < size(); ++i){
+        adjacency_vectors[i].clear();
+
         for(std::size_t j = 0; j < size(); ++j){
             if(i != j && matrix[i][j]){
                 adjacency_vectors[i].push_back(j);
             }
         }
-    }
-
-    for(std::size_t i = 0; i < size(); ++i){
+        
         degrees[i] = adjacency_vectors[i].size();
     }
 }
