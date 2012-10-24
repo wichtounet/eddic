@@ -42,7 +42,6 @@ int FunctionContext::stack_position(){
 }
 
 void FunctionContext::set_stack_position(int current){
-    std::cout << current << std::endl;
     currentPosition = current;
 }
 
