@@ -7,6 +7,9 @@
 
 #include "PerfsTimer.hpp"
 #include "logging.hpp"
+#include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
+#include "Type.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
 
@@ -193,8 +196,87 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
     }
 }
 
+template<typename Opt>
+bool contains_reg_addr(Opt& reg, ltac::PseudoRegister search_reg){
+    if(reg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
+            return search_reg == *ptr;
+        }
+    }
+
+    return false;
+}
+
+template<typename Opt>
+bool contains_reg(Opt& arg, ltac::PseudoRegister reg){
+    if(arg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
+            return reg == *ptr;
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            return contains_reg_addr(ptr->base_register, reg)
+                || contains_reg_addr(ptr->scaled_register, reg);
+        }
+    }
+
+    return false;
+}
+
+//Must be called after is_store
+bool is_load(ltac::Statement& statement, ltac::PseudoRegister reg){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        return contains_reg((*ptr)->arg1, reg) 
+            || contains_reg((*ptr)->arg2, reg)
+            || contains_reg((*ptr)->arg3, reg);
+    }
+
+    return false;
+}
+
+bool is_store(ltac::Statement& statement, ltac::PseudoRegister reg){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        if(ltac::erase_result((*ptr)->op)){
+            if(auto* reg_ptr = boost::get<ltac::PseudoRegister>(&*(*ptr)->arg1)){
+                return *reg_ptr == reg;
+            }
+        }
+    }
+
+    return false;
+}
+
 void spill_code(ltac::interference_graph& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
-    //TODO
+    auto current_reg = function->pseudo_registers();
+    
+    for(auto reg : spilled){
+        auto pseudo_reg = graph.convert(reg);
+
+        //Allocate stack space for the pseudo reg
+        auto position = function->context->stack_position();
+        position -= INT->size(function->context->global()->target_platform());
+        function->context->set_stack_position(position);
+
+        for(auto& bb : function){
+            auto it = iterate(bb->l_statements);
+
+            while(it.has_next()){
+                if(is_store(*it, pseudo_reg)){
+
+                } else if(is_load(*it, pseudo_reg)){
+                    ltac::PseudoRegister new_pseudo_reg(++current_reg);
+
+                    //TODO Fix it if omit-fp
+                    auto load = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position));
+                    it.insert(load);
+
+                    //TODO Replace pseudo_reg by reg
+                }  else {
+                    ++it;
+                }
+            }
+        }
+    }
+
+    function->set_pseudo_registers(current_reg);
 }
 
 template<typename Opt>
@@ -308,8 +390,6 @@ void register_allocation(mtac::function_p function, Platform platform){
         if(!spilled.empty()){
             //6. Spill code
             spill_code(graph, function, spilled);
-
-            return;
         } else {
             //7. Select
             select(graph, function, platform, order);
