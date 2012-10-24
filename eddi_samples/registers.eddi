@@ -4,7 +4,7 @@ void main(){
    println(max(5, 7));
 
    several();
-   //spills();
+   spills();
 }
 
 //Test that returns are resolved
