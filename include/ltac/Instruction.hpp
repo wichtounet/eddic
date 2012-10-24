@@ -9,6 +9,7 @@
 #define LTAC_INSTRUCTION_H
 
 #include <memory>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -33,6 +34,9 @@ struct Instruction {
     boost::optional<Argument> arg2;
     boost::optional<Argument> arg3;
     ltac::Size size = ltac::Size::DEFAULT;
+
+    std::vector<ltac::PseudoRegister> uses;
+    std::vector<ltac::PseudoFloatRegister> float_uses;
 
     //Instruction should never get copied
     Instruction(const Instruction& rhs) = delete;

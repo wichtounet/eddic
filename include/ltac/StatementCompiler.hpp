@@ -75,6 +75,10 @@ class StatementCompiler : public boost::static_visitor<> {
         std::shared_ptr<FloatPool> float_pool;
 
         std::unordered_map<std::string, int> offset_labels;
+
+        //Uses for the next call
+        std::vector<ltac::PseudoRegister> uses;
+        std::vector<ltac::PseudoFloatRegister> float_uses;
         
         void pass_in_int_register(mtac::Argument& argument, int position);
         void pass_in_float_register(mtac::Argument& argument, int position);

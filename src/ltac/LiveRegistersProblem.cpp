@@ -110,6 +110,24 @@ struct LivenessCollector : public boost::static_visitor<> {
             set_live_opt(instruction->arg2);
             set_live_opt(instruction->arg3);
         }
+
+        for(auto& reg : instruction->uses){
+            in.values().insert(reg);
+        }
+        
+        for(auto& reg : instruction->float_uses){
+            in.values().insert(reg);
+        }
+    }
+    
+    void operator()(std::shared_ptr<ltac::Jump> instruction){
+        for(auto& reg : instruction->uses){
+            in.values().insert(reg);
+        }
+        
+        for(auto& reg : instruction->float_uses){
+            in.values().insert(reg);
+        }
     }
 
     template<typename T>

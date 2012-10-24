@@ -119,6 +119,7 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
 void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int position){
     auto reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
     ltac::add_instruction(bb, ltac::Operator::MOV, reg, to_arg(argument));
+    uses.push_back(reg);
 }
 
 void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, int position){
@@ -133,6 +134,8 @@ void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, i
     } else {
         ltac::add_instruction(bb, ltac::Operator::FMOV, reg, to_arg(argument));
     }
+    
+    float_uses.push_back(reg);
 }
 
 void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argument& arg2){
@@ -437,6 +440,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 if(register_allocated){
                     auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
                     ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                    uses.push_back(param_reg);
                 } else {
                     push(reg);
                 }
@@ -446,6 +450,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 if(register_allocated){
                     auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
                     ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                    uses.push_back(param_reg);
                 } else {
                     push(reg);
                 }
@@ -535,7 +540,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     manager.set_current(call);
 
-    bb->l_statements.push_back(std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL));
+    auto call_instruction = std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL);
+    bb->l_statements.push_back(call_instruction);
+    call_instruction->uses = uses;
+    call_instruction->float_uses = float_uses;
+
+    uses.clear();
+    float_uses.clear();
 
     int total = 0;
 
@@ -769,9 +780,13 @@ void ltac::StatementCompiler::compile_DIV(std::shared_ptr<mtac::Quadruple> quadr
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple->arg2, reg);
 
-        ltac::add_instruction(bb, ltac::Operator::DIV, reg);
+        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, reg);
+        instruction->uses.push_back(a_reg);
+        instruction->uses.push_back(d_reg);
     } else {
-        ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple->arg2));
+        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple->arg2));
+        instruction->uses.push_back(a_reg);
+        instruction->uses.push_back(d_reg);
     }
     
     ltac::add_instruction(bb, ltac::Operator::MOV, result_reg, a_reg);
@@ -793,9 +808,13 @@ void ltac::StatementCompiler::compile_MOD(std::shared_ptr<mtac::Quadruple> quadr
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple->arg2, reg);
 
-        ltac::add_instruction(bb, ltac::Operator::DIV, reg);
+        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, reg);
+        instruction->uses.push_back(a_reg);
+        instruction->uses.push_back(d_reg);
     } else {
-        ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple->arg2));
+        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple->arg2));
+        instruction->uses.push_back(a_reg);
+        instruction->uses.push_back(d_reg);
     }
 
     ltac::add_instruction(bb, ltac::Operator::MOV, result_reg, d_reg);
@@ -1182,11 +1201,15 @@ void ltac::StatementCompiler::compile_AND(std::shared_ptr<mtac::Quadruple> quadr
 }
 
 void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple){
+    std::vector<ltac::PseudoRegister> uses;
+    std::vector<ltac::PseudoFloatRegister> float_uses;
+
     //A return without args is the same as exiting from the function
     if(quadruple->arg1){
         if(isFloat(*quadruple->arg1)){
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             manager.move(*quadruple->arg1, return_reg);
+            float_uses.push_back(return_reg);
         } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1) && ltac::is_float_var(ltac::get_variable(*quadruple->arg1))){
             auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
@@ -1194,18 +1217,23 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             
             ltac::add_instruction(bb, ltac::Operator::FMOV, return_reg, reg);
+            float_uses.push_back(return_reg);
         } else {
             auto reg1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
             ltac::add_instruction(bb, ltac::Operator::MOV, reg1, to_arg(*quadruple->arg1));
+            uses.push_back(reg1);
 
             if(quadruple->arg2){
                 auto reg2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg2, to_arg(*quadruple->arg2));
+                uses.push_back(reg2);
             }
         }
     }
 
-    ltac::add_instruction(bb, ltac::Operator::PRE_RET);
+    auto instruction = ltac::add_instruction(bb, ltac::Operator::PRE_RET);
+    instruction->uses = uses;
+    instruction->float_uses = float_uses;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
