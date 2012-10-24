@@ -31,6 +31,8 @@ void ltac::interference_graph::gather(const ltac::PseudoRegister& reg){
 
 void ltac::interference_graph::build_graph(){
     degrees.resize(size());
+    spill_costs.resize(size());
+
     matrix = std::make_shared<ltac::bit_matrix>(size());
 }
 
@@ -54,6 +56,10 @@ void ltac::interference_graph::remove_node(std::size_t i){
 
 std::size_t ltac::interference_graph::degree(std::size_t i){
     return adjacency_vectors[i].size();
+}
+
+std::size_t& ltac::interference_graph::spill_cost(reg i){
+    return spill_costs[i];
 }
 
 std::vector<std::size_t>& ltac::interference_graph::neighbors(std::size_t i){

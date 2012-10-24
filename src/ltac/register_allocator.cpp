@@ -108,40 +108,40 @@ std::size_t depth_cost(unsigned int depth){
 }
 
 template<typename Opt>
-void update_cost_reg(Opt& reg, std::unordered_map<ltac::PseudoRegister, std::size_t>& spill_costs, unsigned int depth){
+void update_cost_reg(Opt& reg, ltac::interference_graph& graph, unsigned int depth){
     if(reg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
-            spill_costs[*ptr] += load_cost * depth_cost(depth);
+            graph.spill_cost(graph.convert(*ptr)) += load_cost * depth_cost(depth);
         }
     }
 }
 
 template<typename Opt>
-void update_cost(Opt& arg, std::unordered_map<ltac::PseudoRegister, std::size_t>& spill_costs, unsigned int depth){
+void update_cost(Opt& arg, ltac::interference_graph& graph, unsigned int depth){
     if(arg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
-            spill_costs[*ptr] += load_cost * depth_cost(depth);
+            graph.spill_cost(graph.convert(*ptr)) += load_cost * depth_cost(depth);
         } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
-            update_cost_reg(ptr->base_register, spill_costs, depth);
-            update_cost_reg(ptr->scaled_register, spill_costs, depth);
+            update_cost_reg(ptr->base_register, graph, depth);
+            update_cost_reg(ptr->scaled_register, graph, depth);
         }
     }
 }
 
-void estimate_spill_costs(mtac::function_p function, std::unordered_map<ltac::PseudoRegister, std::size_t>& spill_costs){
+void estimate_spill_costs(mtac::function_p function, ltac::interference_graph& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 if(ltac::erase_result((*ptr)->op)){
                     if(auto* reg_ptr = boost::get<ltac::PseudoRegister>(&*(*ptr)->arg1)){
-                        spill_costs[*reg_ptr] += store_cost * depth_cost(bb->depth);
+                        graph.spill_cost(graph.convert(*reg_ptr)) += store_cost * depth_cost(bb->depth);
                     }
                 } else {
-                    update_cost((*ptr)->arg1, spill_costs, bb->depth);
+                    update_cost((*ptr)->arg1, graph, bb->depth);
                 }
 
-                update_cost((*ptr)->arg2, spill_costs, bb->depth);
-                update_cost((*ptr)->arg3, spill_costs, bb->depth);
+                update_cost((*ptr)->arg2, graph, bb->depth);
+                update_cost((*ptr)->arg3, graph, bb->depth);
             }
         }
     }
@@ -286,10 +286,7 @@ void register_allocation(mtac::function_p function, Platform platform){
         //TODO
 
         //4. Spill costs
-        //TODO Integrate spills costs in the interference graph
-        //TODO Store spill costs with std::size_t
-        std::unordered_map<ltac::PseudoRegister, std::size_t> spill_costs;
-        estimate_spill_costs(function, spill_costs);
+        estimate_spill_costs(function, graph);
 
         //5. Simplify
         std::vector<std::size_t> spilled;
