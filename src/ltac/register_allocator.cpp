@@ -102,6 +102,10 @@ void build_interference_graph(ltac::interference_graph& graph, mtac::function_p 
 
 //3. Coalesce
 
+void coalesce(ltac::interference_graph& graph, mtac::function_p function){
+    //TODO
+}
+
 //4. Spill costs
 
 static const std::size_t store_cost = 5;
@@ -439,7 +443,7 @@ void register_allocation(mtac::function_p function, Platform platform){
         build_interference_graph(graph, function);
 
         //3. Coalesce
-        //TODO
+        coalesce(graph, function);
 
         //4. Spill costs
         estimate_spill_costs(function, graph);
