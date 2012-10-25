@@ -119,6 +119,8 @@ void renumber(mtac::function_p function){
             }
         }
     }
+
+    function->set_pseudo_registers(current_reg);
 }
 
 //2. Build
