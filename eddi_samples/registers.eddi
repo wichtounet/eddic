@@ -5,6 +5,7 @@ void main(){
 
    several();
    spills();
+   renumber();
 }
 
 //Test that returns are resolved
@@ -54,4 +55,18 @@ void spills(){
    println(a3);
    println(a2);
    println(a1);
+}
+
+void renumber(){
+    int a = 5;
+    println(a);
+    a = 9;
+    println(a);
+    a = 11;
+    println(a);
+    int b = 99;
+    println(b);
+    a = 22;
+    println(a);
+    println(b);
 }
