@@ -134,7 +134,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
         if(manager.written.find(variable) != manager.written.end()){
             auto position = variable->position();
             if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(manager.access_compiler()->bb, mov, manager.access_compiler()->stack_address(position.offset()), reg);
+                ltac::add_instruction(manager.access_compiler()->bb, mov, ltac::Address(ltac::BP, position.offset()), reg);
             } else if(position.isGlobal()){
                 ltac::add_instruction(manager.access_compiler()->bb, mov, ltac::Address("V" + position.name()), reg);
             } else if(position.is_temporary()){
@@ -196,7 +196,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
             assert(position.isGlobal() || position.isParameter());
 
             if(position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -221,7 +221,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
             assert(position.isGlobal() || position.isParameter());
 
             if(position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -252,7 +252,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -279,7 +279,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
             assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -332,7 +332,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
             assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -370,7 +370,7 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
             assert(!position.is_temporary());
 
             if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, access_compiler()->stack_address(position.offset()));
+                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
@@ -504,7 +504,6 @@ void ltac::RegisterManager::restore_pushed_registers(){
     for(auto& reg : boost::adaptors::reverse(float_pushed)){
         ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::SP, 0));
         ltac::add_instruction(access_compiler()->bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(function->context->global()->target_platform())));
-        access_compiler()->bp_offset -= FLOAT->size(function->context->global()->target_platform());
     }
 
     //Each register has been restored
@@ -559,7 +558,6 @@ void ltac::RegisterManager::save_registers(std::shared_ptr<mtac::Param> param, c
 
                         ltac::add_instruction(access_compiler()->bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(function->context->global()->target_platform())));
                         ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), reg);
-                        access_compiler()->bp_offset += FLOAT->size(function->context->global()->target_platform());
                     } else {
                         spills(reg);
                     }

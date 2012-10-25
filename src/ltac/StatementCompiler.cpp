@@ -19,6 +19,18 @@
 
 using namespace eddic;
 
+namespace {
+
+ltac::Address stack_address(int offset){
+    return ltac::Address(ltac::BP, offset);
+}
+
+ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
+    return ltac::Address(ltac::BP, offsetReg, 1, offset);
+}
+
+} //end of anonymous namespace
+
 ltac::StatementCompiler::StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         std::shared_ptr<mtac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
         manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {}
@@ -41,14 +53,6 @@ ltac::PseudoRegister ltac::StatementCompiler::to_register(std::shared_ptr<Variab
 
 ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
     return ltac::to_arg(argument, manager);
-}
-
-ltac::Address ltac::StatementCompiler::stack_address(int offset){
-    return ltac::Address(ltac::BP, offset);
-}
-
-ltac::Address ltac::StatementCompiler::stack_address(ltac::AddressRegister offsetReg, int offset){
-    return ltac::Address(ltac::BP, offsetReg, 1, offset);
 }
 
 ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mtac::Argument offset){
@@ -215,12 +219,10 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
         
 void ltac::StatementCompiler::push(ltac::Argument arg){
     ltac::add_instruction(bb, ltac::Operator::PUSH, arg);
-    bp_offset += INT->size(platform);
 }
 
 void ltac::StatementCompiler::pop(ltac::Argument arg){
     ltac::add_instruction(bb, ltac::Operator::POP, arg);
-    bp_offset -= INT->size(platform);
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
@@ -292,8 +294,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
 
         bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
     }
-
-    offset_labels[if_false->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
@@ -366,8 +366,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 
         bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
     }
-    
-    offset_labels[if_->block->label] = bp_offset;
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
@@ -578,7 +576,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     }
 
     ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, total);
-    bp_offset -= total;
 
     //The copies should be cleaned by the optimizations
 
@@ -1355,9 +1352,4 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>){
 
 void ltac::StatementCompiler::operator()(std::string& str){
     bb->l_statements.push_back(str);
-
-    if(offset_labels.find(str) != offset_labels.end()){
-        bp_offset = offset_labels[str];
-        offset_labels.erase(str);
-    }
 }

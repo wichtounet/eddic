@@ -59,22 +59,15 @@ class StatementCompiler : public boost::static_visitor<> {
         void push(ltac::Argument arg);
         void pop(ltac::Argument arg);
 
-        int bp_offset = 0;
-
         ltac::RegisterManager manager;
 
         std::shared_ptr<mtac::BasicBlock> bb;
-
-        ltac::Address stack_address(int offset);
-        ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset);
    
     private:
         //The function being compiled
         std::shared_ptr<mtac::Function> function;
 
         std::shared_ptr<FloatPool> float_pool;
-
-        std::unordered_map<std::string, int> offset_labels;
 
         //Uses for the next call
         std::vector<ltac::PseudoRegister> uses;

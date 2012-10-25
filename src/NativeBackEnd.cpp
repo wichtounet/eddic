@@ -18,6 +18,7 @@
 #include "ltac/Printer.hpp"
 #include "ltac/aggregates.hpp"
 #include "ltac/prologue.hpp"
+#include "ltac/stack_offsets.hpp"
 #include "ltac/register_allocator.hpp"
 #include "ltac/pre_alloc_cleanup.hpp"
 
@@ -55,6 +56,11 @@ void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platfo
     
     //Generate the prologue and epilogue of each functions
     ltac::generate_prologue_epilogue(mtac_program, configuration);
+
+    //If specified by the configuration, replace all stack offsets using SP 
+    if(configuration->option_defined("fomit-frame-pointer")){
+        ltac::fix_stack_offsets(mtac_program, platform);
+    }
     
     if(configuration->option_defined("ltac-alloc")){
         ltac::Printer printer;
