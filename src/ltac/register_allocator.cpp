@@ -282,6 +282,8 @@ bool coalesce(ltac::interference_graph& graph, mtac::function_p function){
                         && !graph.connected(graph.convert(reg1), graph.convert(reg2))
                         && !prune.count(reg1) && !prune.count(reg2))
                 {
+                    log::emit<Dev>("registers") << "Coalesce " << reg1.reg << " and " << reg2.reg << log::endl;
+
                     replaces[reg1] = reg2;
                     prune.insert(reg1);
                     prune.insert(reg2);
