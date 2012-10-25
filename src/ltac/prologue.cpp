@@ -14,14 +14,6 @@
 
 using namespace eddic;
 
-ltac::Address stack_address(int offset, bool omit_fp){
-    if(omit_fp){
-        return ltac::Address(ltac::SP, offset);
-    } else {
-        return ltac::Address(ltac::BP, offset);
-    }
-}
-
 void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_program, std::shared_ptr<Configuration> configuration){
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
     auto platform = ltac_program->context->target_platform();
@@ -53,19 +45,16 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
                 auto type = var->type();
                 int position = var->position().offset();
 
+                auto int_size = INT->size(platform);
+
                 if(type->is_array() && type->has_elements()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, stack_address(position, omit_fp), static_cast<int>(type->elements()));
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, stack_address(position + INT->size(platform), omit_fp), static_cast<int>((type->data_type()->size(platform) / INT->size(platform) * type->elements())));
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(type->elements()));
+                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position + int_size), 
+                            static_cast<int>((type->data_type()->size(platform) / int_size * type->elements())));
                 } else if(type->is_custom_type()){
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, stack_address(position, omit_fp), static_cast<int>(type->size(platform) / INT->size(platform)));
+                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position), static_cast<int>(type->size(platform) / int_size));
                 }
             }
-        }
-
-        if(omit_fp){
-            //TODO Walk through instructions to modify the offset
-            //Add size to each
-            //Generate epilogue for each return
         }
 
         //2. Generate epilogue

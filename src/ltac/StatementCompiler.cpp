@@ -44,19 +44,11 @@ ltac::Argument ltac::StatementCompiler::to_arg(mtac::Argument argument){
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(int offset){
-    if(configuration->option_defined("fomit-frame-pointer")){
-        return ltac::Address(ltac::SP, offset + bp_offset);
-    } else {
-        return ltac::Address(ltac::BP, offset);
-    }
+    return ltac::Address(ltac::BP, offset);
 }
 
 ltac::Address ltac::StatementCompiler::stack_address(ltac::AddressRegister offsetReg, int offset){
-    if(configuration->option_defined("fomit-frame-pointer")){
-        return ltac::Address(ltac::SP, offsetReg, 1, offset + bp_offset);
-    } else {
-        return ltac::Address(ltac::BP, offsetReg, 1, offset);
-    }
+    return ltac::Address(ltac::BP, offsetReg, 1, offset);
 }
 
 ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mtac::Argument offset){
