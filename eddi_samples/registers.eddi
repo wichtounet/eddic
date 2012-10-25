@@ -69,4 +69,8 @@ void renumber(){
     a = 22;
     println(a);
     println(b);
+    a = 22;
+    println(a);
+    b = 66;
+    println(a);
 }

@@ -22,10 +22,103 @@ using namespace eddic;
 
 namespace {
 
+bool is_store(ltac::Statement& statement, ltac::PseudoRegister reg);
+void replace_register(ltac::Statement& statement, ltac::PseudoRegister source, ltac::PseudoRegister target);
+
 //1. Renumber
 
+typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::unordered_set<ltac::PseudoRegister>> local_reg;
+
+template<typename Opt>
+void find_reg_addr(Opt& reg, std::unordered_set<ltac::PseudoRegister>& registers){
+    if(reg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
+            registers.insert(*ptr);
+        }
+    }
+}
+
+template<typename Opt>
+void find_reg(Opt& arg, std::unordered_set<ltac::PseudoRegister>& registers){
+    if(arg){
+        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
+            registers.insert(*ptr);
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            find_reg_addr(ptr->base_register, registers);
+            find_reg_addr(ptr->scaled_register, registers);
+        }
+    }
+}
+
+void find_local_registers(mtac::function_p function, local_reg& local_pseudo_registers){
+    local_reg pseudo_registers;
+
+    for(auto& bb : function){
+        for(auto& statement : bb->l_statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                find_reg((*ptr)->arg1, pseudo_registers[bb]);
+                find_reg((*ptr)->arg2, pseudo_registers[bb]);
+                find_reg((*ptr)->arg3, pseudo_registers[bb]);
+
+                for(auto reg : (*ptr)->uses){
+                    pseudo_registers[bb].insert(reg);
+                }
+            } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                for(auto reg : (*ptr)->uses){
+                    pseudo_registers[bb].insert(reg);
+                }
+            }
+        }
+    }
+
+    //TODO Find a more efficient way to prune the results...
+
+    for(auto& bb : function){
+        for(auto& reg : pseudo_registers[bb]){
+            bool found = false;
+
+            for(auto& bb2 : function){
+                if(bb != bb2 && pseudo_registers[bb2].count(reg)){
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found){
+                local_pseudo_registers[bb].insert(reg);
+            }
+        }
+    }
+}
+
 void renumber(mtac::function_p function){
-    //TODO
+    local_reg local_pseudo_registers;
+    find_local_registers(function, local_pseudo_registers);
+
+    auto current_reg = function->pseudo_registers();
+
+    for(auto& bb :function){
+        for(auto& reg : local_pseudo_registers[bb]){
+            //No need to renumber bound registers
+            if(reg.bound){
+                continue;
+            }
+
+            ltac::PseudoRegister target;
+
+            for(auto& statement : bb->l_statements){
+                if(is_store(statement, reg)){
+                    target = ltac::PseudoRegister(++current_reg);
+
+                    //Make sure to replace only the first argument
+                    auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+                    instruction->arg1 = target;
+                } else {
+                    replace_register(statement, reg, target);
+                }
+            }
+        }
+    }
 }
 
 //2. Build
@@ -466,9 +559,6 @@ void register_allocation(mtac::function_p function, Platform platform){
 
             return;
         }
-
-        ltac::Printer printer;
-        printer.print(function);
     }
 }
 
