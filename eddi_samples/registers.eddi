@@ -6,6 +6,7 @@ void main(){
    several();
    spills();
    renumber();
+   coalesce();
 }
 
 //Test that returns are resolved
@@ -73,4 +74,12 @@ void renumber(){
     println(a);
     b = 66;
     println(a);
+}
+
+void coalesce(){
+    int a = 5;
+    print(a);
+    int b = a;
+    print(b);
+    print(a);
 }
