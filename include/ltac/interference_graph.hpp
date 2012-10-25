@@ -30,6 +30,7 @@ class interference_graph {
 
         void add_edge(reg i, reg j);
         void remove_node(reg i);
+        bool connected(reg i, reg j);
 
         std::size_t degree(reg i);
         std::size_t& spill_cost(reg i);

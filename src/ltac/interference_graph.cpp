@@ -41,6 +41,10 @@ void ltac::interference_graph::add_edge(std::size_t i, std::size_t j){
     matrix->set(j, i);
 }
 
+bool ltac::interference_graph::connected(reg i, reg j){
+    return matrix->is_set(i, j);
+}
+
 void ltac::interference_graph::remove_node(std::size_t i){
     auto& matrix = *this->matrix;
 

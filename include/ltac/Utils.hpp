@@ -26,6 +26,8 @@ bool is_float_var(std::shared_ptr<Variable> variable);
 
 bool is_int_var(std::shared_ptr<Variable> variable);
 
+bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction);
+
 template<typename T>
 inline bool is_reg(T value){
     return mtac::is<ltac::Register>(value);

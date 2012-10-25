@@ -27,18 +27,6 @@ using namespace eddic;
 
 namespace {
 
-inline bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction){
-    if(instruction->op == ltac::Operator::NOP){
-        return false;
-    }
-    
-    instruction->op = ltac::Operator::NOP;
-    instruction->arg1.reset();
-    instruction->arg2.reset();
-
-    return true;
-}
-
 inline bool optimize_statement(ltac::Statement& statement){
     if(boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
@@ -49,7 +37,7 @@ inline bool optimize_statement(ltac::Statement& statement){
                 auto value = boost::get<int>(*instruction->arg2);
                 
                 if(value == 0){
-                    return transform_to_nop(instruction);
+                    return ltac::transform_to_nop(instruction);
                 }
             }
         }
@@ -69,7 +57,7 @@ inline bool optimize_statement(ltac::Statement& statement){
             
                 //MOV reg, reg is useless
                 if(reg1 == reg2){
-                    return transform_to_nop(instruction);
+                    return ltac::transform_to_nop(instruction);
                 }
             }
         }
@@ -186,12 +174,12 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
         //Statements after RET are dead
         if(i1->op == ltac::Operator::RET){
-            return transform_to_nop(i2);
+            return ltac::transform_to_nop(i2);
         }
         
         //Two following LEAVE are not useful
         if(i1->op == ltac::Operator::LEAVE && i2->op == ltac::Operator::LEAVE){
-            return transform_to_nop(i2);
+            return ltac::transform_to_nop(i2);
         }
 
         //Combine two ADD into one
@@ -203,7 +191,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 if(reg1 == reg2){
                     i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
 
-                    return transform_to_nop(i2);
+                    return ltac::transform_to_nop(i2);
                 }
             }
         }
@@ -217,7 +205,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 if(reg1 == reg2){
                     i1->arg2 = boost::get<int>(*i1->arg2) + boost::get<int>(*i2->arg2);
 
-                    return transform_to_nop(i2);
+                    return ltac::transform_to_nop(i2);
                 }
             }
         }
@@ -231,7 +219,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
                 //cross MOV (ir4 = ir5, ir5 = ir4), keep only the first
                 if (reg11 == reg22 && reg12 == reg21){
-                    return transform_to_nop(i2);
+                    return ltac::transform_to_nop(i2);
                 }
             } else if(ltac::is_reg(*i1->arg1) && ltac::is_reg(*i2->arg2)){
                 auto reg11 = boost::get<ltac::Register>(*i1->arg1);
@@ -239,7 +227,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 
                 if(reg11 == reg22 && boost::get<ltac::Address>(&*i1->arg2) && boost::get<ltac::Address>(&*i2->arg1)){
                     if(boost::get<ltac::Address>(*i1->arg2) == boost::get<ltac::Address>(*i2->arg1)){
-                        return transform_to_nop(i2);
+                        return ltac::transform_to_nop(i2);
                     }
                 }
             } else if(ltac::is_reg(*i1->arg2) && ltac::is_reg(*i2->arg1)){
@@ -248,7 +236,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
 
                 if(reg12 == reg21 && boost::get<ltac::Address>(&*i1->arg1) && boost::get<ltac::Address>(&*i2->arg2)){
                     if(boost::get<ltac::Address>(*i1->arg1) == boost::get<ltac::Address>(*i2->arg2)){
-                        return transform_to_nop(i2);
+                        return ltac::transform_to_nop(i2);
                     }
                 }
             }
@@ -261,12 +249,12 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                         i2->op = ltac::Operator::LEA;
                         i2->arg2 = ltac::Address(boost::get<ltac::Register>(*i1->arg2), boost::get<int>(*i2->arg2));
 
-                        return transform_to_nop(i1);
+                        return ltac::transform_to_nop(i1);
                     } else if(boost::get<std::string>(&*i1->arg2) && boost::get<int>(&*i2->arg2)){
                         i2->op = ltac::Operator::LEA;
                         i2->arg2 = ltac::Address(boost::get<std::string>(*i1->arg2), boost::get<int>(*i2->arg2));
 
-                        return transform_to_nop(i1);
+                        return ltac::transform_to_nop(i1);
                     }
                 }
             }
@@ -281,7 +269,7 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                     i1->op = ltac::Operator::MOV;
                     i1->arg2 = ltac::Address(ltac::SP, 0);
 
-                    return transform_to_nop(i2);
+                    return ltac::transform_to_nop(i2);
                 }
             }
         }
@@ -292,9 +280,9 @@ inline bool multiple_statement_optimizations(ltac::Statement& s1, ltac::Statemen
                 auto reg2 = boost::get<ltac::Register>(*i2->arg1);
 
                 if(reg1 == reg2){
-                    transform_to_nop(i1);
+                    ltac::transform_to_nop(i1);
 
-                    return transform_to_nop(i2);
+                    return ltac::transform_to_nop(i2);
                 }
             }
         }
@@ -683,7 +671,7 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function, Platform pl
                         auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                         if(usage.find(reg1) == usage.end()){
-                            optimized = transform_to_nop(instruction);
+                            optimized = ltac::transform_to_nop(instruction);
                         }
 
                         usage.erase(reg1);
@@ -699,7 +687,7 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function, Platform pl
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                     if(usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
+                        optimized = ltac::transform_to_nop(instruction);
                     }
                 } else {
                     collect_usage(usage, instruction->arg1);
@@ -711,7 +699,7 @@ bool dead_code_elimination(std::shared_ptr<mtac::Function> function, Platform pl
                     auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
 
                     if(usage.find(reg1) == usage.end()){
-                        optimized = transform_to_nop(instruction);
+                        optimized = ltac::transform_to_nop(instruction);
                     }
                 } else {
                     collect_usage(usage, instruction->arg1);

@@ -17,6 +17,19 @@
 #include "ltac/LiveRegistersProblem.hpp"
 #include "ltac/interference_graph.hpp"
 #include "ltac/Printer.hpp"
+#include "ltac/Utils.hpp"
+
+/*
+ * Register allocation using Chaitin-style graph coloring allocation. 
+ *
+ * The renumber and coalescing are simplified by renumbering coalescing 
+ * only pseudo registers that are local to a basic block. 
+ *
+ * TODO:
+ *  - Use Chaitin-Briggs optimistic coloring
+ *  - Implement rematerialization
+ *  - Use UD-chains and make renumber and coalescing complete
+ */
 
 using namespace eddic;
 
@@ -24,6 +37,44 @@ namespace {
 
 bool is_store(ltac::Statement& statement, ltac::PseudoRegister reg);
 void replace_register(ltac::Statement& statement, ltac::PseudoRegister source, ltac::PseudoRegister target);
+
+template<typename Source, typename Target, typename Opt>
+void update_reg(Opt& reg, std::unordered_map<Source, Target>& register_allocation){
+    if(reg){
+        if(auto* ptr = boost::get<Source>(&*reg)){
+            if(register_allocation.count(*ptr)){
+                reg = register_allocation[*ptr];
+            }
+        }
+    }
+}
+
+template<typename Source, typename Target, typename Opt>
+void update(Opt& arg, std::unordered_map<Source, Target>& register_allocation){
+    if(arg){
+        if(auto* ptr = boost::get<Source>(&*arg)){
+            if(register_allocation.count(*ptr)){
+                arg = register_allocation[*ptr];
+            }
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            update_reg(ptr->base_register, register_allocation);
+            update_reg(ptr->scaled_register, register_allocation);
+        }
+    }
+}
+
+template<typename Source, typename Target>
+void replace_registers(mtac::function_p function, std::unordered_map<Source, Target>& register_allocation){
+    for(auto& bb : function){
+        for(auto& statement : bb->l_statements){
+            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                update((*ptr)->arg1, register_allocation);
+                update((*ptr)->arg2, register_allocation);
+                update((*ptr)->arg3, register_allocation);
+            }
+        }
+    }
+}
 
 //1. Renumber
 
@@ -197,8 +248,53 @@ void build_interference_graph(ltac::interference_graph& graph, mtac::function_p 
 
 //3. Coalesce
 
-void coalesce(ltac::interference_graph& graph, mtac::function_p function){
-    //TODO
+bool is_copy(ltac::Statement& statement){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        return (*ptr)->op == ltac::Operator::MOV 
+            && boost::get<ltac::PseudoRegister>(&*(*ptr)->arg1) 
+            && boost::get<ltac::PseudoRegister>(&*(*ptr)->arg2);
+    }
+
+    return false;
+}
+
+bool coalesce(ltac::interference_graph& graph, mtac::function_p function){
+    local_reg local_pseudo_registers;
+    find_local_registers(function, local_pseudo_registers);
+    
+    std::unordered_set<ltac::PseudoRegister> prune;
+    std::unordered_map<ltac::PseudoRegister, ltac::PseudoRegister> replaces;
+
+    //TODO Instead of pruning dependent registers pairs, update the graph 
+    //and continue to avoid too many rebuilding of the graph
+
+    for(auto& bb : function){
+        for(auto& statement : bb->l_statements){
+            if(is_copy(statement)){
+                auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+                auto reg1 = boost::get<ltac::PseudoRegister>(*instruction->arg1);
+                auto reg2 = boost::get<ltac::PseudoRegister>(*instruction->arg2);
+
+                if(
+                           reg1 != reg2
+                        && !reg1.bound && !reg2.bound 
+                        && local_pseudo_registers[bb].count(reg1) && local_pseudo_registers[bb].count(reg2) 
+                        && !graph.connected(graph.convert(reg1), graph.convert(reg2))
+                        && !prune.count(reg1) && !prune.count(reg2))
+                {
+                    replaces[reg1] = reg2;
+                    prune.insert(reg1);
+                    prune.insert(reg2);
+
+                    ltac::transform_to_nop(instruction);            
+                }
+            }
+        }
+    }
+
+    replace_registers(function, replaces);
+
+    return !replaces.empty();
 }
 
 //4. Spill costs
@@ -312,27 +408,6 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
 
 //6. Select
 
-template<typename Opt>
-void update_reg(Opt& reg, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
-    if(reg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
-            reg = register_allocation[*ptr];
-        }
-    }
-}
-
-template<typename Opt>
-void update(Opt& arg, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
-    if(arg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
-            arg = register_allocation[*ptr];
-        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
-            update_reg(ptr->base_register, register_allocation);
-            update_reg(ptr->scaled_register, register_allocation);
-        }
-    }
-}
-
 void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph& graph){
     std::unordered_map<ltac::PseudoRegister, ltac::Register> register_allocation;
 
@@ -340,15 +415,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<std::size_t
         register_allocation[graph.convert(pair.first)] = {pair.second};
     }
 
-    for(auto& bb : function){
-        for(auto& statement : bb->l_statements){
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                update((*ptr)->arg1, register_allocation);
-                update((*ptr)->arg2, register_allocation);
-                update((*ptr)->arg3, register_allocation);
-            }
-        }
-    }
+    replace_registers(function, register_allocation);
 }
 
 void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
@@ -533,16 +600,24 @@ void spill_code(ltac::interference_graph& graph, mtac::function_p function, std:
 void register_allocation(mtac::function_p function, Platform platform){
     log::emit<Trace>("registers") << "Allocate registers for function " << function->getName() << log::endl;
 
+    bool coalesced = false;
+
     while(true){
-        //1. Renumber
-        renumber(function);
+        if(!coalesced){
+            //1. Renumber
+            renumber(function);
+        }
 
         //2. Build
         ltac::interference_graph graph;
         build_interference_graph(graph, function);
 
         //3. Coalesce
-        coalesce(graph, function);
+        coalesced = coalesce(graph, function);
+
+        if(coalesced){
+            continue;
+        }
 
         //4. Spill costs
         estimate_spill_costs(function, graph);
