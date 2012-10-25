@@ -165,6 +165,10 @@ void estimate_spill_costs(mtac::function_p function, ltac::interference_graph& g
 
 //5. Simplify
 
+std::size_t spill_heuristic(ltac::interference_graph& graph, std::size_t reg){
+    return graph.spill_cost(reg) / graph.degree(reg);
+}
+
 void simplify(ltac::interference_graph& graph, Platform platform, std::vector<std::size_t>& spilled, std::list<std::size_t>& order){
     std::set<std::size_t> n;
     for(std::size_t r = 0; r < graph.size(); ++r){
@@ -193,8 +197,8 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
             std::size_t min_cost = std::numeric_limits<std::size_t>::max();
 
             for(auto candidate : n){
-               if(!graph.convert(candidate).bound && graph.spill_cost(candidate) < min_cost){
-                    min_cost = graph.spill_cost(candidate);
+               if(!graph.convert(candidate).bound && spill_heuristic(graph, candidate) < min_cost){
+                    min_cost = spill_heuristic(graph, candidate);
                     node = candidate;
                }
             }
