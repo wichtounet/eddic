@@ -78,8 +78,10 @@ void renumber(){
 
 void coalesce(){
     int a = 5;
+    int b = 7;
     print(a);
-    int b = a;
+    b = a;
     print(b);
-    print(a);
+    int c = b;
+    print(c);
 }
