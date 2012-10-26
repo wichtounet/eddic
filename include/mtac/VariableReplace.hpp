@@ -13,7 +13,8 @@
 
 #include <boost/optional.hpp>
 
-#include "mtac/Statement.hpp"
+#include "mtac/forward.hpp"
+#include "mtac/Argument.hpp"
 
 namespace eddic {
 
