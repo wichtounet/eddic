@@ -38,5 +38,11 @@ bool ltac::Register::operator!=(const Register& rhs) const {
 }
 
 std::ostream& ltac::operator<<(std::ostream& out, const ltac::Register& reg){
+    if(reg == ltac::BP){
+        return out << "bp";
+    } else if(reg == ltac::SP){
+        return out << "sp";
+    }
+
     return out << "r" << reg.reg;
 }
