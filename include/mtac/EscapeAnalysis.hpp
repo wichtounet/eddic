@@ -11,13 +11,13 @@
 #include <unordered_set>
 #include <memory>
 
-#include "mtac/Function.hpp"
-
 namespace eddic {
 
 class Variable;
 
 namespace mtac {
+
+class Function;
 
 typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> EscapedVariables;
 

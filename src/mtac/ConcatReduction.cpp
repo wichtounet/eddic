@@ -9,6 +9,7 @@
 #include "likely.hpp"
 
 #include "mtac/ConcatReduction.hpp"
+#include "mtac/Function.hpp"
 
 using namespace eddic;
 

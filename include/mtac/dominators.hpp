@@ -10,11 +10,11 @@
 
 #include <memory>
 
-#include "mtac/Function.hpp"
-
 namespace eddic {
 
 namespace mtac {
+
+class Function;
 
 void compute_dominators(std::shared_ptr<Function> function);
 

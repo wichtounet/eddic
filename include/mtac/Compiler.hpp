@@ -10,13 +10,13 @@
 
 #include "ast/source_def.hpp"
 
-#include "mtac/Program.hpp"
-
 namespace eddic {
 
 class StringPool;
 
 namespace mtac {
+
+class Program;
 
 struct Compiler {
     void compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const ;
