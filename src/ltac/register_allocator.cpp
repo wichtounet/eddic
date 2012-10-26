@@ -574,15 +574,11 @@ void spill_code(ltac::interference_graph& graph, mtac::function_p function, std:
 
                     ++it;
 
-                    //TODO Fix it if omit-fp
-                    auto store = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg);
-                    it.insert(store);
+                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
                 } else if(is_load(statement, pseudo_reg)){
                     ltac::PseudoRegister new_pseudo_reg(++current_reg);
 
-                    //TODO Fix it if omit-fp
-                    auto load = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position));
-                    it.insert(load);
+                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position)));
 
                     ++it;
 
