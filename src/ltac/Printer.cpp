@@ -147,92 +147,6 @@ std::string to_string(ltac::JumpType type){
     }
 }
 
-std::string printArg(ltac::Argument arg);
-
-struct ArgumentToString : public boost::static_visitor<std::string> {
-   std::string operator()(int& integer) const {
-        return toString(integer);
-   }
-   
-   std::string operator()(double& float_) const {
-        return toString(float_);
-   }
-
-   std::string operator()(ltac::FloatRegister& reg) const {
-        return "fr" + ::toString(reg.reg);
-   }
-
-   std::string operator()(ltac::PseudoRegister& reg) const {
-        return "pr" + ::toString(reg.reg);
-   }
-   
-   std::string operator()(ltac::PseudoFloatRegister& reg) const {
-        return "pfr" + ::toString(reg.reg);
-   }
-   
-   std::string operator()(ltac::Register& reg) const {
-       if(reg == ltac::SP){
-           return "sp";
-       } else if(reg == ltac::BP){
-           return "bp";
-       }
-
-       return "ir" + ::toString(reg.reg);
-   }
-   
-   std::string operator()(ltac::Address& address) const {
-       if(address.absolute){
-           if(address.displacement){
-               return "[" + *address.absolute + " + " + toString(*address.displacement) + "]";
-           }
-
-           if(address.base_register){
-               return "[" + *address.absolute + " + " + printArg(*address.base_register) + "]";
-           }
-
-           return "[" + *address.absolute + "]";
-       }
-
-       if(address.base_register){
-           if(address.scaled_register){
-               if(address.scale){
-                   if(address.displacement){
-                       return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
-                   }
-
-                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
-               }
-
-               if(address.displacement){
-                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
-               }
-
-               return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + "]";
-           }
-
-           if(address.displacement){
-               return "[" + printArg(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
-           }
-
-           return "[" + printArg(*address.base_register) + "]";
-       }
-
-       if(address.displacement){
-           return "[" + ::toString(*address.displacement) + "]";
-       }
-
-       ASSERT_PATH_NOT_TAKEN("Invalid address type");
-   }
-
-   std::string operator()(std::string& str) const {
-       return str;
-   }
-};
-
-std::string printArg(ltac::Argument arg){
-    return visit(ArgumentToString(), arg);
-}
-
 struct DebugVisitor : public boost::static_visitor<> {
     std::ostream& out;
 
@@ -266,11 +180,11 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
         if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << ", " << printArg(*quadruple->arg3) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << ", " << *quadruple->arg3 << std::endl;
         } else if(quadruple->arg1 && quadruple->arg2){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << std::endl;
         } else if(quadruple->arg1){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
+            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << std::endl;
         } else {
             out << "\t" << to_string(quadruple->op) << std::endl;
         }

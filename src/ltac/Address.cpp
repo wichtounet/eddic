@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
+
 #include "ltac/Address.hpp"
 
 using namespace eddic;
@@ -60,4 +62,48 @@ bool ltac::operator==(ltac::Address& lhs, ltac::Address& rhs){
 
 bool ltac::operator!=(ltac::Address& lhs, ltac::Address& rhs){
     return !(lhs == rhs);
+}
+
+std::ostream& ltac::operator<<(std::ostream& out, const ltac::Address& address){
+    if(address.absolute){
+        if(address.displacement){
+            out << "[" << *address.absolute << " + " << *address.displacement << "]";
+        }
+
+        if(address.base_register){
+            return out << "[" << *address.absolute << " + " << *address.base_register << "]";
+        }
+
+        return out << "[" << *address.absolute << "]";
+    }
+
+    if(address.base_register){
+        if(address.scaled_register){
+            if(address.scale){
+                if(address.displacement){
+                    return out << "[" << *address.base_register << " + " << *address.scaled_register << " * " << *address.scale << " + " << *address.displacement << "]";
+                }
+
+                return out << "[" << *address.base_register << " + " << *address.scaled_register << " * " << *address.scale << "]";
+            }
+
+            if(address.displacement){
+                return out << "[" << *address.base_register << " + " << *address.scaled_register << " + " << *address.displacement << "]";
+            }
+
+            return out << "[" << *address.base_register << " + " << *address.scaled_register << "]";
+        }
+
+        if(address.displacement){
+            return out << "[" << *address.base_register << " + " << *address.displacement << "]";
+        }
+
+        return out << "[" << *address.base_register << "]";
+    }
+
+    if(address.displacement){
+        return out << "[" << *address.displacement << "]";
+    }
+
+    ASSERT_PATH_NOT_TAKEN("Invalid address type");
 }

@@ -43,6 +43,8 @@ struct Address {
 bool operator==(ltac::Address& lhs, ltac::Address& rhs);
 bool operator!=(ltac::Address& lhs, ltac::Address& rhs);
 
+std::ostream& operator<<(std::ostream& out, const Address& address);
+
 } //end of ltac
 
 } //end of eddic
