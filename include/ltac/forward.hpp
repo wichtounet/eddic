@@ -5,18 +5,26 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef LTAC_PRE_ALLOC_CLEANUP_H
-#define LTAC_PRE_ALLOC_CLEANUP_H
+#ifndef LTAC_FORWARD_DECLARATIONS_H
+#define LTAC_FORWARD_DECLARATIONS_H
 
 #include <memory>
+#include <string>
 
-#include "mtac/forward.hpp"
+#include "variant.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void pre_alloc_cleanup(std::shared_ptr<mtac::Program> program);
+class Instruction;
+class Jump;
+
+typedef boost::variant<
+        std::shared_ptr<ltac::Instruction>,         //Basic quadruples
+        std::shared_ptr<ltac::Jump>,                //Jumps
+        std::string                                 //For labels
+    > Statement;
 
 } //end of ltac
 

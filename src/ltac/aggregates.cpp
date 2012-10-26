@@ -11,6 +11,7 @@
 #include "Type.hpp"
 
 #include "ltac/aggregates.hpp"
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

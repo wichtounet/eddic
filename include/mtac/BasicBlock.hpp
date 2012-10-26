@@ -8,10 +8,13 @@
 #ifndef MTAC_BASIC_BLOCK_H
 #define MTAC_BASIC_BLOCK_H
 
+#include <vector>
+
 #include "variant.hpp"
 
-#include "mtac/Statement.hpp"
-#include "ltac/Statement.hpp"
+#include "mtac/forward.hpp"
+
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

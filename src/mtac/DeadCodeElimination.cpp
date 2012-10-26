@@ -15,6 +15,8 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Offset.hpp"
 
+#include "ltac/Statement.hpp"
+
 using namespace eddic;
 
 bool mtac::dead_code_elimination::operator()(std::shared_ptr<mtac::Function> function){

@@ -15,6 +15,8 @@
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
 
+#include "ltac/Statement.hpp"
+
 using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;

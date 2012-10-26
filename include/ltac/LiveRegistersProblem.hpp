@@ -19,6 +19,9 @@
 namespace eddic {
 
 namespace ltac {
+
+class PseudoRegister;
+class PseudoFloatRegister;
     
 typedef std::unordered_set<PseudoRegister> PseudoRegisters;
 typedef std::unordered_set<PseudoFloatRegister> PseudoFloatRegisters;
@@ -27,25 +30,11 @@ struct LiveRegisterValues {
     PseudoRegisters registers;
     PseudoFloatRegisters float_registers;
 
-    void insert(PseudoRegister reg){
-        registers.insert(reg);
-    }
-    
-    void insert(PseudoFloatRegister reg){
-        float_registers.insert(reg);
-    }
-    
-    void erase(PseudoRegister reg){
-        registers.erase(reg);
-    }
-    
-    void erase(PseudoFloatRegister reg){
-        float_registers.erase(reg);
-    }
-
-    std::size_t size(){
-       return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
-    }
+    void insert(PseudoRegister reg);
+    void insert(PseudoFloatRegister reg);
+    void erase(PseudoRegister reg);
+    void erase(PseudoFloatRegister reg);
+    std::size_t size();
 };
 
 std::ostream& operator<<(std::ostream& stream, LiveRegisterValues& expression);

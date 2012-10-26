@@ -15,6 +15,8 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 
+#include "ltac/Statement.hpp"
+
 using namespace eddic;
 
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;

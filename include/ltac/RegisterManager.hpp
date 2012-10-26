@@ -22,6 +22,7 @@
 #include "mtac/EscapeAnalysis.hpp"
 
 #include "ltac/AbstractRegisterManager.hpp"
+#include "ltac/Statement.hpp"
 
 namespace eddic {
 

@@ -13,10 +13,10 @@
 
 #include "mtac/GlobalOptimizations.hpp"
 
-#include "ltac/register_allocator.hpp"
+#include "ltac/Statement.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
+#include "ltac/register_allocator.hpp"
 #include "ltac/interference_graph.hpp"
-#include "ltac/Printer.hpp"
 #include "ltac/Utils.hpp"
 
 /*

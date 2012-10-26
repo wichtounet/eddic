@@ -14,6 +14,7 @@
 
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
+#include "ltac/Statement.hpp"
 
 #include "mtac/Utils.hpp" 
 

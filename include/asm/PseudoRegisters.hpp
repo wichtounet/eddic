@@ -60,12 +60,6 @@ class PseudoRegisters {
          * \param reg The register that holds the variable. 
          */
         void setLocation(std::shared_ptr<Variable> variable, Reg reg);
-        
-        /*!
-         * Remove the variable from the variable that holds it. 
-         * \param variable The variable to remove from the register. 
-         */
-        void remove(std::shared_ptr<Variable> variable);
 
         Reg get_new_reg();
         int last_reg();
@@ -120,13 +114,6 @@ void PseudoRegisters<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg r
     variables[variable] = reg;
     
     assert(inRegister(variable, reg));
-}
-
-template<typename Reg>
-void PseudoRegisters<Reg>::remove(std::shared_ptr<Variable> variable){
-    assert(inRegister(variable));
-
-    variables.erase(variable);
 }
 
 } //end of as
