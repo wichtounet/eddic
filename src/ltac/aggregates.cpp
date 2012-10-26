@@ -29,7 +29,7 @@ void ltac::allocate_aggregates(std::shared_ptr<mtac::Program> program){
                 auto position = variable->position();
                 auto type = variable->type();
 
-                if((position.is_temporary() || position.is_variable()) && (type->is_template() || type->is_array() || type->is_custom_type())){
+                if((position.is_temporary() || position.is_variable()) && (type == STRING || type->is_template() || type->is_array() || type->is_custom_type())){
                     current_position -= type->size(platform);
 
                     Position position(PositionType::STACK, current_position + INT->size(platform));
