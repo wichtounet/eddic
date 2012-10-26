@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <iostream>
+#include <type_traits>
 
 #include "assert.hpp"
 #include "logging.hpp"
@@ -56,7 +57,7 @@ inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, S
 }
 
 template<bool Low, typename P, typename R>
-inline typename boost::enable_if_c<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -67,7 +68,7 @@ inline typename boost::enable_if_c<Low, void>::type forward_statements(P& proble
 }
 
 template<bool Low, typename P, typename R>
-inline typename boost::disable_if_c<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -155,7 +156,7 @@ inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, 
 }
 
 template<bool Low, typename P, typename R>
-inline typename boost::enable_if_c<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -166,7 +167,7 @@ inline typename boost::enable_if_c<Low, void>::type backward_statements(P& probl
 }
 
 template<bool Low, typename P, typename R>
-inline typename boost::disable_if_c<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<!Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
