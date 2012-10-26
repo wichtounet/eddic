@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "variant.hpp"
+#include "Variable.hpp"
 
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"

@@ -10,7 +10,7 @@
 
 #include <iterator>
 
-#include "mtac/BasicBlock.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

@@ -11,6 +11,7 @@
 #include "likely.hpp"
 
 #include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;

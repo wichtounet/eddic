@@ -7,6 +7,7 @@
 
 #include "Type.hpp"
 #include "logging.hpp"
+#include "Variable.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"

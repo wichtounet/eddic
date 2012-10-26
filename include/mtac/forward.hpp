@@ -19,6 +19,10 @@ namespace mtac {
 
 class Program;
 
+class Function;
+
+class BasicBlock;
+
 class If;
 class IfFalse;
 class Param;

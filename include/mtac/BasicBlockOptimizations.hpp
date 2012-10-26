@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "mtac/Function.hpp"
+#include "mtac/forward.hpp"
 #include "mtac/pass_traits.hpp"
 
 namespace eddic {

@@ -9,6 +9,7 @@
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
 #include "mangling.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Utils.hpp"
 

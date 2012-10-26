@@ -8,6 +8,7 @@
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 #include "ltac/prologue.hpp"
 #include "ltac/Utils.hpp"

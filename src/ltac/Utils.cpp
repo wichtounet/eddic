@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+#include "Variable.hpp"
 
 #include "ltac/Utils.hpp"
 

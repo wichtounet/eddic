@@ -10,6 +10,7 @@
 
 #include "VisitorUtils.hpp"
 #include "logging.hpp"
+#include "Variable.hpp"
 
 #include "mtac/loop_analysis.hpp"
 #include "mtac/dominators.hpp"

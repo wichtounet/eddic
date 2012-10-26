@@ -8,6 +8,7 @@
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/GlobalOptimizations.hpp"

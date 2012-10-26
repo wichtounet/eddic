@@ -9,6 +9,7 @@
 #include "FunctionContext.hpp"
 #include "Platform.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 #include "ltac/aggregates.hpp"
 #include "ltac/Statement.hpp"

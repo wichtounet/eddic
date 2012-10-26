@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "mtac/Argument.hpp"
 
@@ -26,7 +25,7 @@ struct Param {
 
     std::shared_ptr<Variable> param;
     std::string std_param;
-    std::shared_ptr<Function> function;
+    std::shared_ptr<eddic::Function> function;
     unsigned int depth;
     
     bool address = false;
@@ -36,8 +35,8 @@ struct Param {
 
     Param();
     Param(mtac::Argument arg1);
-    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<Function> function);
-    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<Function> function);
+    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<eddic::Function> function);
+    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<eddic::Function> function);
 };
 
 } //end of mtac

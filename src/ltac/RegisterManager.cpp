@@ -14,6 +14,7 @@
 #include "Options.hpp"
 #include "logging.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"

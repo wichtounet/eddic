@@ -11,6 +11,7 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "Labels.hpp"
+#include "Variable.hpp"
 
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"

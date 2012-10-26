@@ -15,6 +15,7 @@
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "mtac/inlining.hpp"
 #include "mtac/Utils.hpp"

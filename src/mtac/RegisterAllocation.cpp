@@ -9,6 +9,7 @@
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "mtac/RegisterAllocation.hpp"
 #include "mtac/Utils.hpp"

@@ -7,13 +7,12 @@
 
 #include <unordered_map>
 
-#include <boost/graph/dominator_tree.hpp>
-
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "logging.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Loop.hpp"
 #include "mtac/loop_optimizations.hpp"
