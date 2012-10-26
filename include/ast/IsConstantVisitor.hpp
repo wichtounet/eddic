@@ -8,15 +8,16 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
+#include <type_traits>
+
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/contains.hpp>
+
 #include "variant.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 
 #include "ast/Value.hpp"
-
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/contains.hpp>
-#include <boost/utility/enable_if.hpp>
 
 namespace eddic {
 
@@ -32,12 +33,12 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
         ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::DereferenceValue, ast::New, ast::NewArray> non_constant_types;
 
     template<typename T>
-    typename boost::enable_if<boost::mpl::contains<constant_types, T>, bool>::type operator()(T&) const {
+    typename std::enable_if<boost::mpl::contains<constant_types, T>::value, bool>::type operator()(T&) const {
         return true;
     }
     
     template<typename T>
-    typename boost::enable_if<boost::mpl::contains<non_constant_types, T>, bool>::type operator()(T&) const {
+    typename std::enable_if<boost::mpl::contains<non_constant_types, T>::value, bool>::type operator()(T&) const {
         return false;
     }
 
