@@ -42,5 +42,11 @@ bool ltac::PseudoRegister::operator!=(const PseudoRegister& rhs) const {
 }
 
 std::ostream& ltac::operator<<(std::ostream& out, const ltac::PseudoRegister& reg){
-    return out << "pr" << reg.reg;
+    out << "pr" << reg.reg;
+
+    if(reg.bound){
+        out << "(ir" << reg.binding << ")";
+    }
+
+    return out;
 }
