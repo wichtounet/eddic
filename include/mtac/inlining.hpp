@@ -12,13 +12,14 @@
 
 #include "Options.hpp"
 
-#include "mtac/Program.hpp"
 #include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
+class Program;
+    
 struct inline_functions {
     std::shared_ptr<Configuration> configuration;
 
