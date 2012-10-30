@@ -10,13 +10,13 @@
 
 #include <memory>
 #include <unordered_set>
-#include <boost/optional.hpp>
+#include <list>
 
 #include "assert.hpp"
 
 #include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
-#include "mtac/Quadruple.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

@@ -11,11 +11,14 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "Labels.hpp"
+#include "Variable.hpp"
+
+#include "mtac/Statement.hpp"
+#include "mtac/Utils.hpp" 
 
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
-
-#include "mtac/Utils.hpp" 
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

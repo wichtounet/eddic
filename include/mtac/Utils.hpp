@@ -14,9 +14,11 @@
 #include <unordered_map>
 
 #include "variant.hpp"
+#include "Type.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/Operator.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

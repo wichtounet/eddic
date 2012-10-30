@@ -8,12 +8,8 @@
 #ifndef MTAC_PRINTER_H
 #define MTAC_PRINTER_H
 
-#include <memory>
-
-#include "mtac/Program.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
-#include "mtac/Function.hpp"
 
 namespace eddic {
 

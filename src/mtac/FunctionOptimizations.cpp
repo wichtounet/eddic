@@ -13,6 +13,7 @@
 
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

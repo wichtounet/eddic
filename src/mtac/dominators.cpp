@@ -10,6 +10,8 @@
 
 #include "PerfsTimer.hpp"
 
+#include "mtac/BasicBlock.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/dominators.hpp"
 
 using namespace eddic;

@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <vector>
-#include <unordered_map>
 
 #include "variant.hpp"
 #include "FloatPool.hpp"

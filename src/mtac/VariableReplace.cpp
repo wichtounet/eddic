@@ -9,6 +9,7 @@
 #include <boost/variant.hpp>
 
 #include "mtac/VariableReplace.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

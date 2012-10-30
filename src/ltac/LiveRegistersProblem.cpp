@@ -7,12 +7,34 @@
 
 #include "VisitorUtils.hpp"
 
-#include "ltac/LiveRegistersProblem.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/LiveRegistersProblem.hpp"
 
 using namespace eddic;
 
 typedef ltac::LiveRegistersProblem::ProblemDomain ProblemDomain;
+    
+void ltac::LiveRegisterValues::insert(ltac::PseudoRegister reg){
+    registers.insert(reg);
+}
+
+void ltac::LiveRegisterValues::insert(ltac::PseudoFloatRegister reg){
+    float_registers.insert(reg);
+}
+
+void ltac::LiveRegisterValues::erase(ltac::PseudoRegister reg){
+    registers.erase(reg);
+}
+
+void ltac::LiveRegisterValues::erase(ltac::PseudoFloatRegister reg){
+    float_registers.erase(reg);
+}
+
+std::size_t ltac::LiveRegisterValues::size(){
+    return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
+}
 
 std::ostream& ltac::operator<<(std::ostream& stream, ltac::LiveRegisterValues& value){
     stream << "set{";

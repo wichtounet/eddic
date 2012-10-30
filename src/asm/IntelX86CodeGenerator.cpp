@@ -16,6 +16,8 @@
 
 #include "mtac/Program.hpp"
 
+#include "ltac/Statement.hpp"
+
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"

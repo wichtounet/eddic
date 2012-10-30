@@ -7,12 +7,14 @@
 
 #include "Type.hpp"
 #include "logging.hpp"
+#include "Variable.hpp"
+
+#include "mtac/Utils.hpp"
+#include "mtac/Argument.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
-
-#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

@@ -5,13 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/PointerPropagation.hpp"
-#include "mtac/OptimizerUtils.hpp"
-#include "mtac/Utils.hpp"
-
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+
+#include "mtac/PointerPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

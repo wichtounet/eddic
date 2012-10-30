@@ -5,11 +5,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/MathPropagation.hpp"
-#include "mtac/OptimizerUtils.hpp"
-
 #include "Variable.hpp"
 #include "Type.hpp"
+
+#include "mtac/MathPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
 
 using namespace eddic;
 

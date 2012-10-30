@@ -14,6 +14,9 @@
 #include "mtac/Utils.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/Statement.hpp"
+
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

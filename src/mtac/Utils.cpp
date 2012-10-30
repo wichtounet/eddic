@@ -9,8 +9,10 @@
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
 #include "mangling.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

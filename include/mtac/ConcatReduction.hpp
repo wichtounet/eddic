@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "mtac/Function.hpp"
 #include "mtac/pass_traits.hpp"
 
 namespace eddic {
@@ -18,6 +17,8 @@ namespace eddic {
 class StringPool;
 
 namespace mtac {
+
+class Function;
 
 struct optimize_concat {
     std::shared_ptr<StringPool> pool;

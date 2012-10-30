@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "assert.hpp"
-
 #include "ltac/Argument.hpp"
 #include "ltac/Address.hpp"
 #include "ltac/Register.hpp"

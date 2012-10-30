@@ -10,9 +10,10 @@
 
 #include <memory>
 
-#include "mtac/BasicBlock.hpp"
-#include "mtac/Function.hpp"
+#include "mtac/forward.hpp"
 #include "mtac/DataFlowDomain.hpp"
+
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

@@ -20,6 +20,8 @@
 #include "likely.hpp"
 #include "logging.hpp"
 
+#include "ltac/Statement.hpp"
+
 #include "mtac/pass_traits.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"
@@ -27,6 +29,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Statement.hpp"
 
 //The custom optimizations
 #include "mtac/VariableOptimizations.hpp"

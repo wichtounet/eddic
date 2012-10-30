@@ -10,6 +10,9 @@
 #include "Type.hpp"
 
 #include "ltac/stack_offsets.hpp"
+#include "ltac/Address.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

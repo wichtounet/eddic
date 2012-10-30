@@ -13,9 +13,11 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Printer.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

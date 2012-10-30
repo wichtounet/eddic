@@ -13,13 +13,13 @@
 #include "Platform.hpp"
 #include "Options.hpp"
 
-#include "mtac/Program.hpp"
-
 namespace eddic {
 
 class StringPool;
 
 namespace mtac {
+
+class Program;
 
 struct Optimizer {
     void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;

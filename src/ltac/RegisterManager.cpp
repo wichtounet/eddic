@@ -14,10 +14,14 @@
 #include "Options.hpp"
 #include "logging.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
+
+#include "mtac/Statement.hpp"
 
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
+#include "ltac/Statement.hpp"
 
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"

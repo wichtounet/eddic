@@ -10,12 +10,13 @@
 
 #include <memory>
 
-#include "mtac/Function.hpp"
 #include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
+
+class Function;
 
 struct merge_basic_blocks {
     bool operator()(std::shared_ptr<mtac::Function> function);

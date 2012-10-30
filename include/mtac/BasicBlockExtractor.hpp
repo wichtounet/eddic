@@ -10,11 +10,11 @@
 
 #include <memory>
 
-#include "mtac/Program.hpp"
-
 namespace eddic {
 
 namespace mtac {
+
+class Program;
 
 struct BasicBlockExtractor {
     void extract(std::shared_ptr<mtac::Program> program) const ;

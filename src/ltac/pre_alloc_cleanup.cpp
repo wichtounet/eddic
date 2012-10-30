@@ -7,6 +7,10 @@
 
 #include "ltac/pre_alloc_cleanup.hpp"
 
+#include "mtac/Program.hpp"
+
+#include "ltac/Statement.hpp"
+
 using namespace eddic;
 
 template<typename Variant>

@@ -14,6 +14,7 @@
 #include "Utils.hpp"
 
 #include "ltac/Printer.hpp"
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

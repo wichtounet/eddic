@@ -8,10 +8,6 @@
 #ifndef MTAC_CONSTANT_FOLDING_H
 #define MTAC_CONSTANT_FOLDING_H
 
-#include <memory>
-
-#include "variant.hpp"
-
 #include "mtac/forward.hpp"
 #include "mtac/pass_traits.hpp"
 

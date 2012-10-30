@@ -10,12 +10,12 @@
 
 #include "Platform.hpp"
 
-#include "mtac/Program.hpp"
-
 namespace eddic {
 
 namespace mtac {
 
+class Program;
+    
 void register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
 
 } //end of mtac

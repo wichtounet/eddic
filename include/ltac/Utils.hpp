@@ -12,18 +12,22 @@
 #include "variant.hpp"
 
 #include "mtac/Program.hpp"
+#include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/BasicBlock.hpp"
+#include "mtac/BinaryOperator.hpp"
 
-#include "ltac/RegisterManager.hpp"
+#include "ltac/Argument.hpp"
+#include "ltac/Statement.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
+class RegisterManager;
+
 bool is_float_operator(mtac::BinaryOperator op);
-
 bool is_float_var(std::shared_ptr<Variable> variable);
-
 bool is_int_var(std::shared_ptr<Variable> variable);
 
 bool transform_to_nop(std::shared_ptr<ltac::Instruction> instruction);

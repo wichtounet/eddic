@@ -5,23 +5,24 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <map>
 #include <unordered_map>
-
-#include <boost/graph/dominator_tree.hpp>
 
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "logging.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Loop.hpp"
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Statement.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

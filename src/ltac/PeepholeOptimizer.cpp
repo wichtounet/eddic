@@ -18,6 +18,7 @@
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "Variable.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"

@@ -10,15 +10,17 @@
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "iterators.hpp"
 
+#include "mtac/forward.hpp"
 #include "mtac/BasicBlock.hpp"
-#include "mtac/Statement.hpp"
 #include "mtac/basic_block_iterator.hpp"
 
 namespace eddic {
 
+class Function;
 class FunctionContext;
 
 namespace mtac {
@@ -26,11 +28,6 @@ namespace mtac {
 class Loop;
 
 class Function : public std::enable_shared_from_this<Function> {
-    public:
-        typedef std::shared_ptr<BasicBlock> BlockPtr;
-        typedef std::list<BlockPtr> BlockList;
-        typedef BlockList::iterator BlockIterator;
-
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
 
