@@ -14,6 +14,7 @@
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/Statement.hpp"
 
 #include "ltac/Statement.hpp"
 

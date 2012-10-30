@@ -20,6 +20,8 @@
 #include "mtac/Program.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
+#include "mtac/forward.hpp"
+#include "mtac/Argument.hpp"
 
 #include "ltac/AbstractRegisterManager.hpp"
 #include "ltac/Statement.hpp"

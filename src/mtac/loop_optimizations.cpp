@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <map>
 #include <unordered_map>
 
 #include "iterators.hpp"
@@ -17,10 +18,11 @@
 #include "mtac/Loop.hpp"
 #include "mtac/loop_optimizations.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Statement.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 

@@ -16,6 +16,7 @@
 #include "mtac/dominators.hpp"
 #include "mtac/Loop.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

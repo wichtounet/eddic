@@ -21,6 +21,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

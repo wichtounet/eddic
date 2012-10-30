@@ -11,6 +11,7 @@
 #include "Variable.hpp"
 
 #include "ltac/Utils.hpp"
+#include "ltac/RegisterManager.hpp"
 
 #include "mtac/Utils.hpp"
 

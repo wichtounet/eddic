@@ -13,10 +13,12 @@
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
 
+#include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
+#include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"

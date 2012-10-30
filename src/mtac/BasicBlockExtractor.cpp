@@ -14,6 +14,7 @@
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

@@ -5,12 +5,15 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <list>
+
 #include "PerfsTimer.hpp"
 #include "logging.hpp"
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
 #include "Type.hpp"
 
+#include "mtac/Statement.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 
 #include "ltac/Statement.hpp"

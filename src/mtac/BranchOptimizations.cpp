@@ -10,6 +10,7 @@
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 

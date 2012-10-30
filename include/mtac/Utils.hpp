@@ -18,6 +18,7 @@
 
 #include "mtac/Program.hpp"
 #include "mtac/Operator.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

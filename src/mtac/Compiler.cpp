@@ -25,6 +25,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/GetTypeVisitor.hpp"

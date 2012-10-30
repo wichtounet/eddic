@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <list>
+
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
@@ -15,6 +17,7 @@
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Offset.hpp"
+#include "mtac/Statement.hpp"
 
 #include "ltac/Statement.hpp"
 
