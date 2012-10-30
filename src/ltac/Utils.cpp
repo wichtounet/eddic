@@ -41,25 +41,25 @@ bool eddic::ltac::transform_to_nop(std::shared_ptr<ltac::Instruction> instructio
     return true;
 }
 
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<mtac::BasicBlock> bb, ltac::Operator op){
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op){
     auto instruction = std::make_shared<ltac::Instruction>(op);
     bb->l_statements.push_back(instruction);
     return instruction;
 }
 
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<mtac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1){
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1){
     auto instruction = std::make_shared<ltac::Instruction>(op, arg1);
     bb->l_statements.push_back(instruction);
     return instruction;
 }
 
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<mtac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
     auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2);
     bb->l_statements.push_back(instruction);
     return instruction;
 }
 
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(std::shared_ptr<mtac::BasicBlock> bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
+std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
     auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3);
     bb->l_statements.push_back(instruction);
     return instruction;

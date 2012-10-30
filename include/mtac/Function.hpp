@@ -43,21 +43,21 @@ class Function : public std::enable_shared_from_this<Function> {
         void create_entry_bb();
         void create_exit_bb();
 
-        std::shared_ptr<BasicBlock> current_bb();
-        std::shared_ptr<BasicBlock> append_bb();
-        std::shared_ptr<BasicBlock> new_bb();
+        basic_block_p current_bb();
+        basic_block_p append_bb();
+        basic_block_p new_bb();
         
-        std::shared_ptr<BasicBlock> entry_bb();
-        std::shared_ptr<BasicBlock> exit_bb();
+        basic_block_p entry_bb();
+        basic_block_p exit_bb();
 
         basic_block_iterator begin();
         basic_block_iterator end();
-        basic_block_iterator at(std::shared_ptr<BasicBlock> bb);
+        basic_block_iterator at(basic_block_p bb);
 
-        basic_block_iterator insert_before(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
-        basic_block_iterator merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block);
+        basic_block_iterator insert_before(basic_block_iterator it, basic_block_p block);
+        basic_block_iterator merge_basic_blocks(basic_block_iterator it, basic_block_p block);
         basic_block_iterator remove(basic_block_iterator it);
-        basic_block_iterator remove(std::shared_ptr<BasicBlock> bb);
+        basic_block_iterator remove(basic_block_p bb);
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
@@ -77,8 +77,8 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t count = 0;
         std::size_t index = 0;
         std::size_t last_pseudo_registers = 0;
-        std::shared_ptr<BasicBlock> entry = nullptr;
-        std::shared_ptr<BasicBlock> exit = nullptr;
+        basic_block_p entry = nullptr;
+        basic_block_p exit = nullptr;
 
         std::vector<std::shared_ptr<mtac::Loop>> m_loops;
 
@@ -101,7 +101,7 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
 
     Iterators(std::shared_ptr<mtac::Function> container) : container(container), it(container->begin()), end(container->end()) {}
 
-    std::shared_ptr<mtac::BasicBlock>& operator*(){
+    mtac::basic_block_p& operator*(){
         return *it;
     }
 
@@ -113,7 +113,7 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
         --it;
     }
 
-    void insert(std::shared_ptr<mtac::BasicBlock> bb){
+    void insert(mtac::basic_block_p bb){
         it = container->insert_before(it, bb);
         end = container->end();
     }
@@ -128,7 +128,7 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
      * The current block will be removed.
      * \return an iterator to the merged block 
      */
-    void merge_to(std::shared_ptr<mtac::BasicBlock> bb){
+    void merge_to(mtac::basic_block_p bb){
         it = container->merge_basic_blocks(it, bb);
         end = container->end();
     }
@@ -138,7 +138,7 @@ struct Iterators<std::shared_ptr<mtac::Function>> {
      * The specified block will be removed.
      * \return an iterator to the merged block 
      */
-    void merge_in(std::shared_ptr<mtac::BasicBlock> bb){
+    void merge_in(mtac::basic_block_p bb){
         it = container->merge_basic_blocks(container->at(bb), *it);
         end = container->end();
     }

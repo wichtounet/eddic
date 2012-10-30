@@ -52,14 +52,14 @@ struct DepthIncrementer : public boost::static_visitor<void> {
     }
 };
 
-void init_depth(std::shared_ptr<mtac::BasicBlock> bb){
+void init_depth(mtac::basic_block_p bb){
     DepthInit init;
 
     bb->depth = 0;
     visit_each(init, bb->statements);
 }
 
-void increase_depth(std::shared_ptr<mtac::BasicBlock> bb){
+void increase_depth(mtac::basic_block_p bb){
     DepthIncrementer incrementer;
 
     ++bb->depth;
@@ -92,7 +92,7 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
 }
 
 bool mtac::loop_analysis::operator()(std::shared_ptr<mtac::Function> function){
-    std::vector<std::pair<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>>> back_edges;
+    std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
 
     for(auto& block : function){
         for(auto& succ : block->successors){
@@ -111,7 +111,7 @@ bool mtac::loop_analysis::operator()(std::shared_ptr<mtac::Function> function){
 
     //Get all edges n -> d
     for(auto& back_edge : back_edges){
-        std::set<std::shared_ptr<mtac::BasicBlock>> natural_loop;
+        std::set<mtac::basic_block_p> natural_loop;
 
         auto n = back_edge.first;
         auto d = back_edge.first;
@@ -123,7 +123,7 @@ bool mtac::loop_analysis::operator()(std::shared_ptr<mtac::Function> function){
         log::emit<Trace>("Control-Flow") << "Back edge d = B" << d->index << log::endl;
 
         if(n != d){
-            std::stack<std::shared_ptr<mtac::BasicBlock>> vertices;
+            std::stack<mtac::basic_block_p> vertices;
             vertices.push(n);
 
             while(!vertices.empty()){

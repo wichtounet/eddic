@@ -10,7 +10,7 @@
 
 using namespace eddic;
 
-mtac::Loop::Loop(const std::set<std::shared_ptr<mtac::BasicBlock>>& blocks) : m_blocks(blocks) {
+mtac::Loop::Loop(const std::set<mtac::basic_block_p>& blocks) : m_blocks(blocks) {
     //Nothing
 }
 
@@ -38,6 +38,6 @@ mtac::Loop::iterator mtac::end(std::shared_ptr<mtac::Loop> loop){
     return loop->begin();
 }
       
-std::set<std::shared_ptr<mtac::BasicBlock>>& mtac::Loop::blocks(){
+std::set<mtac::basic_block_p>& mtac::Loop::blocks(){
     return m_blocks;
 }

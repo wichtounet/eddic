@@ -23,6 +23,9 @@ class Function;
 
 class BasicBlock;
 
+typedef std::shared_ptr<mtac::Function> function_p;
+typedef std::shared_ptr<mtac::BasicBlock> basic_block_p;
+
 class If;
 class IfFalse;
 class Param;

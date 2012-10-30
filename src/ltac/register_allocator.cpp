@@ -81,7 +81,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<Source, Tar
 
 //1. Renumber
 
-typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::unordered_set<ltac::PseudoRegister>> local_reg;
+typedef std::unordered_map<mtac::basic_block_p, std::unordered_set<ltac::PseudoRegister>> local_reg;
 
 template<typename Opt>
 void find_reg_addr(Opt& reg, std::unordered_set<ltac::PseudoRegister>& registers){

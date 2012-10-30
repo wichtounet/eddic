@@ -16,9 +16,9 @@ namespace eddic {
 
 namespace mtac {
 
-class basic_block_iterator : public std::iterator<std::bidirectional_iterator_tag, std::shared_ptr<BasicBlock>> {
+class basic_block_iterator : public std::iterator<std::bidirectional_iterator_tag, basic_block_p> {
     public:
-        basic_block_iterator(std::shared_ptr<BasicBlock> current, std::shared_ptr<BasicBlock> prev) : current(current), prev(prev) {}
+        basic_block_iterator(basic_block_p current, basic_block_p prev) : current(current), prev(prev) {}
         basic_block_iterator(const basic_block_iterator& it) : current(it.current), prev(it.prev) {}
 
         basic_block_iterator& operator++() {
@@ -55,13 +55,13 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
             return current != rhs.current;
         }
 
-        std::shared_ptr<BasicBlock>& operator*() {
+        basic_block_p& operator*() {
             return current;
         }
             
     private:
-        std::shared_ptr<BasicBlock> current;
-        std::shared_ptr<BasicBlock> prev;
+        basic_block_p current;
+        basic_block_p prev;
 };
 
 } //end of mtac

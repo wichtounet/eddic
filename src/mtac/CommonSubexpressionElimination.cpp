@@ -56,7 +56,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
     }
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){

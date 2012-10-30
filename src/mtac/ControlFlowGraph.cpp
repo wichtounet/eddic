@@ -14,12 +14,12 @@
 
 using namespace eddic;
         
-void mtac::make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
+void mtac::make_edge(mtac::basic_block_p from, mtac::basic_block_p to){
     from->successors.push_back(to);
     to->predecessors.push_back(from);
 }
 
-void mtac::remove_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to){
+void mtac::remove_edge(mtac::basic_block_p from, mtac::basic_block_p to){
     auto sit = iterate(from->successors);
 
     while(sit.has_next()){

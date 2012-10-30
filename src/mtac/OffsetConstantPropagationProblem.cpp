@@ -107,7 +107,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){

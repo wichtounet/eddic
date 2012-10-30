@@ -32,8 +32,8 @@ struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward
     
     ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
-    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock>, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
     bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };

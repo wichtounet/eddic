@@ -169,7 +169,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         out << std::endl;
     }
     
-    void operator()(std::shared_ptr<mtac::BasicBlock> bb){
+    void operator()(mtac::basic_block_p bb){
         out << bb << ":" << std::endl;
 
         visit_each(*this, bb->l_statements);

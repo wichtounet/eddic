@@ -70,7 +70,7 @@ bool is_single_float_register(std::shared_ptr<const Type> type);
 unsigned int compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
 std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
 
-void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage);
+void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<mtac::basic_block_p>& usage);
 
 typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
 

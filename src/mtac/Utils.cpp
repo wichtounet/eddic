@@ -100,9 +100,9 @@ struct VariableUsageCollector : public boost::static_visitor<> {
 };
 
 struct BasicBlockUsageCollector : public boost::static_visitor<> {
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage;
+    std::unordered_set<mtac::basic_block_p>& usage;
 
-    BasicBlockUsageCollector(std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage) : usage(usage) {}
+    BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
     void operator()(std::shared_ptr<mtac::Goto> goto_){
         usage.insert(goto_->block);
@@ -138,7 +138,7 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(std::shared_ptr<mtac
     return usage;
 }
 
-void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<std::shared_ptr<mtac::BasicBlock>>& usage){
+void eddic::mtac::computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);
 
     visit_all_statements(collector, function);

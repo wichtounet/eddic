@@ -27,7 +27,7 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::shared_ptr<mtac::BasicBlock>, std::shared_ptr<mtac::BasicBlock>> BBClones;
+typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
 
 struct BBReplace : public boost::static_visitor<> {
     BBClones& clones;
@@ -58,12 +58,12 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
-BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<GlobalContext> context){
+BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
     log::emit<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
     BBClones bb_clones;
 
-    std::vector<std::shared_ptr<mtac::BasicBlock>> cloned;
+    std::vector<mtac::basic_block_p> cloned;
 
     auto old_entry = source_function->entry_bb();
     auto old_exit = source_function->exit_bb();
@@ -116,7 +116,7 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
     return bb_clones;
 }
 
-mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb){
+mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb){
     mtac::VariableClones variable_clones;
 
     auto source_definition = source_function->definition;
@@ -222,7 +222,7 @@ mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_func
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::BasicBlock> bb){
+unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb){
     unsigned int constant = 0;
 
     auto source_definition = source_function->definition;
@@ -261,7 +261,7 @@ unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_fu
     return constant;
 }
 
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::BasicBlock> basic_block){
+void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, mtac::basic_block_p basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
     BBReplace bb_replacer(bb_clones);
 
@@ -350,7 +350,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
-bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::BasicBlock> bb){
+bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function == target_function){
         return false;

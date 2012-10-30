@@ -69,7 +69,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     //Quadruple affects variable

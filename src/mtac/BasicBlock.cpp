@@ -41,10 +41,10 @@ std::ostream& mtac::operator<<(std::ostream& stream, BasicBlock& block){
     }
 }
 
-mtac::BasicBlock::iterator mtac::begin(std::shared_ptr<mtac::BasicBlock> block){
+mtac::BasicBlock::iterator mtac::begin(mtac::basic_block_p block){
     return block->begin();
 }
 
-mtac::BasicBlock::iterator mtac::end(std::shared_ptr<mtac::BasicBlock> block){
+mtac::BasicBlock::iterator mtac::end(mtac::basic_block_p block){
     return block->end(); 
 }

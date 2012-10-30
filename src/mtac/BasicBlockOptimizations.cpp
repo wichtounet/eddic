@@ -20,7 +20,7 @@ using namespace eddic;
 bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> function){
     bool optimized = false;
 
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
+    std::unordered_set<mtac::basic_block_p> usage;
 
     computeBlockUsage(function, usage);
 

@@ -157,7 +157,7 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
     return false;
 }
 
-std::shared_ptr<mtac::BasicBlock> create_pre_header(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
+mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
     auto pre_header = function->new_bb();
     
     auto first_bb = *loop->blocks().begin();
@@ -215,7 +215,7 @@ struct UsageCollector : public boost::static_visitor<bool> {
     }
 };
 
-bool use_variable(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable> var){
+bool use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
     UsageCollector collector(var);
 
     for(auto& statement : bb->statements){
@@ -234,7 +234,7 @@ bool use_variable(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::Statement statement, std::shared_ptr<mtac::Loop> loop){
+bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Statement statement, std::shared_ptr<mtac::Loop> loop){
     auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
 
     //It is not necessary to move statements with no effects. 
@@ -275,7 +275,7 @@ bool is_valid_invariant(std::shared_ptr<mtac::BasicBlock> source_bb, mtac::State
 }
 
 bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
-    std::shared_ptr<mtac::BasicBlock> pre_header;
+    mtac::basic_block_p pre_header;
 
     bool optimized = false;
 
@@ -601,7 +601,7 @@ InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop
 }
 
 bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
-    std::shared_ptr<mtac::BasicBlock> pre_header = nullptr;
+    mtac::basic_block_p pre_header = nullptr;
     bool optimized = false;
 
     InductionVariables new_induction_variables;
@@ -977,7 +977,7 @@ bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mta
     return optimized;
 }
 
-std::pair<bool, int> get_initial_value(std::shared_ptr<mtac::BasicBlock> bb, std::shared_ptr<Variable> var){
+std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
     auto it = bb->statements.rbegin();
     auto end = bb->statements.rend();
 

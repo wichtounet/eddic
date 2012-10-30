@@ -79,11 +79,13 @@ class BasicBlock {
         std::shared_ptr<BasicBlock> dominator = nullptr;     /*!< The immediate dominator of this basic block. */
 };
 
-std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
-std::ostream& operator<<(std::ostream& stream, std::shared_ptr<BasicBlock>& basic_block);
+typedef std::shared_ptr<BasicBlock> basic_block_p;
 
-mtac::BasicBlock::iterator begin(std::shared_ptr<mtac::BasicBlock> function);
-mtac::BasicBlock::iterator end(std::shared_ptr<mtac::BasicBlock> function);
+std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
+std::ostream& operator<<(std::ostream& stream, basic_block_p& basic_block);
+
+mtac::BasicBlock::iterator begin(mtac::basic_block_p function);
+mtac::BasicBlock::iterator end(mtac::basic_block_p function);
 
 } //end of mtac
 

@@ -40,7 +40,7 @@ class Compiler {
     private:
         void compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<FloatPool> float_pool);
 
-        std::unordered_set<std::shared_ptr<mtac::BasicBlock>> block_usage;
+        std::unordered_set<mtac::basic_block_p> block_usage;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 };

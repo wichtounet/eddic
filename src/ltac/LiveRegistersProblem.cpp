@@ -160,7 +160,7 @@ struct LivenessCollector : public boost::static_visitor<> {
 
 } //End of anonymous namespace
 
-ProblemDomain ltac::LiveRegistersProblem::transfer(std::shared_ptr<mtac::BasicBlock> /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){
+ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){
     auto out = in;
     
     LivenessCollector collector(out);

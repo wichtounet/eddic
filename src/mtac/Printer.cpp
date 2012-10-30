@@ -123,7 +123,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << endl;
     }
 
-    void pretty_print(std::vector<std::shared_ptr<mtac::BasicBlock>> blocks){
+    void pretty_print(std::vector<mtac::basic_block_p> blocks){
         if(blocks.empty()){
             stream << "{}";
         } else {
@@ -137,7 +137,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<mtac::BasicBlock> block){
+    void operator()(mtac::basic_block_p block){
         std::string sep(25, '-');
 
         stream << sep << std::endl;

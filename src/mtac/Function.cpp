@@ -34,11 +34,11 @@ mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<BasicBlock> bb){
     }
 }
         
-std::shared_ptr<mtac::BasicBlock> mtac::Function::entry_bb(){
+mtac::basic_block_p mtac::Function::entry_bb(){
     return entry;
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::exit_bb(){
+mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
 }
 
@@ -46,7 +46,7 @@ void mtac::Function::add(Statement statement){
     statements.push_back(statement);
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::current_bb(){
+mtac::basic_block_p mtac::Function::current_bb(){
     return exit;
 }
         
@@ -71,13 +71,13 @@ void mtac::Function::create_exit_bb(){
     exit = new_block;
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::new_bb(){
+mtac::basic_block_p mtac::Function::new_bb(){
     auto bb = std::make_shared<mtac::BasicBlock>(++index);
     bb->context = context;
     return bb;
 }
 
-std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
+mtac::basic_block_p mtac::Function::append_bb(){
     auto new_block = new_bb();
     ++count;
     
@@ -89,7 +89,7 @@ std::shared_ptr<mtac::BasicBlock> mtac::Function::append_bb(){
     return new_block;
 }   
         
-mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, std::shared_ptr<mtac::BasicBlock> block){
+mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, mtac::basic_block_p block){
     auto bb = *it;
 
     ASSERT(block, "Cannot add null block"); 
@@ -107,7 +107,7 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
     return at(block);
 }
 
-mtac::basic_block_iterator mtac::Function::remove(std::shared_ptr<mtac::BasicBlock> block){
+mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     ASSERT(block, "Cannot remove null block"); 
     ASSERT(block != exit, "Cannot remove exit"); 
 

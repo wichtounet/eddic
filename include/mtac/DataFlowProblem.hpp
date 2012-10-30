@@ -21,8 +21,8 @@ namespace mtac {
 
 template<typename Domain>
 struct DataFlowResults {
-    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> OUT;
-    std::unordered_map<std::shared_ptr<mtac::BasicBlock>, Domain> IN;
+    std::unordered_map<mtac::basic_block_p, Domain> OUT;
+    std::unordered_map<mtac::basic_block_p, Domain> IN;
     
     std::unordered_map<mtac::Statement, Domain> OUT_S;
     std::unordered_map<mtac::Statement, Domain> IN_S;
@@ -46,8 +46,8 @@ struct DataFlowProblem {
     virtual ProblemDomain Init(std::shared_ptr<mtac::Function> function);
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
-    virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
-    virtual ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
     virtual bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;

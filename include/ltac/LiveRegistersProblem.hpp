@@ -44,8 +44,8 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
     ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
-    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock> basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(std::shared_ptr<mtac::BasicBlock>, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
     
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
     bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };

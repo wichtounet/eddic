@@ -11,28 +11,28 @@
 #include <memory>
 #include <set>
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 namespace mtac {
 
-class BasicBlock;
-
 class Loop {
     public:
-        typedef std::set<std::shared_ptr<mtac::BasicBlock>>::iterator iterator;
+        typedef std::set<mtac::basic_block_p>::iterator iterator;
 
-        Loop(const std::set<std::shared_ptr<mtac::BasicBlock>>& blocks);
+        Loop(const std::set<mtac::basic_block_p>& blocks);
 
         iterator begin();
         iterator end();
         
-        std::set<std::shared_ptr<mtac::BasicBlock>>& blocks();
+        std::set<mtac::basic_block_p>& blocks();
 
         int estimate();
         void set_estimate(int estimate);
 
     private:
-        std::set<std::shared_ptr<mtac::BasicBlock>> m_blocks;
+        std::set<mtac::basic_block_p> m_blocks;
 
         int m_estimate = -1;
 };

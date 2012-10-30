@@ -10,17 +10,16 @@
 
 #include <memory>
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 namespace mtac {
 
-class Function;
-class BasicBlock;
+void make_edge(mtac::basic_block_p from, mtac::basic_block_p to);
+void remove_edge(mtac::basic_block_p from, mtac::basic_block_p to);
 
-void make_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to);
-void remove_edge(std::shared_ptr<mtac::BasicBlock> from, std::shared_ptr<mtac::BasicBlock> to);
-
-void build_control_flow_graph(std::shared_ptr<Function> function);
+void build_control_flow_graph(mtac::function_p function);
 
 } //end of mtac
 

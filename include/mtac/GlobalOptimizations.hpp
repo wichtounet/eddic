@@ -34,7 +34,7 @@ inline void assign(Left& old, Right&& value, bool& changes){
 }
 
 template<typename P, typename O, typename I, typename OS, typename IS, typename Statements>
-inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, mtac::basic_block_p& B, bool& changes){
     if(statements.size() > 0){
         IN_S[statements.front()] = IN[B];
 
@@ -57,7 +57,7 @@ inline void forward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, S
 }
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -68,7 +68,7 @@ inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R
 }
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -126,7 +126,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(s
 }
 
 template<typename P, typename O, typename I, typename OS, typename IS, typename Statements>
-inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, Statements& statements, mtac::basic_block_p& B, bool& changes){
     if(statements.size() > 0){
         log::emit<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1]] << log::endl;
         assign(OUT_S[statements.back()], OUT[B], changes);
@@ -156,7 +156,7 @@ inline void backward_statements(P& problem, O& OUT, I& IN, OS& OUT_S, IS& IN_S, 
 }
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<Low, void>::type backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
@@ -167,7 +167,7 @@ inline typename std::enable_if<Low, void>::type backward_statements(P& problem, 
 }
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<!Low, void>::type backward_statements(P& problem, R& results, std::shared_ptr<mtac::BasicBlock>& B, bool& changes){
+inline typename std::enable_if<!Low, void>::type backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     

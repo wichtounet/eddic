@@ -10,18 +10,18 @@
 
 #include <memory>
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 namespace mtac {
-
-class BasicBlock;
 
 struct Goto {
     std::string label;
     unsigned int depth;
     
     //Filled only in later phase replacing the label
-    std::shared_ptr<BasicBlock> block;
+    basic_block_p block;
 
     Goto();
     Goto(const std::string& label);

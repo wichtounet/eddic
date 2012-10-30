@@ -15,12 +15,11 @@
 
 #include "mtac/BinaryOperator.hpp"
 #include "mtac/Argument.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
-
-class BasicBlock;
 
 struct If {
     Argument arg1;
@@ -30,7 +29,7 @@ struct If {
     unsigned int depth;
     
     //Filled only in later phase replacing the label
-    std::shared_ptr<BasicBlock> block;
+    basic_block_p block;
 
     If();
     If(Argument arg1, const std::string& label);
