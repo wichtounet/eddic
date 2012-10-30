@@ -13,9 +13,9 @@
 
 #include "variant.hpp"
 
+#include "mtac/pass_traits.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Param.hpp"
-#include "mtac/pass_traits.hpp"
 
 namespace eddic {
 

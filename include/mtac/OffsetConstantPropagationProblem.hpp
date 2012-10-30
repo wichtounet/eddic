@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "variant.hpp"
 #include "assert.hpp"

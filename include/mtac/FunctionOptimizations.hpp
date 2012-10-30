@@ -10,12 +10,13 @@
 
 #include <memory>
 
-#include "mtac/Program.hpp"
 #include "mtac/pass_traits.hpp"
 
 namespace eddic {
 
 namespace mtac {
+
+class Program;
 
 struct remove_unused_functions {
     bool operator()(std::shared_ptr<mtac::Program> program);

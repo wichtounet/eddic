@@ -12,6 +12,7 @@
 #include "Variable.hpp"
 
 #include "mtac/RegisterAllocation.hpp"
+#include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;

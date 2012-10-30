@@ -18,8 +18,6 @@
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
-#include "mtac/Optimizer.hpp"
-#include "mtac/OptimizerUtils.hpp"
 
 namespace eddic {
 
