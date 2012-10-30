@@ -19,7 +19,7 @@ using namespace eddic;
 
 namespace {
 
-void remove_references(std::shared_ptr<mtac::Program> program, std::shared_ptr<mtac::Function> function){
+void remove_references(std::shared_ptr<mtac::Program> program, mtac::function_p function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){

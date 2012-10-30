@@ -159,7 +159,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<mtac::Function> function){
+    void operator()(mtac::function_p function){
         out << "Function " << function->getName() << std::endl;
 
         for(auto& bb : function){
@@ -212,7 +212,7 @@ void ltac::Printer::print(std::shared_ptr<mtac::Program> program) const {
    visitor(program); 
 }
 
-void ltac::Printer::print(std::shared_ptr<mtac::Function> function) const {
+void ltac::Printer::print(mtac::function_p function) const {
    DebugVisitor visitor(std::cout);
    visitor(function); 
 }

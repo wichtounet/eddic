@@ -44,13 +44,13 @@ class RegisterManager : public AbstractRegisterManager {
         mtac::EscapedVariables pointer_escaped;
 
         //The function being compiled
-        std::shared_ptr<mtac::Function> function;
+        mtac::function_p function;
 
         std::shared_ptr<FloatPool> float_pool;
         std::weak_ptr<StatementCompiler> compiler;
 
         RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-                std::shared_ptr<mtac::Function> function, std::shared_ptr<FloatPool> float_pool);
+                mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
 
         /*!
          * Deleted copy constructor

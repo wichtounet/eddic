@@ -330,7 +330,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void as::IntelX86CodeGenerator::compile(std::shared_ptr<mtac::Function> function){
+void as::IntelX86CodeGenerator::compile(mtac::function_p function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86StatementCompiler compiler(writer);

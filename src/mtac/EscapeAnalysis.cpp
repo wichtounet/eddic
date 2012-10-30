@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-mtac::EscapedVariables mtac::escape_analysis(std::shared_ptr<mtac::Function> function){
+mtac::EscapedVariables mtac::escape_analysis(mtac::function_p function){
     mtac::EscapedVariables pointer_escaped = std::make_shared<mtac::EscapedVariables::element_type>();
 
     for(auto& block : function){

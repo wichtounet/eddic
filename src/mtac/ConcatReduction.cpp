@@ -23,7 +23,7 @@ void mtac::optimize_concat::set_pool(std::shared_ptr<StringPool> pool){
     this->pool = pool;
 }
 
-bool mtac::optimize_concat::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::optimize_concat::operator()(mtac::function_p function){
     bool optimized = false;
     
     for(auto& block : function){

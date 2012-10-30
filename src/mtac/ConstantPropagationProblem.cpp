@@ -22,7 +22,7 @@ using namespace eddic;
 
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-ProblemDomain mtac::ConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::ConstantPropagationProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     return default_element();

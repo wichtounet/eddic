@@ -38,8 +38,8 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
     
-    ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
-    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Init(mtac::function_p function) override;
+    ProblemDomain Boundary(mtac::function_p function) override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
     bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };

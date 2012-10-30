@@ -32,14 +32,14 @@ std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& v
     return stream << "}";
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     auto value = default_element();
     return value;
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }

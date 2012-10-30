@@ -17,7 +17,7 @@
 
 using namespace eddic;
 
-bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::merge_basic_blocks::operator()(mtac::function_p function){
     bool optimized = false;
 
     std::unordered_set<mtac::basic_block_p> usage;
@@ -109,7 +109,7 @@ bool mtac::merge_basic_blocks::operator()(std::shared_ptr<mtac::Function> functi
     return optimized; 
 }
 
-bool mtac::remove_dead_basic_blocks::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::remove_dead_basic_blocks::operator()(mtac::function_p function){
     unsigned int before = function->bb_count();
 
     if(before <= 2){

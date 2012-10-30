@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
@@ -18,14 +19,12 @@ class StringPool;
 
 namespace mtac {
 
-class Function;
-
 struct optimize_concat {
     std::shared_ptr<StringPool> pool;
 
     void set_pool(std::shared_ptr<StringPool> pool);
 
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>

@@ -36,19 +36,19 @@ using namespace eddic;
 
 namespace {
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function);
-void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
-void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function);
-void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment);
-void assign(std::shared_ptr<mtac::Function> function, ast::LValue& left_value, ast::Value& value);
-std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary);
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
+void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
+void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
+void assign(mtac::function_p function, ast::Assignment& assignment);
+void assign(mtac::function_p function, ast::LValue& left_value, ast::Value& value);
+std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
 template<typename Call>
-void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
+void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
 
-std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
+std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
     mtac::Argument left = moveToArgument(value.Content->first, function);
@@ -70,15 +70,15 @@ std::shared_ptr<Variable> performOperation(ast::Expression& value, std::shared_p
     return t1;
 }
 
-std::shared_ptr<Variable> performIntOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<Variable> performIntOperation(ast::Expression& value, mtac::function_p function){
     return performOperation(value, function, function->context->new_temporary(INT), &mtac::toOperator);
 }
 
-std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, mtac::function_p function){
     return performOperation(value, function, function->context->new_temporary(FLOAT), &mtac::toFloatOperator);
 }
 
-mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, std::shared_ptr<mtac::Function> function){
+mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
     auto temp = function->context->new_temporary(INT);
@@ -90,16 +90,16 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
 }
 
 template<typename Operation>
-std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function);
+std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::function_p function);
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function);
+std::shared_ptr<Variable> performSuffixOperation(Operation& operation, mtac::function_p function);
 
 template<bool Address = false>
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
-    ToArgumentsVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
+    ToArgumentsVisitor(mtac::function_p f) : function(f) {}
     
-    mutable std::shared_ptr<mtac::Function> function;
+    mutable mtac::function_p function;
 
     result_type operator()(ast::Literal& literal) const {
         return {literal.label, (int) literal.value.size() - 2};
@@ -589,9 +589,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 };
 
 struct AbstractVisitor : public boost::static_visitor<> {
-    AbstractVisitor(std::shared_ptr<mtac::Function> f) : function(f) {}
+    AbstractVisitor(mtac::function_p f) : function(f) {}
     
-    mutable std::shared_ptr<mtac::Function> function;
+    mutable mtac::function_p function;
     
     virtual void intAssign(const std::vector<mtac::Argument>& arguments) const = 0;
     virtual void pointerAssign(const std::vector<mtac::Argument>& arguments) const = 0;
@@ -620,10 +620,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
 };
 
 struct AssignValueToVariable : public AbstractVisitor {
-    AssignValueToVariable(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v) : AbstractVisitor(f), variable(v) {}
-    AssignValueToVariable(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, ast::Value& indexValue) : AbstractVisitor(f), variable(v), indexValue(indexValue) {}
-    AssignValueToVariable(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
-    AssignValueToVariable(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset, std::shared_ptr<const Type> type) : AbstractVisitor(f), variable(v), type(type), offset(offset) {}
+    AssignValueToVariable(mtac::function_p f, std::shared_ptr<Variable> v) : AbstractVisitor(f), variable(v) {}
+    AssignValueToVariable(mtac::function_p f, std::shared_ptr<Variable> v, ast::Value& indexValue) : AbstractVisitor(f), variable(v), indexValue(indexValue) {}
+    AssignValueToVariable(mtac::function_p f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
+    AssignValueToVariable(mtac::function_p f, std::shared_ptr<Variable> v, unsigned int offset, std::shared_ptr<const Type> type) : AbstractVisitor(f), variable(v), type(type), offset(offset) {}
     
     std::shared_ptr<Variable> variable;
     std::shared_ptr<const Type> type;
@@ -716,7 +716,7 @@ struct AssignValueToVariable : public AbstractVisitor {
 };
 
 struct DereferenceAssign : public AbstractVisitor {
-    DereferenceAssign(std::shared_ptr<mtac::Function> f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
+    DereferenceAssign(mtac::function_p f, std::shared_ptr<Variable> v, unsigned int offset) : AbstractVisitor(f), variable(v), offset(offset) {}
     
     std::shared_ptr<Variable> variable;
     unsigned int offset;
@@ -770,10 +770,10 @@ struct DereferenceAssign : public AbstractVisitor {
 };
 
 struct AssignVisitor : public boost::static_visitor<> {
-    std::shared_ptr<mtac::Function> function;
+    mtac::function_p function;
     ast::Value& value;
 
-    AssignVisitor(std::shared_ptr<mtac::Function> function, ast::Value& value) : function(function), value(value) {}
+    AssignVisitor(mtac::function_p function, ast::Value& value) : function(function), value(value) {}
 
     void operator()(ast::MemberValue& member_value){
         std::shared_ptr<Variable> source, dest;
@@ -852,19 +852,19 @@ struct AssignVisitor : public boost::static_visitor<> {
     }
 };
 
-void assign(std::shared_ptr<mtac::Function> function, ast::LValue& left_value, ast::Value& value){
+void assign(mtac::function_p function, ast::LValue& left_value, ast::Value& value){
     AssignVisitor visitor(function, value);
     visit(visitor, left_value);
 }
 
-void assign(std::shared_ptr<mtac::Function> function, ast::Assignment& assignment){
+void assign(mtac::function_p function, ast::Assignment& assignment){
     assign(function, assignment.Content->left_value, assignment.Content->value);
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
-    JumpIfFalseVisitor(std::shared_ptr<mtac::Function> f, const std::string& l) : function(f), label(l) {}
+    JumpIfFalseVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
     
-    mutable std::shared_ptr<mtac::Function> function;
+    mutable mtac::function_p function;
     std::string label;
    
     void operator()(ast::Expression& value) const ;
@@ -878,7 +878,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 };
 
 template<typename Control>
-void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Function> function, const std::string& label){
+void compare(ast::Expression& value, ast::Operator op, mtac::function_p function, const std::string& label){
     ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
@@ -894,9 +894,9 @@ void compare(ast::Expression& value, ast::Operator op, std::shared_ptr<mtac::Fun
 }
 
 struct JumpIfTrueVisitor : public boost::static_visitor<> {
-    JumpIfTrueVisitor(std::shared_ptr<mtac::Function> f, const std::string& l) : function(f), label(l) {}
+    JumpIfTrueVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
     
-    mutable std::shared_ptr<mtac::Function> function;
+    mutable mtac::function_p function;
     std::string label;
    
     void operator()(ast::Expression& value) const {
@@ -985,7 +985,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     }
 }
 
-std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> function, ast::Ternary& ternary){
+std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary){
     auto type = visit_non_variant(ast::GetTypeVisitor(), ternary);
 
     auto falseLabel = newLabel();
@@ -1028,7 +1028,7 @@ std::vector<mtac::Argument> compile_ternary(std::shared_ptr<mtac::Function> func
     ASSERT_PATH_NOT_TAKEN("Unhandled ternary type");
 }
 
-void performStringOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
+void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     ASSERT(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
     std::vector<mtac::Argument> arguments;
@@ -1069,7 +1069,7 @@ class CompilerVisitor : public boost::static_visitor<> {
     private:
         std::shared_ptr<StringPool> pool;
         std::shared_ptr<mtac::Program> program;
-        std::shared_ptr<mtac::Function> function;
+        mtac::function_p function;
     
     public:
         CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram) {}
@@ -1372,11 +1372,11 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
-mtac::Argument moveToArgument(ast::Value& value, std::shared_ptr<mtac::Function> function){
+mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function){
     return visit(ToArgumentsVisitor<>(function), value)[0];
 }
     
-void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
+void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, mtac::function_p function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
     auto struct_name = type->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
@@ -1403,7 +1403,7 @@ void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Typ
     }
 }
 
-void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition, ast::VariableValue& value){
+void push_struct(mtac::function_p function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition, ast::VariableValue& value){
     auto var = value.Content->var;
     auto context = value.Content->context;
 
@@ -1440,7 +1440,7 @@ void push_struct(std::shared_ptr<mtac::Function> function, boost::variant<std::s
 }
 
 template<typename Call>
-void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<eddic::Function> definition, Call& functionCall){
+void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall){
     auto context = definition->context;
     
     auto values = functionCall.Content->values;
@@ -1490,7 +1490,7 @@ void pass_arguments(std::shared_ptr<mtac::Function> function, std::shared_ptr<ed
     }
 }
 
-void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     std::shared_ptr<eddic::Function> definition;
     definition = functionCall.Content->function;
 
@@ -1501,7 +1501,7 @@ void execute_call(ast::FunctionCall& functionCall, std::shared_ptr<mtac::Functio
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
-void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     auto definition = functionCall.Content->function;
 
     ASSERT(definition, "All the member functions should be in the function table");
@@ -1520,7 +1520,7 @@ void execute_member_call(ast::MemberFunctionCall& functionCall, std::shared_ptr<
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
     auto t1 = function->context->new_temporary(INT); 
    
     //The first operator defines the kind of operation 
@@ -1586,7 +1586,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, std::shar
     return t1;
 }
 
-ast::VariableValue to_variable_value(std::shared_ptr<mtac::Function> function, std::shared_ptr<Variable> variable){
+ast::VariableValue to_variable_value(mtac::function_p function, std::shared_ptr<Variable> variable){
     ast::VariableValue value;
     value.Content->var = variable;
     value.Content->variableName = variable->name();
@@ -1597,10 +1597,10 @@ ast::VariableValue to_variable_value(std::shared_ptr<mtac::Function> function, s
 
 template<typename Operation>
 struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
-    std::shared_ptr<mtac::Function> function;
+    mtac::function_p function;
     Operation& operation;
 
-    PrefixOperationVisitor(std::shared_ptr<mtac::Function> function, Operation& operation) : function(function), operation(operation) {}
+    PrefixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
 
     void perform(std::shared_ptr<Variable> t1){
         if(t1->type() == FLOAT){
@@ -1701,10 +1701,10 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
 
 template<typename Operation>
 struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
-    std::shared_ptr<mtac::Function> function;
+    mtac::function_p function;
     Operation& operation;
 
-    SuffixOperationVisitor(std::shared_ptr<mtac::Function> function, Operation& operation) : function(function), operation(operation) {}
+    SuffixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
 
     template<typename V>
     std::shared_ptr<Variable> perform(V& value){
@@ -1738,13 +1738,13 @@ struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
 };
 
 template<typename Operation>
-std::shared_ptr<Variable> performPrefixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::function_p function){
     PrefixOperationVisitor<Operation> visitor(function, operation);
     return visit(visitor, operation.Content->left_value);
 }
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(Operation& operation, std::shared_ptr<mtac::Function> function){
+std::shared_ptr<Variable> performSuffixOperation(Operation& operation, mtac::function_p function){
     SuffixOperationVisitor<Operation> visitor(function, operation);
     return visit(visitor, operation.Content->left_value);
 }

@@ -31,12 +31,12 @@ struct dominators {
     std::vector<unsigned int>* bucket;
 
     const std::size_t cn;
-    std::shared_ptr<mtac::Function> function;
+    mtac::function_p function;
 
     std::unordered_map<mtac::basic_block_p, unsigned int> numbers;
     std::unordered_map<unsigned int, mtac::basic_block_p> blocks;
 
-    dominators(std::size_t cn, std::shared_ptr<mtac::Function> function) : cn(cn), function(function) {
+    dominators(std::size_t cn, mtac::function_p function) : cn(cn), function(function) {
         parent = new unsigned int[cn+1];
         semi = new unsigned int[cn+1];
         vertex = new unsigned int[cn+1];

@@ -14,17 +14,13 @@
 
 #include "asm/CodeGenerator.hpp"
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 class AssemblyFileWriter;
 class GlobalContext;
 class Function;
-
-namespace mtac {
-
-class Function;
-
-}
 
 namespace as {
 
@@ -45,7 +41,7 @@ class IntelCodeGenerator : public CodeGenerator {
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(std::shared_ptr<mtac::Function> function) = 0;
+        virtual void compile(mtac::function_p function) = 0;
 
         virtual void defineDataSection() = 0;
 

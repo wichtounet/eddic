@@ -11,15 +11,14 @@
 #include <memory>
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-class Function;
-
 struct merge_basic_blocks {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>
@@ -31,7 +30,7 @@ struct pass_traits<merge_basic_blocks> {
 };
 
 struct remove_dead_basic_blocks {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>

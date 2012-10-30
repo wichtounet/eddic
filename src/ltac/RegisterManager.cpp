@@ -168,7 +168,7 @@ void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::Re
 } //end of anonymous namespace
     
 ltac::RegisterManager::RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-        std::shared_ptr<mtac::Function> function, std::shared_ptr<FloatPool> float_pool) : 
+        mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : 
     AbstractRegisterManager(registers, float_registers), function(function), float_pool(float_pool) {
         //Nothing else to init
 }

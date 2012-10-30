@@ -372,7 +372,7 @@ inline bool is_nop(ltac::Statement& statement){
     return false;
 }
 
-bool basic_optimizations(std::shared_ptr<mtac::Function> function, Platform platform){
+bool basic_optimizations(mtac::function_p function, Platform platform){
     bool optimized = false;
     
     for(auto& bb : function){
@@ -430,7 +430,7 @@ bool basic_optimizations(std::shared_ptr<mtac::Function> function, Platform plat
     return optimized;
 }
 
-bool constant_propagation(std::shared_ptr<mtac::Function> function){
+bool constant_propagation(mtac::function_p function){
     bool optimized = false;
 
     for(auto& bb : function){
@@ -504,7 +504,7 @@ void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::Registe
     }
 }
 
-bool copy_propagation(std::shared_ptr<mtac::Function> function, Platform platform){
+bool copy_propagation(mtac::function_p function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
 
     bool optimized = false;
@@ -577,7 +577,7 @@ void add_param_registers(RegisterUsage& usage, Platform platform){
     usage.insert(ltac::BP);
 }
 
-void add_escaped_registers(RegisterUsage& usage, std::shared_ptr<mtac::Function> function, Platform platform){
+void add_escaped_registers(RegisterUsage& usage, mtac::function_p function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
     if(function->definition->returnType == STRING){
@@ -617,7 +617,7 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
-RegisterUsage collect_register_usage(std::shared_ptr<mtac::Function> function, Platform platform){
+RegisterUsage collect_register_usage(mtac::function_p function, Platform platform){
     RegisterUsage usage;
     add_escaped_registers(usage, function, platform);
 
@@ -653,7 +653,7 @@ inline bool one_of(const T& value, const std::vector<T>& container){
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-bool dead_code_elimination(std::shared_ptr<mtac::Function> function, Platform platform){
+bool dead_code_elimination(mtac::function_p function, Platform platform){
     bool optimized = false;
 
     for(auto& bb : function){
@@ -779,7 +779,7 @@ bool move_forward(BIt& bit, BIt& bend, It& it, It& end){
     return false;
 }
 
-bool conditional_move(std::shared_ptr<mtac::Function> function, Platform platform){
+bool conditional_move(mtac::function_p function, Platform platform){
     bool optimized = false;
 
     RegisterUsage usage = collect_register_usage(function, platform);
@@ -910,7 +910,7 @@ bool conditional_move(std::shared_ptr<mtac::Function> function, Platform platfor
     return optimized;
 }
 
-bool debug(const std::string& name, bool b, std::shared_ptr<mtac::Function> function){
+bool debug(const std::string& name, bool b, mtac::function_p function){
     if(log::enabled<Debug>()){
         if(b){
             log::emit<Debug>("Peephole") << name << " returned false" << log::endl;

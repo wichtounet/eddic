@@ -33,7 +33,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)

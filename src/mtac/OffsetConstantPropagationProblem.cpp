@@ -31,7 +31,7 @@ void mtac::OffsetConstantPropagationProblem::set_platform(Platform platform){
     this->platform = platform;
 }
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     ProblemDomain::Values values;

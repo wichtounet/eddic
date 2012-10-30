@@ -157,7 +157,7 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
     return false;
 }
 
-mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
+mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
     auto pre_header = function->new_bb();
     
     auto first_bb = *loop->blocks().begin();
@@ -274,7 +274,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Statement statement
     return true;
 }
 
-bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
+bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
     mtac::basic_block_p pre_header;
 
     bool optimized = false;
@@ -408,7 +408,7 @@ InductionVariables find_basic_induction_variables(std::shared_ptr<mtac::Loop> lo
     return basic_induction_variables;
 }
 
-InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, const InductionVariables& basic_induction_variables, std::shared_ptr<mtac::Function> function){
+InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, const InductionVariables& basic_induction_variables, mtac::function_p function){
     auto dependent_induction_variables = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -600,7 +600,7 @@ InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop
     return dependent_induction_variables;
 }
 
-bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, std::shared_ptr<mtac::Function> function){
+bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, mtac::function_p function){
     mtac::basic_block_p pre_header = nullptr;
     bool optimized = false;
 
@@ -824,7 +824,7 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop, InductionVaria
     }
 }
 
-bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, std::shared_ptr<mtac::Function> function){
+bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
     bool optimized = false;
 
     //1. Identify all the induction variables
@@ -949,7 +949,7 @@ int number_of_iterations(LinearEquation& linear_equation, int initial_value, mta
 
 } //end of anonymous namespace
 
-bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_invariant_code_motion::operator()(mtac::function_p function){
     if(function->loops().empty()){
         return false;
     }
@@ -963,7 +963,7 @@ bool mtac::loop_invariant_code_motion::operator()(std::shared_ptr<mtac::Function
     return optimized;
 }
 
-bool mtac::loop_induction_variables_optimization::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_induction_variables_optimization::operator()(mtac::function_p function){
     if(function->loops().empty()){
         return false;
     }
@@ -1002,7 +1002,7 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
     return std::make_pair(false, 0);
 }
 
-bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::remove_empty_loops::operator()(mtac::function_p function){
     if(function->loops().empty()){
         return false;
     }
@@ -1068,7 +1068,7 @@ bool mtac::remove_empty_loops::operator()(std::shared_ptr<mtac::Function> functi
     return optimized;
 }
 
-bool mtac::complete_loop_peeling::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
     if(function->loops().empty()){
         return false;
     }

@@ -43,7 +43,7 @@ void mtac::remove_edge(mtac::basic_block_p from, mtac::basic_block_p to){
     }
 }
 
-void mtac::build_control_flow_graph(std::shared_ptr<mtac::Function> function){
+void mtac::build_control_flow_graph(mtac::function_p function){
     //Destroy the CFG
     for(auto& block : function){
         block->successors.clear();

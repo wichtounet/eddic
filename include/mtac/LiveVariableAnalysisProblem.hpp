@@ -57,8 +57,8 @@ std::ostream& operator<<(std::ostream& stream, LiveVariableValues& expression);
 struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backward, LiveVariableValues> {
     mtac::EscapedVariables pointer_escaped;
     
-    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
-    ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(mtac::function_p function) override;
+    ProblemDomain Init(mtac::function_p function) override;
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;

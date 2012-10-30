@@ -20,10 +20,9 @@ namespace mtac {
 class Program;
 
 class Function;
+typedef std::shared_ptr<mtac::Function> function_p;
 
 class BasicBlock;
-
-typedef std::shared_ptr<mtac::Function> function_p;
 typedef std::shared_ptr<mtac::BasicBlock> basic_block_p;
 
 class If;

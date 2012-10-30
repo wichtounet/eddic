@@ -50,12 +50,12 @@ std::ostream& ltac::operator<<(std::ostream& stream, ltac::LiveRegisterValues& v
     return stream << "}";
 }
 
-ProblemDomain ltac::LiveRegistersProblem::Boundary(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain ltac::LiveRegistersProblem::Boundary(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }
 
-ProblemDomain ltac::LiveRegistersProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain ltac::LiveRegistersProblem::Init(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }

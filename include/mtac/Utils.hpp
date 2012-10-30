@@ -58,7 +58,7 @@ inline void assertIntOrVariable(T& variant){
 }
 
 template<typename Visitor>
-void visit_all_statements(Visitor& visitor, std::shared_ptr<mtac::Function> function){
+void visit_all_statements(Visitor& visitor, mtac::function_p function){
     for(auto& block : function){
         visit_each(visitor, block->statements);
     }
@@ -70,14 +70,14 @@ bool is_single_float_register(std::shared_ptr<const Type> type);
 unsigned int compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
 std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
 
-void computeBlockUsage(std::shared_ptr<mtac::Function> function, std::unordered_set<mtac::basic_block_p>& usage);
+void computeBlockUsage(mtac::function_p function, std::unordered_set<mtac::basic_block_p>& usage);
 
 typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
 
-VariableUsage compute_variable_usage(std::shared_ptr<mtac::Function> function);
-VariableUsage compute_variable_usage_with_depth(std::shared_ptr<mtac::Function> function, int factor);
+VariableUsage compute_variable_usage(mtac::function_p function);
+VariableUsage compute_variable_usage_with_depth(mtac::function_p function, int factor);
 
-bool is_recursive(std::shared_ptr<mtac::Function> function);
+bool is_recursive(mtac::function_p function);
 
 bool safe(const std::string& call);
 bool safe(std::shared_ptr<mtac::Call> call);

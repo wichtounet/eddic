@@ -30,7 +30,7 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPro
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
     mtac::EscapedVariables pointer_escaped;
     
-    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };

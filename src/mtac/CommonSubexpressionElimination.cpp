@@ -112,11 +112,11 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::function_p /*function*/){
     return default_element();
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::function_p function){
     if(init){
         ProblemDomain result(*init);
         return result;

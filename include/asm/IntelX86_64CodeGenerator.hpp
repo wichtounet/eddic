@@ -25,7 +25,7 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
     protected:        
         void writeRuntimeSupport();
         void addStandardFunctions();
-        void compile(std::shared_ptr<mtac::Function> function);
+        void compile(mtac::function_p function);
         
         /* Functions for global variables */
         void defineDataSection();

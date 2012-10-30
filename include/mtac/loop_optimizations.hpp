@@ -11,15 +11,14 @@
 #include <memory>
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-class Function;
-
 struct loop_invariant_code_motion {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>
@@ -31,7 +30,7 @@ struct pass_traits<loop_invariant_code_motion> {
 };
 
 struct loop_induction_variables_optimization {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>
@@ -43,7 +42,7 @@ struct pass_traits<loop_induction_variables_optimization> {
 };
 
 struct remove_empty_loops {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>
@@ -55,7 +54,7 @@ struct pass_traits<remove_empty_loops> {
 };
 
 struct complete_loop_peeling {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>

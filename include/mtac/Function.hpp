@@ -87,19 +87,19 @@ class Function : public std::enable_shared_from_this<Function> {
 
 typedef std::shared_ptr<mtac::Function> function_p;
 
-basic_block_iterator begin(std::shared_ptr<mtac::Function> function);
-basic_block_iterator end(std::shared_ptr<mtac::Function> function);
+basic_block_iterator begin(mtac::function_p function);
+basic_block_iterator end(mtac::function_p function);
 
 } //end of mtac
 
 template<>
-struct Iterators<std::shared_ptr<mtac::Function>> {
-    std::shared_ptr<mtac::Function> container;
+struct Iterators<mtac::function_p> {
+    mtac::function_p container;
 
     mtac::basic_block_iterator it;
     mtac::basic_block_iterator end;
 
-    Iterators(std::shared_ptr<mtac::Function> container) : container(container), it(container->begin()), end(container->end()) {}
+    Iterators(mtac::function_p container) : container(container), it(container->begin()), end(container->end()) {}
 
     mtac::basic_block_p& operator*(){
         return *it;

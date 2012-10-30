@@ -74,7 +74,7 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Program> program){
     }
 }
 
-void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
+void mtac::full_loop_analysis(mtac::function_p function){
     compute_dominators(function);
 
     for(auto& bb : function){
@@ -91,7 +91,7 @@ void mtac::full_loop_analysis(std::shared_ptr<mtac::Function> function){
     }
 }
 
-bool mtac::loop_analysis::operator()(std::shared_ptr<mtac::Function> function){
+bool mtac::loop_analysis::operator()(mtac::function_p function){
     std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
 
     for(auto& block : function){

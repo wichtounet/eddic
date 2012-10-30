@@ -11,15 +11,14 @@
 #include <memory>
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-class Function;
-
 struct remove_aliases {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>
@@ -31,7 +30,7 @@ struct pass_traits<remove_aliases> {
 };
 
 struct clean_variables {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>

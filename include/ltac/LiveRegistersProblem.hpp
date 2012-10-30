@@ -40,8 +40,8 @@ struct LiveRegisterValues {
 std::ostream& operator<<(std::ostream& stream, LiveRegisterValues& expression);
 
 struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues> {
-    ProblemDomain Boundary(std::shared_ptr<mtac::Function> function) override;
-    ProblemDomain Init(std::shared_ptr<mtac::Function> function) override;
+    ProblemDomain Boundary(mtac::function_p function) override;
+    ProblemDomain Init(mtac::function_p function) override;
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;

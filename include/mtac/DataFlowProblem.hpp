@@ -42,8 +42,8 @@ template<DataFlowType Type, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
-    virtual ProblemDomain Boundary(std::shared_ptr<mtac::Function> function);
-    virtual ProblemDomain Init(std::shared_ptr<mtac::Function> function);
+    virtual ProblemDomain Boundary(mtac::function_p function);
+    virtual ProblemDomain Init(mtac::function_p function);
 
     virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
@@ -62,13 +62,13 @@ struct DataFlowProblem {
 };
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::function_p/* function*/) -> ProblemDomain {
     //By default, return the default element
     return default_element();
 }
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init(std::shared_ptr<mtac::Function>/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Init(mtac::function_p/* function*/) -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }

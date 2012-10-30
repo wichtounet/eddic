@@ -235,10 +235,10 @@ std::vector<std::shared_ptr<mtac::Loop>>& mtac::Function::loops(){
     return m_loops;
 }
 
-mtac::basic_block_iterator mtac::begin(std::shared_ptr<mtac::Function> function){
+mtac::basic_block_iterator mtac::begin(mtac::function_p function){
     return function->begin();
 }
 
-mtac::basic_block_iterator mtac::end(std::shared_ptr<mtac::Function> function){
+mtac::basic_block_iterator mtac::end(mtac::function_p function){
     return function->end();
 }

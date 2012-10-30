@@ -58,7 +58,7 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
-BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
+BBClones clone(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
     log::emit<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
     BBClones bb_clones;
@@ -116,7 +116,7 @@ BBClones clone(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<
     return bb_clones;
 }
 
-mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb){
+mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb){
     mtac::VariableClones variable_clones;
 
     auto source_definition = source_function->definition;
@@ -222,7 +222,7 @@ mtac::VariableClones copy_parameters(std::shared_ptr<mtac::Function> source_func
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> dest_function, mtac::basic_block_p bb){
+unsigned int count_constant_parameters(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb){
     unsigned int constant = 0;
 
     auto source_definition = source_function->definition;
@@ -331,7 +331,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
     }
 }
 
-bool can_be_inlined(std::shared_ptr<mtac::Function> function){
+bool can_be_inlined(mtac::function_p function){
     //The main function cannot be inlined
     if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
         return false;
@@ -350,7 +350,7 @@ bool can_be_inlined(std::shared_ptr<mtac::Function> function){
     return true;
 }
 
-bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_ptr<mtac::Function> target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
+bool will_inline(mtac::function_p source_function, mtac::function_p target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function == target_function){
         return false;
@@ -389,7 +389,7 @@ bool will_inline(std::shared_ptr<mtac::Function> source_function, std::shared_pt
     return false;
 }
 
-std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::Program> program){
+mtac::function_p get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::Program> program){
     auto target_definition = call->functionDefinition;
 
     for(auto& function : program->functions){
@@ -401,7 +401,7 @@ std::shared_ptr<mtac::Function> get_target(std::shared_ptr<mtac::Call> call, std
     return nullptr;
 }
 
-bool call_site_inlining(std::shared_ptr<mtac::Function> dest_function, std::shared_ptr<mtac::Program> program){
+bool call_site_inlining(mtac::function_p dest_function, std::shared_ptr<mtac::Program> program){
     bool optimized = false;
 
     auto bit = dest_function->begin();

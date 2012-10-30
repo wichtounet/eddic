@@ -111,7 +111,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<mtac::Function> function){
+    void operator()(mtac::function_p function){
         stream << "Function " << function->getName() << endl;
 
         visit_each(*this, function->getStatements());
@@ -343,7 +343,7 @@ void mtac::Printer::print(std::shared_ptr<mtac::Program> program) const {
    visitor(program); 
 }
 
-void mtac::Printer::printFunction(std::shared_ptr<mtac::Function> function) const {
+void mtac::Printer::printFunction(mtac::function_p function) const {
    DebugVisitor visitor;
    visitor(function); 
 }
@@ -372,7 +372,7 @@ void mtac::print(std::shared_ptr<mtac::Program> program){
     printer.print(program);
 }
 
-void mtac::print(std::shared_ptr<mtac::Function> function){
+void mtac::print(mtac::function_p function){
     mtac::Printer printer;
     printer.printFunction(function);
 }

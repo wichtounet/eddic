@@ -133,7 +133,7 @@ struct pass_runner {
     bool optimized = false;
     
     std::shared_ptr<mtac::Program> program;
-    std::shared_ptr<mtac::Function> function;
+    mtac::function_p function;
 
     std::shared_ptr<StringPool> pool;
     std::shared_ptr<Configuration> configuration;

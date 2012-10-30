@@ -12,19 +12,19 @@
 #include <set>
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-class Function;
 class Program;
 
 void full_loop_analysis(std::shared_ptr<mtac::Program> program);
-void full_loop_analysis(std::shared_ptr<mtac::Function> function);
+void full_loop_analysis(mtac::function_p function);
 
 struct loop_analysis {
-    bool operator()(std::shared_ptr<mtac::Function> function);
+    bool operator()(mtac::function_p function);
 };
 
 template<>

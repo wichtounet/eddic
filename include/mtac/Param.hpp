@@ -15,8 +15,8 @@
 
 namespace eddic {
 
-class Function;
 class Variable;
+class Function;
 
 namespace mtac {
 
