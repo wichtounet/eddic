@@ -13,7 +13,6 @@
 #include <unordered_map>
 
 #include "ltac/bit_matrix.hpp"
-#include "ltac/PseudoRegister.hpp"
 
 namespace eddic {
 
