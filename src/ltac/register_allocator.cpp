@@ -180,7 +180,7 @@ void renumber(mtac::function_p function){
 //2. Build
 
 template<typename Opt>
-void gather_reg(Opt& reg, ltac::interference_graph& graph){
+void gather_reg(Opt& reg, ltac::interference_graph<ltac::PseudoRegister>& graph){
     if(reg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
             graph.gather(*ptr);
@@ -189,7 +189,7 @@ void gather_reg(Opt& reg, ltac::interference_graph& graph){
 }
 
 template<typename Opt>
-void gather(Opt& arg, ltac::interference_graph& graph){
+void gather(Opt& arg, ltac::interference_graph<ltac::PseudoRegister>& graph){
     if(arg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
             graph.gather(*ptr);
@@ -200,7 +200,7 @@ void gather(Opt& arg, ltac::interference_graph& graph){
     }
 }
 
-void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph& graph){
+void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph<ltac::PseudoRegister>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -214,7 +214,7 @@ void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph& gra
     log::emit<Trace>("registers") << "Found " << graph.size() << " pseudo registers" << log::endl;
 }
 
-void build_interference_graph(ltac::interference_graph& graph, mtac::function_p function){
+void build_interference_graph(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function){
     //Init the graph structure with the current size
     gather_pseudo_regs(function, graph);
     graph.build_graph();
@@ -261,7 +261,7 @@ bool is_copy(ltac::Statement& statement){
     return false;
 }
 
-bool coalesce(ltac::interference_graph& graph, mtac::function_p function){
+bool coalesce(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function){
     local_reg local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
     
@@ -320,7 +320,7 @@ std::size_t depth_cost(unsigned int depth){
 }
 
 template<typename Opt>
-void update_cost_reg(Opt& reg, ltac::interference_graph& graph, unsigned int depth){
+void update_cost_reg(Opt& reg, ltac::interference_graph<ltac::PseudoRegister>& graph, unsigned int depth){
     if(reg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
             graph.spill_cost(graph.convert(*ptr)) += load_cost * depth_cost(depth);
@@ -329,7 +329,7 @@ void update_cost_reg(Opt& reg, ltac::interference_graph& graph, unsigned int dep
 }
 
 template<typename Opt>
-void update_cost(Opt& arg, ltac::interference_graph& graph, unsigned int depth){
+void update_cost(Opt& arg, ltac::interference_graph<ltac::PseudoRegister>& graph, unsigned int depth){
     if(arg){
         if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
             graph.spill_cost(graph.convert(*ptr)) += load_cost * depth_cost(depth);
@@ -340,7 +340,7 @@ void update_cost(Opt& arg, ltac::interference_graph& graph, unsigned int depth){
     }
 }
 
-void estimate_spill_costs(mtac::function_p function, ltac::interference_graph& graph){
+void estimate_spill_costs(mtac::function_p function, ltac::interference_graph<ltac::PseudoRegister>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -361,11 +361,11 @@ void estimate_spill_costs(mtac::function_p function, ltac::interference_graph& g
 
 //5. Simplify
 
-std::size_t spill_heuristic(ltac::interference_graph& graph, std::size_t reg){
+std::size_t spill_heuristic(ltac::interference_graph<ltac::PseudoRegister>& graph, std::size_t reg){
     return graph.spill_cost(reg) / graph.degree(reg);
 }
 
-void simplify(ltac::interference_graph& graph, Platform platform, std::vector<std::size_t>& spilled, std::list<std::size_t>& order){
+void simplify(ltac::interference_graph<ltac::PseudoRegister>& graph, Platform platform, std::vector<std::size_t>& spilled, std::list<std::size_t>& order){
     std::set<std::size_t> n;
     for(std::size_t r = 0; r < graph.size(); ++r){
         n.insert(r);
@@ -413,7 +413,7 @@ void simplify(ltac::interference_graph& graph, Platform platform, std::vector<st
 
 //6. Select
 
-void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph& graph){
+void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph<ltac::PseudoRegister>& graph){
     std::unordered_map<ltac::PseudoRegister, ltac::Register> register_allocation;
 
     for(auto& pair : allocation){
@@ -423,7 +423,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<std::size_t
     replace_registers(function, register_allocation);
 }
 
-void select(ltac::interference_graph& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
+void select(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
     std::unordered_map<std::size_t, std::size_t> allocation;
     
     auto descriptor = getPlatformDescriptor(platform);
@@ -553,7 +553,7 @@ void replace_register(ltac::Statement& statement, ltac::PseudoRegister source, l
     }
 }
 
-void spill_code(ltac::interference_graph& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
+void spill_code(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
     auto current_reg = function->pseudo_registers();
     
     for(auto reg : spilled){
@@ -610,7 +610,7 @@ void register_allocation(mtac::function_p function, Platform platform){
         }
 
         //2. Build
-        ltac::interference_graph graph;
+        ltac::interference_graph<ltac::PseudoRegister> graph;
         build_interference_graph(graph, function);
 
         //3. Coalesce
