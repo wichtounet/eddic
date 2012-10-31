@@ -15,7 +15,7 @@
 
 namespace eddic {
 
-class Configuration;
+struct Configuration;
 
 /*!
  * \class Compiler

@@ -20,7 +20,7 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class PointerType
+ * \struct PointerType
  * \brief A pointer type in the AST.  
  */
 struct PointerType {

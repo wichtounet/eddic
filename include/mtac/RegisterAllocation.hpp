@@ -14,7 +14,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
     
 void register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
 

@@ -20,7 +20,7 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class ArrayType
+ * \struct ArrayType
  * \brief An array type in the AST.  
  */
 struct ArrayType {

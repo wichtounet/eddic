@@ -12,7 +12,7 @@
 
 namespace eddic {
 
-class GlobalContext;
+struct GlobalContext;
 
 namespace ast {
 

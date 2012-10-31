@@ -17,7 +17,7 @@ namespace eddic {
 
 namespace ltac {
 
-enum class JumpType : unsigned int {
+enum struct JumpType : unsigned int {
     ALWAYS,
 
     CALL,

@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 struct remove_unused_functions {
     bool operator()(std::shared_ptr<mtac::Program> program);

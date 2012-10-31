@@ -18,7 +18,7 @@
 namespace eddic {
 
 class Type;
-class GlobalContext;
+struct GlobalContext;
 
 typedef std::vector<std::shared_ptr<Variable>> Storage;
 

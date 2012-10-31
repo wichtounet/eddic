@@ -17,7 +17,7 @@ namespace eddic {
  * \enum PositionType
  * \brief A type of position for a variable
  */
-enum class PositionType : unsigned int {
+enum struct PositionType : unsigned int {
     STACK,              /**< A variable on the stack  */ 
     PARAMETER,          /**< A parameter */
     GLOBAL,             /**< A global variable */
@@ -29,10 +29,10 @@ enum class PositionType : unsigned int {
 };
 
 /*!
- * \class Position
+ * \struct Position
  * \brief The position of a variable
  */
-class Position {
+struct Position {
     private:
         PositionType m_type;
         

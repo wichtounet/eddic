@@ -12,11 +12,11 @@
 
 namespace eddic {
 
-class StringPool;
+struct StringPool;
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 struct Compiler {
     void compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const ;

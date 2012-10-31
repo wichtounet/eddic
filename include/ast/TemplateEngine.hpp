@@ -19,9 +19,9 @@ namespace eddic {
 namespace ast {
 
 class PassManager;
-class Position;
+struct Position;
 
-class TemplateEngine {
+struct TemplateEngine {
     public:
         TemplateEngine(ast::PassManager& pass_manager);
 

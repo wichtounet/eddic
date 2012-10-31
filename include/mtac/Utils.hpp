@@ -23,7 +23,7 @@
 namespace eddic {
 
 class Variable;
-class GlobalContext;
+struct GlobalContext;
 
 namespace mtac {
 

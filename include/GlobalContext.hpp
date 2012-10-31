@@ -18,13 +18,13 @@
 namespace eddic {
 
 /*!
- * \class GlobalContext
+ * \struct GlobalContext
  * \brief The global symbol table for the whole source. 
  *
  * There is always only one instance of this class in the application. This symbol table is responsible
  * of storing all the global variables. It is also responsible for storing the global functions and structures. 
  */
-class GlobalContext final : public Context {
+struct GlobalContext final : public Context {
     public: 
         typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
         typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
