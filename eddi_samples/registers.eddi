@@ -85,3 +85,23 @@ void coalesce(){
     int c = b;
     print(c);
 }
+
+void floats(){
+    float a = 5.9;
+    float b = 9.9;
+    float c = 66.6;
+
+    println(a);
+    println(b);
+    println(c);
+    println(a);
+
+    a += c;
+    float d = b;
+
+    println(a);
+    println(b);
+    println(c);
+    println(d);
+    println(a);
+}
