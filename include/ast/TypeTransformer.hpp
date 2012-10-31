@@ -16,7 +16,7 @@
 
 namespace eddic {
 
-class GlobalContext;
+struct GlobalContext;
 class Type;
 
 namespace ast {

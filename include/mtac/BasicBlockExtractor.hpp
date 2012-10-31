@@ -14,7 +14,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 struct BasicBlockExtractor {
     void extract(std::shared_ptr<mtac::Program> program) const ;

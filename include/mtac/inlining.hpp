@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
     
 struct inline_functions {
     std::shared_ptr<Configuration> configuration;

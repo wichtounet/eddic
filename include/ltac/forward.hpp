@@ -17,8 +17,8 @@ namespace eddic {
 
 namespace ltac {
 
-class Instruction;
-class Jump;
+struct Instruction;
+struct Jump;
 
 typedef boost::variant<
         std::shared_ptr<ltac::Instruction>,         //Basic quadruples

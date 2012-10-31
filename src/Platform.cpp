@@ -13,6 +13,8 @@ using namespace eddic;
 struct X86Descriptor : public PlatformDescriptor {
     int sizes[BASETYPE_COUNT] = {  8, 4, 4, 4, 4, 0 };
 
+    X86Descriptor(){};
+
     unsigned int size_of(BaseType type) const {
         return sizes[static_cast<unsigned int>(type)];
     }
@@ -96,6 +98,8 @@ struct X86Descriptor : public PlatformDescriptor {
 
 struct X86_64Descriptor : public PlatformDescriptor {
     int sizes[BASETYPE_COUNT] = { 16, 8, 8, 8, 8, 0 };
+
+    X86_64Descriptor(){};
 
     unsigned int size_of(BaseType type) const {
         return sizes[static_cast<unsigned int>(type)];

@@ -19,8 +19,8 @@
 
 namespace eddic {
 
-class Configuration;
-class StringPool;
+struct Configuration;
+struct StringPool;
 
 namespace ast {
 

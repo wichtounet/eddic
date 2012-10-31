@@ -20,7 +20,7 @@ namespace eddic {
 class Type;
 class Variable;
 class IntermediateProgram;
-class GlobalContext;
+struct GlobalContext;
 
 /*!
  * \class Context

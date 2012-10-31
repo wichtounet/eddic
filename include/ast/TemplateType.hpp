@@ -23,7 +23,7 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class TemplateType
+ * \struct TemplateType
  * \brief A template type in the AST.  
  */
 struct TemplateType {

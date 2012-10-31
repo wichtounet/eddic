@@ -15,11 +15,11 @@
 
 namespace eddic {
 
-class StringPool;
+struct StringPool;
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 struct Optimizer {
     void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;

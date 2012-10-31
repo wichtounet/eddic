@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 void full_loop_analysis(std::shared_ptr<mtac::Program> program);
 void full_loop_analysis(mtac::function_p function);

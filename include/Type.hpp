@@ -19,7 +19,7 @@
 
 namespace eddic {
 
-class GlobalContext;
+struct GlobalContext;
 
 /*!
  * \class Type
@@ -193,10 +193,10 @@ class CustomType : public Type {
 };
 
 /*!
- * \class ArrayType
+ * \struct ArrayType
  * \brief An array type descriptor.
  */
-class ArrayType : public Type {
+struct ArrayType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
         boost::optional<unsigned int> m_elements;
@@ -226,10 +226,10 @@ class ArrayType : public Type {
 };
 
 /*!
- * \class PointerType
+ * \struct PointerType
  * \brief A pointer type descriptor.
  */
-class PointerType : public Type {
+struct PointerType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
     
@@ -254,10 +254,10 @@ class PointerType : public Type {
 };
 
 /*!
- * \class TemplateType
+ * \struct TemplateType
  * \brief A template type descriptor.
  */
-class TemplateType : public Type {
+struct TemplateType : public Type {
     private:
         std::shared_ptr<GlobalContext> context;
         std::string main_type;

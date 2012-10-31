@@ -67,7 +67,9 @@ namespace boost { namespace spirit { namespace qi
     struct make_primitive<tag::position, Modifiers>
     {
         typedef position result_type;
-        result_type operator()(unused_type, eddic::lexer::Lexer const& lexer, unused_type) const
+
+        template<typename Arg>
+        result_type operator()(unused_type, const Arg& lexer, unused_type) const
         {
             return result_type(lexer);
         }

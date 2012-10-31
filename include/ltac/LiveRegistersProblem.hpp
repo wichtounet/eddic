@@ -20,8 +20,8 @@ namespace eddic {
 
 namespace ltac {
 
-class PseudoRegister;
-class PseudoFloatRegister;
+struct PseudoRegister;
+struct PseudoFloatRegister;
     
 typedef std::unordered_set<PseudoRegister> PseudoRegisters;
 typedef std::unordered_set<PseudoFloatRegister> PseudoFloatRegisters;

@@ -13,12 +13,12 @@
 namespace eddic {
 
 class FloatPool;
-class StringPool;
+struct StringPool;
 class AssemblyFileWriter;
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 }
 

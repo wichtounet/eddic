@@ -13,7 +13,7 @@
 namespace eddic {
 
 namespace parser {
-    class SpiritParser;
+    struct SpiritParser;
 }
 
 namespace ast {

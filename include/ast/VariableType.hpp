@@ -16,9 +16,9 @@ namespace eddic {
 
 namespace ast {
 
-class ArrayType;
-class TemplateType;
-class PointerType;
+struct ArrayType;
+struct TemplateType;
+struct PointerType;
 
 /*!
  * \typedef Type

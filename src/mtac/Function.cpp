@@ -145,7 +145,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
         }
 
         //If there is a Fall through edge, redirect it
-        if(pred = block->prev){
+        if(pred == block->prev){
             mtac::make_edge(pred, block->next);
         }
     }

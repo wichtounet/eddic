@@ -13,7 +13,7 @@
 namespace eddic {
 
 class FunctionContext;
-class GlobalContext;
+struct GlobalContext;
 
 /*!
  * \class BlockContext

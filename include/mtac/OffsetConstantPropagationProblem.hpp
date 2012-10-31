@@ -22,7 +22,7 @@
 
 namespace eddic {
 
-class StringPool;
+struct StringPool;
 
 namespace mtac {
 

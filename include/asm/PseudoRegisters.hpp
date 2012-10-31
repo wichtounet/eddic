@@ -18,7 +18,7 @@ class Variable;
 namespace as {
 
 template<typename Reg>
-class PseudoRegisters {
+struct PseudoRegisters {
     public:
         PseudoRegisters();
 

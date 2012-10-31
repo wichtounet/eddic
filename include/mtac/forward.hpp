@@ -17,7 +17,7 @@ namespace eddic {
 
 namespace mtac {
 
-class Program;
+struct Program;
 
 class Function;
 typedef std::shared_ptr<mtac::Function> function_p;
@@ -25,13 +25,13 @@ typedef std::shared_ptr<mtac::Function> function_p;
 class BasicBlock;
 typedef std::shared_ptr<mtac::BasicBlock> basic_block_p;
 
-class If;
-class IfFalse;
-class Param;
-class Quadruple;
-class Goto;
-class Call;
-class NoOp;
+struct If;
+struct IfFalse;
+struct Param;
+struct Quadruple;
+struct Goto;
+struct Call;
+struct NoOp;
 
 typedef boost::variant<
         std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
