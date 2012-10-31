@@ -105,15 +105,6 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
     }
 };
 
-template<typename DomainValues>
-std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
-    if(domain.top()){
-        return stream << "top";
-    }
-
-    return stream << domain.values();
-}
-
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
     stream << "vector{";
@@ -156,6 +147,15 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>
     }
 
     return stream << "}";
+}
+
+template<typename DomainValues>
+std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
+    if(domain.top()){
+        return stream << "top";
+    }
+
+    return stream << domain.values();
 }
 
 } //end of mtac
