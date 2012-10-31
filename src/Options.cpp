@@ -8,8 +8,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <thread>
-#include <mutex>
+#include <atomic>
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -34,7 +33,7 @@ std::pair<std::string, std::string> numeric_parser(const std::string& s){
     }
 }
 
-std::once_flag description_flag;
+std::atomic<bool> description_flag;
 
 po::options_description visible("Usage : eddic [options] source.eddi");
 po::options_description all("Usage : eddic [options] source.eddi");
@@ -124,7 +123,12 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
 
     try {
         //Only if the description has not been already defined
-        std::call_once(description_flag, init_descriptions);
+        if(!description_flag.load()){
+            bool old_value = description_flag.load();
+            if(description_flag.compare_exchange_strong(old_value, true)){
+                init_descriptions();
+            }
+        }
 
         //Add the option of the input file
         po::positional_options_description p;
