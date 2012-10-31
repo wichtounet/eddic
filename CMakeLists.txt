@@ -19,7 +19,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
 else()
-    MESSAGE(FATAL_ERROR "ERROR: eddic cannot be compiled on another compiler than gcc for now")
+    MESSAGE(FATAL_ERROR "ERROR: eddic can only be compiled on gcc and clang for now")
 endif()
 
 # Add a target to generate API documentation with Doxygen
