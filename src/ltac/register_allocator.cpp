@@ -359,9 +359,20 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::fun
 //3. Coalesce
 
 template<typename Pseudo>
-bool is_copy(ltac::Statement& statement){
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, bool>::type is_copy(ltac::Statement& statement){
     if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         return (*ptr)->op == ltac::Operator::MOV 
+            && boost::get<Pseudo>(&*(*ptr)->arg1) 
+            && boost::get<Pseudo>(&*(*ptr)->arg2);
+    }
+
+    return false;
+}
+
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, bool>::type is_copy(ltac::Statement& statement){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        return (*ptr)->op == ltac::Operator::FMOV 
             && boost::get<Pseudo>(&*(*ptr)->arg1) 
             && boost::get<Pseudo>(&*(*ptr)->arg2);
     }
