@@ -13,13 +13,20 @@
 #include <boost/optional.hpp>
 
 #include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
 #include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-typedef boost::variant<ltac::Register, ltac::PseudoRegister> AddressRegister;
+typedef boost::variant<
+            ltac::Register, 
+            ltac::PseudoRegister, 
+            ltac::PseudoFloatRegister,  //Not used
+            ltac::FloatRegister>        //Not used
+    AddressRegister;
 
 struct Address {
     boost::optional<ltac::AddressRegister> base_register;

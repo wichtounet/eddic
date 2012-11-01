@@ -187,6 +187,20 @@ void find_reg(Opt& arg, std::unordered_set<Pseudo>& registers){
     }
 }
 
+template<typename Stmt, typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, void>::type 
+get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_registers){
+    for(auto reg : instruction->uses){
+        local_pseudo_registers.insert(reg);
+    }
+}
+
+template<typename Stmt, typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type 
+get_special_uses(Stmt&, std::unordered_set<Pseudo>&){
+    //NOP
+}
+
 template<typename Pseudo>
 void find_local_registers(mtac::function_p function, local_reg<Pseudo>& local_pseudo_registers){
     local_reg<Pseudo> pseudo_registers;
@@ -198,13 +212,9 @@ void find_local_registers(mtac::function_p function, local_reg<Pseudo>& local_ps
                 find_reg((*ptr)->arg2, pseudo_registers[bb]);
                 find_reg((*ptr)->arg3, pseudo_registers[bb]);
 
-                for(auto reg : (*ptr)->uses){
-                    pseudo_registers[bb].insert(reg);
-                }
+                get_special_uses(*ptr, pseudo_registers[bb]);
             } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                for(auto reg : (*ptr)->uses){
-                    pseudo_registers[bb].insert(reg);
-                }
+                get_special_uses(*ptr, pseudo_registers[bb]);
             }
         }
     }
@@ -300,6 +310,16 @@ void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph<Pseu
     log::emit<Trace>("registers") << "Found " << graph.size() << " pseudo registers" << log::endl;
 }
 
+template<typename Pseudo, typename Results>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, std::unordered_set<Pseudo>&>::type get_live_results(Results& results){
+    return results.registers;
+}
+
+template<typename Pseudo, typename Results>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, std::unordered_set<Pseudo>&>::type get_live_results(Results& results){
+    return results.float_registers;
+}
+
 template<typename Pseudo>
 void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::function_p function){
     //Init the graph structure with the current size
@@ -311,7 +331,7 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::fun
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            auto& live_registers = live_results->OUT_LS[statement].values().registers;
+            auto& live_registers = get_live_results<Pseudo>(live_results->OUT_LS[statement].values());
 
             if(live_registers.size() > 1){
                 auto it = live_registers.begin();
@@ -458,9 +478,21 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, unsig
 }
 
 template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, unsigned int>::type number_of_registers(Platform platform){
+    auto descriptor = getPlatformDescriptor(platform);
+    return descriptor->number_of_float_registers();
+}
+
+template<typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, std::vector<unsigned short>>::type hard_registers(Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     return descriptor->symbolic_registers();
+}
+
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, std::vector<unsigned short>>::type hard_registers(Platform platform){
+    auto descriptor = getPlatformDescriptor(platform);
+    return descriptor->symbolic_float_registers();
 }
 
 template<typename Pseudo>
@@ -671,5 +703,6 @@ void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform 
 
     for(auto& function : program->functions){
         ::register_allocation<ltac::PseudoRegister, ltac::Register>(function, platform);
+        ::register_allocation<ltac::PseudoFloatRegister, ltac::FloatRegister>(function, platform);
     }
 }
