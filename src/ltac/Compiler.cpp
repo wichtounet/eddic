@@ -93,4 +93,5 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
     }
 
     function->set_pseudo_registers(compiler->manager.last_pseudo_reg());
+    function->set_pseudo_float_registers(compiler->manager.last_float_pseudo_reg());
 }

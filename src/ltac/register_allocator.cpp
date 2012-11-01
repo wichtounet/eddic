@@ -38,6 +38,26 @@ using namespace eddic;
 
 namespace {
 
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, std::size_t>::type last_register(mtac::function_p function){
+    return function->pseudo_registers();
+}
+
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, std::size_t>::type last_register(mtac::function_p function){
+    return function->pseudo_float_registers();
+}
+
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, void>::type set_last_reg(mtac::function_p function, std::size_t reg){
+    function->set_pseudo_registers(reg);
+}
+
+template<typename Pseudo>
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type set_last_reg(mtac::function_p function, std::size_t reg){
+    function->set_pseudo_float_registers(reg);
+}
+
 template<typename Source, typename Target, typename Opt>
 void update_reg(Opt& reg, std::unordered_map<Source, Target>& register_allocation){
     if(reg){
@@ -246,7 +266,7 @@ void renumber(mtac::function_p function){
     local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
 
-    auto current_reg = function->pseudo_registers();
+    auto current_reg = last_register<Pseudo>(function);
 
     for(auto& bb :function){
         for(auto& reg : local_pseudo_registers[bb]){
@@ -271,7 +291,7 @@ void renumber(mtac::function_p function){
         }
     }
 
-    function->set_pseudo_registers(current_reg);
+    set_last_reg<Pseudo>(function, current_reg);
 }
 
 //2. Build
@@ -622,7 +642,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
 
 template<typename Pseudo>
 void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
-    auto current_reg = function->pseudo_registers();
+    auto current_reg = last_register<Pseudo>(function);
     
     for(auto reg : spilled){
         auto pseudo_reg = graph.convert(reg);
@@ -663,7 +683,7 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p functi
         }
     }
 
-    function->set_pseudo_registers(current_reg);
+    set_last_reg<Pseudo>(function, current_reg);
 }
 
 //Register allocation

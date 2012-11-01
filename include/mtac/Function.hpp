@@ -68,6 +68,9 @@ class Function : public std::enable_shared_from_this<Function> {
         
         std::size_t pseudo_registers();
         void set_pseudo_registers(std::size_t pseudo_registers);
+        
+        std::size_t pseudo_float_registers();
+        void set_pseudo_float_registers(std::size_t pseudo_registers);
 
     private:
         //Before being partitioned, the function has only statement
@@ -76,9 +79,11 @@ class Function : public std::enable_shared_from_this<Function> {
         //There is no basic blocks at the beginning
         std::size_t count = 0;
         std::size_t index = 0;
-        std::size_t last_pseudo_registers = 0;
         basic_block_p entry = nullptr;
         basic_block_p exit = nullptr;
+        
+        std::size_t last_pseudo_registers = 0;
+        std::size_t last_float_pseudo_registers = 0;
 
         std::vector<std::shared_ptr<mtac::Loop>> m_loops;
 

@@ -599,3 +599,7 @@ std::shared_ptr<ltac::StatementCompiler> ltac::RegisterManager::access_compiler(
 int ltac::RegisterManager::last_pseudo_reg(){
     return pseudo_registers.last_reg();
 }
+ 
+int ltac::RegisterManager::last_float_pseudo_reg(){
+    return pseudo_float_registers.last_reg();
+}

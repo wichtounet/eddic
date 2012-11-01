@@ -112,6 +112,7 @@ class RegisterManager : public AbstractRegisterManager {
         std::shared_ptr<StatementCompiler> access_compiler();
 
         int last_pseudo_reg();
+        int last_float_pseudo_reg();
     
     private: 
         mtac::Statement current;
