@@ -643,10 +643,12 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p functi
 
                     ++it;
 
+                    //TODO Add support for spilling float registers
                     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
                 } else if(is_load(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
 
+                    //TODO Add support for spilling float registers
                     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position)));
 
                     ++it;
