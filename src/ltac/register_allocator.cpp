@@ -197,8 +197,10 @@ get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_reg
 
 template<typename Stmt, typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type 
-get_special_uses(Stmt&, std::unordered_set<Pseudo>&){
-    //NOP
+get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_registers){
+    for(auto reg : instruction->float_uses){
+        local_pseudo_registers.insert(reg);
+    }
 }
 
 template<typename Pseudo>
