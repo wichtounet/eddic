@@ -38,9 +38,6 @@ using namespace eddic;
 
 namespace {
 
-bool is_store(ltac::Statement& statement, ltac::PseudoRegister reg);
-void replace_register(ltac::Statement& statement, ltac::PseudoRegister source, ltac::PseudoRegister target);
-
 template<typename Source, typename Target, typename Opt>
 void update_reg(Opt& reg, std::unordered_map<Source, Target>& register_allocation){
     if(reg){
@@ -79,23 +76,109 @@ void replace_registers(mtac::function_p function, std::unordered_map<Source, Tar
     }
 }
 
+template<typename Opt, typename Pseudo>
+bool contains_reg_addr(Opt& reg, Pseudo search_reg){
+    if(reg){
+        if(auto* ptr = boost::get<Pseudo>(&*reg)){
+            return search_reg == *ptr;
+        }
+    }
+
+    return false;
+}
+
+template<typename Opt, typename Pseudo>
+bool contains_reg(Opt& arg, Pseudo reg){
+    if(arg){
+        if(auto* ptr = boost::get<Pseudo>(&*arg)){
+            return reg == *ptr;
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            return contains_reg_addr(ptr->base_register, reg)
+                || contains_reg_addr(ptr->scaled_register, reg);
+        }
+    }
+
+    return false;
+}
+
+//Must be called after is_store
+
+template<typename Pseudo>
+bool is_load(ltac::Statement& statement, Pseudo reg){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        return contains_reg((*ptr)->arg1, reg) 
+            || contains_reg((*ptr)->arg2, reg)
+            || contains_reg((*ptr)->arg3, reg);
+    }
+
+    return false;
+}
+
+template<typename Pseudo>
+bool is_store(ltac::Statement& statement, Pseudo reg){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        if(ltac::erase_result((*ptr)->op)){
+            if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
+                return *reg_ptr == reg;
+            }
+        }
+    }
+
+    return false;
+}
+
+template<typename Pseudo>
+void replace_reg_addr(boost::optional<ltac::AddressRegister>& reg, Pseudo source, Pseudo target){
+    if(reg){
+        if(auto* ptr = boost::get<Pseudo>(&*reg)){
+            if(*ptr == source){
+                reg = target;
+            }
+        }
+    }
+}
+
+template<typename Pseudo>
+void replace_register(boost::optional<ltac::Argument>& arg, Pseudo source, Pseudo target){
+    if(arg){
+        if(auto* ptr = boost::get<Pseudo>(&*arg)){
+            if(*ptr == source){
+                arg = target;
+            }
+        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
+            replace_reg_addr(ptr->base_register, source, target);
+            replace_reg_addr(ptr->scaled_register, source, target);
+        }
+    }
+}
+
+template<typename Pseudo>
+void replace_register(ltac::Statement& statement, Pseudo source, Pseudo target){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        replace_register((*ptr)->arg1, source, target);
+        replace_register((*ptr)->arg2, source, target);
+        replace_register((*ptr)->arg3, source, target);
+    }
+}
+
 //1. Renumber
 
-typedef std::unordered_map<mtac::basic_block_p, std::unordered_set<ltac::PseudoRegister>> local_reg;
+template<typename Pseudo>
+using local_reg = std::unordered_map<mtac::basic_block_p, std::unordered_set<Pseudo>>;
 
-template<typename Opt>
-void find_reg_addr(Opt& reg, std::unordered_set<ltac::PseudoRegister>& registers){
+template<typename Opt, typename Pseudo>
+void find_reg_addr(Opt& reg, std::unordered_set<Pseudo>& registers){
     if(reg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
+        if(auto* ptr = boost::get<Pseudo>(&*reg)){
             registers.insert(*ptr);
         }
     }
 }
 
-template<typename Opt>
-void find_reg(Opt& arg, std::unordered_set<ltac::PseudoRegister>& registers){
+template<typename Opt, typename Pseudo>
+void find_reg(Opt& arg, std::unordered_set<Pseudo>& registers){
     if(arg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
+        if(auto* ptr = boost::get<Pseudo>(&*arg)){
             registers.insert(*ptr);
         } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
             find_reg_addr(ptr->base_register, registers);
@@ -104,8 +187,9 @@ void find_reg(Opt& arg, std::unordered_set<ltac::PseudoRegister>& registers){
     }
 }
 
-void find_local_registers(mtac::function_p function, local_reg& local_pseudo_registers){
-    local_reg pseudo_registers;
+template<typename Pseudo>
+void find_local_registers(mtac::function_p function, local_reg<Pseudo>& local_pseudo_registers){
+    local_reg<Pseudo> pseudo_registers;
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
@@ -145,8 +229,9 @@ void find_local_registers(mtac::function_p function, local_reg& local_pseudo_reg
     }
 }
 
+template<typename Pseudo>
 void renumber(mtac::function_p function){
-    local_reg local_pseudo_registers;
+    local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
 
     auto current_reg = function->pseudo_registers();
@@ -158,11 +243,11 @@ void renumber(mtac::function_p function){
                 continue;
             }
 
-            ltac::PseudoRegister target;
+            Pseudo target;
 
             for(auto& statement : bb->l_statements){
-                if(is_store(statement, reg)){
-                    target = ltac::PseudoRegister(++current_reg);
+                if(is_store<Pseudo>(statement, reg)){
+                    target = Pseudo(++current_reg);
 
                     //Make sure to replace only the first argument
                     auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
@@ -253,32 +338,34 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::fun
 
 //3. Coalesce
 
+template<typename Pseudo>
 bool is_copy(ltac::Statement& statement){
     if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         return (*ptr)->op == ltac::Operator::MOV 
-            && boost::get<ltac::PseudoRegister>(&*(*ptr)->arg1) 
-            && boost::get<ltac::PseudoRegister>(&*(*ptr)->arg2);
+            && boost::get<Pseudo>(&*(*ptr)->arg1) 
+            && boost::get<Pseudo>(&*(*ptr)->arg2);
     }
 
     return false;
 }
 
-bool coalesce(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function){
-    local_reg local_pseudo_registers;
+template<typename Pseudo>
+bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function){
+    local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
     
-    std::unordered_set<ltac::PseudoRegister> prune;
-    std::unordered_map<ltac::PseudoRegister, ltac::PseudoRegister> replaces;
+    std::unordered_set<Pseudo> prune;
+    std::unordered_map<Pseudo, Pseudo> replaces;
 
     //TODO Instead of pruning dependent registers pairs, update the graph 
     //and continue to avoid too many rebuilding of the graph
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(is_copy(statement)){
+            if(is_copy<Pseudo>(statement)){
                 auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
-                auto reg1 = boost::get<ltac::PseudoRegister>(*instruction->arg1);
-                auto reg2 = boost::get<ltac::PseudoRegister>(*instruction->arg2);
+                auto reg1 = boost::get<Pseudo>(*instruction->arg1);
+                auto reg2 = boost::get<Pseudo>(*instruction->arg2);
 
                 if(
                            reg1 != reg2
@@ -488,88 +575,8 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
 
 //7. Spill code
 
-template<typename Opt>
-bool contains_reg_addr(Opt& reg, ltac::PseudoRegister search_reg){
-    if(reg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
-            return search_reg == *ptr;
-        }
-    }
-
-    return false;
-}
-
-template<typename Opt>
-bool contains_reg(Opt& arg, ltac::PseudoRegister reg){
-    if(arg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
-            return reg == *ptr;
-        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
-            return contains_reg_addr(ptr->base_register, reg)
-                || contains_reg_addr(ptr->scaled_register, reg);
-        }
-    }
-
-    return false;
-}
-
-//Must be called after is_store
-bool is_load(ltac::Statement& statement, ltac::PseudoRegister reg){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        return contains_reg((*ptr)->arg1, reg) 
-            || contains_reg((*ptr)->arg2, reg)
-            || contains_reg((*ptr)->arg3, reg);
-    }
-
-    return false;
-}
-
-bool is_store(ltac::Statement& statement, ltac::PseudoRegister reg){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        if(ltac::erase_result((*ptr)->op)){
-            if(auto* reg_ptr = boost::get<ltac::PseudoRegister>(&*(*ptr)->arg1)){
-                return *reg_ptr == reg;
-            }
-        }
-    }
-
-    return false;
-}
-
-template<typename Opt>
-void replace_reg_addr(Opt& reg, ltac::PseudoRegister source, ltac::PseudoRegister target){
-    if(reg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*reg)){
-            if(*ptr == source){
-                reg = target;
-            }
-        }
-    }
-}
-
-template<typename Opt>
-void replace_register(Opt& arg, ltac::PseudoRegister source, ltac::PseudoRegister target){
-    if(arg){
-        if(auto* ptr = boost::get<ltac::PseudoRegister>(&*arg)){
-            if(*ptr == source){
-                arg = target;
-            }
-        } else if(auto* ptr = boost::get<ltac::Address>(&*arg)){
-            replace_reg_addr(ptr->base_register, source, target);
-            replace_reg_addr(ptr->scaled_register, source, target);
-        }
-    }
-}
-
-void replace_register(ltac::Statement& statement, ltac::PseudoRegister source, ltac::PseudoRegister target){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        replace_register((*ptr)->arg1, source, target);
-        replace_register((*ptr)->arg2, source, target);
-        replace_register((*ptr)->arg3, source, target);
-    }
-}
-
-void spill_code(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
+template<typename Pseudo>
+void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
     auto current_reg = function->pseudo_registers();
     
     for(auto reg : spilled){
@@ -587,7 +594,7 @@ void spill_code(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::fun
                 auto statement = *it;
 
                 if(is_store(statement, pseudo_reg)){
-                    ltac::PseudoRegister new_pseudo_reg(++current_reg);
+                    Pseudo new_pseudo_reg(++current_reg);
 
                     replace_register(statement, pseudo_reg, new_pseudo_reg);
 
@@ -595,7 +602,7 @@ void spill_code(ltac::interference_graph<ltac::PseudoRegister>& graph, mtac::fun
 
                     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
                 } else if(is_load(statement, pseudo_reg)){
-                    ltac::PseudoRegister new_pseudo_reg(++current_reg);
+                    Pseudo new_pseudo_reg(++current_reg);
 
                     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position)));
 
@@ -623,7 +630,7 @@ void register_allocation(mtac::function_p function, Platform platform){
     while(true){
         if(!coalesced){
             //1. Renumber
-            renumber(function);
+            renumber<Pseudo>(function);
         }
 
         //2. Build
