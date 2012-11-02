@@ -23,7 +23,7 @@ ltac::Address::Address(const std::string& absolute) : absolute(absolute) {
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute, ltac::AddressRegister reg) : base_register(reg), absolute(absolute) {
+ltac::Address::Address(const std::string& absolute, const ltac::AddressRegister& reg) : base_register(reg), absolute(absolute) {
     //Nothing to init    
 }
 
@@ -31,15 +31,15 @@ ltac::Address::Address(const std::string& absolute, int displacement) : displace
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::AddressRegister reg, int displacement) : base_register(reg), displacement(displacement) {
+ltac::Address::Address(const ltac::AddressRegister& reg, int displacement) : base_register(reg), displacement(displacement) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::AddressRegister reg, ltac::AddressRegister scaled) : base_register(reg), scaled_register(scaled) {
+ltac::Address::Address(const ltac::AddressRegister& reg, const ltac::AddressRegister& scaled) : base_register(reg), scaled_register(scaled) {
     //Nothing to init    
 }
 
-ltac::Address::Address(ltac::AddressRegister reg, ltac::AddressRegister scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
+ltac::Address::Address(const ltac::AddressRegister& reg, const ltac::AddressRegister& scaled, unsigned scale, int displacement) : base_register(reg), scaled_register(scaled), scale(scale), displacement(displacement){
     //Nothing to init    
 }
 
@@ -67,7 +67,7 @@ bool ltac::operator!=(ltac::Address& lhs, ltac::Address& rhs){
 std::ostream& ltac::operator<<(std::ostream& out, const ltac::Address& address){
     if(address.absolute){
         if(address.displacement){
-            out << "[" << *address.absolute << " + " << *address.displacement << "]";
+            return out << "[" << *address.absolute << " + " << *address.displacement << "]";
         }
 
         if(address.base_register){

@@ -38,13 +38,13 @@ struct Address {
 
     Address();
     Address(const std::string& absolute);
-    Address(const std::string& absolute, ltac::AddressRegister reg);
+    Address(const std::string& absolute, const ltac::AddressRegister& reg);
     Address(const std::string& absolute, int displacement);
     
     Address(int displacement);
-    Address(ltac::AddressRegister reg, int displacement);
-    Address(ltac::AddressRegister reg, ltac::AddressRegister scaled);
-    Address(ltac::AddressRegister reg, ltac::AddressRegister scaled, unsigned scale, int displacement);
+    Address(const ltac::AddressRegister& reg, int displacement);
+    Address(const ltac::AddressRegister& reg, const ltac::AddressRegister& scaled);
+    Address(const ltac::AddressRegister& reg, const ltac::AddressRegister& scaled, unsigned scale, int displacement);
 };
 
 bool operator==(ltac::Address& lhs, ltac::Address& rhs);

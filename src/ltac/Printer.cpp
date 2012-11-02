@@ -180,11 +180,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        out << "\t" << to_string(quadruple->op) << " ";
+        out << "\t" << to_string(quadruple->op);
 
         if(quadruple->arg1){
-            out << *quadruple->arg1;
-        
+            out << " " << *quadruple->arg1;
+            
             if(quadruple->arg2){
                 out << ", " << *quadruple->arg2;
 
