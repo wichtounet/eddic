@@ -125,7 +125,7 @@ bool contains_reg(Opt& arg, Pseudo reg){
 //Must be called after is_store
 
 template<typename Pseudo>
-bool is_load(ltac::Statement& statement, Pseudo reg){
+bool is_load(ltac::Statement& statement, const Pseudo& reg){
     if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         return contains_reg((*ptr)->arg1, reg) 
             || contains_reg((*ptr)->arg2, reg)
@@ -136,7 +136,7 @@ bool is_load(ltac::Statement& statement, Pseudo reg){
 }
 
 template<typename Pseudo>
-bool is_store_complete(ltac::Statement& statement, Pseudo reg){
+bool is_store_complete(ltac::Statement& statement, const Pseudo& reg){
     if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
         if(ltac::erase_result_complete((*ptr)->op)){
             if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
@@ -290,16 +290,20 @@ void renumber(mtac::function_p function){
             }
 
             Pseudo target;
+            bool start = false;
 
             for(auto& statement : bb->l_statements){
                 if(is_store_complete<Pseudo>(statement, reg)){
                     target = Pseudo(++current_reg);
+                    start = true;
 
                     //Make sure to replace only the first argument
                     auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
                     instruction->arg1 = target;
                 } else {
-                    replace_register(statement, reg, target);
+                    if(start){
+                        replace_register(statement, reg, target);
+                    }
                 }
             }
         }
@@ -446,7 +450,7 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function
                         && !graph.connected(graph.convert(reg1), graph.convert(reg2))
                         && !prune.count(reg1) && !prune.count(reg2))
                 {
-                    log::emit<Dev>("registers") << "Coalesce " << reg1.reg << " and " << reg2.reg << log::endl;
+                    log::emit<Dev>("registers") << "Coalesce " << reg1 << " and " << reg2 << log::endl;
 
                     replaces[reg1] = reg2;
                     prune.insert(reg1);
@@ -567,7 +571,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         bool found = false;
 
         for(auto candidate : n){
-            log::emit<Dev>("registers") << "Degree(pr" << graph.convert(candidate).reg << ") = " << graph.degree(candidate) << log::endl;
+            log::emit<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << graph.degree(candidate) << log::endl;
             if(graph.degree(candidate) < K){
                 node = candidate;        
                 found = true;
@@ -585,7 +589,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
                }
             }
 
-            log::emit<Trace>("registers") << "Mark pseudo " << node << " to be spilled" << log::endl;
+            log::emit<Trace>("registers") << "Mark pseudo " << graph.convert(node) << " to be spilled" << log::endl;
 
             spilled.push_back(node);
         } else {
@@ -622,7 +626,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         auto reg = *it;
 
         if(graph.convert(reg).bound){
-            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << reg << " (bound)" << log::endl;
+            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
             allocation[reg] = graph.convert(reg).binding;
             it.erase();
         } else {
@@ -647,7 +651,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
             }
 
             if(!found){
-                log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << reg << log::endl;
+                log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << graph.convert(reg) << log::endl;
                 allocation[reg] = color;
                 break;
             }
