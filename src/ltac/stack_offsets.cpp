@@ -67,7 +67,7 @@ void ltac::fix_stack_offsets(std::shared_ptr<mtac::Program> program, Platform pl
                     change_address(instruction->arg2, bp_offset);
                     change_address(instruction->arg3, bp_offset);
 
-                    if(opt_variant_equals(instruction->arg1, ltac::BP)){
+                    if(opt_variant_equals(instruction->arg1, ltac::SP)){
                         if(instruction->op == ltac::Operator::ADD){
                             bp_offset -= boost::get<int>(*instruction->arg2);
                         }
