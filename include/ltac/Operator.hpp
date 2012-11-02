@@ -84,6 +84,7 @@ enum class Operator : unsigned int {
 };
 
 bool erase_result(ltac::Operator op);
+bool erase_result_complete(ltac::Operator op);
 
 } //end of ltac
 
