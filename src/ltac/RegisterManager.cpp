@@ -228,7 +228,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
-            } 
+            }
         }
     } else {
         //If it's a constant (int, double, string), just move it
@@ -490,9 +490,11 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
 
         if(param->position().isParamRegister()){
             if(mtac::is_single_int_register(param->type())){
-                registers.setLocation(param, ltac::Register(descriptor->int_param_register(param->position().offset())));
+                auto reg = get_bound_pseudo_reg(descriptor->int_param_register(param->position().offset()));
+                pseudo_registers.setLocation(param, reg);
             } else if(mtac::is_single_float_register(param->type())){
-                float_registers.setLocation(param, ltac::FloatRegister(descriptor->float_param_register(param->position().offset())));
+                auto reg = get_bound_pseudo_float_reg(descriptor->float_param_register(param->position().offset()));
+                pseudo_float_registers.setLocation(param, reg);
             }
         }
     }

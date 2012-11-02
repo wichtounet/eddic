@@ -71,6 +71,10 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
     mtac::LiveVariableAnalysisProblem problem;
     compiler->manager.liveness = mtac::data_flow(function, problem);
     compiler->manager.pointer_escaped = problem.pointer_escaped;
+    
+    //Handle parameters and register-allocated variables
+    //TODO compiler->reset();
+    compiler->collect_parameters(function->definition);
 
     //Then we compile each of them
     for(auto block : function){
@@ -80,10 +84,6 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
         if(block_usage.find(block) != block_usage.end()){
             (*compiler)(block->label);
         }
-    
-        //Handle parameters and register-allocated variables
-        compiler->reset();
-        compiler->collect_parameters(function->definition);
     
         for(unsigned int i = 0; i < block->statements.size(); ++i){
             auto& statement = block->statements[i];
