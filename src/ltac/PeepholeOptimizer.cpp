@@ -947,7 +947,7 @@ void eddic::ltac::optimize(std::shared_ptr<mtac::Program> program, Platform plat
             optimized |= debug("Basic optimizations", basic_optimizations(function, platform), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
             optimized |= debug("Copy propagation", copy_propagation(function, platform), function);
-            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function);
+            //TODO optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function);
             optimized |= debug("Conditional move", conditional_move(function, platform), function);
         } while(optimized);
     }
