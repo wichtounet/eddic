@@ -39,12 +39,12 @@ void change_address(Arg& arg, int bp_offset){
 
             if(opt_variant_equals(address.base_register, ltac::BP)){
                 address.base_register = ltac::SP; 
-            }
-
-            if(address.displacement){
-                *address.displacement += bp_offset;
-            } else {
-                address.displacement = bp_offset;
+                
+                if(address.displacement){
+                    *address.displacement += bp_offset;
+                } else {
+                    address.displacement = bp_offset;
+                }
             }
         }
     }
