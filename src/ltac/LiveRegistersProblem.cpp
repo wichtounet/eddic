@@ -102,6 +102,9 @@ struct LivenessCollector : public boost::static_visitor<> {
             in.values().insert(*ptr);
         } else if(auto* ptr = boost::get<ltac::PseudoFloatRegister>(&arg)){
             in.values().insert(*ptr);
+        } else if(auto* ptr = boost::get<ltac::Address>(&arg)){
+            set_live_opt(ptr->base_register);
+            set_live_opt(ptr->scaled_register);
         }
     }
     
@@ -111,8 +114,7 @@ struct LivenessCollector : public boost::static_visitor<> {
             in.values().erase(*ptr);
         } else if(auto* ptr = boost::get<ltac::PseudoFloatRegister>(&arg)){
             in.values().erase(*ptr);
-        }
-    }
+        }     }
 
     template<typename Arg>
     inline void set_live_opt(Arg& arg){
