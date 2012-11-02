@@ -12,6 +12,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include "logging.hpp"
+
 #include "ltac/bit_matrix.hpp"
 
 namespace eddic {
@@ -39,6 +41,8 @@ class interference_graph {
         void build_graph();
         void build_adjacency_vectors();
         std::size_t size();
+
+        std::vector<Pseudo>& pseudos();
 
     private:
         std::size_t m_size = 0;
@@ -72,10 +76,17 @@ Pseudo ltac::interference_graph<Pseudo>::convert(const ltac::reg& reg){
 template<typename Pseudo>
 void ltac::interference_graph<Pseudo>::gather(const Pseudo& reg){
     if(!pseudo_to_index.count(reg)){
+        log::emit<Dev>("registers") << "Gather " << reg << log::endl;
+
         pseudo_to_index[reg] = index_to_pseudo.size();
         index_to_pseudo.push_back(reg);
         ++m_size;
     }
+}
+
+template<typename Pseudo>
+std::vector<Pseudo>& ltac::interference_graph<Pseudo>::pseudos(){
+    return index_to_pseudo;
 }
 
 template<typename Pseudo>

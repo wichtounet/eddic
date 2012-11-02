@@ -21,6 +21,7 @@
 #include "ltac/register_allocator.hpp"
 #include "ltac/interference_graph.hpp"
 #include "ltac/Utils.hpp"
+#include "ltac/Printer.hpp"
 
 /*
  * Register allocation using Chaitin-style graph coloring allocation. 
@@ -129,6 +130,19 @@ bool is_load(ltac::Statement& statement, Pseudo reg){
         return contains_reg((*ptr)->arg1, reg) 
             || contains_reg((*ptr)->arg2, reg)
             || contains_reg((*ptr)->arg3, reg);
+    }
+
+    return false;
+}
+
+template<typename Pseudo>
+bool is_store_complete(ltac::Statement& statement, Pseudo reg){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        if(ltac::erase_result_complete((*ptr)->op)){
+            if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
+                return *reg_ptr == reg;
+            }
+        }
     }
 
     return false;
@@ -278,7 +292,7 @@ void renumber(mtac::function_p function){
             Pseudo target;
 
             for(auto& statement : bb->l_statements){
-                if(is_store<Pseudo>(statement, reg)){
+                if(is_store_complete<Pseudo>(statement, reg)){
                     target = Pseudo(++current_reg);
 
                     //Make sure to replace only the first argument
@@ -347,6 +361,11 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::fun
     //Init the graph structure with the current size
     gather_pseudo_regs(function, graph);
     graph.build_graph();
+
+    //Return quickly
+    if(!graph.size()){
+        return;
+    }
 
     ltac::LiveRegistersProblem problem;
     auto live_results = mtac::data_flow(function, problem);
