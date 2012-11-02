@@ -180,15 +180,21 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << ", " << *quadruple->arg3 << std::endl;
-        } else if(quadruple->arg1 && quadruple->arg2){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << std::endl;
-        } else if(quadruple->arg1){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << std::endl;
-        } else {
-            out << "\t" << to_string(quadruple->op) << std::endl;
+        out << "\t" << to_string(quadruple->op) << " ";
+
+        if(quadruple->arg1){
+            out << *quadruple->arg1;
+        
+            if(quadruple->arg2){
+                out << ", " << *quadruple->arg2;
+
+                if(quadruple->arg3){
+                    out << ", " << *quadruple->arg3;
+                }
+            }
         }
+
+        out << std::endl;
     }
 
     void operator()(const std::shared_ptr<ltac::Jump> jmp){
