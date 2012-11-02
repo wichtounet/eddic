@@ -702,6 +702,11 @@ void register_allocation(mtac::function_p function, Platform platform){
         ltac::interference_graph<Pseudo> graph;
         build_interference_graph(graph, function);
 
+        //No pseudo registers, return quickly
+        if(!graph.size()){
+            return;
+        }
+
         //3. Coalesce
         coalesced = coalesce(graph, function);
 
