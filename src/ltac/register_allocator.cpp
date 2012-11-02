@@ -690,8 +690,6 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p functi
 
 template<typename Pseudo, typename Hard>
 void register_allocation(mtac::function_p function, Platform platform){
-    log::emit<Trace>("registers") << "Allocate registers for function " << function->getName() << log::endl;
-
     bool coalesced = false;
 
     while(true){
@@ -737,7 +735,10 @@ void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform 
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program->functions){
+        log::emit<Trace>("registers") << "Allocate integer registers for function " << function->getName() << log::endl;
         ::register_allocation<ltac::PseudoRegister, ltac::Register>(function, platform);
+        
+        log::emit<Trace>("registers") << "Allocate float registers for function " << function->getName() << log::endl;
         ::register_allocation<ltac::PseudoFloatRegister, ltac::FloatRegister>(function, platform);
     }
 }
