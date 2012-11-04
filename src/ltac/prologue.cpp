@@ -19,13 +19,31 @@ using namespace eddic;
 
 namespace {
 
+bool callee_save(mtac::function_p function, ltac::Register reg, Platform platform){
+    auto definition = function->definition; 
+    auto return_type = definition->returnType;
+    auto descriptor = getPlatformDescriptor(platform);
+
+    if((return_type == INT || return_type == BOOL || return_type == CHAR) && reg.reg == descriptor->int_return_register1()){
+        return false;
+    } else if(return_type == STRING && (reg.reg == descriptor->int_return_register1() || reg.reg == descriptor->int_return_register2())){
+        return false;
+    } else if(return_type->is_pointer() && reg.reg == descriptor->int_return_register1()){ 
+        return false;
+    }
+
+    return true;
+}
+
 void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
     //Save registers for all other functions than main
     if(!function->is_main()){
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& reg : function->use_registers()){
-            ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
+            if(callee_save(function, reg, platform)){
+                ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
+            }
         }
 
         for(auto& float_reg : function->use_float_registers()){
@@ -46,7 +64,9 @@ void restore_registers(mtac::function_p function, mtac::basic_block_p bb, Platfo
         }
 
         for(auto& reg : boost::adaptors::reverse(function->use_registers())){
-            ltac::add_instruction(bb, ltac::Operator::POP, reg);
+            if(callee_save(function, reg, platform)){
+                ltac::add_instruction(bb, ltac::Operator::POP, reg);
+            }
         }
     }
 }
@@ -58,7 +78,9 @@ void restore_registers(mtac::function_p function, It& it, Platform platform){
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& reg : function->use_registers()){
-            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
+            if(callee_save(function, reg, platform)){
+                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
+            }
         }
 
         for(auto& float_reg : function->use_float_registers()){
