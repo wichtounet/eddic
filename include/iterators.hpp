@@ -38,6 +38,13 @@ struct Iterators {
         it = container.insert(it, value);
         end = container.end();
     }
+    
+    template<typename T>
+    void insert_after(T&& value){
+        ++it;
+        it = container.insert(it, value);
+        end = container.end();
+    }
 
     void erase(){
         it = container.erase(it);
