@@ -759,26 +759,26 @@ void ltac::StatementCompiler::compile_MUL(std::shared_ptr<mtac::Quadruple> quadr
     //Form  x = x * y
     if(*quadruple->arg1 == quadruple->result){
         auto reg = manager.get_pseudo_reg(quadruple->result);
-        ltac::add_instruction(bb, ltac::Operator::MUL, reg, to_arg(*quadruple->arg2));
+        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple->arg2));
     }
     //Form x = y * x
     else if(*quadruple->arg2 == quadruple->result){
         auto reg = manager.get_pseudo_reg(quadruple->result);
-        ltac::add_instruction(bb, ltac::Operator::MUL, reg, to_arg(*quadruple->arg1));
+        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple->arg1));
     }
     //Form x = y * z (z: immediate)
     else if(isVariable(*quadruple->arg1) && isInt(*quadruple->arg2)){
-        ltac::add_instruction(bb, ltac::Operator::MUL, manager.get_pseudo_reg_no_move(quadruple->result), to_arg(*quadruple->arg1), to_arg(*quadruple->arg2));
+        ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple->result), to_arg(*quadruple->arg1), to_arg(*quadruple->arg2));
     }
     //Form x = y * z (y: immediate)
     else if(isInt(*quadruple->arg1) && isVariable(*quadruple->arg2)){
-        ltac::add_instruction(bb, ltac::Operator::MUL, manager.get_pseudo_reg_no_move(quadruple->result), to_arg(*quadruple->arg2), to_arg(*quadruple->arg1));
+        ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple->result), to_arg(*quadruple->arg2), to_arg(*quadruple->arg1));
     }
     //Form x = y * z (both variables)
     else if(isVariable(*quadruple->arg1) && isVariable(*quadruple->arg2)){
         auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
         manager.copy(*quadruple->arg1, reg);
-        ltac::add_instruction(bb, ltac::Operator::MUL, reg, to_arg(*quadruple->arg2));
+        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple->arg2));
     }
 
     manager.set_written(quadruple->result);

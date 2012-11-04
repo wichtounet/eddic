@@ -58,7 +58,8 @@ std::string to_string(ltac::Operator op){
             return "ADD"; 
         case ltac::Operator::SUB:
             return "SUB"; 
-        case ltac::Operator::MUL:
+        case ltac::Operator::MUL2:
+        case ltac::Operator::MUL3:
             return "MUL"; 
         case ltac::Operator::DIV:
             return "DIV"; 

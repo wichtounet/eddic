@@ -13,6 +13,7 @@ using eddic::ltac::Operator;
 bool ltac::erase_result(ltac::Operator op){
    return op == Operator::MOV 
        || op == Operator::FMOV 
+       || op == Operator::MUL3 
        || op == Operator::XOR 
        || op == Operator::OR 
        || (op >= Operator::LEA && op <= Operator::CMOVLE);
@@ -22,5 +23,5 @@ bool ltac::erase_result_complete(ltac::Operator op){
     return op == Operator::MOV 
         || op == Operator::FMOV 
         || op == Operator::LEA 
-        || op == Operator::MUL;
+        || op == Operator::MUL3;
 }

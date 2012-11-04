@@ -15,6 +15,7 @@ namespace ltac {
 enum class Operator : unsigned int {
     MOV,
     FMOV,
+    MUL3,
 
     //Set the memory to 0
     MEMSET,
@@ -51,7 +52,7 @@ enum class Operator : unsigned int {
     //Math operations
     ADD,
     SUB,
-    MUL,
+    MUL2,
     DIV,
 
     //Float operations

@@ -99,7 +99,7 @@ inline bool optimize_statement(ltac::Statement& statement){
             }
         }
 
-        if(instruction->op == ltac::Operator::MUL){
+        if(instruction->op == ltac::Operator::MUL2 || instruction->op == ltac::Operator::MUL3){
             //Optimize multiplications with SHIFTs or LEAs
             if(ltac::is_reg(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
                 int constant = boost::get<int>(*instruction->arg2);
