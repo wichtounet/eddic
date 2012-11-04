@@ -567,9 +567,40 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, 
     return descriptor->symbolic_float_registers();
 }
 
+//TODO Find a way to get rid of that and use graph.degree() instead
+//graph.degree() is constant-time...
+
 template<typename Pseudo>
-std::size_t spill_heuristic(ltac::interference_graph<Pseudo>& graph, std::size_t reg){
-    return graph.spill_cost(reg) / graph.degree(reg);
+std::size_t degree(ltac::interference_graph<Pseudo>& graph, std::size_t candidate, std::list<std::size_t>& order){
+    std::size_t count = 0;
+
+    auto& neighbors = graph.neighbors(candidate);
+
+    std::unordered_set<std::size_t> bound;
+
+    for(auto neighbor : neighbors){
+        auto n_reg = graph.convert(neighbor);
+
+        if(std::find(order.begin(), order.end(), neighbor) != order.end()){
+            ++count;
+
+            if(n_reg.bound){
+                bound.insert(n_reg.binding);
+            }
+        } else {
+            if(n_reg.bound && !bound.count(n_reg.binding)){
+                ++count;
+                bound.insert(n_reg.binding);
+            }
+        }
+    }
+
+    return count;
+}
+
+template<typename Pseudo>
+double spill_heuristic(ltac::interference_graph<Pseudo>& graph, std::size_t reg, std::list<std::size_t>& order){
+    return static_cast<double>(graph.spill_cost(reg)) / static_cast<double>(degree(graph, reg, order));
 }
 
 template<typename Pseudo>
@@ -588,7 +619,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
 
         for(auto candidate : n){
             log::emit<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << graph.degree(candidate) << log::endl;
-            if(graph.degree(candidate) < K){
+            if(degree(graph, candidate, order) < K){
                 node = candidate;        
                 found = true;
                 break;
@@ -596,11 +627,11 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         }
         
         if(!found){
-            std::size_t min_cost = std::numeric_limits<std::size_t>::max();
+            auto min_cost = std::numeric_limits<double>::max();
 
             for(auto candidate : n){
-               if(!graph.convert(candidate).bound && spill_heuristic(graph, candidate) < min_cost){
-                    min_cost = spill_heuristic(graph, candidate);
+               if(!graph.convert(candidate).bound && spill_heuristic(graph, candidate, order) < min_cost){
+                    min_cost = spill_heuristic(graph, candidate, order);
                     node = candidate;
                }
             }
@@ -609,6 +640,8 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
 
             spilled.push_back(node);
         } else {
+            log::emit<Trace>("registers") << "Put pseudo " << graph.convert(node) << " on the stack" << log::endl;
+
             order.push_back(node);
         }
 
@@ -641,6 +674,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
     while(it.has_next()){
         auto reg = *it;
 
+        //Handle bound registers
         if(graph.convert(reg).bound){
             log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
             allocation[reg] = graph.convert(reg).binding;
@@ -650,19 +684,26 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         }
     }
 
+
     while(!order.empty()){
         std::size_t reg = order.back();
         order.pop_back();
+        
+        //Handle bound registers
+        /*if(graph.convert(reg).bound){
+            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
+            allocation[reg] = graph.convert(reg).binding;
+
+            continue;
+        }*/
 
         for(auto color : colors){
             bool found = false;
 
             for(auto neighbor : graph.neighbors(reg)){
-                if(allocation.count(neighbor)){
-                    if(allocation[neighbor] == color){
-                        found = true;
-                        break;
-                    }
+                if((allocation.count(neighbor) && allocation[neighbor] == color)/* || (graph.convert(neighbor).bound && graph.convert(neighbor).binding == color)*/){
+                    found = true;
+                    break;
                 }
             }
 
@@ -672,6 +713,18 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
                 break;
             }
         }
+
+        if(!allocation.count(reg)){
+            for(auto neighbor : graph.neighbors(reg)){
+                if(allocation.count(neighbor)){
+                    std::cout << "neighbor " << graph.convert(neighbor) << " of color " << allocation[neighbor] << std::endl;
+                } else {
+                    std::cout << "uncolored neighbor " << graph.convert(neighbor) << " of color " << std::endl;
+                }
+            }
+        }
+
+        ASSERT(allocation.count(reg), "The register must have been allocated a color");
     }
 
     for(auto& alloc : allocation){
