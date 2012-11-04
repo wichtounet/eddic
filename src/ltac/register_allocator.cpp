@@ -276,6 +276,18 @@ void find_local_registers(mtac::function_p function, local_reg<Pseudo>& local_ps
 }
 
 template<typename Pseudo>
+std::size_t count_store_complete(mtac::basic_block_p bb, Pseudo& reg){
+    std::size_t count = 0;
+    for(auto& statement : bb->l_statements){
+        if(is_store_complete<Pseudo>(statement, reg)){
+            ++count;
+        }
+    }
+
+    return count;
+}
+
+template<typename Pseudo>
 void renumber(mtac::function_p function){
     local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
@@ -289,20 +301,24 @@ void renumber(mtac::function_p function){
                 continue;
             }
 
-            Pseudo target;
-            bool start = false;
+            auto count = count_store_complete(bb, reg);
 
-            for(auto& statement : bb->l_statements){
-                if(is_store_complete<Pseudo>(statement, reg)){
-                    target = Pseudo(++current_reg);
-                    start = true;
+            if(count > 1){
+                Pseudo target;
+                bool start = false;
 
-                    //Make sure to replace only the first argument
-                    auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
-                    instruction->arg1 = target;
-                } else {
-                    if(start){
-                        replace_register(statement, reg, target);
+                for(auto& statement : bb->l_statements){
+                    if(is_store_complete<Pseudo>(statement, reg)){
+                        target = Pseudo(++current_reg);
+                        start = true;
+
+                        //Make sure to replace only the first argument
+                        auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+                        instruction->arg1 = target;
+                    } else {
+                        if(start){
+                            replace_register(statement, reg, target);
+                        }
                     }
                 }
             }
@@ -310,6 +326,9 @@ void renumber(mtac::function_p function){
     }
 
     set_last_reg<Pseudo>(function, current_reg);
+
+    ltac::Printer printer;
+    printer.print(function);
 }
 
 //2. Build
@@ -450,7 +469,7 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function
                         && !graph.connected(graph.convert(reg1), graph.convert(reg2))
                         && !prune.count(reg1) && !prune.count(reg2))
                 {
-                    log::emit<Dev>("registers") << "Coalesce " << reg1 << " and " << reg2 << log::endl;
+                    log::emit<Debug>("registers") << "Coalesce " << reg1 << " and " << reg2 << log::endl;
 
                     replaces[reg1] = reg2;
                     prune.insert(reg1);
@@ -463,6 +482,9 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function
     }
 
     replace_registers(function, replaces);
+
+    ltac::Printer printer;
+    printer.print(function);
 
     return !replaces.empty();
 }
@@ -681,23 +703,31 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p functi
 
         for(auto& bb : function){
             auto it = iterate(bb->l_statements);
+            
+            //TODO Add support for spilling float registers
 
             while(it.has_next()){
                 auto statement = *it;
 
-                if(is_store(statement, pseudo_reg)){
+                if(is_store_complete(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
 
                     replace_register(statement, pseudo_reg, new_pseudo_reg);
 
-                    ++it;
+                    it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
+                } else if(is_store(statement, pseudo_reg)){
+                    Pseudo new_pseudo_reg(++current_reg);
+                    
+                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position)));
 
-                    //TODO Add support for spilling float registers
-                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
+                    ++it;
+                    
+                    it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), new_pseudo_reg));
+                    
+                    replace_register(statement, pseudo_reg, new_pseudo_reg);
                 } else if(is_load(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
 
-                    //TODO Add support for spilling float registers
                     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, new_pseudo_reg, ltac::Address(ltac::BP, position)));
 
                     ++it;
