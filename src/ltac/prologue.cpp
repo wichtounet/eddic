@@ -237,6 +237,26 @@ void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> 
     it.restart();
     find(it, call);
 
+    if(it.has_next()){
+        ++it;
+
+        bool rewind = true;
+
+        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*it)){
+            if((*ptr)->op == ltac::Operator::ADD){
+                if(auto* reg_ptr = boost::get<ltac::Register>(&*(*ptr)->arg1)){
+                    if(*reg_ptr == ltac::SP){
+                       rewind = false;
+                    }
+                }
+            }
+        }
+
+        if(rewind){
+            --it;
+        }
+    }
+
     for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
         if(caller_save(target_function, float_reg, platform, configuration)){
             it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
