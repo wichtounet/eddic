@@ -35,6 +35,18 @@ bool callee_save(mtac::function_p function, ltac::Register reg, Platform platfor
     return true;
 }
 
+bool callee_save(mtac::function_p function, ltac::FloatRegister reg, Platform platform){
+    auto definition = function->definition; 
+    auto return_type = definition->returnType;
+    auto descriptor = getPlatformDescriptor(platform);
+
+    if(return_type == FLOAT && reg.reg == descriptor->float_return_register()){
+        return false;
+    } 
+
+    return true;
+}
+
 void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
     //Save registers for all other functions than main
     if(!function->is_main()){
@@ -47,8 +59,10 @@ void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform 
         }
 
         for(auto& float_reg : function->use_float_registers()){
-            ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
-            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
+            if(callee_save(function, float_reg, platform)){
+                ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+                ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
+            }
         }
     }
 }
@@ -59,8 +73,10 @@ void restore_registers(mtac::function_p function, mtac::basic_block_p bb, Platfo
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
-            ltac::add_instruction(bb, ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
-            ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+            if(callee_save(function, float_reg, platform)){
+                ltac::add_instruction(bb, ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
+                ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+            }
         }
 
         for(auto& reg : boost::adaptors::reverse(function->use_registers())){
@@ -84,8 +100,10 @@ void restore_registers(mtac::function_p function, It& it, Platform platform){
         }
 
         for(auto& float_reg : function->use_float_registers()){
-            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
-            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
+            if(callee_save(function, float_reg, platform)){
+                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
+            }
         }
     }
 }
