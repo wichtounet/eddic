@@ -349,9 +349,21 @@ inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::S
                 auto reg21 = boost::get<ltac::Register>(*i2->arg1);
                 
                 if(reg11 == reg21){
-                    i2->arg1 = i1->arg2;
+                    bool valid = true;
+                    
+                    if(auto* ptr = boost::get<ltac::Address>(&*i1->arg2)){
+                        if(ptr->base_register && boost::get<ltac::Register>(*ptr->base_register) == reg11){
+                            valid = false;
+                        } else if(ptr->scaled_register && boost::get<ltac::Register>(*ptr->scaled_register) == reg11){
+                            valid = false;
+                        }
+                    }
 
-                    return true;
+                    if(valid){
+                        i2->arg1 = i1->arg2;
+
+                        return true;
+                    }
                 }
             }
         }
@@ -913,7 +925,7 @@ bool conditional_move(mtac::function_p function, Platform platform){
 bool debug(const std::string& name, bool b, mtac::function_p function){
     if(log::enabled<Debug>()){
         if(b){
-            log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
+            log::emit<Debug>("Peephole") << name << " returned true" << log::endl;
 
             //Print the function
             ltac::Printer printer;
