@@ -104,6 +104,8 @@ std::string to_string(ltac::Operator op){
             return "CMOVL"; 
         case ltac::Operator::CMOVLE:
             return "CMOVLE"; 
+        case ltac::Operator::PRE_PARAM:
+            return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
         default:

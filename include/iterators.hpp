@@ -47,6 +47,14 @@ struct Iterators {
     bool has_next(){
         return it != end;
     }
+    
+    bool has_previous(){
+        return it != container.begin();
+    }
+
+    void update(){
+        end = container.end();
+    }
 };
 
 template<typename Container>
