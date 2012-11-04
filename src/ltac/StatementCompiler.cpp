@@ -631,7 +631,14 @@ void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> qu
 
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple->result)){
-        //TODO manager.spills(reg);
+        auto position = quadruple->result->position();
+        if(position.isStack()){
+            ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+        } else if(position.isGlobal()){
+            ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Invalid position");
+        }
     }
 }
 
@@ -648,7 +655,14 @@ void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> q
 
             //If the address of the variable is escaped, we have to spill its value directly
             if(manager.is_escaped(quadruple->result)){
-                //TODO manager.spills(result_reg);
+                auto position = quadruple->result->position();
+                if(position.isStack()){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), value_reg);
+                } else if(position.isGlobal()){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                }
             }
         }
     } else {
@@ -664,7 +678,14 @@ void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> q
 
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple->result)){
-        //TODO manager.spills(reg);
+        auto position = quadruple->result->position();
+        if(position.isStack()){
+            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
+        } else if(position.isGlobal()){
+            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
+        } else {
+            ASSERT_PATH_NOT_TAKEN("Invalid position");
+        }
     }
 }
 
