@@ -1135,8 +1135,6 @@ void ltac::StatementCompiler::compile_PDOT(std::shared_ptr<mtac::Quadruple> quad
 
     auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
 
-    //TODO This should probably be done directly in get_address_in_pseudo_reg
-
     //The pointer has to be dereferenced
     if(variable->type()->is_pointer()){
         auto ptr_reg = manager.get_pseudo_reg(variable);
