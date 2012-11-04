@@ -581,7 +581,7 @@ std::size_t degree(ltac::interference_graph<Pseudo>& graph, std::size_t candidat
     for(auto neighbor : neighbors){
         auto n_reg = graph.convert(neighbor);
 
-        if(std::find(order.begin(), order.end(), neighbor) != order.end()){
+        if(std::find(order.begin(), order.end(), neighbor) == order.end()){
             ++count;
 
             if(n_reg.bound){
@@ -618,7 +618,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         bool found = false;
 
         for(auto candidate : n){
-            log::emit<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << graph.degree(candidate) << log::endl;
+            log::emit<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << degree(graph, candidate, order) << log::endl;
             if(degree(graph, candidate, order) < K){
                 node = candidate;        
                 found = true;
@@ -715,6 +715,8 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         }
 
         if(!allocation.count(reg)){
+            std::cout << "Error allocating " << graph.convert(reg) << std::endl;
+
             for(auto neighbor : graph.neighbors(reg)){
                 if(allocation.count(neighbor)){
                     std::cout << "neighbor " << graph.convert(neighbor) << " of color " << allocation[neighbor] << std::endl;
