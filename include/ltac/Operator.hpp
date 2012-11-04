@@ -80,6 +80,9 @@ enum class Operator : unsigned int {
     CMOVL,
     CMOVLE,
 
+    //Special placeholders to indicate the start of parameter passing
+    PRE_PARAM,
+
     NOP
 };
 

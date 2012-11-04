@@ -61,12 +61,15 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
+        std::shared_ptr<mtac::Program> program;
    
     private:
         //The function being compiled
         mtac::function_p function;
 
         std::shared_ptr<FloatPool> float_pool;
+
+        bool first_param = true;
 
         //Uses for the next call
         std::vector<ltac::PseudoRegister> uses;

@@ -141,8 +141,6 @@ template<typename It>
 void restore_registers(mtac::function_p function, It& it, Platform platform, std::shared_ptr<Configuration> configuration){
     //Save registers for all other functions than main
     if(!function->is_main()){
-        //TODO Ignore return register (if used as return), parameter register (if used as parameter)
-
         for(auto& reg : function->use_registers()){
             if(callee_save(function, reg, platform, configuration)){
                 it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
@@ -156,6 +154,11 @@ void restore_registers(mtac::function_p function, It& it, Platform platform, std
             }
         }
     }
+}
+
+template<typename It>
+void caller_cleanup(mtac::function_p function, mtac::function_p target_function, mtac::basic_block_p bb, It& it, Platform platform, std::shared_ptr<Configuration> configuration){
+    //TODO
 }
 
 } //End of anonymous
@@ -240,6 +243,24 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
                         it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
 
                         restore_registers(function, it, platform, configuration);
+                    }
+                }
+
+                ++it;
+            }
+        }
+
+        //4. Generate caller save/restore code
+        
+        for(auto& bb : function){
+            auto it = iterate(bb->l_statements);
+
+            while(it.has_next()){
+                auto statement = *it;
+
+                if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                    if((*ptr)->type == ltac::JumpType::CALL){
+                        caller_cleanup(function, (*ptr)->target_function, bb, it, platform, configuration);
                     }
                 }
 

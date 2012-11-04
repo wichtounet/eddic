@@ -396,6 +396,11 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     manager.set_current(param);
+
+    if(first_param){
+        ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
+        first_param = false;
+    }
     
     std::shared_ptr<const Type> type;
     bool register_allocated = false;
@@ -529,13 +534,28 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     }
 }
 
+mtac::function_p get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::Program> program){
+    auto target_definition = call->functionDefinition;
+
+    for(auto& function : program->functions){
+        if(function->definition == target_definition){
+            return function;
+        }
+    }
+
+    return nullptr;
+}
+
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     manager.set_current(call);
 
+    first_param = true;
+
     auto call_instruction = std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL);
-    bb->l_statements.push_back(call_instruction);
+    call_instruction->target_function = get_target(call, program);
     call_instruction->uses = uses;
     call_instruction->float_uses = float_uses;
+    bb->l_statements.push_back(call_instruction);
 
     uses.clear();
     float_uses.clear();

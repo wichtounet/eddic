@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include "mtac/forward.hpp"
+
 #include "ltac/PseudoRegister.hpp"
 #include "ltac/PseudoFloatRegister.hpp"
 
@@ -46,6 +48,7 @@ enum struct JumpType : unsigned int {
 struct Jump {
     std::string label;
     JumpType type;
+    mtac::function_p target_function; //Only if a call
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;
