@@ -1101,7 +1101,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             for(auto& pair : *context){
                 auto var = pair.second;
 
-                if(var->position().isStack()){
+                if(var->position().isStack() || var->position().is_variable()){
                     auto type = var->type();
 
                     if(type->is_custom_type() || type->is_template()){
