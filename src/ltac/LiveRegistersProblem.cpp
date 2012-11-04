@@ -127,7 +127,12 @@ struct LivenessCollector : public boost::static_visitor<> {
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
         if(instruction->op != ltac::Operator::NOP){
             if(ltac::erase_result_complete(instruction->op)){
-                set_dead(*instruction->arg1);
+                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
+                    set_live_opt(ptr->base_register);
+                    set_live_opt(ptr->scaled_register);
+                } else {
+                    set_dead(*instruction->arg1);
+                }
             } else {
                 set_live_opt(instruction->arg1);
             }
