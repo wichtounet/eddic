@@ -1210,7 +1210,6 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadrupl
 
         auto reg = get_address_in_pseudo_reg(variable, 0);
         ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
-        ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), reg); 
     } else if(mtac::is<int>(*quadruple->arg2)){
         ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), boost::get<int>(*quadruple->arg2)); 
     } else {
