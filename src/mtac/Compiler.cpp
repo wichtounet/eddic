@@ -210,7 +210,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     return {variable->type()->elements()};
                 } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
                     return {variable->type()->elements()};
-                } else if(variable->position().isParameter() || variable->position().isStack()){
+                } else if(variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
                     auto t1 = function->context->new_temporary(INT);
 
                     //The size of the array is at the address pointed by the variable
