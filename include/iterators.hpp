@@ -52,6 +52,11 @@ struct Iterators {
         return it != container.begin();
     }
 
+    void restart(){
+        it = container.begin();
+        end = container.end();
+    }
+
     void update(){
         end = container.end();
     }

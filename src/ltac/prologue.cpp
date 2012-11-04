@@ -324,39 +324,24 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
 
         //4. Generate caller save/restore code
        
-        //TODO Find a much better and cleaner way to do that :(
+        for(auto& bb : function){
+            auto it = iterate(bb->l_statements);
 
-        int ignore = 0;
-        int current = 0;
+            while(it.has_next()){
+                auto statement = *it;
 
-        while(true){
-start:
-            for(auto& bb : function){
-                auto it = iterate(bb->l_statements);
+                if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+                    if((*ptr)->type == ltac::JumpType::CALL){
+                        caller_cleanup(function, (*ptr)->target_function, bb, it, platform, configuration);
 
-                while(it.has_next()){
-                    auto statement = *it;
-
-                    if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                        if((*ptr)->type == ltac::JumpType::CALL){
-                            if(ignore > 0){
-                                ignore--;
-                            } else {
-                                current++;
-                                
-                                caller_cleanup(function, (*ptr)->target_function, bb, it, platform, configuration);
-                                ignore = current;
-
-                                goto start;
-                            }
-                        }
+                        //The iterator is invalidated by the cleanup, necessary to find the call again
+                        it.restart();
+                        find(it, *ptr);
                     }
-
-                    ++it;
                 }
-            }
 
-            break;
+                ++it;
+            }
         }
     }
 }
