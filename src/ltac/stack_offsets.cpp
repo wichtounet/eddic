@@ -13,6 +13,7 @@
 #include "ltac/Address.hpp"
 #include "ltac/Register.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Printer.hpp"
 
 using namespace eddic;
 
@@ -55,9 +56,9 @@ void change_address(Arg& arg, int bp_offset){
 void ltac::fix_stack_offsets(std::shared_ptr<mtac::Program> program, Platform platform){
     int bp_offset = 0;
 
-    std::unordered_map<std::string, int> offset_labels;
-
     for(auto& function : program->functions){
+        std::unordered_map<std::string, int> offset_labels;
+        
         for(auto& bb : function){
             for(auto& statement : bb->l_statements){
                 if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
