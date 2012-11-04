@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/range/adaptors.hpp>
+
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
@@ -14,6 +16,59 @@
 #include "ltac/Utils.hpp"
 
 using namespace eddic;
+
+namespace {
+
+void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
+    //Save registers for all other functions than main
+    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+        //TODO Ignore return register (if used as return), parameter register (if used as parameter)
+
+        for(auto& reg : function->use_registers()){
+            ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
+        }
+
+        for(auto& float_reg : function->use_float_registers()){
+            ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
+        }
+    }
+}
+
+void restore_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
+    //Save registers for all other functions than main
+    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+        //TODO Ignore return register (if used as return), parameter register (if used as parameter)
+
+        for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
+            ltac::add_instruction(bb, ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
+            ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+        }
+
+        for(auto& reg : boost::adaptors::reverse(function->use_registers())){
+            ltac::add_instruction(bb, ltac::Operator::POP, reg);
+        }
+    }
+}
+
+template<typename It>
+void restore_registers(mtac::function_p function, It& it, Platform platform){
+    //Save registers for all other functions than main
+    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+        //TODO Ignore return register (if used as return), parameter register (if used as parameter)
+
+        for(auto& reg : function->use_registers()){
+            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
+        }
+
+        for(auto& float_reg : function->use_float_registers()){
+            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
+        }
+    }
+}
+
+} //End of anonymous
 
 void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_program, std::shared_ptr<Configuration> configuration){
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
@@ -58,9 +113,13 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
             }
         }
 
+        save_registers(function, bb, platform);
+
         //2. Generate epilogue
 
         bb = function->exit_bb();
+
+        restore_registers(function, bb, platform);
 
         ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, size);
 
@@ -89,6 +148,8 @@ void ltac::generate_prologue_epilogue(std::shared_ptr<mtac::Program> ltac_progra
                         }
 
                         it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
+
+                        restore_registers(function, it, platform);
                     }
                 }
 
