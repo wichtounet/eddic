@@ -326,9 +326,6 @@ void renumber(mtac::function_p function){
     }
 
     set_last_reg<Pseudo>(function, current_reg);
-
-    ltac::Printer printer;
-    printer.print(function);
 }
 
 //2. Build
@@ -482,9 +479,6 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function
     }
 
     replace_registers(function, replaces);
-
-    ltac::Printer printer;
-    printer.print(function);
 
     return !replaces.empty();
 }
