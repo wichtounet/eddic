@@ -1,0 +1,8 @@
+void main(){
+    int a = 6;
+    test(a);
+}
+
+void test(int* a){
+    print(*a);
+}
