@@ -599,10 +599,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
             auto reg = manager.get_pseudo_float_reg_no_move(call->return_);
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             ltac::add_instruction(bb, ltac::Operator::FMOV, reg, return_reg);
+            call_instruction->float_kills.push_back(return_reg);
         } else {
             auto reg = manager.get_pseudo_reg_no_move(call->return_);
             auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
             ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
+            call_instruction->kills.push_back(return_reg);
         }
 
         manager.set_written(call->return_);
@@ -612,6 +614,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
         auto reg = manager.get_pseudo_reg_no_move(call->return2_);
         auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
         ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
+        call_instruction->kills.push_back(return_reg);
 
         manager.set_written(call->return2_);
     }

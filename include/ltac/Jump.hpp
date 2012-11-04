@@ -53,6 +53,9 @@ struct Jump {
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;
+    
+    std::vector<ltac::PseudoRegister> kills;
+    std::vector<ltac::PseudoFloatRegister> float_kills;
 
     Jump();
     Jump(const std::string& label, JumpType type);
