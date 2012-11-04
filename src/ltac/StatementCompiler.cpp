@@ -396,7 +396,6 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
     manager.set_current(param);
-    manager.save_registers(param, descriptor);
     
     std::shared_ptr<const Type> type;
     bool register_allocated = false;
@@ -603,8 +602,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
 
         manager.set_written(call->return2_);
     }
-
-    manager.restore_pushed_registers();
 }
 
 void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple){

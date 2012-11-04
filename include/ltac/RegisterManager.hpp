@@ -106,9 +106,6 @@ class RegisterManager : public AbstractRegisterManager {
 
         void collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
 
-        void save_registers(std::shared_ptr<mtac::Param> param, const PlatformDescriptor* descriptor);
-        void restore_pushed_registers();
-
         std::shared_ptr<StatementCompiler> access_compiler();
 
         int last_pseudo_reg();
@@ -116,10 +113,6 @@ class RegisterManager : public AbstractRegisterManager {
     
     private: 
         mtac::Statement current;
-        
-        //Store the Register that are saved before call
-        std::vector<ltac::Register> int_pushed;
-        std::vector<ltac::FloatRegister> float_pushed;
 
         //Allow to push needed register before the first push param
         bool first_param = true;

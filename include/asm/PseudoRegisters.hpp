@@ -9,6 +9,7 @@
 #define ASM_PSEUDO_REGISTERS_H
 
 #include <memory>
+#include <vector>
 #include <unordered_map>
 
 namespace eddic {
@@ -61,13 +62,19 @@ struct PseudoRegisters {
          */
         void setLocation(std::shared_ptr<Variable> variable, Reg reg);
 
+        std::shared_ptr<Variable> variable(Reg reg);
+
         Reg get_new_reg();
         int last_reg();
         
         Reg get_bound_reg(unsigned short);
 
+        std::vector<Reg>& registers();
+
     private:
         int current_reg = 0;
+
+        std::vector<Reg> m_registers;
         std::unordered_map<std::shared_ptr<Variable>, Reg> variables;
 };
 
@@ -79,6 +86,22 @@ PseudoRegisters<Reg>::PseudoRegisters() {
 template<typename Reg>
 int PseudoRegisters<Reg>::last_reg() {
     return current_reg;
+}
+        
+template<typename Reg>
+std::vector<Reg>& PseudoRegisters<Reg>::registers(){
+    return m_registers;
+}
+
+template<typename Reg>
+std::shared_ptr<Variable> PseudoRegisters<Reg>::variable(Reg reg){
+    for(auto& pair : variables){
+        if(pair.second.reg == reg.reg){
+            return pair.first;
+        }
+    }
+
+    return nullptr;
 }
 
 template<typename Reg>
@@ -101,12 +124,16 @@ Reg PseudoRegisters<Reg>::operator[](const std::shared_ptr<Variable> variable){
 
 template<typename Reg>
 Reg PseudoRegisters<Reg>::get_bound_reg(unsigned short hard){
-    return Reg(current_reg++, hard);
+    Reg reg(current_reg++, hard);
+    m_registers.push_back(reg);
+    return reg;
 }
 
 template<typename Reg>
 Reg PseudoRegisters<Reg>::get_new_reg(){
-    return Reg(current_reg++);
+    Reg reg(current_reg++);
+    m_registers.push_back(reg);
+    return reg;
 }
 
 template<typename Reg>
