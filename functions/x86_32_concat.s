@@ -2,6 +2,10 @@ _F6concatSS:
 push ebp
 mov ebp, esp
 
+push ecx
+push esi
+push edi
+
 mov ebx, [ebp + 16]
 mov ecx, [ebp + 8]
 add ebx, ecx
@@ -16,6 +20,10 @@ rep movsb
 mov ecx, [ebp + 8]
 mov esi, [ebp + 12]
 rep movsb
+
+pop edi
+pop esi
+pop ecx
 
 leave
 ret
