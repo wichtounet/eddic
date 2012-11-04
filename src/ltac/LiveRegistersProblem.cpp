@@ -153,6 +153,14 @@ struct LivenessCollector : public boost::static_visitor<> {
         for(auto& reg : instruction->float_uses){
             in.values().insert(reg);
         }
+        
+        for(auto& reg : instruction->kills){
+            in.values().erase(reg);
+        }
+        
+        for(auto& reg : instruction->float_kills){
+            in.values().erase(reg);
+        }
     }
 
     template<typename T>
