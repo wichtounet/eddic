@@ -684,7 +684,6 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         }
     }
 
-
     while(!order.empty()){
         std::size_t reg = order.back();
         order.pop_back();
