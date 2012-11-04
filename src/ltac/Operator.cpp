@@ -19,5 +19,5 @@ bool ltac::erase_result(ltac::Operator op){
 }
 
 bool ltac::erase_result_complete(ltac::Operator op){
-    return op == Operator::MOV || op == Operator::FMOV;
+    return op == Operator::MOV || op == Operator::FMOV || op == Operator::LEA;
 }
