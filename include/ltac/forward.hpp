@@ -20,6 +20,11 @@ namespace ltac {
 struct Instruction;
 struct Jump;
 
+struct Register;
+struct FloatRegister;
+struct PseudoRegister;
+struct PseudoFloatRegister;
+
 typedef boost::variant<
         std::shared_ptr<ltac::Instruction>,         //Basic quadruples
         std::shared_ptr<ltac::Jump>,                //Jumps

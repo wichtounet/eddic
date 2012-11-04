@@ -209,6 +209,22 @@ std::size_t mtac::Function::bb_count(){
     return count;
 }
 
+const std::set<ltac::Register>& mtac::Function::use_registers() const {
+    return _use_registers;
+}
+
+const std::set<ltac::FloatRegister>& mtac::Function::use_float_registers() const {
+    return _use_float_registers;
+}
+
+void mtac::Function::use(ltac::Register reg){
+    _use_registers.insert(reg);
+}
+
+void mtac::Function::use(ltac::FloatRegister reg){
+    _use_float_registers.insert(reg);
+}
+
 std::size_t mtac::Function::pseudo_registers(){
     return last_pseudo_registers;
 }

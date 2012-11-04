@@ -658,6 +658,10 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         }
     }
 
+    for(auto& alloc : allocation){
+        function->use(Hard(alloc.second));
+    }
+
     replace_registers<Pseudo, Hard>(function, allocation, graph);
 }
 
