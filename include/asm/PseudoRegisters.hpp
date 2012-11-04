@@ -63,6 +63,7 @@ struct PseudoRegisters {
         void setLocation(std::shared_ptr<Variable> variable, Reg reg);
 
         std::shared_ptr<Variable> variable(Reg reg);
+        void remove_from_reg(std::shared_ptr<Variable> variable);
 
         Reg get_new_reg();
         int last_reg();
@@ -91,6 +92,11 @@ int PseudoRegisters<Reg>::last_reg() {
 template<typename Reg>
 std::vector<Reg>& PseudoRegisters<Reg>::registers(){
     return m_registers;
+}
+
+template<typename Reg>
+void PseudoRegisters<Reg>::remove_from_reg(std::shared_ptr<Variable> variable){
+    variables.erase(variable);
 }
 
 template<typename Reg>

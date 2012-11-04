@@ -197,9 +197,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
         } else {
             auto position = variable->position();
 
-            assert(position.isGlobal() || position.isParameter());
+            assert(position.isStack() || position.isGlobal() || position.isParameter());
 
-            if(position.isParameter()){
+            if(position.isParameter() || position.isStack()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
@@ -222,9 +222,9 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         } else {
             auto position = variable->position();
 
-            assert(position.isGlobal() || position.isParameter());
+            assert(position.isStack() || position.isGlobal() || position.isParameter());
 
-            if(position.isParameter()){
+            if(position.isParameter() || position.isStack()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
                 ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
@@ -528,4 +528,12 @@ int ltac::RegisterManager::last_pseudo_reg(){
  
 int ltac::RegisterManager::last_float_pseudo_reg(){
     return pseudo_float_registers.last_reg();
+}
+
+void ltac::RegisterManager::remove_from_pseudo_reg(std::shared_ptr<Variable> variable){
+    return pseudo_registers.remove_from_reg(variable);
+}
+
+void ltac::RegisterManager::remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable){
+    return pseudo_float_registers.remove_from_reg(variable);
 }

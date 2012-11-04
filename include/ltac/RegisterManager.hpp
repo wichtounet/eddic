@@ -110,6 +110,9 @@ class RegisterManager : public AbstractRegisterManager {
 
         int last_pseudo_reg();
         int last_float_pseudo_reg();
+
+        void remove_from_pseudo_reg(std::shared_ptr<Variable> variable);
+        void remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable);
     
     private: 
         mtac::Statement current;

@@ -639,6 +639,8 @@ void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> qu
         } else {
             ASSERT_PATH_NOT_TAKEN("Invalid position");
         }
+        
+        manager.remove_from_pseudo_reg(quadruple->result); 
     }
 }
 
@@ -663,6 +665,8 @@ void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> q
                 } else {
                     ASSERT_PATH_NOT_TAKEN("Invalid position");
                 }
+
+                manager.remove_from_pseudo_reg(quadruple->result); 
             }
         }
     } else {
@@ -686,6 +690,8 @@ void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> q
         } else {
             ASSERT_PATH_NOT_TAKEN("Invalid position");
         }
+        
+        manager.remove_from_pseudo_float_reg(quadruple->result); 
     }
 }
 
