@@ -82,6 +82,8 @@ class Function : public std::enable_shared_from_this<Function> {
         void use(ltac::Register reg);
         void use(ltac::FloatRegister reg);
 
+        bool is_main();
+
     private:
         //Before being partitioned, the function has only statement
         std::vector<Statement> statements;

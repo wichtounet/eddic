@@ -21,7 +21,7 @@ namespace {
 
 void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
     //Save registers for all other functions than main
-    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+    if(!function->is_main()){
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& reg : function->use_registers()){
@@ -37,7 +37,7 @@ void save_registers(mtac::function_p function, mtac::basic_block_p bb, Platform 
 
 void restore_registers(mtac::function_p function, mtac::basic_block_p bb, Platform platform){
     //Save registers for all other functions than main
-    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+    if(!function->is_main()){
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
@@ -54,7 +54,7 @@ void restore_registers(mtac::function_p function, mtac::basic_block_p bb, Platfo
 template<typename It>
 void restore_registers(mtac::function_p function, It& it, Platform platform){
     //Save registers for all other functions than main
-    if(function->getName() != "_F4main" && function->getName() != "_F4mainAS"){
+    if(!function->is_main()){
         //TODO Ignore return register (if used as return), parameter register (if used as parameter)
 
         for(auto& reg : function->use_registers()){

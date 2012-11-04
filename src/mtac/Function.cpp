@@ -18,6 +18,10 @@ mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& 
     //Nothing to do   
 }
 
+bool mtac::Function::is_main(){
+    return name == "_F4main" || name == "_F4mainAS";
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }
