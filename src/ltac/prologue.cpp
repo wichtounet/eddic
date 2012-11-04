@@ -156,21 +156,13 @@ void callee_restore_registers(mtac::function_p function, It& it, Platform platfo
 }
 
 template<typename It>
-void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
+void caller_save_registers(mtac::function_p function, std::shared_ptr<eddic::Function> target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
     auto pre_it = it.it;
 
     auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
-    auto first_bb = bb;
-    
-    ltac::Printer printer;
-    printer.print(*it);
 
-    bool found = false;
-    while(!found){
-        std::cout << "Search in bb" << bb->index << std::endl;
-        
-        while(!found && pre_it != bb->l_statements.begin()){
-            std::cout << "back" << std::endl;
+    while(true){
+        while(pre_it != bb->l_statements.begin()){
             --pre_it;
             
             auto statement = *pre_it;
@@ -178,9 +170,6 @@ void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> 
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 if((*ptr)->op == ltac::Operator::PRE_PARAM){
                     (*ptr)->op = ltac::Operator::NOP;
-                    
-                    std::cout << "Before" << std::endl;
-                    printer.print(function);
 
                     for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
                         if(!callee_save(target_function, float_reg, platform, configuration)){
@@ -194,36 +183,38 @@ void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> 
                             pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
                         }
                     }
-                    
-                    std::cout << "Found" << std::endl;
-                    printer.print(function);
 
-                    found = true;
+                    return;
                 }
             }
         }
 
-        if(!found){
-            bb = bb->prev;
-
-            pre_it = bb->l_statements.end();
-        }
+        bb = bb->prev;
+        pre_it = bb->l_statements.end();
     }
+}
 
-    bb = first_bb;
-    auto end_it = iterate(bb->l_statements);
-
+template<typename It, typename Type>
+void find(It& it, const Type& value){
     while(true){
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*end_it)){
-            if(*ptr == call){
-                break;
+        if(auto* ptr = boost::get<Type>(&*it)){
+            if(*ptr == value){
+                return;
             }
         }
 
-        ++end_it;
+        ++it;
     }
+}
 
-    //TODO HERE it is not valid anymore
+template<typename It>
+void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
+
+    caller_save_registers(function, target_function, bb, it, platform, configuration);
+
+    auto end_it = iterate(bb->l_statements);
+    find(end_it, call);
 
     for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
         if(!callee_save(target_function, float_reg, platform, configuration)){
