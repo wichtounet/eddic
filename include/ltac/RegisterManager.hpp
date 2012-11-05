@@ -34,8 +34,8 @@ class StatementCompiler;
 
 class RegisterManager : public AbstractRegisterManager {
     public:
-        //Keep track of the written variables to spills them
         std::unordered_set<std::shared_ptr<Variable>> written;
+        std::unordered_set<std::shared_ptr<Variable>> local;
 
         std::shared_ptr<Configuration> configuration;
 

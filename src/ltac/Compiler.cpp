@@ -74,7 +74,6 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
     compiler->manager.pointer_escaped = problem.pointer_escaped;
     
     //Handle parameters and register-allocated variables
-    //TODO compiler->reset();
     compiler->collect_parameters(function->definition);
 
     //Then we compile each of them
@@ -91,6 +90,8 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
 
             visit(*compiler, statement);
         }
+
+        compiler->end_bb();
     }
 
     function->set_pseudo_registers(compiler->manager.last_pseudo_reg());

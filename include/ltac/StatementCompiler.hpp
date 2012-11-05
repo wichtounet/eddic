@@ -43,8 +43,9 @@ class StatementCompiler : public boost::static_visitor<> {
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
         void set_current(mtac::Statement statement);
-        void reset();
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
+        
+        void end_bb();
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);

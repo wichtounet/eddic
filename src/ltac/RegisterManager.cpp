@@ -174,10 +174,8 @@ ltac::RegisterManager::RegisterManager(const std::vector<ltac::Register>& regist
 }
 
 void ltac::RegisterManager::reset(){
-    registers.reset();
-    float_registers.reset();
-
     written.clear();
+    local.clear();
 }
 
 bool ltac::RegisterManager::in_reg(std::shared_ptr<Variable> var){
@@ -387,11 +385,20 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister re
         ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
+
+bool is_local(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
+    return var->position().isParameter() || (manager.is_escaped(var) && !var->position().isParamRegister()) || var->position().isStack();
+}
         
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     move(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+
+    if(is_local(var, *this)){
+        local.insert(var);
+    }
+
     return reg;
 }
 
@@ -399,6 +406,11 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+
+    if(is_local(var, *this)){
+        local.insert(var);
+    }
+
     return reg;
 }
 
@@ -406,6 +418,11 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::share
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     move(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+
+    if(is_local(var, *this)){
+        local.insert(var);
+    }
+
     return reg;
 }
 
@@ -413,6 +430,11 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+
+    if(is_local(var, *this)){
+        local.insert(var);
+    }
+
     return reg;
 }
 

@@ -42,7 +42,41 @@ void ltac::StatementCompiler::set_current(mtac::Statement statement){
     manager.set_current(statement);
 }
 
-void ltac::StatementCompiler::reset(){
+void ltac::StatementCompiler::end_bb(){
+    for(auto& var : manager.local){
+        if(manager.is_written(var)){
+            auto position = var->position();
+
+            if(var->type() == FLOAT){
+                auto reg = manager.get_pseudo_float_reg(var);
+
+                if(position.isStack() || position.isParameter()){
+                    ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
+                } else if(position.isGlobal()){
+                    ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                }
+            } else {
+                auto reg = manager.get_pseudo_reg(var);
+
+                if(position.isStack() || position.isParameter()){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+                } else if(position.isGlobal()){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+                } else {
+                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                }
+            }
+        }
+
+        if(var->type() == FLOAT){
+            manager.remove_from_pseudo_float_reg(var);
+        } else {
+            manager.remove_from_pseudo_reg(var);
+        }
+    }
+
     manager.reset();
 }
 
