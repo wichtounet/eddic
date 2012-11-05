@@ -47,6 +47,8 @@ class StatementCompiler : public boost::static_visitor<> {
         
         void end_bb();
 
+        bool ended = false;
+
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);
         void operator()(std::shared_ptr<mtac::Goto> goto_);

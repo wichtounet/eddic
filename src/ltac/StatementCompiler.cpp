@@ -43,6 +43,10 @@ void ltac::StatementCompiler::set_current(mtac::Statement statement){
 }
 
 void ltac::StatementCompiler::end_bb(){
+    if(ended){
+        return;
+    }
+
     for(auto& var : manager.local){
         if(manager.is_written(var)){
             auto position = var->position();
@@ -78,6 +82,8 @@ void ltac::StatementCompiler::end_bb(){
     }
 
     manager.reset();
+
+    ended = true;
 }
 
 void ltac::StatementCompiler::collect_parameters(std::shared_ptr<eddic::Function> definition){
@@ -179,11 +185,15 @@ void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argumen
         ltac::add_instruction(bb, ltac::Operator::MOV, reg1, *ptr);
 
         auto reg2 = manager.get_pseudo_reg(ltac::get_variable(arg2));
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
     } else {
         auto reg1 = manager.get_pseudo_reg(ltac::get_variable(arg1));
         auto reg2 = to_arg(arg2);
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
     }
@@ -197,6 +207,8 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
     if(isVariable(arg1) && isVariable(arg2)){
         auto reg1 = manager.get_pseudo_float_reg(ltac::get_variable(arg1));
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
     } else if(isVariable(arg1) && isFloat(arg2)){
@@ -204,6 +216,8 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         auto reg2 = manager.get_free_pseudo_float_reg();
 
         manager.copy(arg2, reg2);
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
     } else if(isFloat(arg1) && isVariable(arg2)){
@@ -211,6 +225,8 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
 
         manager.copy(arg1, reg1);
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
     }
@@ -222,9 +238,13 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
 
         ltac::add_instruction(bb, ltac::Operator::MOV, reg, *ptr);
 
+        end_bb();
+
         ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
     } else {
         auto reg = manager.get_pseudo_reg(ltac::get_variable(arg1));
+        
+        end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
     }
@@ -407,6 +427,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
     manager.set_current(goto_);
+
+    end_bb();
 
     bb->l_statements.push_back(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
 }
@@ -1293,6 +1315,8 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
             }
         }
     }
+
+    end_bb();
 
     auto instruction = ltac::add_instruction(bb, ltac::Operator::PRE_RET);
     instruction->uses = uses;

@@ -79,6 +79,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
     //Then we compile each of them
     for(auto block : function){
         compiler->bb = block;
+        compiler->ended = false;
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
