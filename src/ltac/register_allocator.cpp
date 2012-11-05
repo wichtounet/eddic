@@ -607,7 +607,12 @@ template<typename Pseudo>
 void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::vector<std::size_t>& spilled, std::list<std::size_t>& order){
     std::set<std::size_t> n;
     for(std::size_t r = 0; r < graph.size(); ++r){
-        n.insert(r);
+        if(graph.convert(r).bound){
+            order.push_back(r);
+            graph.remove_node(r);
+        } else {
+            n.insert(r);
+        }
     }
 
     auto K = number_of_registers<Pseudo>(platform);
