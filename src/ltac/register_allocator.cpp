@@ -571,7 +571,7 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, 
 //graph.degree() is constant-time...
 
 template<typename Pseudo>
-std::size_t degree(ltac::interference_graph<Pseudo>& graph, std::size_t candidate, std::list<std::size_t>& order){
+std::size_t degree(ltac::interference_graph<Pseudo>& graph, std::size_t candidate, const std::list<std::size_t>& order){
     std::size_t count = 0;
 
     auto& neighbors = graph.neighbors(candidate);
@@ -627,16 +627,17 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         }
         
         if(!found){
-            auto min_cost = std::numeric_limits<double>::max();
+            node = *n.begin();
+            auto min_cost = spill_heuristic(graph, node, order);
 
             for(auto candidate : n){
-               if(!graph.convert(candidate).bound && spill_heuristic(graph, candidate, order) < min_cost){
+                if(!graph.convert(candidate).bound && spill_heuristic(graph, candidate, order) < min_cost){
                     min_cost = spill_heuristic(graph, candidate, order);
                     node = candidate;
-               }
+                }
             }
 
-            log::emit<Trace>("registers") << "Mark pseudo " << graph.convert(node) << " to be spilled" << log::endl;
+            log::emit<Trace>("registers") << "Mark pseudo " << node << "(" << graph.convert(node) << ") to be spilled" << log::endl;
 
             spilled.push_back(node);
         } else {
@@ -648,6 +649,8 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         n.erase(node);
         graph.remove_node(node);
     }
+
+    log::emit<Trace>("registers") << "Graph simplified" << log::endl;
 }
 
 //6. Select
