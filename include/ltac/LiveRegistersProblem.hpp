@@ -38,6 +38,22 @@ struct LiveRegisterValues {
     void insert(const FloatReg& reg){
         float_registers.insert(reg);
     }
+
+    auto find(const Reg& reg) -> decltype(registers.find(reg)) {
+        return registers.find(reg);
+    }
+    
+    auto find(const FloatReg& reg) -> decltype(float_registers.find(reg)) {
+        return float_registers.find(reg);
+    }
+    
+    auto end() -> decltype(registers.end()) {
+        return registers.end();
+    }
+    
+    auto fend() -> decltype(float_registers.end()) {
+        return float_registers.end();
+    }
     
     void erase(const Reg& reg){
         registers.erase(reg);

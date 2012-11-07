@@ -174,11 +174,11 @@ PseudoProblemDomain ltac::LivePseudoRegistersProblem::Init(mtac::function_p /*fu
 }
 
 ProblemDomain ltac::LiveRegistersProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    return meet(in, out);
+    return ::meet(in, out);
 }
 
 PseudoProblemDomain ltac::LivePseudoRegistersProblem::meet(PseudoProblemDomain& in, PseudoProblemDomain& out){
-    return meet(in, out);
+    return ::meet(in, out);
 }
 
 ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){
