@@ -42,9 +42,7 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-        mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : 
-    AbstractRegisterManager(registers, float_registers), function(function), float_pool(float_pool) {
+ltac::RegisterManager::RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : function(function), float_pool(float_pool){
         //Nothing else to init
 }
 

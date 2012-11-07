@@ -45,21 +45,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
         block->label = newLabel();
     }
     
-    auto descriptor = getPlatformDescriptor(platform);
-
-    std::vector<ltac::Register> registers;
-    auto symbolic_registers = descriptor->symbolic_registers();
-    for(auto reg : symbolic_registers){
-        registers.push_back({reg});
-    }
-    
-    std::vector<ltac::FloatRegister> float_registers;
-    auto float_symbolic_registers = descriptor->symbolic_float_registers();
-    for(auto reg : float_symbolic_registers){
-        float_registers.push_back({reg});
-    }
-
-    StatementCompiler compiler(registers, float_registers, function, float_pool);
+    StatementCompiler compiler(function, float_pool);
     compiler.program = source;
     compiler.descriptor = getPlatformDescriptor(platform);
     compiler.platform = platform;

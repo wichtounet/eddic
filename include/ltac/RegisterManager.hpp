@@ -19,7 +19,12 @@
 #include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 
-#include "ltac/AbstractRegisterManager.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
+
+#include "asm/PseudoRegisters.hpp"
 
 namespace eddic {
 
@@ -27,7 +32,7 @@ namespace ltac {
 
 class StatementCompiler;
 
-class RegisterManager : public AbstractRegisterManager {
+class RegisterManager {
     public:
         std::unordered_set<std::shared_ptr<Variable>> written;
         std::unordered_set<std::shared_ptr<Variable>> local;
@@ -36,8 +41,7 @@ class RegisterManager : public AbstractRegisterManager {
 
         mtac::basic_block_p bb;
 
-        RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-                mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
 
         /*!
          * Deleted copy constructor
@@ -88,6 +92,10 @@ class RegisterManager : public AbstractRegisterManager {
         mtac::function_p function;
 
         std::shared_ptr<FloatPool> float_pool;
+
+        //The pseudo registers
+        as::PseudoRegisters<ltac::PseudoRegister> pseudo_registers;
+        as::PseudoRegisters<ltac::PseudoFloatRegister> pseudo_float_registers;
 };
 
 } //end of ltac
