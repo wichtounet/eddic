@@ -36,12 +36,6 @@ class AbstractRegisterManager {
         void reserve(ltac::FloatRegister reg);
         void release(ltac::Register reg);
         void release(ltac::FloatRegister reg);
-        
-        bool in_register(std::shared_ptr<Variable> variable, ltac::Register reg);
-        bool in_register(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
-        
-        void setLocation(std::shared_ptr<Variable> variable, ltac::Register reg);
-        void setLocation(std::shared_ptr<Variable> variable, ltac::FloatRegister reg);
     
     protected:
         //The registers

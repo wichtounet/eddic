@@ -12,19 +12,14 @@
 #include <vector>
 #include <unordered_set>
 
-#include "variant.hpp"
 #include "Platform.hpp"
 #include "FloatPool.hpp"
-#include "Options.hpp"
 
-#include "mtac/Program.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 
 #include "ltac/AbstractRegisterManager.hpp"
-#include "ltac/Statement.hpp"
 
 namespace eddic {
 
@@ -37,17 +32,9 @@ class RegisterManager : public AbstractRegisterManager {
         std::unordered_set<std::shared_ptr<Variable>> written;
         std::unordered_set<std::shared_ptr<Variable>> local;
 
-        std::shared_ptr<Configuration> configuration;
-
-        //Liveness information
-        std::shared_ptr<mtac::DataFlowResults<mtac::LiveVariableAnalysisProblem::ProblemDomain>> liveness;
         mtac::EscapedVariables pointer_escaped;
 
-        //The function being compiled
-        mtac::function_p function;
-
-        std::shared_ptr<FloatPool> float_pool;
-        std::weak_ptr<StatementCompiler> compiler;
+        mtac::basic_block_p bb;
 
         RegisterManager(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
                 mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
@@ -69,44 +56,24 @@ class RegisterManager : public AbstractRegisterManager {
         ltac::PseudoFloatRegister get_pseudo_float_reg(std::shared_ptr<Variable> var);
         ltac::PseudoFloatRegister get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var);
 
-        bool in_reg(std::shared_ptr<Variable> var);
-
-        void copy(mtac::Argument argument, ltac::FloatRegister reg);
-        void copy(mtac::Argument argument, ltac::Register reg);
-        
         void copy(mtac::Argument argument, ltac::PseudoFloatRegister reg);
         void copy(mtac::Argument argument, ltac::PseudoRegister reg);
 
-        void move(mtac::Argument argument, ltac::Register reg);
-        void move(mtac::Argument argument, ltac::FloatRegister reg);
-        
         void move(mtac::Argument argument, ltac::PseudoRegister reg);
         void move(mtac::Argument argument, ltac::PseudoFloatRegister reg);
 
-        ltac::Register get_free_reg();
-        ltac::FloatRegister get_free_float_reg();
-        
         ltac::PseudoRegister get_free_pseudo_reg();
         ltac::PseudoFloatRegister get_free_pseudo_float_reg();
         
         ltac::PseudoRegister get_bound_pseudo_reg(unsigned short hard);
         ltac::PseudoFloatRegister get_bound_pseudo_float_reg(unsigned short hard);
 
-        void spills(ltac::Register reg);
-        void spills(ltac::FloatRegister reg);
-
         bool is_written(std::shared_ptr<Variable> variable);
         void set_written(std::shared_ptr<Variable> variable);
 
-        void set_current(mtac::Statement statement);
-
-        bool is_live(std::shared_ptr<Variable> variable, mtac::Statement statement);
-        bool is_live(std::shared_ptr<Variable> variable);
         bool is_escaped(std::shared_ptr<Variable> variable);
 
         void collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
-
-        std::shared_ptr<StatementCompiler> access_compiler();
 
         int last_pseudo_reg();
         int last_float_pseudo_reg();
@@ -115,10 +82,12 @@ class RegisterManager : public AbstractRegisterManager {
         void remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable);
     
     private: 
-        mtac::Statement current;
-
         //Allow to push needed register before the first push param
         bool first_param = true;
+        
+        mtac::function_p function;
+
+        std::shared_ptr<FloatPool> float_pool;
 };
 
 } //end of ltac

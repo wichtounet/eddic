@@ -30,89 +30,6 @@ using namespace eddic;
 
 namespace {
 
-template<typename Reg>
-Reg get_free_reg(as::Registers<Reg>& registers, ltac::RegisterManager& manager){
-    //Try to get a free register 
-    for(Reg reg : registers){
-        if(!registers.used(reg)){
-            return reg;
-        } 
-        
-        if(!registers.reserved(reg) && !manager.is_live(registers[reg]) && !registers[reg]->position().isParamRegister() && !registers[reg]->position().is_register()){
-            registers.remove(registers[reg]);
-
-            return reg;
-        }
-    }
-
-    //There are no free register, take one
-    Reg reg = registers.first();
-    bool found = false;
-
-    //First, try to take a register that doesn't need to be spilled (variable has not modified)
-    for(Reg remaining : registers){
-        if(!registers.reserved(remaining) && !registers[remaining]->position().is_temporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
-            if(!manager.is_written(registers[remaining])){
-                reg = remaining;
-                found = true;
-                break;
-            }
-        }
-    }
-
-    //If there is no registers that doesn't need to be spilled, take the first one not reserved 
-    if(!found){
-        for(Reg remaining : registers){
-            if(!registers.reserved(remaining) && !registers[remaining]->position().is_temporary() && !registers[remaining]->position().isParamRegister() && !registers[remaining]->position().is_register()){
-                reg = remaining;
-                found = true;
-                break;
-            }
-        }
-    }
-    
-    if(!found){
-        for(Reg r : registers){
-            std::cout << "Register " << r << log::endl;
-            if(!registers.reserved(r)){
-                if(registers.used(r)){
-                    std::cout << "  used by " << registers[r]->name() << log::endl;
-                } else {
-                    std::cout << "  not used" << log::endl;
-                }
-            } else {
-                std::cout << "  reserved" << log::endl;
-            }
-        }
-
-        ASSERT_PATH_NOT_TAKEN("No register found");
-    }
-
-    manager.spills(reg);
-
-    return reg; 
-}
-
-template<typename Reg> 
-Reg get_reg(as::Registers<Reg>& registers, std::shared_ptr<Variable> variable, bool doMove, ltac::RegisterManager& manager){
-    //The variable is already in a register
-    if(registers.inRegister(variable)){
-        return registers[variable];
-    }
-
-    Reg reg = get_free_reg(registers, manager);
-
-    log::emit<Trace>("Registers") << "Found reg " << reg << log::endl;
-
-    if(doMove){
-        manager.move(variable, reg);
-    }
-
-    registers.setLocation(variable, reg);
-
-    return reg;
-}
-
 template<typename Reg> 
 Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable> variable){
     //The variable is already in a register
@@ -121,48 +38,6 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
     }
 
     return registers.get_new_reg();
-}
-    
-template<typename Reg>
-void spills(as::Registers<Reg>& registers, Reg reg, ltac::Operator mov, ltac::RegisterManager& manager){
-    //If the register is not used, there is nothing to spills
-    if(registers.used(reg)){
-        auto variable = registers[reg];
-
-        //Do no spills variable stored in register
-        if(variable->position().isParamRegister() || variable->position().is_register()){
-            return;
-        }
-
-        //If the variable has not been written, there is no need to spill it
-        if(manager.written.find(variable) != manager.written.end()){
-            auto position = variable->position();
-            if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(manager.access_compiler()->bb, mov, ltac::Address(ltac::BP, position.offset()), reg);
-            } else if(position.isGlobal()){
-                ltac::add_instruction(manager.access_compiler()->bb, mov, ltac::Address("V" + position.name()), reg);
-            } else if(position.is_temporary()){
-                //If the variable is live, move it to another register, else do nothing
-                if(manager.is_live(variable)){
-                    registers.remove(variable);
-                    manager.reserve(reg);
-
-                    auto newReg = get_reg(registers, variable, false, manager);
-                    ltac::add_instruction(manager.access_compiler()->bb, mov, newReg, reg);
-
-                    manager.release(reg);
-
-                    return; //Return here to avoid erasing variable from variables
-                }
-            }
-        }
-
-        //The variable is no more contained in the register
-        registers.remove(variable);
-
-        //The variable has not been written now
-        manager.written.erase(variable);
-    }
 }
 
 } //end of anonymous namespace
@@ -178,10 +53,6 @@ void ltac::RegisterManager::reset(){
     local.clear();
 }
 
-bool ltac::RegisterManager::in_reg(std::shared_ptr<Variable> var){
-    return registers.inRegister(var);
-}
-
 void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegister reg){
     assert(ltac::is_variable(argument) || mtac::isFloat(argument));
 
@@ -191,21 +62,21 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
         //If the variable is hold in a register, just move the register value
         if(pseudo_float_registers.inRegister(variable)){
             auto old_reg = pseudo_float_registers[variable];
-            ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, old_reg);
+            ltac::add_instruction(bb, ltac::Operator::FMOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             assert(position.isStack() || position.isGlobal() || position.isParameter());
 
             if(position.isParameter() || position.isStack()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
+                ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
     } else {
         auto label = float_pool->label(boost::get<double>(argument));
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(label));
+        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
@@ -216,79 +87,21 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         //If the variable is hold in a register, just move the register value
         if(pseudo_registers.inRegister(variable)){
             auto old_reg = pseudo_registers[variable];
-            ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, old_reg);
+            ltac::add_instruction(bb, ltac::Operator::MOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             assert(position.isStack() || position.isGlobal() || position.isParameter());
 
             if(position.isParameter() || position.isStack()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             }
         }
     } else {
         //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
-    }
-}
-
-void ltac::RegisterManager::copy(mtac::Argument argument, ltac::FloatRegister reg){
-    assert(ltac::is_variable(argument) || mtac::isFloat(argument));
-
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        log::emit<Trace>("Registers") << "Copy " << variable->name() << log::endl;
-
-        //If the variable is hold in a register, just move the register value
-        if(float_registers.inRegister(variable)){
-            auto oldReg = float_registers[variable];
-
-            ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, oldReg);
-        } else {
-            auto position = variable->position();
-
-            //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.is_temporary());
-
-            if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
-            } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
-            } 
-        }
-    } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(label));
-    }
-}
-
-void ltac::RegisterManager::copy(mtac::Argument argument, ltac::Register reg){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        //If the variable is hold in a register, just move the register value
-        if(registers.inRegister(variable)){
-            auto oldReg = registers[variable];
-
-            ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, oldReg);
-        } else {
-            auto position = variable->position();
-
-            //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.is_temporary());
-
-            if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-            } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
-            } 
-        } 
-    } else {
-        //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
+        ltac::add_instruction(bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
     }
 }
 
@@ -310,80 +123,6 @@ void ltac::RegisterManager::move(mtac::Argument argument, ltac::PseudoFloatRegis
         //The variable is now held in the new register
         pseudo_float_registers.setLocation(*ptr, reg);
     } 
-}
-
-void ltac::RegisterManager::move(mtac::Argument argument, ltac::Register reg){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        //If the variable is hold in a register, just move the register value
-        if(registers.inRegister(variable)){
-            auto oldReg = registers[variable];
-
-            //Only if the variable is not already on the same register 
-            if(oldReg != reg){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, oldReg);
-
-                //There is nothing more in the old register
-                registers.remove(variable);
-            }
-        } else {
-            auto position = variable->position();
-
-            //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.is_temporary());
-
-            if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-            } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
-            } 
-        } 
-
-        //The variable is now held in the new register
-        registers.setLocation(variable, reg);
-    } else {
-        //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
-    }
-}
-
-void ltac::RegisterManager::move(mtac::Argument argument, ltac::FloatRegister reg){
-    assert(ltac::is_variable(argument) || mtac::isFloat(argument));
-
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
-        auto variable = *ptr;
-
-        //If the variable is hold in a register, just move the register value
-        if(float_registers.inRegister(variable)){
-            auto oldReg = float_registers[variable];
-
-            //Only if the variable is not already on the same register 
-            if(oldReg != reg){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, oldReg);
-
-                //There is nothing more in the old register
-                float_registers.remove(variable);
-            }
-        } else {
-            auto position = variable->position();
-
-            //The temporary should have been handled by the preceding condition (hold in a register)
-            assert(!position.is_temporary());
-
-            if(position.isStack() || position.isParameter()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
-            } else if(position.isGlobal()){
-                ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
-            } 
-        }
-
-        //The variable is now held in the new register
-        float_registers.setLocation(variable, reg);
-    } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
-        ltac::add_instruction(access_compiler()->bb, ltac::Operator::FMOV, reg, ltac::Address(label));
-    }
 }
 
 bool is_local(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
@@ -446,46 +185,12 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_bound_pseudo_float_reg(unsi
     return pseudo_float_registers.get_bound_reg(hard);
 }
 
-void ltac::RegisterManager::spills(ltac::Register reg){
-    log::emit<Trace>("Registers") << "Spills Register " << reg << log::endl;
-    ::spills(registers, reg, ltac::Operator::MOV, *this);
-}
-
-void ltac::RegisterManager::spills(ltac::FloatRegister reg){
-    log::emit<Trace>("Registers") << "Spills Float Register " << reg << log::endl;
-    ::spills(float_registers, reg, ltac::Operator::FMOV, *this);
-}
-
 ltac::PseudoRegister ltac::RegisterManager::get_free_pseudo_reg(){
     return pseudo_registers.get_new_reg();
 }
 
 ltac::PseudoFloatRegister ltac::RegisterManager::get_free_pseudo_float_reg(){
     return pseudo_float_registers.get_new_reg();
-}
-
-ltac::Register ltac::RegisterManager::get_free_reg(){
-    log::emit<Trace>("Registers") << "Get a free reg" << log::endl;
-    auto reg = ::get_free_reg(registers, *this);
-    reserve(reg);
-    return reg;
-}
-
-ltac::FloatRegister ltac::RegisterManager::get_free_float_reg(){
-    log::emit<Trace>("Registers") << "Get a free float reg" << log::endl;
-    auto reg = ::get_free_reg(float_registers, *this);
-    reserve(reg);
-    return reg;
-}
-
-bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable, mtac::Statement statement){
-    if(liveness->IN_S[statement].values().find(variable) != liveness->IN_S[statement].values().end()){
-        return true;
-    } else if(liveness->OUT_S[statement].values().find(variable) != liveness->OUT_S[statement].values().end()){
-        return true;
-    } else {
-        return false;
-    }
 }
 
 bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
@@ -498,12 +203,6 @@ bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
     log::emit<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
 
     return false;
-}
-
-bool ltac::RegisterManager::is_live(std::shared_ptr<Variable> variable){
-    auto live = is_live(variable, current);
-    log::emit<Trace>("Registers") << variable->name() << " is live " << live << log::endl;
-    return live;
 }
     
 void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
@@ -522,26 +221,12 @@ void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> 
     }
 }
 
-void ltac::RegisterManager::set_current(mtac::Statement statement){
-    current = statement;
-
-    log::emit<Trace>("Registers") << "Current statement " << statement << log::endl;
-}
-        
 bool ltac::RegisterManager::is_written(std::shared_ptr<Variable> variable){
     return written.find(variable) != written.end();
 }
 
 void ltac::RegisterManager::set_written(std::shared_ptr<Variable> variable){
     written.insert(variable);
-}
-
-std::shared_ptr<ltac::StatementCompiler> ltac::RegisterManager::access_compiler(){
-    if(auto ptr = compiler.lock()){
-        return ptr;
-    }
-
-    ASSERT_PATH_NOT_TAKEN("The shared_ptr on StatementCompiler has expired");
 }
 
 int ltac::RegisterManager::last_pseudo_reg(){

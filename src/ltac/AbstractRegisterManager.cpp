@@ -24,22 +24,6 @@ ltac::AbstractRegisterManager::AbstractRegisterManager(const std::vector<ltac::R
         //Nothing else to init
 }
 
-bool ltac::AbstractRegisterManager::in_register(std::shared_ptr<Variable> variable, ltac::Register reg){
-    return registers.inRegister(variable, reg);
-}
-
-bool ltac::AbstractRegisterManager::in_register(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
-    return float_registers.inRegister(variable, reg);
-}
-        
-void ltac::AbstractRegisterManager::setLocation(std::shared_ptr<Variable> variable, ltac::Register reg){
-   registers.setLocation(variable, reg); 
-}
-
-void ltac::AbstractRegisterManager::setLocation(std::shared_ptr<Variable> variable, ltac::FloatRegister reg){
-   float_registers.setLocation(variable, reg); 
-}
-
 bool ltac::AbstractRegisterManager::is_reserved(ltac::Register reg){
     return registers.reserved(reg);
 }

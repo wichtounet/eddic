@@ -20,8 +20,7 @@
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/GlobalOptimizations.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
 
@@ -60,41 +59,32 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
         float_registers.push_back({reg});
     }
 
-    auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, function, float_pool);
-    compiler->program = source;
-    compiler->manager.compiler = compiler;
-    compiler->manager.configuration = configuration;
-    compiler->descriptor = getPlatformDescriptor(platform);
-    compiler->platform = platform;
-    compiler->configuration = configuration;
-
-    //Compute Liveness
-    mtac::LiveVariableAnalysisProblem problem;
-    compiler->manager.liveness = mtac::data_flow(function, problem);
-    compiler->manager.pointer_escaped = problem.pointer_escaped;
+    StatementCompiler compiler(registers, float_registers, function, float_pool);
+    compiler.program = source;
+    compiler.descriptor = getPlatformDescriptor(platform);
+    compiler.platform = platform;
+    compiler.configuration = configuration;
+    compiler.manager.pointer_escaped = mtac::escape_analysis(function);;
     
     //Handle parameters and register-allocated variables
-    compiler->collect_parameters(function->definition);
+    compiler.collect_parameters(function->definition);
 
     //Then we compile each of them
     for(auto block : function){
-        compiler->bb = block;
-        compiler->ended = false;
+        compiler.ended = false;
+        compiler.bb = block;
+        compiler.manager.bb = block;
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            (*compiler)(block->label);
-        }
-    
-        for(unsigned int i = 0; i < block->statements.size(); ++i){
-            auto& statement = block->statements[i];
-
-            visit(*compiler, statement);
+            compiler(block->label);
         }
 
-        compiler->end_bb();
+        visit_each(compiler, block->statements);
+
+        compiler.end_bb();
     }
 
-    function->set_pseudo_registers(compiler->manager.last_pseudo_reg());
-    function->set_pseudo_float_registers(compiler->manager.last_float_pseudo_reg());
+    function->set_pseudo_registers(compiler.manager.last_pseudo_reg());
+    function->set_pseudo_float_registers(compiler.manager.last_float_pseudo_reg());
 }

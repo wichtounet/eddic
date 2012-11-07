@@ -18,6 +18,8 @@
 #include "mtac/Program.hpp"
 
 #include "ltac/RegisterManager.hpp"
+#include "ltac/Argument.hpp"
+#include "ltac/Operator.hpp"
 
 namespace eddic {
 
@@ -42,7 +44,6 @@ class StatementCompiler : public boost::static_visitor<> {
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
-        void set_current(mtac::Statement statement);
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
         
         void end_bb();

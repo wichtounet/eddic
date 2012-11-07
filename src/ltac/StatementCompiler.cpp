@@ -12,6 +12,7 @@
 #include "Options.hpp"
 #include "Labels.hpp"
 #include "Variable.hpp"
+#include "logging.hpp"
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp" 
@@ -37,10 +38,6 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
 ltac::StatementCompiler::StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
         mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : 
         manager(registers, float_registers, function, float_pool), function(function), float_pool(float_pool) {}
-
-void ltac::StatementCompiler::set_current(mtac::Statement statement){
-    manager.set_current(statement);
-}
 
 void ltac::StatementCompiler::end_bb(){
     if(ended){
@@ -283,7 +280,7 @@ void ltac::StatementCompiler::pop(ltac::Argument arg){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
-    manager.set_current(if_false);
+    log::emit<Trace>("Registers") << "Current statement " << if_false << log::endl;
 
     if(if_false->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -354,7 +351,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
-    manager.set_current(if_);
+    log::emit<Trace>("Registers") << "Current statement " << if_ << log::endl;
 
     if(if_->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -426,7 +423,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
-    manager.set_current(goto_);
+    log::emit<Trace>("Registers") << "Current statement " << goto_ << log::endl;
 
     end_bb();
 
@@ -451,7 +448,7 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
-    manager.set_current(param);
+    log::emit<Trace>("Registers") << "Current statement " << param << log::endl;
 
     if(first_param){
         ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
@@ -591,7 +588,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
-    manager.set_current(call);
+    log::emit<Trace>("Registers") << "Current statement " << call << log::endl;
 
     //Means that there are no params
     if(first_param){
@@ -1324,7 +1321,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_current(quadruple);
+    log::emit<Trace>("Registers") << "Current statement " << quadruple << log::endl;
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
