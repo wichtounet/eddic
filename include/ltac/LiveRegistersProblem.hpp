@@ -8,42 +8,53 @@
 #ifndef MTAC_LIVE_REGISTERS_PROBLEM_H
 #define MTAC_LIVE_REGISTERS_PROBLEM_H
 
-#include <unordered_set>
 #include <memory>
 #include <iostream>
+#include <unordered_set>
 
 #include "assert.hpp"
 
 #include "mtac/DataFlowProblem.hpp"
 
-#include "ltac/forward.hpp"
+//Necessary for hash
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-typedef std::unordered_set<Register> Registers;
-typedef std::unordered_set<FloatRegister> FloatRegisters;
+template<typename Reg, typename FloatReg>
+struct LiveRegisterValues {
+    std::unordered_set<Reg> registers;
+    std::unordered_set<FloatReg> float_registers;
+
+    void insert(const Reg& reg){
+        registers.insert(reg);
+    }
+
+    void insert(const FloatReg& reg){
+        float_registers.insert(reg);
+    }
     
-typedef std::unordered_set<PseudoRegister> PseudoRegisters;
-typedef std::unordered_set<PseudoFloatRegister> PseudoFloatRegisters;
+    void erase(const Reg& reg){
+        registers.erase(reg);
+    }
 
-struct PseudoLiveRegisterValues {
-    PseudoRegisters registers;
-    PseudoFloatRegisters float_registers;
+    void erase(const FloatReg& reg){
+        float_registers.erase(reg);
+    }
 
-    void insert(PseudoRegister reg);
-    void insert(PseudoFloatRegister reg);
-    
-    void erase(PseudoRegister reg);
-    void erase(PseudoFloatRegister reg);
-
-    std::size_t size();
+    std::size_t size(){
+        return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
+    }
 };
 
-std::ostream& operator<<(std::ostream& stream, PseudoLiveRegisterValues& expression);
+//Liveness analysis on Hard Registers
 
-struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, PseudoLiveRegisterValues> {
+struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::Register, ltac::FloatRegister>> {
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain Init(mtac::function_p function) override;
    
@@ -54,6 +65,35 @@ struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowT
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
     bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
 };
+
+//Liveness analysis on Pseudo Registers
+
+struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> {
+    ProblemDomain Boundary(mtac::function_p function) override;
+    ProblemDomain Init(mtac::function_p function) override;
+   
+    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    
+    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
+    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+};
+
+template<typename Reg, typename FloatReg>
+std::ostream& operator<<(std::ostream& stream, const LiveRegisterValues<Reg, FloatReg>& value){
+    stream << "set{";
+
+    for(auto& v : value.registers){
+        stream << v << ", ";
+    }
+    
+    for(auto& v : value.float_registers){
+        stream << v << ", ";
+    }
+
+    return stream << "}";
+}
 
 } //end of mtac
 

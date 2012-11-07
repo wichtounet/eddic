@@ -448,7 +448,7 @@ bool constant_propagation(mtac::function_p function){
     for(auto& bb : function){
         auto& statements = bb->l_statements;
 
-        std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
+        std::unordered_map<ltac::Register, int> constants; 
 
         for(std::size_t i = 0; i < statements.size(); ++i){
             auto statement = statements[i];
@@ -501,7 +501,7 @@ bool constant_propagation(mtac::function_p function){
     return optimized;
 }
 
-void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash>& copies, ltac::Register reg){
+void remove_reg(std::unordered_map<ltac::Register, ltac::Register>& copies, ltac::Register reg){
     auto it = copies.begin();
     auto end = copies.end();
 
@@ -524,7 +524,7 @@ bool copy_propagation(mtac::function_p function, Platform platform){
     for(auto& bb : function){
         auto& statements = bb->l_statements;
 
-        std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
+        std::unordered_map<ltac::Register, ltac::Register> copies;
 
         for(std::size_t i = 0; i < statements.size(); ++i){
             auto statement = statements[i];
@@ -572,7 +572,7 @@ bool copy_propagation(mtac::function_p function, Platform platform){
     return optimized;
 }
 
-typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
+typedef std::unordered_set<ltac::Register> RegisterUsage;
 
 void add_param_registers(RegisterUsage& usage, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);

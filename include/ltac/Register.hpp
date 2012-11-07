@@ -10,8 +10,6 @@
 
 #include <ostream>
 
-#include <boost/functional/hash.hpp>
-
 namespace eddic {
 
 namespace ltac {
@@ -47,16 +45,18 @@ static const Register SP(1000);
  */
 static const Register BP(1001);
 
-struct RegisterHash : std::unary_function<Register, std::size_t> {
-    std::size_t operator()(const Register& r) const {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, r.reg);
-        return seed;
-    }
-};
-
 } //end of ltac
 
 } //end of eddic
+
+namespace std {
+    template<>
+    class hash<eddic::ltac::Register> {
+    public:
+        size_t operator()(const eddic::ltac::Register& val) const {
+            return val.reg;
+        }
+    };
+}
 
 #endif

@@ -8,48 +8,12 @@
 #include "VisitorUtils.hpp"
 
 #include "ltac/Statement.hpp"
-#include "ltac/PseudoRegister.hpp"
-#include "ltac/PseudoFloatRegister.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
 
 using namespace eddic;
 
 typedef ltac::LivePseudoRegistersProblem::ProblemDomain ProblemDomain;
     
-void ltac::PseudoLiveRegisterValues::insert(ltac::PseudoRegister reg){
-    registers.insert(reg);
-}
-
-void ltac::PseudoLiveRegisterValues::insert(ltac::PseudoFloatRegister reg){
-    float_registers.insert(reg);
-}
-
-void ltac::PseudoLiveRegisterValues::erase(ltac::PseudoRegister reg){
-    registers.erase(reg);
-}
-
-void ltac::PseudoLiveRegisterValues::erase(ltac::PseudoFloatRegister reg){
-    float_registers.erase(reg);
-}
-
-std::size_t ltac::PseudoLiveRegisterValues::size(){
-    return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
-}
-
-std::ostream& ltac::operator<<(std::ostream& stream, ltac::PseudoLiveRegisterValues& value){
-    stream << "set{";
-
-    for(auto& v : value.registers){
-        stream << v << ", ";
-    }
-    
-    for(auto& v : value.float_registers){
-        stream << v << ", ";
-    }
-
-    return stream << "}";
-}
-
 ProblemDomain ltac::LivePseudoRegistersProblem::Boundary(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
