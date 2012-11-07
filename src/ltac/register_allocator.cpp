@@ -387,7 +387,7 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::fun
         return;
     }
 
-    ltac::LiveRegistersProblem problem;
+    ltac::LivePseudoRegistersProblem problem;
     auto live_results = mtac::data_flow(function, problem);
 
     for(auto& bb : function){

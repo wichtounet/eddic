@@ -16,30 +16,34 @@
 
 #include "mtac/DataFlowProblem.hpp"
 
+#include "ltac/forward.hpp"
+
 namespace eddic {
 
 namespace ltac {
 
-struct PseudoRegister;
-struct PseudoFloatRegister;
+typedef std::unordered_set<Register> Registers;
+typedef std::unordered_set<FloatRegister> FloatRegisters;
     
 typedef std::unordered_set<PseudoRegister> PseudoRegisters;
 typedef std::unordered_set<PseudoFloatRegister> PseudoFloatRegisters;
 
-struct LiveRegisterValues {
+struct PseudoLiveRegisterValues {
     PseudoRegisters registers;
     PseudoFloatRegisters float_registers;
 
     void insert(PseudoRegister reg);
     void insert(PseudoFloatRegister reg);
+    
     void erase(PseudoRegister reg);
     void erase(PseudoFloatRegister reg);
+
     std::size_t size();
 };
 
-std::ostream& operator<<(std::ostream& stream, LiveRegisterValues& expression);
+std::ostream& operator<<(std::ostream& stream, PseudoLiveRegisterValues& expression);
 
-struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues> {
+struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, PseudoLiveRegisterValues> {
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain Init(mtac::function_p function) override;
    

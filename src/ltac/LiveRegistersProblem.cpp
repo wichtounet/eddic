@@ -14,29 +14,29 @@
 
 using namespace eddic;
 
-typedef ltac::LiveRegistersProblem::ProblemDomain ProblemDomain;
+typedef ltac::LivePseudoRegistersProblem::ProblemDomain ProblemDomain;
     
-void ltac::LiveRegisterValues::insert(ltac::PseudoRegister reg){
+void ltac::PseudoLiveRegisterValues::insert(ltac::PseudoRegister reg){
     registers.insert(reg);
 }
 
-void ltac::LiveRegisterValues::insert(ltac::PseudoFloatRegister reg){
+void ltac::PseudoLiveRegisterValues::insert(ltac::PseudoFloatRegister reg){
     float_registers.insert(reg);
 }
 
-void ltac::LiveRegisterValues::erase(ltac::PseudoRegister reg){
+void ltac::PseudoLiveRegisterValues::erase(ltac::PseudoRegister reg){
     registers.erase(reg);
 }
 
-void ltac::LiveRegisterValues::erase(ltac::PseudoFloatRegister reg){
+void ltac::PseudoLiveRegisterValues::erase(ltac::PseudoFloatRegister reg){
     float_registers.erase(reg);
 }
 
-std::size_t ltac::LiveRegisterValues::size(){
+std::size_t ltac::PseudoLiveRegisterValues::size(){
     return (static_cast<std::size_t>(std::numeric_limits<unsigned short>::max()) + 1) * registers.size() + float_registers.size();
 }
 
-std::ostream& ltac::operator<<(std::ostream& stream, ltac::LiveRegisterValues& value){
+std::ostream& ltac::operator<<(std::ostream& stream, ltac::PseudoLiveRegisterValues& value){
     stream << "set{";
 
     for(auto& v : value.registers){
@@ -50,17 +50,17 @@ std::ostream& ltac::operator<<(std::ostream& stream, ltac::LiveRegisterValues& v
     return stream << "}";
 }
 
-ProblemDomain ltac::LiveRegistersProblem::Boundary(mtac::function_p /*function*/){
+ProblemDomain ltac::LivePseudoRegistersProblem::Boundary(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }
 
-ProblemDomain ltac::LiveRegistersProblem::Init(mtac::function_p /*function*/){
+ProblemDomain ltac::LivePseudoRegistersProblem::Init(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }
 
-ProblemDomain ltac::LiveRegistersProblem::meet(ProblemDomain& in, ProblemDomain& out){
+ProblemDomain ltac::LivePseudoRegistersProblem::meet(ProblemDomain& in, ProblemDomain& out){
     if(out.top()){
         return in;
     } else if(in.top()){
@@ -176,7 +176,7 @@ struct LivenessCollector : public boost::static_visitor<> {
 
 } //End of anonymous namespace
 
-ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){
+ProblemDomain ltac::LivePseudoRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){
     auto out = in;
     
     LivenessCollector collector(out);
@@ -185,7 +185,7 @@ ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_b
     return out;
 }
 
-bool ltac::LiveRegistersProblem::optimize(ltac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*results*/){
+bool ltac::LivePseudoRegistersProblem::optimize(ltac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*results*/){
     //This analysis is only made to gather information, not to optimize anything
     throw "Unimplemented";
 }
