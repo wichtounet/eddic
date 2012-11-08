@@ -37,8 +37,22 @@ typename std::enable_if<std::is_same<Reg, ltac::PseudoRegister>::value, void>::t
 }
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
-typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_jump(std::shared_ptr<ltac::Jump>, ProblemDomain&){
-    //Nothing for now
+typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_jump(std::shared_ptr<ltac::Jump> instruction, ProblemDomain& in){
+    for(auto& reg : instruction->hard_uses){
+        in.values().insert(reg);
+    }
+
+    for(auto& reg : instruction->hard_float_uses){
+        in.values().insert(reg);
+    }
+
+    for(auto& reg : instruction->hard_kills){
+        in.values().erase(reg);
+    }
+
+    for(auto& reg : instruction->hard_float_kills){
+        in.values().erase(reg);
+    }
 }
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
@@ -53,8 +67,14 @@ typename std::enable_if<std::is_same<Reg, ltac::PseudoRegister>::value, void>::t
 }
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
-typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_instruction(std::shared_ptr<ltac::Instruction>, ProblemDomain&){
-    //Nothing for now
+typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_instruction(std::shared_ptr<ltac::Instruction> instruction, ProblemDomain& in){
+    for(auto& reg : instruction->hard_uses){
+        in.values().insert(reg);
+    }
+
+    for(auto& reg : instruction->hard_float_uses){
+        in.values().insert(reg);
+    }
 }
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
