@@ -1,3 +1,25 @@
+eddic 1.1.4 - 2012.11.07
+
+Language: Support for dynamically allocated arrays
+Language: Implicit this pointer in member functions
+Standard Library: Doubly-Linked List
+Template Engine: Recursive implementation
+Optimization: New graph coloring register allocation
+Optimization: Add pass manager
+Optimization: The CFG is computed only once
+Optimization: Add support for low-level data-flow
+Optimization: Loop Invariant Code Motion
+Optimization: Loop Strength Reduction
+Optimization: Complete Loop Peeling
+inlining: Call-site inlining
+inlining: Support for string parameters
+inlining: Take constants passed in passed into account
+Compiler: The whole compilation process is thread safe
+Compiler: Better separation of the middle end and back end
+Compiler: Add support for CLang
+Compiler: Add support for LTAC basic blocks
+Test Suite: The tests are run in parallel
+
 eddic 1.1.3 - 2012.09.05
 
 * Language: Support for template functions and structs
