@@ -59,6 +59,28 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, 
     function->set_pseudo_float_registers(reg);
 }
 
+template<typename Source, typename Target>
+void update_uses(ltac::Statement&, std::unordered_map<Source, Target>&){
+    //Nothing by default
+}
+
+template<>
+void update_uses(ltac::Statement& statement, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
+    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+        for(auto& reg : (*ptr)->uses){
+            (*ptr)->hard_uses.push_back(register_allocation[reg]);
+        }
+    } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
+        for(auto& reg : (*ptr)->uses){
+            (*ptr)->hard_uses.push_back(register_allocation[reg]);
+        }
+        
+        for(auto& reg : (*ptr)->kills){
+            (*ptr)->hard_kills.push_back(register_allocation[reg]);
+        }
+    }
+}
+
 template<typename Source, typename Target, typename Opt>
 void update_reg(Opt& reg, std::unordered_map<Source, Target>& register_allocation){
     if(reg){
@@ -93,6 +115,8 @@ void replace_registers(mtac::function_p function, std::unordered_map<Source, Tar
                 update((*ptr)->arg2, register_allocation);
                 update((*ptr)->arg3, register_allocation);
             }
+
+            update_uses(statement, register_allocation);
         }
     }
 }

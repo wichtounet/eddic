@@ -11,6 +11,8 @@
 #include <vector>
 #include <memory>
 
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
 #include "ltac/PseudoRegister.hpp"
 #include "ltac/PseudoFloatRegister.hpp"
 
@@ -56,6 +58,12 @@ struct Jump {
     
     std::vector<ltac::PseudoRegister> kills;
     std::vector<ltac::PseudoFloatRegister> float_kills;
+    
+    std::vector<ltac::Register> hard_uses;
+    std::vector<ltac::FloatRegister> hard_float_uses;
+    
+    std::vector<ltac::Register> hard_kills;
+    std::vector<ltac::FloatRegister> hard_float_kills;
 
     Jump();
     Jump(const std::string& label, JumpType type);
