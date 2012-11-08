@@ -679,15 +679,26 @@ bool dead_code_elimination(mtac::function_p function){
         auto it = iterate(block->l_statements);
 
         while(it.has_next()){
-            auto statement = *it;
+            auto& statement = *it;
 
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 if(ltac::erase_result((*ptr)->op)){
                     if(auto* reg_ptr = boost::get<ltac::Register>(&*(*ptr)->arg1)){
-                        if(results->OUT_LS[statement].values().find(*reg_ptr) == results->OUT_LS[statement].values().end()){
-                            it.erase();
-                            optimized=true;
+                        //SP is always live
+                        if(*reg_ptr == ltac::SP){
+                            ++it;
                             continue;
+                        }
+
+                        //Some statements (in ENTRY and EXIT) are not annotated, it is enough to ignore them
+                        if(results->OUT_LS.count(statement)){
+                            auto& liveness = results->OUT_LS[statement].values();
+
+                            if(liveness.find(*reg_ptr) == liveness.end()){
+                                it.erase();
+                                optimized=true;
+                                continue;
+                            }
                         }
                     }
                 }
