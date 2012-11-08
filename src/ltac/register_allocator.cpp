@@ -769,14 +769,24 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
 
 //7. Spill code
 
-template<typename Pseudo, typename It>
-void spill_load(Pseudo& pseudo, unsigned int position, It& it){
+template<typename It>
+void spill_load(ltac::PseudoRegister& pseudo, unsigned int position, It& it){
     it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, pseudo, ltac::Address(ltac::BP, position)));
 }
 
-template<typename Pseudo, typename It>
-void spill_store(Pseudo& pseudo, unsigned int position, It& it){
+template<typename It>
+void spill_load(ltac::PseudoFloatRegister& pseudo, unsigned int position, It& it){
+    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, pseudo, ltac::Address(ltac::BP, position)));
+}
+
+template<typename It>
+void spill_store(ltac::PseudoRegister& pseudo, unsigned int position, It& it){
     it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::MOV, ltac::Address(ltac::BP, position), pseudo));
+}
+
+template<typename It>
+void spill_store(ltac::PseudoFloatRegister& pseudo, unsigned int position, It& it){
+    it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::BP, position), pseudo));
 }
 
 template<typename Pseudo>
