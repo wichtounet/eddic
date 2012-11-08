@@ -38,6 +38,13 @@ struct Iterators {
         it = container.insert(it, value);
         end = container.end();
     }
+    
+    template<typename T>
+    void insert_after(T&& value){
+        ++it;
+        it = container.insert(it, value);
+        end = container.end();
+    }
 
     void erase(){
         it = container.erase(it);
@@ -46,6 +53,19 @@ struct Iterators {
 
     bool has_next(){
         return it != end;
+    }
+    
+    bool has_previous(){
+        return it != container.begin();
+    }
+
+    void restart(){
+        it = container.begin();
+        end = container.end();
+    }
+
+    void update(){
+        end = container.end();
     }
 };
 

@@ -58,7 +58,8 @@ std::string to_string(ltac::Operator op){
             return "ADD"; 
         case ltac::Operator::SUB:
             return "SUB"; 
-        case ltac::Operator::MUL:
+        case ltac::Operator::MUL2:
+        case ltac::Operator::MUL3:
             return "MUL"; 
         case ltac::Operator::DIV:
             return "DIV"; 
@@ -104,6 +105,8 @@ std::string to_string(ltac::Operator op){
             return "CMOVL"; 
         case ltac::Operator::CMOVLE:
             return "CMOVLE"; 
+        case ltac::Operator::PRE_PARAM:
+            return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
         default:
@@ -180,15 +183,21 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << ", " << *quadruple->arg3 << std::endl;
-        } else if(quadruple->arg1 && quadruple->arg2){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << ", " << *quadruple->arg2 << std::endl;
-        } else if(quadruple->arg1){
-            out << "\t" << to_string(quadruple->op) << " " << *quadruple->arg1 << std::endl;
-        } else {
-            out << "\t" << to_string(quadruple->op) << std::endl;
+        out << "\t" << to_string(quadruple->op);
+
+        if(quadruple->arg1){
+            out << " " << *quadruple->arg1;
+            
+            if(quadruple->arg2){
+                out << ", " << *quadruple->arg2;
+
+                if(quadruple->arg3){
+                    out << ", " << *quadruple->arg3;
+                }
+            }
         }
+
+        out << std::endl;
     }
 
     void operator()(const std::shared_ptr<ltac::Jump> jmp){

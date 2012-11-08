@@ -13,6 +13,7 @@
 #include "ltac/Address.hpp"
 #include "ltac/Register.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Printer.hpp"
 
 using namespace eddic;
 
@@ -39,12 +40,12 @@ void change_address(Arg& arg, int bp_offset){
 
             if(opt_variant_equals(address.base_register, ltac::BP)){
                 address.base_register = ltac::SP; 
-            }
-
-            if(address.displacement){
-                *address.displacement += bp_offset;
-            } else {
-                address.displacement = bp_offset;
+                
+                if(address.displacement){
+                    *address.displacement += bp_offset;
+                } else {
+                    address.displacement = bp_offset;
+                }
             }
         }
     }
@@ -53,11 +54,10 @@ void change_address(Arg& arg, int bp_offset){
 }
 
 void ltac::fix_stack_offsets(std::shared_ptr<mtac::Program> program, Platform platform){
-    int bp_offset = 0;
-
-    std::unordered_map<std::string, int> offset_labels;
-
     for(auto& function : program->functions){
+        std::unordered_map<std::string, int> offset_labels;
+        int bp_offset = 0;
+        
         for(auto& bb : function){
             for(auto& statement : bb->l_statements){
                 if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -67,7 +67,7 @@ void ltac::fix_stack_offsets(std::shared_ptr<mtac::Program> program, Platform pl
                     change_address(instruction->arg2, bp_offset);
                     change_address(instruction->arg3, bp_offset);
 
-                    if(opt_variant_equals(instruction->arg1, ltac::BP)){
+                    if(opt_variant_equals(instruction->arg1, ltac::SP)){
                         if(instruction->op == ltac::Operator::ADD){
                             bp_offset -= boost::get<int>(*instruction->arg2);
                         }

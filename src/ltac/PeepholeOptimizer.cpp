@@ -20,9 +20,13 @@
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 
+#include "mtac/GlobalOptimizations.hpp"
+#include "mtac/Statement.hpp"
+
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Printer.hpp"
 #include "ltac/Utils.hpp"
+#include "ltac/LiveRegistersProblem.hpp"
 
 using namespace eddic;
 
@@ -99,7 +103,7 @@ inline bool optimize_statement(ltac::Statement& statement){
             }
         }
 
-        if(instruction->op == ltac::Operator::MUL){
+        if(instruction->op == ltac::Operator::MUL2 || instruction->op == ltac::Operator::MUL3){
             //Optimize multiplications with SHIFTs or LEAs
             if(ltac::is_reg(*instruction->arg1) && mtac::is<int>(*instruction->arg2)){
                 int constant = boost::get<int>(*instruction->arg2);
@@ -349,9 +353,21 @@ inline bool multiple_statement_optimizations_second(ltac::Statement& s1, ltac::S
                 auto reg21 = boost::get<ltac::Register>(*i2->arg1);
                 
                 if(reg11 == reg21){
-                    i2->arg1 = i1->arg2;
+                    bool valid = true;
+                    
+                    if(auto* ptr = boost::get<ltac::Address>(&*i1->arg2)){
+                        if(ptr->base_register && boost::get<ltac::Register>(*ptr->base_register) == reg11){
+                            valid = false;
+                        } else if(ptr->scaled_register && boost::get<ltac::Register>(*ptr->scaled_register) == reg11){
+                            valid = false;
+                        }
+                    }
 
-                    return true;
+                    if(valid){
+                        i2->arg1 = i1->arg2;
+
+                        return true;
+                    }
                 }
             }
         }
@@ -436,7 +452,7 @@ bool constant_propagation(mtac::function_p function){
     for(auto& bb : function){
         auto& statements = bb->l_statements;
 
-        std::unordered_map<ltac::Register, int, ltac::RegisterHash> constants; 
+        std::unordered_map<ltac::Register, int> constants; 
 
         for(std::size_t i = 0; i < statements.size(); ++i){
             auto statement = statements[i];
@@ -489,7 +505,7 @@ bool constant_propagation(mtac::function_p function){
     return optimized;
 }
 
-void remove_reg(std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash>& copies, ltac::Register reg){
+void remove_reg(std::unordered_map<ltac::Register, ltac::Register>& copies, ltac::Register reg){
     auto it = copies.begin();
     auto end = copies.end();
 
@@ -512,7 +528,7 @@ bool copy_propagation(mtac::function_p function, Platform platform){
     for(auto& bb : function){
         auto& statements = bb->l_statements;
 
-        std::unordered_map<ltac::Register, ltac::Register, ltac::RegisterHash> copies;
+        std::unordered_map<ltac::Register, ltac::Register> copies;
 
         for(std::size_t i = 0; i < statements.size(); ++i){
             auto statement = statements[i];
@@ -560,7 +576,7 @@ bool copy_propagation(mtac::function_p function, Platform platform){
     return optimized;
 }
 
-typedef std::unordered_set<ltac::Register, ltac::RegisterHash> RegisterUsage;
+typedef std::unordered_set<ltac::Register> RegisterUsage;
 
 void add_param_registers(RegisterUsage& usage, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
@@ -653,65 +669,48 @@ inline bool one_of(const T& value, const std::vector<T>& container){
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-bool dead_code_elimination(mtac::function_p function, Platform platform){
+bool dead_code_elimination(mtac::function_p function){
     bool optimized = false;
 
-    for(auto& bb : function){
-        auto& statements = bb->l_statements;
+    ltac::LiveRegistersProblem problem;
+    auto results = mtac::data_flow(function, problem);
+    
+    for(auto& block : function){
+        auto it = iterate(block->l_statements);
 
-        RegisterUsage usage; 
-        add_escaped_registers(usage, function, platform);
+        while(it.has_next()){
+            auto& statement = *it;
 
-        for(auto statement : boost::adaptors::reverse(statements)){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                auto instruction = *ptr;
+                if(ltac::erase_result((*ptr)->op)){
+                    //OR is used for comparisons
+                    if((*ptr)->op == ltac::Operator::OR){
+                        ++it;
+                        continue;
+                    }
 
-                //Optimize MOV, LEA, XOR
-                if(one_of(instruction->op, {ltac::Operator::MOV, ltac::Operator::LEA, ltac::Operator::XOR})){
-                    if(ltac::is_reg(*instruction->arg1)){
-                        auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
-                        if(usage.find(reg1) == usage.end()){
-                            optimized = ltac::transform_to_nop(instruction);
+                    if(auto* reg_ptr = boost::get<ltac::Register>(&*(*ptr)->arg1)){
+                        //SP is always live
+                        if(*reg_ptr == ltac::SP){
+                            ++it;
+                            continue;
                         }
 
-                        usage.erase(reg1);
-                        add_param_registers(usage, platform);
-                    } else {
-                        collect_usage(usage, instruction->arg1);
-                    }
+                        //Some statements (in ENTRY and EXIT) are not annotated, it is enough to ignore them
+                        if(results->OUT_LS.count(statement)){
+                            auto& liveness = results->OUT_LS[statement].values();
 
-                    collect_usage(usage, instruction->arg2);
-                    //} else if(one_of(instruction->op, {})){
-            } else if(instruction->op == ltac::Operator::ADD){
-                if(ltac::is_reg(*instruction->arg1)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
-                    if(usage.find(reg1) == usage.end()){
-                        optimized = ltac::transform_to_nop(instruction);
+                            if(liveness.find(*reg_ptr) == liveness.end()){
+                                it.erase();
+                                optimized=true;
+                                continue;
+                            }
+                        }
                     }
-                } else {
-                    collect_usage(usage, instruction->arg1);
                 }
-
-                collect_usage(usage, instruction->arg2);
-            } else if(one_of(instruction->op, {ltac::Operator::INC, ltac::Operator::DEC})){
-                if(ltac::is_reg(*instruction->arg1)){
-                    auto reg1 = boost::get<ltac::Register>(*instruction->arg1);
-
-                    if(usage.find(reg1) == usage.end()){
-                        optimized = ltac::transform_to_nop(instruction);
-                    }
-                } else {
-                    collect_usage(usage, instruction->arg1);
-                }
-            } else {
-                //Collect usage 
-                collect_usage(usage, instruction->arg1);
-                collect_usage(usage, instruction->arg2);
-                collect_usage(usage, instruction->arg3);
             }
-            } 
+
+            ++it;
         }
     }
 
@@ -913,7 +912,7 @@ bool conditional_move(mtac::function_p function, Platform platform){
 bool debug(const std::string& name, bool b, mtac::function_p function){
     if(log::enabled<Debug>()){
         if(b){
-            log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
+            log::emit<Debug>("Peephole") << name << " returned true" << log::endl;
 
             //Print the function
             ltac::Printer printer;
@@ -947,7 +946,7 @@ void eddic::ltac::optimize(std::shared_ptr<mtac::Program> program, Platform plat
             optimized |= debug("Basic optimizations", basic_optimizations(function, platform), function);
             optimized |= debug("Constant propagation", constant_propagation(function), function);
             optimized |= debug("Copy propagation", copy_propagation(function, platform), function);
-            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function, platform), function);
+            optimized |= debug("Dead-Code Elimination", dead_code_elimination(function), function);
             optimized |= debug("Conditional move", conditional_move(function, platform), function);
         } while(optimized);
     }

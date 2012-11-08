@@ -39,4 +39,14 @@ std::ostream& operator<<(std::ostream& out, const FloatRegister& reg);
 
 } //end of eddic
 
+namespace std {
+    template<>
+    class hash<eddic::ltac::FloatRegister> {
+    public:
+        size_t operator()(const eddic::ltac::FloatRegister& val) const {
+            return val.reg;
+        }
+    };
+}
+
 #endif

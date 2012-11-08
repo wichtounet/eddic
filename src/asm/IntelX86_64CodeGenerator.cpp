@@ -195,7 +195,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::SUB:
                 writer.stream() << "sub " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
-            case ltac::Operator::MUL:
+            case ltac::Operator::MUL2:
+            case ltac::Operator::MUL3:
                 if(instruction->arg3){
                     writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << ", " << *instruction->arg3 << std::endl;
                 } else {

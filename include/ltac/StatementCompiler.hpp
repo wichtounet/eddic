@@ -18,6 +18,8 @@
 #include "mtac/Program.hpp"
 
 #include "ltac/RegisterManager.hpp"
+#include "ltac/Argument.hpp"
+#include "ltac/Operator.hpp"
 
 namespace eddic {
 
@@ -29,8 +31,7 @@ class StatementCompiler : public boost::static_visitor<> {
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 
-        StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-                mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        StatementCompiler(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -42,9 +43,11 @@ class StatementCompiler : public boost::static_visitor<> {
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
-        void set_current(mtac::Statement statement);
-        void reset();
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
+        
+        void end_bb();
+
+        bool ended = false;
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);
@@ -61,12 +64,15 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
+        std::shared_ptr<mtac::Program> program;
    
     private:
         //The function being compiled
         mtac::function_p function;
 
         std::shared_ptr<FloatPool> float_pool;
+
+        bool first_param = true;
 
         //Uses for the next call
         std::vector<ltac::PseudoRegister> uses;

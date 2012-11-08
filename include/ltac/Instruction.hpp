@@ -38,6 +38,9 @@ struct Instruction {
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;
 
+    std::vector<ltac::Register> hard_uses;
+    std::vector<ltac::FloatRegister> hard_float_uses;
+
     //Instruction should never get copied
     Instruction(const Instruction& rhs) = delete;
     Instruction& operator=(const Instruction& rhs) = delete;

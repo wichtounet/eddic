@@ -9,11 +9,16 @@
 #define LTAC_JUMP_H
 
 #include <vector>
+#include <memory>
 
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
 #include "ltac/PseudoRegister.hpp"
 #include "ltac/PseudoFloatRegister.hpp"
 
 namespace eddic {
+
+class Function;
 
 namespace ltac {
 
@@ -46,9 +51,19 @@ enum struct JumpType : unsigned int {
 struct Jump {
     std::string label;
     JumpType type;
+    std::shared_ptr<eddic::Function> target_function; //Only if a call
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;
+    
+    std::vector<ltac::PseudoRegister> kills;
+    std::vector<ltac::PseudoFloatRegister> float_kills;
+    
+    std::vector<ltac::Register> hard_uses;
+    std::vector<ltac::FloatRegister> hard_float_uses;
+    
+    std::vector<ltac::Register> hard_kills;
+    std::vector<ltac::FloatRegister> hard_float_kills;
 
     Jump();
     Jump(const std::string& label, JumpType type);

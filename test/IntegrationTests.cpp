@@ -151,6 +151,7 @@ TEST_SAMPLE(optimize)
 TEST_SAMPLE(problem)
 TEST_SAMPLE(sort)
 TEST_SAMPLE(identifiers)
+TEST_SAMPLE(registers)
 TEST_SAMPLE(structures)
 
 BOOST_AUTO_TEST_SUITE_END()

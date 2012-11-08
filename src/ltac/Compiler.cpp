@@ -20,8 +20,7 @@
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/GlobalOptimizations.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
 
@@ -29,11 +28,11 @@ ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> confi
 
 void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<FloatPool> float_pool){
     for(auto& function : source->functions){
-        compile(function, float_pool);
+        compile(source, function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -46,51 +45,32 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
         block->label = newLabel();
     }
     
-    auto descriptor = getPlatformDescriptor(platform);
-
-    std::vector<ltac::Register> registers;
-    auto symbolic_registers = descriptor->symbolic_registers();
-    for(auto reg : symbolic_registers){
-        registers.push_back({reg});
-    }
+    StatementCompiler compiler(function, float_pool);
+    compiler.program = source;
+    compiler.descriptor = getPlatformDescriptor(platform);
+    compiler.platform = platform;
+    compiler.configuration = configuration;
+    compiler.manager.pointer_escaped = mtac::escape_analysis(function);;
     
-    std::vector<ltac::FloatRegister> float_registers;
-    auto float_symbolic_registers = descriptor->symbolic_float_registers();
-    for(auto reg : float_symbolic_registers){
-        float_registers.push_back({reg});
-    }
-
-    auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, function, float_pool);
-    compiler->manager.compiler = compiler;
-    compiler->manager.configuration = configuration;
-    compiler->descriptor = getPlatformDescriptor(platform);
-    compiler->platform = platform;
-    compiler->configuration = configuration;
-
-    //Compute Liveness
-    mtac::LiveVariableAnalysisProblem problem;
-    compiler->manager.liveness = mtac::data_flow(function, problem);
-    compiler->manager.pointer_escaped = problem.pointer_escaped;
+    //Handle parameters and register-allocated variables
+    compiler.collect_parameters(function->definition);
 
     //Then we compile each of them
     for(auto block : function){
-        compiler->bb = block;
+        compiler.ended = false;
+        compiler.bb = block;
+        compiler.manager.bb = block;
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            (*compiler)(block->label);
+            compiler(block->label);
         }
-    
-        //Handle parameters and register-allocated variables
-        compiler->reset();
-        compiler->collect_parameters(function->definition);
-    
-        for(unsigned int i = 0; i < block->statements.size(); ++i){
-            auto& statement = block->statements[i];
 
-            visit(*compiler, statement);
-        }
+        visit_each(compiler, block->statements);
+
+        compiler.end_bb();
     }
 
-    function->set_pseudo_registers(compiler->manager.last_pseudo_reg());
+    function->set_pseudo_registers(compiler.manager.last_pseudo_reg());
+    function->set_pseudo_float_registers(compiler.manager.last_float_pseudo_reg());
 }
