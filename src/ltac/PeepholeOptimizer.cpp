@@ -683,6 +683,12 @@ bool dead_code_elimination(mtac::function_p function){
 
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
                 if(ltac::erase_result((*ptr)->op)){
+                    //OR is used for comparisons
+                    if((*ptr)->op == ltac::Operator::OR){
+                        ++it;
+                        continue;
+                    }
+
                     if(auto* reg_ptr = boost::get<ltac::Register>(&*(*ptr)->arg1)){
                         //SP is always live
                         if(*reg_ptr == ltac::SP){
