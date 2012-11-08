@@ -6,7 +6,8 @@ This compiler outputs code for Intel X86 platform. It supports both 32 and 64 bi
 
 ## Building ##
 
-A compiler supporting the new C++ standard, C++11, is necessary to build the compiler. The compilation is known to be working on GCC 4.7 and greater. It has not been tested on CLang or on Windows. You need Boost 1.47.0 or superior installed on your computer to build this project. 
+A compiler supporting the new C++ standard, C++11, is necessary to build the compiler. The compilation is known to be working on GCC 4.7 and CLang 3.1. 
+It has not been tested on Windows. You need Boost 1.47.0 or superior installed on your computer to build this project. 
 
 You juste have to use CMake to build the compiler : 
 
