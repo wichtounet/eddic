@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,7 @@
 #define LTAC_INSTRUCTION_H
 
 #include <memory>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -33,6 +34,12 @@ struct Instruction {
     boost::optional<Argument> arg2;
     boost::optional<Argument> arg3;
     ltac::Size size = ltac::Size::DEFAULT;
+
+    std::vector<ltac::PseudoRegister> uses;
+    std::vector<ltac::PseudoFloatRegister> float_uses;
+
+    std::vector<ltac::Register> hard_uses;
+    std::vector<ltac::FloatRegister> hard_float_uses;
 
     //Instruction should never get copied
     Instruction(const Instruction& rhs) = delete;

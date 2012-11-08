@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,15 +10,16 @@
 
 #include <memory>
 #include <vector>
-#include <unordered_map>
 
 #include "variant.hpp"
 #include "FloatPool.hpp"
+#include "Options.hpp"
 
 #include "mtac/Program.hpp"
 
-#include "ltac/Program.hpp"
 #include "ltac/RegisterManager.hpp"
+#include "ltac/Argument.hpp"
+#include "ltac/Operator.hpp"
 
 namespace eddic {
 
@@ -26,8 +27,11 @@ namespace ltac {
 
 class StatementCompiler : public boost::static_visitor<> {
     public:
-        StatementCompiler(const std::vector<ltac::Register>& registers, const std::vector<ltac::FloatRegister>& float_registers, 
-                std::shared_ptr<ltac::Function> function, std::shared_ptr<FloatPool> float_pool);
+        const PlatformDescriptor* descriptor;
+        Platform platform;
+        std::shared_ptr<Configuration> configuration;
+
+        StatementCompiler(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -39,11 +43,11 @@ class StatementCompiler : public boost::static_visitor<> {
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
-        void set_current(mtac::Statement statement);
-        void reset();
-        void end_basic_block();
         void collect_parameters(std::shared_ptr<eddic::Function> definition);
-        void collect_variables(std::shared_ptr<eddic::Function> definition);
+        
+        void end_bb();
+
+        bool ended = false;
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);
@@ -57,24 +61,22 @@ class StatementCompiler : public boost::static_visitor<> {
         void push(ltac::Argument arg);
         void pop(ltac::Argument arg);
 
-        bool ended = false;     //Is the basic block ended ?
-
-        int bp_offset = 0;
-
         ltac::RegisterManager manager;
 
-        ltac::Address stack_address(int offset);
-        ltac::Address stack_address(ltac::Register offsetReg, int offset);
+        mtac::basic_block_p bb;
+        std::shared_ptr<mtac::Program> program;
    
     private:
         //The function being compiled
-        std::shared_ptr<ltac::Function> function;
+        mtac::function_p function;
 
         std::shared_ptr<FloatPool> float_pool;
-        
-        PlatformDescriptor* descriptor;
 
-        std::unordered_map<std::string, int> offset_labels;
+        bool first_param = true;
+
+        //Uses for the next call
+        std::vector<ltac::PseudoRegister> uses;
+        std::vector<ltac::PseudoFloatRegister> float_uses;
         
         void pass_in_int_register(mtac::Argument& argument, int position);
         void pass_in_float_register(mtac::Argument& argument, int position);
@@ -83,20 +85,16 @@ class StatementCompiler : public boost::static_visitor<> {
         void compare_float_binary(mtac::Argument& arg1, mtac::Argument& arg2);
         void compare_unary(mtac::Argument arg1);
 
-        void div_eax(std::shared_ptr<mtac::Quadruple> quadruple);
         void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple);
         
-        ltac::Register to_register(std::shared_ptr<Variable> var);
+        ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         
-        ltac::Register get_address_in_reg(std::shared_ptr<Variable> var, int offset);
-        ltac::Register get_address_in_reg2(std::shared_ptr<Variable> var, ltac::Register offset);
+        ltac::PseudoRegister get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset);
+        ltac::PseudoRegister get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::PseudoRegister offset);
 
         ltac::Argument to_arg(mtac::Argument argument);
         
-        ltac::Address to_address(std::shared_ptr<Variable> var, int offset);
-        ltac::Address to_address(std::shared_ptr<Variable> var, mtac::Argument offset);
-        
-        ltac::Address to_pointer(std::shared_ptr<Variable> var, int offset);
+        ltac::Address address(std::shared_ptr<Variable> var, mtac::Argument offset);
     
         void compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);

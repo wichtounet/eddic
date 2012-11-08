@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #include "Options.hpp"
 #include "Type.hpp"
 #include "GlobalContext.hpp"
+#include "FunctionContext.hpp"
 #include "Variable.hpp"
 
 #include "ast/FunctionsAnnotator.hpp"
@@ -18,214 +19,204 @@
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
+#include "ast/TemplateEngine.hpp"
 
 using namespace eddic;
 
 namespace {
 
-class MemberFunctionAnnotator : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<GlobalContext> context;
-        std::string parent_struct;
-        ast::Struct current_struct;
+template<typename T>
+void annotate(T& declaration, ast::Struct& current_struct){
+    declaration.Content->struct_name = current_struct.Content->name;
+    declaration.Content->struct_type = current_struct.Content->struct_type;
 
+    ast::PointerType paramType;
+
+    if(current_struct.Content->template_types.empty()){
+        ast::SimpleType struct_type;
+        struct_type.type = current_struct.Content->name;
+        struct_type.const_ = false;
+
+        paramType.type = struct_type;
+    } else {
+        ast::TemplateType struct_type;
+        struct_type.type = current_struct.Content->name;
+        struct_type.template_types = current_struct.Content->template_types;
+
+        paramType.type = struct_type;
+    }
+
+    ast::FunctionParameter param;
+    param.parameterName = "this";
+    param.parameterType = paramType;
+
+    declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+}
+
+class FunctionCheckerVisitor : public boost::static_visitor<> {
     public:
-        void operator()(ast::SourceFile& program){
-            context = program.Content->context;
+        std::shared_ptr<GlobalContext> context;
+        std::shared_ptr<Function> currentFunction;
+        std::shared_ptr<ast::TemplateEngine> template_engine;
 
-            visit_each(*this, program.Content->blocks);
+        FunctionCheckerVisitor(std::shared_ptr<ast::TemplateEngine> template_engine) : template_engine(template_engine) {}
+
+        AUTO_RECURSE_GLOBAL_DECLARATION() 
+        AUTO_RECURSE_MEMBER_VALUE()
+
+        void operator()(ast::DefaultCase& default_case){
+            check_each(default_case.instructions);
+        }
+
+        void operator()(ast::Foreach& foreach_){
+            check_each(foreach_.Content->instructions);
+        }
+
+        void operator()(ast::ForeachIn& foreach_){
+            check_each(foreach_.Content->instructions);
+        }
+
+        void operator()(ast::If& if_){
+            check_value(if_.Content->condition);
+            check_each(if_.Content->instructions);
+            visit_each_non_variant(*this, if_.Content->elseIfs);
+            visit_optional_non_variant(*this, if_.Content->else_);
+        }
+
+        void operator()(ast::ElseIf& elseIf){
+            check_value(elseIf.condition);
+            check_each(elseIf.instructions);
         }
         
-        void operator()(ast::Struct& struct_){
-            current_struct = struct_;
-            parent_struct = struct_.Content->name;
-
-            visit_each_non_variant(*this, struct_.Content->constructors);
-            visit_each_non_variant(*this, struct_.Content->destructors);
-            visit_each_non_variant(*this, struct_.Content->functions);
-
-            parent_struct = "";
+        void operator()(ast::Else& else_){
+            check_each(else_.instructions);
         }
 
         template<typename T>
-        void annotate(T& declaration){
-            if(!declaration.Content->marked){
-                declaration.Content->struct_name = parent_struct;
-                declaration.Content->struct_type = current_struct.Content->struct_type;
-                
-                ast::PointerType paramType;
+        void check_each(std::vector<T>& values){
+            for(std::size_t i = 0; i < values.size(); ++i){
+                check_value(values[i]);
+            }
+        }
 
-                if(current_struct.Content->template_types.empty()){
-                    ast::SimpleType struct_type;
-                    struct_type.type = parent_struct;
-                    struct_type.const_ = false;
+        template<typename V>
+        void check_value(V& value){
+            if(auto* ptr = boost::get<ast::FunctionCall>(&value)){
+                auto functionCall = *ptr;
 
-                    paramType.type = struct_type;
+                template_engine->check_function(functionCall);
+
+                check_each(functionCall.Content->values);
+
+                std::string name = functionCall.Content->function_name;
+
+                auto types = get_types(functionCall);
+
+                auto mangled = mangle(name, types);
+                auto original_mangled = mangled;
+
+                //If the function does not exists, try implicit conversions to pointers
+                if(!context->exists(mangled)){
+                    auto perms = permutations(types);
+
+                    for(auto& perm : perms){
+                        mangled = mangle(name, perm);
+
+                        if(context->exists(mangled)){
+                            break;
+                        }
+                    }
+                }
+
+                if(context->exists(mangled)){
+                    context->addReference(mangled);
+
+                    functionCall.Content->mangled_name = mangled;
+                    functionCall.Content->function = context->getFunction(mangled);
                 } else {
-                    ast::TemplateType struct_type;
-                    struct_type.type = parent_struct;
-                    struct_type.template_types = current_struct.Content->template_types;
-                    struct_type.resolved = true;
+                    auto local_context = functionCall.Content->context->function();
 
-                    paramType.type = struct_type;
+                    if(local_context && local_context->struct_type && context->struct_exists(local_context->struct_type->mangle())){
+                        auto struct_type = local_context->struct_type;
+
+                        mangled = mangle(name, types, struct_type);
+
+                        //If the function does not exists, try implicit conversions to pointers
+                        if(!context->exists(mangled)){
+                            auto perms = permutations(types);
+
+                            for(auto& perm : perms){
+                                mangled = mangle(name, perm, struct_type);
+
+                                if(context->exists(mangled)){
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(context->exists(mangled)){
+                            context->addReference(mangled);
+
+                            ast::VariableValue variable_value;
+                            variable_value.Content->context = functionCall.Content->context;
+                            variable_value.Content->position = functionCall.Content->position;
+                            variable_value.Content->variableName = "this";
+                            variable_value.Content->var = functionCall.Content->context->getVariable("this");
+
+                            ast::MemberFunctionCall member_function_call;
+                            member_function_call.Content->function = context->getFunction(mangled);
+                            member_function_call.Content->mangled_name = mangled;
+                            member_function_call.Content->position = functionCall.Content->position;
+                            member_function_call.Content->object = variable_value;
+                            member_function_call.Content->function_name = functionCall.Content->function_name;
+                            member_function_call.Content->template_types = functionCall.Content->template_types;
+                            member_function_call.Content->values = functionCall.Content->values;
+
+                            value = member_function_call;
+
+                            return;
+                        }
+                    }
+
+                    throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.Content->position);
                 }
-                
-                ast::FunctionParameter param;
-                param.parameterName = "this";
-                param.parameterType = paramType;
-
-                declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+            } else {
+                visit(*this, value);
             }
         }
 
-        void operator()(ast::Constructor& constructor){
-            annotate(constructor);
-        }
-
-        void operator()(ast::Destructor& destructor){
-            annotate(destructor);
-        }
-         
-        void operator()(ast::FunctionDeclaration& declaration){
-            if(!parent_struct.empty()){
-                annotate(declaration);
+        void operator()(ast::For& for_){
+            if(for_.Content->start){
+                check_value(*for_.Content->start);
             }
-        }
-
-        AUTO_IGNORE_OTHERS()
-};
-
-class FunctionInserterVisitor : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<GlobalContext> context;
-
-    public:
-        AUTO_RECURSE_STRUCT()
-
-        void operator()(ast::SourceFile& program){
-            context = program.Content->context;
-
-            visit_each(*this, program.Content->blocks);
-        }
-         
-        void operator()(ast::FunctionDeclaration& declaration){
-            if(!declaration.Content->marked){
-                auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
-                auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
-
-                if(return_type->is_array()){
-                    throw SemanticalException("Cannot return array from function", declaration.Content->position);
-                }
-
-                if(return_type->is_custom_type()){
-                    throw SemanticalException("Cannot return struct from function", declaration.Content->position);
-                }
-
-                for(auto& param : declaration.Content->parameters){
-                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-                }
-
-                signature->struct_ = declaration.Content->struct_name;
-                signature->struct_type = declaration.Content->struct_type;
-                signature->context = declaration.Content->context;
-
-                declaration.Content->mangledName = signature->mangledName = mangle(signature);
-
-                if(context->exists(signature->mangledName)){
-                    throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
-                }
-
-                context->addFunction(signature);
+            
+            if(for_.Content->condition){
+                check_value(*for_.Content->condition);
             }
-        }
-
-        void operator()(ast::Constructor& constructor){
-            if(!constructor.Content->marked){
-                auto signature = std::make_shared<Function>(VOID, "ctor");
-
-                for(auto& param : constructor.Content->parameters){
-                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-                }
-
-                signature->struct_ = constructor.Content->struct_name;
-                signature->struct_type = constructor.Content->struct_type;
-
-                constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
-
-                if(context->exists(signature->mangledName)){
-                    throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
-                }
-
-                context->addFunction(signature);
-                context->getFunction(signature->mangledName)->context = constructor.Content->context;
+            
+            if(for_.Content->repeat){
+                check_value(*for_.Content->repeat);
             }
-        }
 
-        void operator()(ast::Destructor& destructor){
-            if(!destructor.Content->marked){
-                auto signature = std::make_shared<Function>(VOID, "dtor");
-
-                for(auto& param : destructor.Content->parameters){
-                    auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-                    signature->parameters.push_back(ParameterType(param.parameterName, paramType));
-                }
-
-                signature->struct_ = destructor.Content->struct_name;
-                signature->struct_type = destructor.Content->struct_type;
-
-                destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
-
-                if(context->exists(signature->mangledName)){
-                    throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
-                }
-
-                context->addFunction(signature);
-                context->getFunction(signature->mangledName)->context = destructor.Content->context;
-            }
-        }
-
-        AUTO_IGNORE_OTHERS()
-
-    private:
-        std::string parent_struct;
-};
-
-class FunctionCheckerVisitor : public boost::static_visitor<> {
-    private:
-        std::shared_ptr<Function> currentFunction;
-        std::shared_ptr<GlobalContext> context;
-
-    public:
-        AUTO_RECURSE_GLOBAL_DECLARATION() 
-        AUTO_RECURSE_SIMPLE_LOOPS()
-        AUTO_RECURSE_FOREACH()
-        AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_BUILTIN_OPERATORS()
-        AUTO_RECURSE_COMPOSED_VALUES()
-        AUTO_RECURSE_MEMBER_VALUE()
-        AUTO_RECURSE_UNARY_VALUES()
-        AUTO_RECURSE_VARIABLE_OPERATIONS()
-        AUTO_RECURSE_STRUCT()
-        AUTO_RECURSE_CONSTRUCTOR()
-        AUTO_RECURSE_DESTRUCTOR()
-        AUTO_RECURSE_SWITCH()
-        AUTO_RECURSE_SWITCH_CASE()
-        AUTO_RECURSE_DEFAULT_CASE()
-
-        void operator()(ast::SourceFile& program){
-            context = program.Content->context;
-
-            visit_each(*this, program.Content->blocks);
-        }
-
-        void operator()(ast::FunctionDeclaration& declaration){
-            currentFunction = context->getFunction(declaration.Content->mangledName);
-
-            visit_each(*this, declaration.Content->instructions);
+            check_each(for_.Content->instructions);
         }
         
+        void operator()(ast::While& while_){
+            check_value(while_.Content->condition);
+            check_each(while_.Content->instructions);
+        }
+        
+        void operator()(ast::DoWhile& while_){
+            check_value(while_.Content->condition);
+            check_each(while_.Content->instructions);
+        }
+
+        void operator()(ast::SourceFile& program){
+            context = program.Content->context;
+
+            visit_each(*this, program.Content->blocks);
+        }
+
         void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){
             for(std::size_t i = start; i < types.size(); ++i){
                 if(!types[i]->is_pointer() && !types[i]->is_array()){
@@ -260,100 +251,207 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             return types;
         }
 
-        void operator()(ast::FunctionCall& functionCall){
-            if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
-                visit_each(*this, functionCall.Content->values);
-
-                std::string name = functionCall.Content->function_name;
-
-                auto types = get_types(functionCall);
-
-                std::string mangled = mangle(name, types);
-
-                //If the function does not exists, try implicit conversions to pointers
-                if(!context->exists(mangled)){
-                    auto perms = permutations(types);
-
-                    for(auto& perm : perms){
-                        mangled = mangle(name, perm);
-
-                        if(context->exists(mangled)){
-                            break;
-                        }
-                    }
-                }
-
-                if(context->exists(mangled)){
-                    context->addReference(mangled);
-
-                    functionCall.Content->mangled_name = mangled;
-                    functionCall.Content->function = context->getFunction(mangled);
-                } else {
-                    throw SemanticalException("The function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
-                }
-            }
+        void operator()(ast::FunctionCall&){
+            ASSERT_PATH_NOT_TAKEN("Should be handled by check_value");
         }
 
         void operator()(ast::MemberFunctionCall& functionCall){
-            if(functionCall.Content->template_types.empty() || functionCall.Content->resolved){
-                auto var = functionCall.Content->context->getVariable(functionCall.Content->object_name);
-                auto type = var->type();
-                auto struct_type = type->is_pointer() ? type->data_type() : type;
+            template_engine->check_member_function(functionCall);
 
-                visit_each(*this, functionCall.Content->values);
+            check_value(functionCall.Content->object);
+            check_each(functionCall.Content->values);
 
-                std::string name = functionCall.Content->function_name;
+            auto type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
+            auto struct_type = type->is_pointer() ? type->data_type() : type;
 
-                auto types = get_types(functionCall);
+            std::string name = functionCall.Content->function_name;
 
-                std::string mangled = mangle(name, types, struct_type);
+            auto types = get_types(functionCall);
 
-                //If the function does not exists, try implicit conversions to pointers
-                if(!context->exists(mangled)){
-                    auto perms = permutations(types);
+            std::string mangled = mangle(name, types, struct_type);
 
-                    for(auto& perm : perms){
-                        mangled = mangle(name, perm, struct_type);
+            //If the function does not exists, try implicit conversions to pointers
+            if(!context->exists(mangled)){
+                auto perms = permutations(types);
 
-                        if(context->exists(mangled)){
-                            break;
-                        }
+                for(auto& perm : perms){
+                    mangled = mangle(name, perm, struct_type);
+
+                    if(context->exists(mangled)){
+                        break;
                     }
                 }
-
-                if(context->exists(mangled)){
-                    context->addReference(mangled);
-
-                    functionCall.Content->mangled_name = mangled;
-                    functionCall.Content->function = context->getFunction(mangled);
-                } else {
-                    throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
-                }
             }
+
+            if(context->exists(mangled)){
+                context->addReference(mangled);
+
+                functionCall.Content->mangled_name = mangled;
+                functionCall.Content->function = context->getFunction(mangled);
+            } else {
+                throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+            }
+        }
+        
+        void operator()(ast::Switch& switch_){
+            check_value(switch_.Content->value);
+            visit_each_non_variant(*this, switch_.Content->cases);
+            visit_optional_non_variant(*this, switch_.Content->default_case);
+        }
+
+        void operator()(ast::SwitchCase& switch_case){
+            check_value(switch_case.value);
+            check_each(switch_case.instructions);
+        }
+
+        void operator()(ast::Assignment& assignment){
+            visit(*this, assignment.Content->left_value);
+            check_value(assignment.Content->value);
+        }
+
+        void operator()(ast::VariableDeclaration& declaration){
+            if(declaration.Content->value){
+                check_value(*declaration.Content->value);
+            }
+        }
+
+        void operator()(ast::Unary& value){
+            check_value(value.Content->value);
+        }
+
+        void operator()(ast::BuiltinOperator& builtin){
+            check_each(builtin.Content->values);
+        }
+
+        void operator()(ast::Expression& value){
+            check_value(value.Content->first);
+
+            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
+                [&](ast::Operation& operation){ check_value(operation.get<1>()); });
         }
 
         void operator()(ast::Return& return_){
             return_.Content->function = currentFunction;
 
-            visit(*this, return_.Content->value);
+            check_value(return_.Content->value);
         }
 
         AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
-
-void ast::defineMemberFunctions(ast::SourceFile& program){
-    MemberFunctionAnnotator annotator;
-    annotator(program);
+        
+void ast::MemberFunctionCollectionPass::apply_struct(ast::Struct& struct_, bool){
+    current_struct = struct_;
+}
+    
+void ast::MemberFunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
+    annotate(function, current_struct);
 }
 
-void ast::defineFunctions(ast::SourceFile& program){
-    //First phase : Collect functions
-    FunctionInserterVisitor inserterVisitor;
-    inserterVisitor(program);
+void ast::MemberFunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
+    annotate(constructor, current_struct);
+}
 
-    //Second phase : Verify calls
-    FunctionCheckerVisitor checkerVisitor;
-    checkerVisitor(program);
+void ast::MemberFunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
+    annotate(destructor, current_struct);
+}
+    
+void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& declaration){
+    auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
+    auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
+
+    if(return_type->is_array()){
+        throw SemanticalException("Cannot return array from function", declaration.Content->position);
+    }
+
+    if(return_type->is_custom_type()){
+        throw SemanticalException("Cannot return struct from function", declaration.Content->position);
+    }
+
+    for(auto& param : declaration.Content->parameters){
+        auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+    }
+
+    signature->struct_ = declaration.Content->struct_name;
+    signature->struct_type = declaration.Content->struct_type;
+    signature->context = declaration.Content->context;
+
+    declaration.Content->mangledName = signature->mangledName = mangle(signature);
+
+    if(context->exists(signature->mangledName)){
+        throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
+    }
+
+    context->addFunction(signature);
+}
+
+void ast::FunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
+   apply_function(function); 
+}
+
+void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
+    auto signature = std::make_shared<Function>(VOID, "ctor");
+
+    for(auto& param : constructor.Content->parameters){
+        auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+    }
+
+    signature->struct_ = constructor.Content->struct_name;
+    signature->struct_type = constructor.Content->struct_type;
+
+    constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
+
+    if(context->exists(signature->mangledName)){
+        throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
+    }
+
+    context->addFunction(signature);
+    context->getFunction(signature->mangledName)->context = constructor.Content->context;
+}
+
+void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
+    auto signature = std::make_shared<Function>(VOID, "dtor");
+
+    for(auto& param : destructor.Content->parameters){
+        auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+    }
+
+    signature->struct_ = destructor.Content->struct_name;
+    signature->struct_type = destructor.Content->struct_type;
+
+    destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
+
+    if(context->exists(signature->mangledName)){
+        throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
+    }
+
+    context->addFunction(signature);
+    context->getFunction(signature->mangledName)->context = destructor.Content->context;
+}
+    
+void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
+    FunctionCheckerVisitor visitor(template_engine);
+    visitor.context = context;
+    visitor.currentFunction = context->getFunction(declaration.Content->mangledName);
+    visitor.check_each(declaration.Content->instructions);
+}
+
+void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& function){
+    apply_function(function);
+}
+
+void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){
+    FunctionCheckerVisitor visitor(template_engine);
+    visitor.context = context;
+    visitor.check_each(constructor.Content->instructions);
+}
+
+void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor){
+    FunctionCheckerVisitor visitor(template_engine);
+    visitor.context = context;
+    visitor.check_each(destructor.Content->instructions);
 }

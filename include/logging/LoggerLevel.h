@@ -125,6 +125,17 @@ namespace logging {
             return "[DEBUG] ";
         }
     };
+    
+    struct Dev {
+        /*! \brief delivers the current %level of %logging */
+        static ::logging::Level::levels level () {
+            return ::logging::Level::user;
+        }
+        /*! \brief delivers the string reporting the current %level of %logging */
+        static const char * desc() {
+            return "[DEV] ";
+        }
+    };
 
 } /* logging */
 

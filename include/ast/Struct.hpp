@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -34,9 +34,6 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Struct).
  */
 struct ASTStruct {
-    bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
-    bool instantiated = false;  /*!< Indicates that the structure has been instantiated from a template */
-    
     std::vector<ast::Type> template_types;  /*!< Indicates with which types this class template has been instantiated */
     std::shared_ptr<const eddic::Type> struct_type;
 

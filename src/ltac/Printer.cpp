@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include "Utils.hpp"
 
 #include "ltac/Printer.hpp"
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
@@ -33,6 +34,8 @@ std::string to_string(ltac::Operator op){
             return "LEAVE"; 
         case ltac::Operator::RET:
             return "RET"; 
+        case ltac::Operator::PRE_RET:
+            return "PRE_RET"; 
         case ltac::Operator::CMP_INT:
             return "CMP_INT"; 
         case ltac::Operator::CMP_FLOAT:
@@ -55,7 +58,8 @@ std::string to_string(ltac::Operator op){
             return "ADD"; 
         case ltac::Operator::SUB:
             return "SUB"; 
-        case ltac::Operator::MUL:
+        case ltac::Operator::MUL2:
+        case ltac::Operator::MUL3:
             return "MUL"; 
         case ltac::Operator::DIV:
             return "DIV"; 
@@ -101,6 +105,8 @@ std::string to_string(ltac::Operator op){
             return "CMOVL"; 
         case ltac::Operator::CMOVLE:
             return "CMOVLE"; 
+        case ltac::Operator::PRE_PARAM:
+            return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
         default:
@@ -145,101 +151,31 @@ std::string to_string(ltac::JumpType type){
     }
 }
 
-std::string printArg(ltac::Argument arg);
-
-struct ArgumentToString : public boost::static_visitor<std::string> {
-   std::string operator()(int& integer) const {
-        return toString(integer);
-   }
-   
-   std::string operator()(double& float_) const {
-        return toString(float_);
-   }
-
-   std::string operator()(ltac::FloatRegister& reg) const {
-        return "fr" + ::toString(reg.reg);
-   }
-   
-   std::string operator()(ltac::Register& reg) const {
-       if(reg == ltac::SP){
-           return "sp";
-       } else if(reg == ltac::BP){
-           return "bp";
-       }
-
-       return "ir" + ::toString(reg.reg);
-   }
-   
-   std::string operator()(ltac::Address& address) const {
-       if(address.absolute){
-           if(address.displacement){
-               return "[" + *address.absolute + " + " + toString(*address.displacement) + "]";
-           }
-
-           if(address.base_register){
-               return "[" + *address.absolute + " + " + printArg(*address.base_register) + "]";
-           }
-
-           return "[" + *address.absolute + "]";
-       }
-
-       if(address.base_register){
-           if(address.scaled_register){
-               if(address.scale){
-                   if(address.displacement){
-                       return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
-                   }
-
-                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
-               }
-
-               if(address.displacement){
-                   return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
-               }
-
-               return "[" + printArg(*address.base_register) + " + " + printArg(*address.scaled_register) + "]";
-           }
-
-           if(address.displacement){
-               return "[" + printArg(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
-           }
-
-           return "[" + printArg(*address.base_register) + "]";
-       }
-
-       if(address.displacement){
-           return "[" + ::toString(*address.displacement) + "]";
-       }
-
-       ASSERT_PATH_NOT_TAKEN("Invalid address type");
-   }
-
-   std::string operator()(std::string& str) const {
-       return str;
-   }
-};
-
-std::string printArg(ltac::Argument arg){
-    return visit(ArgumentToString(), arg);
-}
-
 struct DebugVisitor : public boost::static_visitor<> {
     std::ostream& out;
 
     DebugVisitor(std::ostream& out) : out(out) {}
 
-    void operator()(std::shared_ptr<ltac::Program> program){
+    void operator()(std::shared_ptr<mtac::Program> program){
         out << "LTAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program->functions);
     }
 
-    void operator()(std::shared_ptr<ltac::Function> function){
+    void operator()(mtac::function_p function){
         out << "Function " << function->getName() << std::endl;
 
-        visit_each(*this, function->getStatements());
+        for(auto& bb : function){
+            visit_non_variant(*this, bb);
+        }
 
         out << std::endl;
+    }
+    
+    void operator()(mtac::basic_block_p bb){
+        out << bb << ":" << std::endl;
+
+        visit_each(*this, bb->l_statements);
     }
 
     void operator()(const ltac::Statement& statement){
@@ -247,15 +183,21 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        if(quadruple->arg1 && quadruple->arg2 && quadruple->arg3){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << ", " << printArg(*quadruple->arg3) << std::endl;
-        } else if(quadruple->arg1 && quadruple->arg2){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << ", " << printArg(*quadruple->arg2) << std::endl;
-        } else if(quadruple->arg1){
-            out << "\t" << to_string(quadruple->op) << " " << printArg(*quadruple->arg1) << std::endl;
-        } else {
-            out << "\t" << to_string(quadruple->op) << std::endl;
+        out << "\t" << to_string(quadruple->op);
+
+        if(quadruple->arg1){
+            out << " " << *quadruple->arg1;
+            
+            if(quadruple->arg2){
+                out << ", " << *quadruple->arg2;
+
+                if(quadruple->arg3){
+                    out << ", " << *quadruple->arg3;
+                }
+            }
         }
+
+        out << std::endl;
     }
 
     void operator()(const std::shared_ptr<ltac::Jump> jmp){
@@ -274,12 +216,12 @@ void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    visit(visitor, statement); 
 }
 
-void ltac::Printer::print(std::shared_ptr<ltac::Program> program) const {
+void ltac::Printer::print(std::shared_ptr<mtac::Program> program) const {
    DebugVisitor visitor(std::cout);
    visitor(program); 
 }
 
-void ltac::Printer::print(std::shared_ptr<ltac::Function> function) const {
+void ltac::Printer::print(mtac::function_p function) const {
    DebugVisitor visitor(std::cout);
    visitor(function); 
 }

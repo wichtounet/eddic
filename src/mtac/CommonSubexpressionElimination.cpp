@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,9 @@
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
+#include "mtac/Statement.hpp"
+
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
@@ -53,7 +56,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, Prob
     }
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mtac::BasicBlock> basic_block, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -109,11 +112,11 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(std::shared_ptr<mta
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::function_p /*function*/){
     return default_element();
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::function_p function){
     if(init){
         ProblemDomain result(*init);
         return result;
@@ -121,7 +124,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
 
     typename ProblemDomain::Values values;
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::is_expression((*ptr)->op)){
@@ -153,6 +156,10 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(std::shared_ptr<mtac::F
 
 bool mtac::CommonSubexpressionElimination::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
+
+    if(results.top()){
+        return false;
+    }
 
     if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
         auto quadruple = *ptr;

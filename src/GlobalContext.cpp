@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -16,16 +16,22 @@
 
 using namespace eddic;
         
-GlobalContext::GlobalContext() : Context(NULL) {
+GlobalContext::GlobalContext(Platform platform) : Context(NULL), platform(platform) {
     Val zero = 0;
+
+    references = std::make_shared<std::map<std::shared_ptr<Variable>, unsigned int>>();
     
     variables["_mem_start"] = std::make_shared<Variable>("_mem_start", INT, Position(PositionType::GLOBAL, "_mem_start"), zero);
-    variables["_mem_start"]->addReference(); //In order to not display a warning
-
     variables["_mem_last"] = std::make_shared<Variable>("_mem_last", INT, Position(PositionType::GLOBAL, "_mem_last"), zero);
-    variables["_mem_last"]->addReference(); //In order to not display a warning
+
+    add_reference(variables["_mem_start"]); //In order to not display a warning
+    add_reference(variables["_mem_last"]);  //In order to not display a warning
     
     defineStandardFunctions();
+}
+
+void GlobalContext::release_references(){
+    references = nullptr;
 }
 
 std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVariables(){
@@ -39,6 +45,10 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
     Position position(PositionType::GLOBAL, variable);
     
     return variables[variable] = std::make_shared<Variable>(variable, type, position);
+}
+
+std::shared_ptr<Variable> GlobalContext::generate_variable(const std::string&, std::shared_ptr<const Type>){
+    ASSERT_PATH_NOT_TAKEN("Cannot generate global variable");
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
@@ -83,7 +93,7 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
             return offset;
         }
 
-        offset += m->type->size();
+        offset += m->type->size(platform);
     }
 
     ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
@@ -100,7 +110,7 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
             return member->type;
         }
         
-        current_offset += m->type->size();
+        current_offset += m->type->size(platform);
     }
 
     return member->type;
@@ -112,7 +122,7 @@ int GlobalContext::size_of_struct(const std::string& struct_name){
     auto struct_ = get_struct(struct_name);
 
     for(auto m : struct_->members){
-        struct_size += m->type->size();
+        struct_size += m->type->size(platform);
     }
     
     return struct_size;
@@ -243,4 +253,16 @@ void GlobalContext::defineStandardFunctions(){
 
 GlobalContext::FunctionMap GlobalContext::functions(){
     return m_functions;
+}
+
+Platform GlobalContext::target_platform(){
+    return platform;
+}
+        
+void GlobalContext::add_reference(std::shared_ptr<Variable> variable){
+    ++((*references)[variable]);
+}
+
+unsigned int GlobalContext::reference_count(std::shared_ptr<Variable> variable){
+    return (*references)[variable];
 }

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -39,6 +39,10 @@ bool Type::is_array() const {
     return false;
 }
 
+bool Type::is_dynamic_array() const {
+    return is_array() && !has_elements();
+}
+
 bool Type::is_pointer() const {
     return false;
 }
@@ -59,11 +63,15 @@ bool Type::is_template() const {
     return false;
 }
 
-unsigned int Type::size() const {
+unsigned int Type::size(Platform) const {
     ASSERT_PATH_NOT_TAKEN("Not specialized type");
 }
 
 unsigned int Type::elements() const {
+    ASSERT_PATH_NOT_TAKEN("Not an array type");
+}
+
+bool Type::has_elements() const {
     ASSERT_PATH_NOT_TAKEN("Not an array type");
 }
 
@@ -87,35 +95,9 @@ std::string Type::mangle() const {
     return ::mangle(shared_from_this());
 }
 
-std::shared_ptr<const Type> Type::non_const() const {
-    if(is_const()){
-        return shared_from_this();
-    }
-
-    if(is_array()){
-        return shared_from_this();
-    } 
-    
-    if(is_custom_type()){
-        return shared_from_this();
-    }
-    
-    if(is_template()){
-        return shared_from_this();
-    }
-    
-    if(is_standard_type()){
-        return std::make_shared<StandardType>(base(), false);
-    } 
-
-    assert(is_pointer());
-    
-    return shared_from_this();
-}
-
 bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
     if(lhs->is_array()){
-        return rhs->is_array() && lhs->data_type() == rhs->data_type() && lhs->elements() == rhs->elements();
+        return rhs->is_array() && lhs->data_type() == rhs->data_type() ;//&& lhs->elements() == rhs->elements();
     }
 
     if(lhs->is_pointer()){
@@ -131,19 +113,8 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
     }
 
     if(lhs->is_template()){
-        if(rhs->is_template() && lhs->data_type() == rhs->data_type()){
-            auto lhs_template_types = lhs->template_types();
-            auto rhs_template_types = rhs->template_types();
-
-            if(lhs_template_types.size() == rhs_template_types.size()){
-                for(unsigned int i = 0; i < lhs_template_types.size(); ++i){
-                    if(lhs_template_types[i] != rhs_template_types[i]){
-                        return false;
-                    }
-                }
-            }
-            
-            return true;
+        if(rhs->is_template() && lhs->type() == rhs->type()){
+            return lhs->template_types() == rhs->template_types();
         }
     }
 
@@ -170,7 +141,7 @@ bool StandardType::is_const() const {
     return const_;
 }
 
-unsigned int StandardType::size() const {
+unsigned int StandardType::size(Platform platform) const {
     auto descriptor = getPlatformDescriptor(platform);
     return descriptor->size_of(base());
 }
@@ -188,15 +159,22 @@ bool CustomType::is_custom_type() const {
     return true;
 }
 
-unsigned int CustomType::size() const {
+unsigned int CustomType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
         
 /* Implementation of ArrayType  */
 
+ArrayType::ArrayType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {}
 ArrayType::ArrayType(std::shared_ptr<const Type> sub_type, int size) : sub_type(sub_type), m_elements(size) {}
 
 unsigned int ArrayType::elements() const {
+    assert(has_elements());
+
+    return *m_elements;
+}
+
+bool ArrayType::has_elements() const {
     return m_elements;
 }
 
@@ -208,8 +186,12 @@ bool ArrayType::is_array() const {
     return true;
 }
 
-unsigned int ArrayType::size() const {
-    return data_type()->size() * elements() + INT->size(); 
+unsigned int ArrayType::size(Platform platform) const {
+    if(has_elements()){
+        return data_type()->size(platform) * elements() + INT->size(platform); 
+    } else {
+        return INT->size(platform); 
+    }
 }
         
 /* Implementation of PointerType  */
@@ -224,8 +206,8 @@ bool PointerType::is_pointer() const {
     return true;
 }
 
-unsigned int PointerType::size() const {
-    return INT->size();
+unsigned int PointerType::size(Platform platform) const {
+    return INT->size(platform);
 }
         
 /* Implementation of TemplateType  */
@@ -245,29 +227,13 @@ bool TemplateType::is_template() const {
     return true;
 }
 
-unsigned int TemplateType::size() const {
+unsigned int TemplateType::size(Platform) const {
     return context->size_of_struct(mangle());
 }
 
 /* Implementation of factories  */
 
 std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_){
-    //Parse array types
-    if(type.find("[]") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 2);
-
-        return new_array_type(new_type(context, baseType));
-    }
-    
-    //Parse pointer types
-    if(type.find("*") != std::string::npos){
-        std::string baseType = type;
-        baseType.resize(baseType.size() - 1);
-
-        return new_pointer_type(new_type(context, baseType));
-    }
-
     //Parse standard and custom types
     if(is_standard_type(type)){
         if(const_){
@@ -303,6 +269,10 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
         assert(!const_);
         return std::make_shared<CustomType>(context, type);
     }
+}
+
+std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type){
+    return std::make_shared<ArrayType>(data_type);
 }
 
 std::shared_ptr<const Type> eddic::new_array_type(std::shared_ptr<const Type> data_type, int size){

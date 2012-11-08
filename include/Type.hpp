@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,10 +15,11 @@
 #include <boost/optional.hpp>
 
 #include "BaseType.hpp"
+#include "Platform.hpp"
 
 namespace eddic {
 
-class GlobalContext;
+struct GlobalContext;
 
 /*!
  * \class Type
@@ -67,6 +68,8 @@ class Type : public std::enable_shared_from_this<Type> {
          * \return true if it's an array type, false otherwise.
          */
         virtual bool is_array() const;
+        
+        bool is_dynamic_array() const;
 
         /*!
          * Indicates if it is a custom type
@@ -86,6 +89,8 @@ class Type : public std::enable_shared_from_this<Type> {
          */
         virtual bool is_pointer() const;
 
+        virtual bool has_elements() const;
+
         /*!
          * Indicates if the type is const
          * \return true if the type is const, false otherwise.
@@ -102,19 +107,13 @@ class Type : public std::enable_shared_from_this<Type> {
          * Return the size of the type in memory in octets. 
          * \return the size of the type, in octets.
          */
-        virtual unsigned int size() const;
+        virtual unsigned int size(Platform platform) const;
 
         /*!
          * Return the mangled name of the type. 
          * \return The mangled name of the type. 
          */
         std::string mangle() const;
-
-        /*!
-         * Return a non_const copy of the type. If the type is already non-const, a pointer to the current type is returned. 
-         * \return a non-const version of this type;
-         */
-        std::shared_ptr<const Type> non_const() const;
 
         friend bool operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
         friend bool operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs);
@@ -159,7 +158,9 @@ class StandardType : public Type {
         bool is_standard_type() const override;
         bool is_const() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
+
+        mutable Platform platform;
 };
 
 /*!
@@ -188,20 +189,21 @@ class CustomType : public Type {
 
         bool is_custom_type() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
- * \class ArrayType
+ * \struct ArrayType
  * \brief An array type descriptor.
  */
-class ArrayType : public Type {
+struct ArrayType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
-        unsigned int m_elements = 0;
+        boost::optional<unsigned int> m_elements;
     
     public:
-        ArrayType(std::shared_ptr<const Type> sub_type, int size = 0);
+        ArrayType(std::shared_ptr<const Type> sub_type);
+        ArrayType(std::shared_ptr<const Type> sub_type, int size);
     
         /*!
          * Deleted copy constructor
@@ -214,19 +216,20 @@ class ArrayType : public Type {
         ArrayType& operator=(const ArrayType& rhs) = delete;
 
         unsigned int elements() const override;
+        bool has_elements() const override;
 
         std::shared_ptr<const Type> data_type() const override;
 
         bool is_array() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
- * \class PointerType
+ * \struct PointerType
  * \brief A pointer type descriptor.
  */
-class PointerType : public Type {
+struct PointerType : public Type {
     private:
         std::shared_ptr<const Type> sub_type;
     
@@ -247,14 +250,14 @@ class PointerType : public Type {
 
         bool is_pointer() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /*!
- * \class TemplateType
+ * \struct TemplateType
  * \brief A template type descriptor.
  */
-class TemplateType : public Type {
+struct TemplateType : public Type {
     private:
         std::shared_ptr<GlobalContext> context;
         std::string main_type;
@@ -278,7 +281,7 @@ class TemplateType : public Type {
 
         bool is_template() const override;
         
-        unsigned int size() const override;
+        unsigned int size(Platform platform) const override;
 };
 
 /* Relational operators  */
@@ -296,6 +299,7 @@ extern std::shared_ptr<const Type> VOID;
 /*!
  * \brief Parse the given type into an EDDI std::shared_ptr<Type>. 
  *
+ * \param context The current global context
  * \param type The type to parse. 
  */
 std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, const std::string& type, bool const_ = false);
@@ -306,7 +310,9 @@ std::shared_ptr<const Type> new_type(std::shared_ptr<GlobalContext> context, con
  * \param size The number of elements, if known.
  * \return the created type;
  */
-std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size = 0);
+std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type);
+
+std::shared_ptr<const Type> new_array_type(std::shared_ptr<const Type> data_type, int size);
 
 /*!
  * Create a new pointer type of the given type.

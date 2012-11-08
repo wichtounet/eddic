@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -23,6 +23,8 @@ void eddic::configure_logging(int level){
         ::logging::detail::Logger<Level>::logging()._level.l = Level::trace;
     } else if(level == 3){
         ::logging::detail::Logger<Level>::logging()._level.l = Level::debug;
+    } else if(level == 4){
+        ::logging::detail::Logger<Level>::logging()._level.l = Level::user;
     } else {
         ASSERT_PATH_NOT_TAKEN("Invalid log level");
     }

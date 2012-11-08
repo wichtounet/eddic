@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -83,8 +83,15 @@ struct Collector : public boost::static_visitor<> {
 };
 
 struct Inspector : public boost::static_visitor<> {
+    private:
+        Collector& collector;
+        
+        std::shared_ptr<GlobalContext> context;
+        std::shared_ptr<Configuration> configuration;
+
     public:
-        Inspector(Collector& collector, std::shared_ptr<GlobalContext> context) : collector(collector), context(context) {}
+        Inspector(Collector& collector, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) : 
+                collector(collector), context(context), configuration(configuration) {}
     
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -104,14 +111,14 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_DEFAULT_CASE()
 
         void check(std::shared_ptr<Context> context){
-            if(option_defined("warning-unused")){
+            if(configuration->option_defined("warning-unused")){
                 auto iter = context->begin();
                 auto end = context->end();
 
                 for(; iter != end; iter++){
                     auto var = iter->second;
 
-                    if(var->referenceCount() == 0){
+                    if(context->reference_count(var) == 0){
                         if(var->position().isStack()){
                             warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
                         } else if(var->position().isGlobal()){
@@ -131,7 +138,7 @@ struct Inspector : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& declaration){
-            if(option_defined("warning-unused")){
+            if(configuration->option_defined("warning-unused")){
                 auto struct_ = context->get_struct(declaration.Content->name);
 
                 if(struct_->get_references() == 0){
@@ -149,7 +156,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
-            if(option_defined("warning-unused")){
+            if(configuration->option_defined("warning-unused")){
                 int references = context->referenceCount(declaration.Content->mangledName);
 
                 if(references == 0){
@@ -161,7 +168,7 @@ struct Inspector : public boost::static_visitor<> {
         }
     
         void operator()(ast::Cast& cast){
-            if(option_defined("warning-cast")){
+            if(configuration->option_defined("warning-cast")){
                 auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
                 auto dest_type = visit(ast::TypeTransformer(context), cast.Content->type);
 
@@ -173,19 +180,18 @@ struct Inspector : public boost::static_visitor<> {
         
         //No warnings for other types
         AUTO_IGNORE_OTHERS()
-    
-    private:
-        Collector& collector;
-        
-        std::shared_ptr<GlobalContext> context;
 };
 
 } //end of anonymous namespace
 
-void ast::checkForWarnings(ast::SourceFile& program){
+void ast::WarningsPass::apply_program(ast::SourceFile& program, bool){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(collector, program.Content->context);
+    Inspector inspector(collector, program.Content->context, configuration);
     visit_non_variant(inspector, program);
+}
+
+bool ast::WarningsPass::is_simple(){
+    return true;
 }

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,23 +15,21 @@
 
 #include "mtac/BinaryOperator.hpp"
 #include "mtac/Argument.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
-class Variable;
-
 namespace mtac {
-
-class BasicBlock;
 
 struct If {
     Argument arg1;
     boost::optional<BinaryOperator> op;
     boost::optional<Argument> arg2;
     std::string label;
+    unsigned int depth;
     
     //Filled only in later phase replacing the label
-    std::shared_ptr<BasicBlock> block;
+    basic_block_p block;
 
     If();
     If(Argument arg1, const std::string& label);

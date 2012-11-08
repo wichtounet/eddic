@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,6 @@
 
 #include "variant.hpp"
 #include "StringPool.hpp"
-#include "VisitorUtils.hpp"
 
 #include "ast/StringChecker.hpp"
 #include "ast/SourceFile.hpp"
@@ -52,7 +51,11 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_OTHERS()
 };
 
-void ast::checkStrings(ast::SourceFile& program, StringPool& pool){
-   StringCheckerVisitor visitor(pool);
+void ast::StringCollectionPass::apply_program(ast::SourceFile& program, bool){
+   StringCheckerVisitor visitor(*pool);
    visitor(program); 
+}
+
+bool ast::StringCollectionPass::is_simple(){
+    return true;
 }

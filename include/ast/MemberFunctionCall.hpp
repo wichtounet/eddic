@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -32,13 +32,10 @@ namespace ast {
  */
 struct ASTMemberFunctionCall {
     std::shared_ptr<eddic::Function> function;
-    std::shared_ptr<Context> context;
     std::string mangled_name;
-    
-    bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
 
     Position position;
-    std::string object_name;
+    Value object;
     std::string function_name;
     std::vector<ast::Type> template_types;
     std::vector<Value> values;
@@ -60,7 +57,7 @@ typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::MemberFunctionCall, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->object_name)
+    (eddic::ast::Value, Content->object)
     (std::string, Content->function_name)
     (std::vector<eddic::ast::Type>, Content->template_types)
     (std::vector<eddic::ast::Value>, Content->values)

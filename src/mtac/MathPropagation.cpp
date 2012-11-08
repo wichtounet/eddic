@@ -1,17 +1,23 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/MathPropagation.hpp"
-#include "mtac/OptimizerUtils.hpp"
-
 #include "Variable.hpp"
 #include "Type.hpp"
 
+#include "mtac/MathPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
+
 using namespace eddic;
+
+void mtac::MathPropagation::clear(){
+    optimized = false;
+    assigns.clear();
+    usage.clear();
+}
 
 void mtac::MathPropagation::collect(mtac::Argument* arg){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
@@ -37,7 +43,7 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
         if(quadruple->op == mtac::Operator::ASSIGN){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
                 //We only duplicate the math operation if the variable is used once to not add overhead
-                if((*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
+                if(!quadruple->result->type()->is_array() && (*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
                     auto assign = assigns[*ptr];
                     quadruple->op = assign->op;
                     quadruple->arg1 = assign->arg1;

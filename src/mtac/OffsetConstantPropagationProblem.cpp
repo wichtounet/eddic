@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,43 +15,50 @@
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/Statement.hpp"
+
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-mtac::OffsetConstantPropagationProblem::OffsetConstantPropagationProblem(std::shared_ptr<StringPool> string_pool) : string_pool(string_pool) {}
+void mtac::OffsetConstantPropagationProblem::set_pool(std::shared_ptr<StringPool> string_pool){
+    this->string_pool = string_pool;
+}
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+void mtac::OffsetConstantPropagationProblem::set_platform(Platform platform){
+    this->platform = platform;
+}
+
+ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     ProblemDomain::Values values;
     ProblemDomain out(values);
     
-    for(auto& variable_pair : function->context->stored_variables()){
-        auto variable = variable_pair.second; 
-
-        if(variable->type()->is_array()){
-            auto array_size = variable->type()->elements()* variable->type()->data_type()->size() + INT->size();
+    for(auto& variable : function->context->stored_variables()){
+        if(variable->type()->is_array() && variable->type()->has_elements()){
+            auto array_size = variable->type()->elements()* variable->type()->data_type()->size(platform) + INT->size(platform);
                     
             mtac::Offset offset(variable, 0);
             out[offset] = static_cast<int>(variable->type()->elements());
 
             if(variable->type()->data_type() == FLOAT){
-                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                for(std::size_t i = INT->size(platform); i < array_size; i += INT->size(platform)){
                     mtac::Offset offset(variable, i);
                     out[offset] = 0.0;
                 }
             } else {
-                for(std::size_t i = INT->size(); i < array_size; i += INT->size()){
+                for(std::size_t i = INT->size(platform); i < array_size; i += INT->size(platform)){
                     mtac::Offset offset(variable, i);
                     out[offset] = 0;
                 }
             }
         } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
-            auto struct_size = variable->type()->size();
+            auto struct_size = variable->type()->size(platform);
 
-            for(std::size_t i = 0; i < struct_size; i += INT->size()){
+            for(std::size_t i = 0; i < struct_size; i += INT->size(platform)){
                 mtac::Offset offset(variable, i);
                 out[offset] = 0;
             }
@@ -63,21 +70,6 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(std::shared_ptr<m
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
-
-    //Remove all the temporary
-    for(auto it = std::begin(result.values()); it != std::end(result.values());){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
-            auto variable = *ptr;
-
-            if (variable->position().isTemporary()){
-                it = result.values().erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            ++it;
-        }
-    }
 
     return result;
 }
@@ -115,7 +107,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock> /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -129,6 +121,19 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
                     
                     ConstantCollector collector(out, offset);
                     visit(collector, *quadruple->arg2);
+                }
+            } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                auto variable = quadruple->result;
+
+                //Impossible to know which offset is modified, consider the whole variable modified
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    auto offset = it->first;
+
+                    if(offset.variable == variable){
+                        it = out.values().erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
             }
         //PDOT Lets escape an offset
@@ -146,16 +151,18 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
         auto param = *ptr;
 
         if(param->address){
-            auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+                auto variable = *ptr;
 
-            //Impossible to know if the variable is modified or not, consider it modified
-            for(auto it = std::begin(out.values()); it != std::end(out.values());){
-                auto offset = it->first;
+                //Impossible to know if the variable is modified or not, consider it modified
+                for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                    auto offset = it->first;
 
-                if(offset.variable == variable){
-                    it = out.values().erase(it);
-                } else {
-                    ++it;
+                    if(offset.variable == variable){
+                        it = out.values().erase(it);
+                    } else {
+                        ++it;
+                    }
                 }
             }
         }
@@ -177,6 +184,10 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(std::shared_ptr<m
 
 bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     auto& results = global_results->IN_S[statement];
+
+    if(results.top()){
+        return false;
+    }
 
     bool changes = false;
 

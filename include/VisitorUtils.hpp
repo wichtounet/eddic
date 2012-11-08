@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,9 +10,9 @@
 
 #include <list>
 #include <vector>
+#include <type_traits>
 
 #include <boost/optional/optional.hpp>
-#include <boost/utility/enable_if.hpp>
 
 #include "variant.hpp"
 
@@ -45,7 +45,7 @@ namespace eddic {
  * \return The result of the visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit(Visitor&& visitor, Visitable& visitable){
     return boost::apply_visitor(visitor, visitable);
 }
@@ -56,7 +56,7 @@ visit(Visitor&& visitor, Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type
 visit(Visitor&& visitor, Visitable& visitable){
     boost::apply_visitor(visitor, visitable);
 }
@@ -68,7 +68,7 @@ visit(Visitor&& visitor, Visitable& visitable){
  * \return The result of the visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit(Visitor& visitor, Visitable& visitable){
     return boost::apply_visitor(visitor, visitable);
 }
@@ -79,7 +79,7 @@ visit(Visitor& visitor, Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit(Visitor& visitor, Visitable& visitable){
     boost::apply_visitor(visitor, visitable);
 }
@@ -91,7 +91,7 @@ visit(Visitor& visitor, Visitable& visitable){
  * \return The result of the visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit_non_variant(Visitor& visitor, Visitable& visitable){
     return visitor(visitable);
 }
@@ -102,7 +102,7 @@ visit_non_variant(Visitor& visitor, Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit_non_variant(Visitor& visitor, Visitable& visitable){
     visitor(visitable);
 }
@@ -114,7 +114,30 @@ visit_non_variant(Visitor& visitor, Visitable& visitable){
  * \return The result of the visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::disable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit_non_variant(const Visitor& visitor, Visitable& visitable){
+    return visitor(visitable);
+}
+
+/*!
+ * Apply the visitor to the given object. The object can be a non-variant type. 
+ * \param visitor The visitor to apply. 
+ * \param visitable The object to visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit_non_variant(const Visitor& visitor, Visitable& visitable){
+    visitor(visitable);
+}
+
+/*!
+ * Apply the visitor to the given object. The object can be a non-variant type. 
+ * \param visitor The visitor to apply. 
+ * \param visitable The object to visit. 
+ * \return The result of the visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit_non_variant(const Visitor& visitor, const Visitable& visitable){
     return visitor(visitable);
 }
@@ -125,7 +148,7 @@ visit_non_variant(const Visitor& visitor, const Visitable& visitable){
  * \param visitable The object to visit. 
  */
 template<typename Visitor, typename Visitable>
-inline typename boost::enable_if<boost::is_void<typename Visitor::result_type>, typename Visitor::result_type>::type 
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit_non_variant(const Visitor& visitor, const Visitable& visitable){
     visitor(visitable);
 }

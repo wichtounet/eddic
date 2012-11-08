@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,12 +14,15 @@
 #include "mtac/Utils.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/Statement.hpp"
+
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
 typedef mtac::ConstantPropagationProblem::ProblemDomain ProblemDomain;
 
-ProblemDomain mtac::ConstantPropagationProblem::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::ConstantPropagationProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     return default_element();
@@ -27,21 +30,6 @@ ProblemDomain mtac::ConstantPropagationProblem::Boundary(std::shared_ptr<mtac::F
 
 ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
     auto result = mtac::intersection_meet(in, out);
-
-    //Remove all the temporary
-    for(auto it = std::begin(result.values()); it != std::end(result.values());){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&it->second)){
-            auto variable = *ptr;
-
-            if (variable->position().isTemporary()){
-                it = result.values().erase(it);
-            } else {
-                ++it;
-            }
-        } else {
-            ++it;
-        }
-    }
 
     return result;
 }
@@ -81,7 +69,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
     //Quadruple affects variable
@@ -124,10 +112,10 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(std::shared_ptr<mtac::B
         auto param = *ptr;
 
         if(param->address){
-            auto variable = boost::get<std::shared_ptr<Variable>>(param->arg);
-
-            //Impossible to know if the variable is modified or not, consider it modified
-            out.erase(variable);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
+                //Impossible to know if the variable is modified or not, consider it modified
+                out.erase(*ptr);
+            }
         }
     }
 
@@ -188,11 +176,7 @@ struct ConstantOptimizer : public boost::static_visitor<> {
         if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
             if(results.find(quadruple->result) != results.end()){
                 if(mtac::isVariable(results[quadruple->result])){
-                    auto var = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
-
-                    if(!var->position().isTemporary()){
-                        quadruple->result = var;
-                    }
+                    quadruple->result = boost::get<std::shared_ptr<Variable>>(results[quadruple->result]);
                 }
             }
         }
@@ -223,6 +207,10 @@ struct ConstantOptimizer : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+    if(global_results->IN_S[statement].top()){
+        return false;
+    }
+
     ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
 
     visit(optimizer, statement);

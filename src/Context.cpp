@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +13,7 @@
 #include "GlobalContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "Variable.hpp"
 
 using namespace eddic;
 
@@ -65,14 +66,14 @@ std::shared_ptr<Variable> Context::getVariable(const std::string& variable) cons
     return iter->second;
 }
 
-void Context::removeVariable(const std::string& variable){
-    auto iter = variables.find(variable);
+void Context::removeVariable(std::shared_ptr<Variable> variable){
+    auto iter = variables.find(variable->name());
     auto end = variables.end();
 
     auto parent = m_parent;
     
     while(iter == end){
-        iter = parent->variables.find(variable);
+        iter = parent->variables.find(variable->name());
         end = parent->variables.end();
         parent = parent->m_parent;
     }
@@ -94,4 +95,12 @@ std::shared_ptr<GlobalContext> Context::global() const {
 
 std::shared_ptr<FunctionContext> Context::function(){
     return nullptr;
+}
+        
+void Context::add_reference(std::shared_ptr<Variable> variable){
+    global()->add_reference(variable);
+}
+
+unsigned int Context::reference_count(std::shared_ptr<Variable> variable){
+    return global()->reference_count(variable);
 }

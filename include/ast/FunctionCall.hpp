@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -22,6 +22,8 @@
 
 namespace eddic {
 
+class Context;
+
 namespace ast {
 
 /*!
@@ -31,9 +33,8 @@ namespace ast {
  */
 struct ASTFunctionCall {
     std::shared_ptr<eddic::Function> function;
+    std::shared_ptr<Context> context;
     std::string mangled_name;
-
-    bool resolved = false; /*!< If true, the template has been instantiated, only relevant when the template_types is not empty */
 
     Position position;
     std::string function_name;

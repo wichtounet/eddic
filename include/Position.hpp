@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -17,21 +17,22 @@ namespace eddic {
  * \enum PositionType
  * \brief A type of position for a variable
  */
-enum class PositionType : unsigned int {
+enum struct PositionType : unsigned int {
     STACK,              /**< A variable on the stack  */ 
     PARAMETER,          /**< A parameter */
     GLOBAL,             /**< A global variable */
     CONST,              /**< A const variable. Not stored. Will be replaced in each usage */
-    TEMPORARY,          /**< A temporary, used only in three-address-code. Not stored. */
+    VARIABLE,           /**< A variable that has not been allocated a stack position */
+    TEMPORARY,          /**< A temporary, with no stack position */
     REGISTER,           /**< A variable stored in a register. */
     PARAM_REGISTER      /**< A param stored in a register. */
 };
 
 /*!
- * \class Position
+ * \struct Position
  * \brief The position of a variable
  */
-class Position {
+struct Position {
     private:
         PositionType m_type;
         
@@ -71,7 +72,7 @@ class Position {
          * Indicates if this position is temporary. 
          * \return true if this position is temporary, otherwise false. 
          */
-        bool isTemporary() const;
+        bool is_temporary() const;
 
         /*!
          * Indicates if this position is a parameter stored in a register. 
@@ -84,6 +85,12 @@ class Position {
          * \return true if this position is a variable stored in a register, otherwise false. 
          */
         bool is_register() const;
+
+        /*!
+         * Indicates if this position is a variable, not yet allocated a stack position.
+         * \return true if this position is a variable, otherwise false. 
+         */
+        bool is_variable() const;
 
         /*!
          * Returns the type of the position. 

@@ -1,40 +1,44 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <list>
+
 #include "Type.hpp"
 #include "FunctionContext.hpp"
 #include "GlobalContext.hpp"
+#include "Variable.hpp"
 
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Offset.hpp"
+#include "mtac/Statement.hpp"
+
+#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
-bool mtac::dead_code_elimination(std::shared_ptr<mtac::Function> function){
+bool mtac::dead_code_elimination::operator()(mtac::function_p function){
     bool optimized = false;
 
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
 
-    for(auto& block : function->getBasicBlocks()){
-        auto it = block->statements.begin();
-        auto end = block->statements.end();
+    for(auto& block : function){
+        auto it = iterate(block->statements);
 
-        while(it != end){
+        while(it.has_next()){
             auto statement = *it;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
                     if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
-                        it = block->statements.erase(it);
-                        end = block->statements.end();
+                        it.erase();
                         optimized=true;
                         continue;
                     }
@@ -47,7 +51,7 @@ bool mtac::dead_code_elimination(std::shared_ptr<mtac::Function> function){
 
     std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
 
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto quadruple = *ptr;
@@ -64,7 +68,7 @@ bool mtac::dead_code_elimination(std::shared_ptr<mtac::Function> function){
         }
     }
     
-    for(auto& block : function->getBasicBlocks()){
+    for(auto& block : function){
         auto it = block->statements.begin();
         auto end = block->statements.end();
 

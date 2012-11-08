@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,8 @@
 #include "likely.hpp"
 
 #include "mtac/ConcatReduction.hpp"
+#include "mtac/Function.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 
@@ -16,27 +18,20 @@ template<typename T>
 bool isParam(T& statement){
     return boost::get<std::shared_ptr<mtac::Param>>(&statement);
 }
+    
+void mtac::optimize_concat::set_pool(std::shared_ptr<StringPool> pool){
+    this->pool = pool;
+}
 
-bool mtac::optimize_concat(std::shared_ptr<mtac::Function> function, std::shared_ptr<StringPool> pool){
+bool mtac::optimize_concat::operator()(mtac::function_p function){
     bool optimized = false;
     
-    auto& blocks = function->getBasicBlocks();
-
-    auto it = blocks.begin();
-    auto end = blocks.end();
-    auto previous = it;
-
-    //we start at 1 because the first block cannot start with a call to concat
-    ++it;
-
-    while(it != end){
-        auto block = *it;
-
+    for(auto& block : function){
         if(likely(!block->statements.empty())){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&block->statements[0])){
                 if((*ptr)->function == "_F6concatSS"){
                     //The params are on the previous block
-                    auto& paramBlock = *previous;
+                    auto& paramBlock = block->prev;
 
                     //Must have at least four params
                     if(paramBlock->statements.size() >= 4){
@@ -58,7 +53,7 @@ bool mtac::optimize_concat(std::shared_ptr<mtac::Function> function, std::shared
                                 firstValue.resize(firstValue.size() - 1);
                                 secondValue.erase(0, 1);
 
-                                //Compute the reuslt of the concatenation
+                                //Compute the result of the concatenation
                                 std::string result = firstValue + secondValue;
 
                                 std::string label = pool->label(result);
@@ -84,9 +79,6 @@ bool mtac::optimize_concat(std::shared_ptr<mtac::Function> function, std::shared
                 }
             }
         }
-
-        previous = it;
-        ++it;
     }
 
     return optimized;

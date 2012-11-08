@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -25,8 +25,6 @@ namespace eddic {
 namespace ast {
 
 struct ASTTemplateStruct {
-    bool marked = false;        /*!< Indicates that the structure has been handled by the front end */
-    
     Position position;
     std::vector<std::string> template_types;
     std::string name;

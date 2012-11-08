@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,8 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
+#include <list>
 
 namespace eddic {
 
@@ -103,15 +105,6 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
     }
 };
 
-template<typename DomainValues>
-std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
-    if(domain.top()){
-        return stream << "top";
-    }
-
-    return stream << domain.values();
-}
-
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
     stream << "vector{";
@@ -154,6 +147,15 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>
     }
 
     return stream << "}";
+}
+
+template<typename DomainValues>
+std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
+    if(domain.top()){
+        return stream << "top";
+    }
+
+    return stream << domain.values();
 }
 
 } //end of mtac

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ltac {
 
+/*!
+ * \struct FloatRegister
+ * Represents a symbolic hard float register in the LTAC Representation. 
+ */
 struct FloatRegister {
     unsigned short reg;
 
@@ -34,5 +38,15 @@ std::ostream& operator<<(std::ostream& out, const FloatRegister& reg);
 } //end of ltac
 
 } //end of eddic
+
+namespace std {
+    template<>
+    class hash<eddic::ltac::FloatRegister> {
+    public:
+        size_t operator()(const eddic::ltac::FloatRegister& val) const {
+            return val.reg;
+        }
+    };
+}
 
 #endif

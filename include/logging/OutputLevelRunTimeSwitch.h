@@ -62,6 +62,10 @@ namespace logging {
             bool allowed() {
                 return _current.l <= _level.l;
             }
+            
+            bool enabled(const ::logging::Level::levels& l) {
+                return l <= _level.l;
+            }
 
             /*! \brief Matches only on correct type and set the
              *         current %level for the output.

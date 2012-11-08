@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -26,16 +26,6 @@ void operator()(ast::TemplateStruct& struct_){\
     visit_each_non_variant(*this, struct_.Content->template_functions);\
 }
 
-#define AUTO_RECURSE_UNMARKED_STRUCT()\
-void operator()(ast::Struct& struct_){\
-    if(!struct_.Content->marked){\
-        visit_each_non_variant(*this, struct_.Content->constructors);\
-        visit_each_non_variant(*this, struct_.Content->destructors);\
-        visit_each_non_variant(*this, struct_.Content->functions);\
-        visit_each_non_variant(*this, struct_.Content->template_functions);\
-    }\
-}
-
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
     visit_each_non_variant(*this, struct_.Content->constructors);\
@@ -49,13 +39,6 @@ void operator()(ast::Struct& struct_){\
 #define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
 void operator()(ast::TemplateFunctionDeclaration& function){\
     visit_each(*this, function.Content->instructions);\
-}
-
-#define AUTO_RECURSE_UNMARKED_FUNCTION_DECLARATION()\
-void operator()(ast::FunctionDeclaration& function){\
-    if(!function.Content->marked){\
-        visit_each(*this, function.Content->instructions);\
-    }\
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
@@ -163,6 +146,7 @@ void operator()(ast::FunctionCall& functionCall){\
 
 #define AUTO_RECURSE_MEMBER_FUNCTION_CALLS()\
 void operator()(ast::MemberFunctionCall& functionCall){\
+    visit(*this, functionCall.Content->object);\
     visit_each(*this, functionCall.Content->values);\
 }
 
@@ -223,6 +207,11 @@ void operator()(ast::New& new_){\
     visit_each(*this, new_.Content->values);\
 }
 
+#define AUTO_RECURSE_NEW_ARRAY()\
+void operator()(ast::NewArray& new_){\
+    visit(*this, new_.Content->size);\
+}
+
 /* Ignore macros  */
 
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
@@ -250,6 +239,7 @@ void operator()(ast::New& new_){\
 #define AUTO_IGNORE_CHAR_LITERAL() void operator()(ast::CharLiteral&){}
 #define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_NEW() void operator()(ast::New&){}
+#define AUTO_IGNORE_NEW_ARRAY() void operator()(ast::NewArray&){}
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}

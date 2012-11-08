@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <memory>
 
-#include "mtac/Function.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
@@ -21,7 +21,7 @@ namespace mtac {
 
 typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> EscapedVariables;
 
-EscapedVariables escape_analysis(std::shared_ptr<mtac::Function> function);
+EscapedVariables escape_analysis(mtac::function_p function);
 
 } //end of eddic
 

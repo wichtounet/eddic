@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 
@@ -31,14 +32,14 @@ std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& v
     return stream << "}";
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(std::shared_ptr<mtac::Function> function){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::function_p function){
     pointer_escaped = mtac::escape_analysis(function);
 
     auto value = default_element();
     return value;
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Init(std::shared_ptr<mtac::Function> /*function*/){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::function_p /*function*/){
     auto value = default_element();
     return value;
 }
@@ -74,6 +75,11 @@ struct LivenessCollector : public boost::static_visitor<> {
     template<typename Arg>
     inline void update(Arg& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
+            if(in.top()){
+                ProblemDomain::Values values;
+                in.int_values = values;
+            }
+
             in.values().insert(*ptr);
         }
     }
@@ -86,14 +92,16 @@ struct LivenessCollector : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(mtac::erase_result(quadruple->op)){
-            in.values().erase(quadruple->result);
-        } else {
-            in.values().insert(quadruple->result);
-        }
+        if(quadruple->op != mtac::Operator::NOP){
+            if(mtac::erase_result(quadruple->op)){
+                in.values().erase(quadruple->result);
+            } else {
+                in.values().insert(quadruple->result);
+            }
 
-        update_optional(quadruple->arg1);
-        update_optional(quadruple->arg2);
+            update_optional(quadruple->arg1);
+            update_optional(quadruple->arg2);
+        }
     }
     
     void operator()(std::shared_ptr<mtac::Param> param){
@@ -116,9 +124,9 @@ struct LivenessCollector : public boost::static_visitor<> {
     }
 };
 
-}
+} //End of anonymous namespace
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(std::shared_ptr<mtac::BasicBlock>/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
+ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
     auto in = out;
     
     LivenessCollector collector(in);

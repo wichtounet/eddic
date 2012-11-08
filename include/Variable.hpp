@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -37,8 +37,6 @@ class Variable {
         ast::Position m_source_position;
         Val v_value;
 
-        int references;
-
     public:
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
@@ -51,9 +49,6 @@ class Variable {
         
         const ast::Position& source_position() const ;
         void set_source_position(const ast::Position& position);
-
-        void addReference();
-        int referenceCount() const ;
 
         void setPosition(Position position);
 };

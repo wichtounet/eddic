@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -27,14 +27,6 @@ Position Variable::position() const {
 
 Val Variable::val() const {
     return v_value;
-}
-
-void Variable::addReference(){
-    ++references;
-}
-
-int Variable::referenceCount() const {
-    return references;
 }
 
 void Variable::setPosition(Position position){

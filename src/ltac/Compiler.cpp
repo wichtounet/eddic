@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,126 +13,64 @@
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
 
+#include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
+#include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/GlobalOptimizations.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<ltac::Program> target, std::shared_ptr<FloatPool> float_pool){
-    target->context = source->context;
+ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {}
 
-    for(auto& src_function : source->functions){
-        auto target_function = std::make_shared<ltac::Function>(src_function->context, src_function->getName());
-        target_function->definition = src_function->definition;
-
-        target->functions.push_back(target_function);
-
-        compile(src_function, target_function, float_pool);
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<FloatPool> float_pool){
+    for(auto& function : source->functions){
+        compile(source, function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Function> src_function, std::shared_ptr<ltac::Function> target_function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
-    mtac::computeBlockUsage(src_function, block_usage);
+    mtac::computeBlockUsage(function, block_usage);
 
     resetNumbering();
 
     //First we computes a label for each basic block
-    for(auto block : src_function->getBasicBlocks()){
+    for(auto block : function){
         block->label = newLabel();
     }
     
-    PlatformDescriptor* descriptor = getPlatformDescriptor(platform);
-
-    std::vector<ltac::Register> registers;
-    auto symbolic_registers = descriptor->symbolic_registers();
-    for(auto reg : symbolic_registers){
-        registers.push_back({reg});
-    }
+    StatementCompiler compiler(function, float_pool);
+    compiler.program = source;
+    compiler.descriptor = getPlatformDescriptor(platform);
+    compiler.platform = platform;
+    compiler.configuration = configuration;
+    compiler.manager.pointer_escaped = mtac::escape_analysis(function);;
     
-    std::vector<ltac::FloatRegister> float_registers;
-    auto float_symbolic_registers = descriptor->symbolic_float_registers();
-    for(auto reg : float_symbolic_registers){
-        float_registers.push_back({reg});
-    }
-
-    auto compiler = std::make_shared<StatementCompiler>(registers, float_registers, target_function, float_pool);
-    compiler->manager.compiler = compiler;
-
-    auto size = src_function->context->size();
-
-    //Enter stack frame
-    if(!option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(target_function, ltac::Operator::ENTER);
-    }
-
-    //Alloc stack space for locals
-    ltac::add_instruction(target_function, ltac::Operator::SUB, ltac::SP, size);
-    compiler->bp_offset += size;
-    
-    auto iter = src_function->context->begin();
-    auto end = src_function->context->end();
-
-    for(; iter != end; iter++){
-        auto var = iter->second;
-
-        //ONly stack variables needs to be cleared
-        if(var->position().isStack()){
-            auto type = var->type();
-            int position = var->position().offset();
-
-            if(type->is_array()){
-                ltac::add_instruction(target_function, ltac::Operator::MOV, compiler->stack_address(position), static_cast<int>(type->elements()));
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position + INT->size()), static_cast<int>((type->data_type()->size() / INT->size() * type->elements())));
-            } else if(type->is_custom_type()){
-                ltac::add_instruction(target_function, ltac::Operator::MEMSET, compiler->stack_address(position), static_cast<int>(type->size() / INT->size()));
-            }
-        }
-    }
-    
-    //Compute Liveness
-    mtac::LiveVariableAnalysisProblem problem;
-    compiler->manager.liveness = mtac::data_flow(src_function, problem);
-    compiler->manager.pointer_escaped = problem.pointer_escaped;
+    //Handle parameters and register-allocated variables
+    compiler.collect_parameters(function->definition);
 
     //Then we compile each of them
-    for(auto block : src_function->getBasicBlocks()){
+    for(auto block : function){
+        compiler.ended = false;
+        compiler.bb = block;
+        compiler.manager.bb = block;
+
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            (*compiler)(block->label);
-        }
-    
-        //Handle parameters and register-allocated variables
-        compiler->reset();
-        compiler->collect_parameters(src_function->definition);
-        compiler->collect_variables(src_function->definition);
-    
-        for(unsigned int i = 0; i < block->statements.size(); ++i){
-            auto& statement = block->statements[i];
-
-            visit(*compiler, statement);
+            compiler(block->label);
         }
 
-        //end basic block
-        if(!compiler->ended){
-            compiler->end_basic_block();
-        }
-    }
-    
-    ltac::add_instruction(target_function, ltac::Operator::ADD, ltac::SP, size);
-    compiler->bp_offset -= size;
-        
-    //Leave stack frame
-    if(!option_defined("fomit-frame-pointer")){
-        ltac::add_instruction(target_function, ltac::Operator::LEAVE);
+        visit_each(compiler, block->statements);
+
+        compiler.end_bb();
     }
 
-    ltac::add_instruction(target_function, ltac::Operator::RET);
+    function->set_pseudo_registers(compiler.manager.last_pseudo_reg());
+    function->set_pseudo_float_registers(compiler.manager.last_float_pseudo_reg());
 }

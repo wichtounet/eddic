@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,11 +11,14 @@
 #include <memory>
 #include <string>
 
+#include "Platform.hpp"
+#include "Options.hpp"
+
 #include "mtac/Program.hpp"
 
 namespace eddic {
 
-class StringPool;
+struct StringPool;
 
 /*!
  * \class FrontEnd
@@ -28,7 +31,7 @@ class FrontEnd {
          * \param file The file that has to be compiled. 
          * \return The MTAC Program representing the source program. 
          */
-        virtual std::shared_ptr<mtac::Program> compile(const std::string& file) = 0;   
+        virtual std::shared_ptr<mtac::Program> compile(const std::string& file, Platform platform) = 0;   
 
         /*!
          * Set the string pool. 
@@ -42,8 +45,12 @@ class FrontEnd {
          */
         std::shared_ptr<StringPool> get_string_pool();
 
+        void set_configuration(std::shared_ptr<Configuration> configuration);
+        std::shared_ptr<Configuration> get_configuration();
+
     protected:
         std::shared_ptr<StringPool> pool; /**< The string pool that is used during this compilation */
+        std::shared_ptr<Configuration> configuration; /**< The configuration of the compilation */
 };
 
 }

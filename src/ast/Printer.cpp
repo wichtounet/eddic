@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -17,15 +17,6 @@
 using namespace eddic;
 
 namespace {
-
-template<typename Node>
-std::string mark(Node& node){
-    if(node.Content->marked){
-        return "(M)";
-    } else {
-        return "(UM)";
-    }
-}
 
 struct DebugVisitor : public boost::static_visitor<> {
     mutable int level = 0;
@@ -132,7 +123,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.Content->functionName << mark(declaration) << std::endl; 
+        std::cout << indent() << "Function " << declaration.Content->functionName << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
@@ -146,7 +137,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Constructor& declaration) const {
-        std::cout << indent() << "Constructor" << mark(declaration) << std::endl; 
+        std::cout << indent() << "Constructor" << std::endl; 
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
@@ -159,7 +150,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Destructor& declaration) const {
-        std::cout << indent() << "Destructor" << mark(declaration) << std::endl; 
+        std::cout << indent() << "Destructor" << std::endl; 
         print_each_sub(declaration.Content->instructions, "Instructions:");
     }
 
@@ -168,7 +159,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         print_template_list(struct_.Content->template_types);
 
-        std::cout << mark(struct_) << std::endl;
+        std::cout << std::endl;
         
         level++;
         
@@ -198,6 +189,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::New& new_) const {
         std::cout << indent() << "New " << ast::to_string(new_.Content->type) << std::endl; 
         print_each_sub(new_.Content->values, "Value");
+    }
+    
+    void operator()(ast::NewArray& new_array) const {
+        std::cout << indent() << "New array of " << ast::to_string(new_array.Content->type) << std::endl; 
+        print_sub(new_array.Content->size, "Size");
     }
     
     void operator()(ast::Delete& delete_) const {
@@ -293,10 +289,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberFunctionCall& call) const {
-        std::cout << indent() << "Member FunctionCall " << call.Content->object_name << "." << call.Content->function_name;
+        std::cout << indent() << "Member FunctionCall " << call.Content->function_name;
         print_template_list(call.Content->template_types);
         std::cout << std::endl;
-        print_each_sub(call.Content->values);
+        print_sub(call.Content->object, "Object");
+        print_each_sub(call.Content->values, "Values");
     }
 
     void operator()(ast::BuiltinOperator& builtin) const {

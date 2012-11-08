@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -21,25 +21,23 @@
 
 using namespace eddic;
 
+//TODO This design is far from perfect, the Pass should be a static_visitor itself, but that 
+//would mean exposing all the AST node in the header
+
 namespace {
 
-class AnnotateVisitor : public boost::static_visitor<> {
-    private:
+struct AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<GlobalContext> globalContext;
         std::shared_ptr<FunctionContext> functionContext;
         std::shared_ptr<Context> currentContext;
 
-    public:
-        AUTO_RECURSE_STRUCT()
-        AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
+        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
 
-        AUTO_IGNORE_TEMPLATE_STRUCT()
-        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
         AUTO_IGNORE_NULL()
@@ -48,63 +46,11 @@ class AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_FLOAT()
         AUTO_IGNORE_INTEGER()
         AUTO_IGNORE_INTEGER_SUFFIX()
-        AUTO_IGNORE_IMPORT()
-        AUTO_IGNORE_STANDARD_IMPORT()
-        
-        void operator()(ast::SourceFile& program){
-            if(program.Content->context){
-                currentContext = globalContext = program.Content->context;
-            } else {
-                currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>();
-            }
 
-            visit_each(*this, program.Content->blocks);
-        }
-
-        void operator()(ast::FunctionDeclaration& function){
-            if(!function.Content->context){
-                currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-                visit_each(*this, function.Content->instructions);
-
-                currentContext = currentContext->parent();
-            }
-        }
-        
-        void operator()(ast::Constructor& constructor){
-            if(!constructor.Content->context){
-                currentContext = constructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-                visit_each(*this, constructor.Content->instructions);
-
-                currentContext = currentContext->parent();
-            }
-        }
-
-        void operator()(ast::Destructor& destructor){
-            if(!destructor.Content->context){
-                currentContext = destructor.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext);
-
-                visit_each(*this, destructor.Content->instructions);
-
-                currentContext = currentContext->parent();
-            }
-        }
-        
-        void operator()(ast::MemberFunctionCall& functionCall){
+        void operator()(ast::FunctionCall& functionCall){
             functionCall.Content->context = currentContext;
 
             visit_each(*this, functionCall.Content->values);
-        }
-
-        void operator()(ast::GlobalVariableDeclaration& declaration){
-            declaration.Content->context = currentContext;
-        }
-        
-        void operator()(ast::GlobalArrayDeclaration& declaration){
-            declaration.Content->context = currentContext;
-            
-            visit(*this, declaration.Content->size);
         }
 
         template<typename Loop>            
@@ -286,11 +232,58 @@ class AnnotateVisitor : public boost::static_visitor<> {
             
             visit_each(*this, new_.Content->values);
         }
+        
+        void operator()(ast::NewArray& new_){
+            new_.Content->context = currentContext;
+            
+            visit(*this, new_.Content->size);
+        }
 };
+
+inline AnnotateVisitor make_visitor(std::shared_ptr<GlobalContext> globalContext, std::shared_ptr<FunctionContext> functionContext, std::shared_ptr<Context> currentContext){
+    AnnotateVisitor visitor;
+    visitor.globalContext = globalContext;
+    visitor.currentContext = currentContext;
+    visitor.functionContext = functionContext;
+    return visitor;
+}
 
 } //end of anonymous namespace
 
-void ast::defineContexts(ast::SourceFile& program){
-    AnnotateVisitor visitor;
-    visitor(program);
+void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool indicator){
+    if(indicator){
+        currentContext = globalContext = program.Content->context;
+    } else {
+        currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>(platform);
+
+        for(auto& block : program.Content->blocks){
+            if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
+                ptr->Content->context = currentContext;
+            } else if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
+                ptr->Content->context = currentContext;
+            }
+        }
+    }
+}
+
+#define HANDLE_FUNCTION() \
+    currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform, configuration); \
+    auto visitor = make_visitor(globalContext, functionContext, currentContext); \
+    visit_each(visitor, function.Content->instructions); \
+    currentContext = currentContext->parent();
+
+void ast::ContextAnnotationPass::apply_function(ast::FunctionDeclaration& function){
+    HANDLE_FUNCTION();
+}
+
+void ast::ContextAnnotationPass::apply_struct_function(ast::FunctionDeclaration& function){
+    HANDLE_FUNCTION();
+}
+
+void ast::ContextAnnotationPass::apply_struct_constructor(ast::Constructor& function){
+    HANDLE_FUNCTION();
+}
+
+void ast::ContextAnnotationPass::apply_struct_destructor(ast::Destructor& function){
+    HANDLE_FUNCTION();
 }

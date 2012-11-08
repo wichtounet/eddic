@@ -1,17 +1,17 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "mtac/PointerPropagation.hpp"
-#include "mtac/OptimizerUtils.hpp"
-#include "mtac/Utils.hpp"
-
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
+
+#include "mtac/PointerPropagation.hpp"
+#include "mtac/OptimizerUtils.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -98,6 +98,12 @@ struct CopyApplier : public boost::static_visitor<> {
 };
 
 } //end of anonymous namespace
+
+void mtac::PointerPropagation::clear(){
+    optimized = false;
+    aliases.clear();
+    pointer_copies.clear();
+}
 
 void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     CopyApplier optimizer(pointer_copies);

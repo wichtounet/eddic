@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,25 +11,25 @@
 #include "likely.hpp"
 
 #include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 
-bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
+bool mtac::merge_basic_blocks::operator()(mtac::function_p function){
     bool optimized = false;
 
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
+    std::unordered_set<mtac::basic_block_p> usage;
 
     computeBlockUsage(function, usage);
 
-    auto& blocks = function->getBasicBlocks();
-
-    auto it = blocks.begin();
+    auto it = iterate(function);
 
     //The ENTRY Basic block should not be merged
     ++it;
 
-    while(it != blocks.end()){
+    while(it.has_next()){
         auto& block = *it;
         
         if(block->index == -1){
@@ -39,21 +39,18 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
             break;
         }
                 
-        auto next = it;
-        ++next;
+        auto next = block->next;
 
         if(unlikely(block->statements.empty())){
-            if(usage.find(*it) == usage.end()){
-                it = blocks.erase(it);
+            if(usage.find(block) == usage.end()){
+                it.erase();
                 optimized = true;
 
                 --it;
                 continue;
             } else {
-                if(next != blocks.end() && (*next)->index != -2 && usage.find(*next) == usage.end()){
-                    block->statements = (*next)->statements;
-                    
-                    it = blocks.erase(next);
+                if(next && next->index != -2 && usage.find(next) == usage.end()){
+                    it.merge_in(next);
                     optimized = true;
 
                     --it;
@@ -61,7 +58,7 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 }
             }
         } else {
-            auto& last = block->statements[block->statements.size() - 1];
+            auto& last = block->statements.back();
 
             bool merge = false;
 
@@ -72,7 +69,7 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
             } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
                 merge = true;
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                merge = (next != blocks.end() && (*ptr)->block == *next);
+                merge = (*ptr)->block == next;
 
                 if(merge){
                     block->statements.pop_back();
@@ -80,11 +77,11 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                 }
             }
 
-            if(merge && next != blocks.end() && (*next)->index != -2){
+            if(merge && next && next->index != -2){
                 //Only if the next block is not used because we will remove its label
-                if(usage.find(*next) == usage.end()){
-                    if(!(*next)->statements.empty()){
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(*(*next)->statements.begin()))){
+                if(usage.find(next) == usage.end()){
+                    if(!next->statements.empty()){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(next->statements.front()))){
                             if(!safe(*ptr)){
                                 ++it;
                                 continue;
@@ -92,9 +89,8 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
                         }
                     }
 
-                    block->statements.insert(block->statements.end(), (*next)->statements.begin(), (*next)->statements.end());
+                    it.merge_in(next);
 
-                    it = blocks.erase(next);
                     optimized = true;
 
                     --it;
@@ -107,64 +103,33 @@ bool mtac::merge_basic_blocks(std::shared_ptr<mtac::Function> function){
     }
 
     if(optimized){
-        merge_basic_blocks(function);
+        (*this)(function);
     }
    
     return optimized; 
 }
 
-bool mtac::remove_dead_basic_blocks(std::shared_ptr<mtac::Function> function){
-    auto& blocks = function->getBasicBlocks();
-    unsigned int before = blocks.size();
+bool mtac::remove_dead_basic_blocks::operator()(mtac::function_p function){
+    unsigned int before = function->bb_count();
 
     if(before <= 2){
         return false;
     }
-    
-    std::unordered_set<std::shared_ptr<mtac::BasicBlock>> usage;
-    std::list<std::shared_ptr<mtac::BasicBlock>> queue;
-    
+
+    auto it = iterate(function);
+
     //ENTRY is always accessed
-    queue.push_back(blocks.front());
+    ++it;
 
-    while(!queue.empty()){
-        auto block = queue.back();
-        queue.pop_back();
+    while(it.has_next()){
+        auto& block = *it;
 
-        if(usage.find(block) == usage.end()){
-            usage.insert(block);
-        
-            if(likely(!block->statements.empty())){
-                auto& last = block->statements.back();
-
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                    queue.push_back((*ptr)->block);
-
-                    continue;
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last)){
-                    queue.push_back((*ptr)->block); 
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last)){
-                    queue.push_back((*ptr)->block); 
-                }
-            }
-
-            //EXIT has no next block
-            if(block->index != -2){
-                //Add the next block
-                auto it = std::find(blocks.begin(), blocks.end(), block);
-                ++it;
-                queue.push_back(*it);
-            }
+        if(block->predecessors.empty()){
+            it.erase();
+        } else {
+            ++it;
         }
     }
 
-    auto it = blocks.begin();
-    auto end = blocks.end();
-
-    blocks.erase(
-            std::remove_if(it, end, 
-                [&](std::shared_ptr<mtac::BasicBlock> b){ return usage.find(b) == usage.end(); }), 
-            end);
-
-    return blocks.size() < before;
+    return function->bb_count() < before;
 }

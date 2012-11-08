@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -23,13 +23,12 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class TemplateType
+ * \struct TemplateType
  * \brief A template type in the AST.  
  */
 struct TemplateType {
     std::string type;
     std::vector<Type> template_types;
-    bool resolved = false;
 };
 
 bool operator==(const TemplateType& a, const TemplateType& b);

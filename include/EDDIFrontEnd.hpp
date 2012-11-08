@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct EDDIFrontEnd : public FrontEnd {
-    std::shared_ptr<mtac::Program> compile(const std::string& file);
+    std::shared_ptr<mtac::Program> compile(const std::string& file, Platform platform);
 };
 
 }

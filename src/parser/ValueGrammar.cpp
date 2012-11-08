@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -152,6 +152,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   member_function_call
         |   function_call
         |   prefix_operation
+        |   new_array
         |   new_
         |   suffix_operation
         |   member_value
@@ -162,6 +163,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   true_
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
+    
+    new_array %=
+            qi::position(position_begin)
+        >>  lexer.new_
+        >>  type.type
+        >>  lexer.left_bracket
+        >>  value
+        >>  lexer.right_bracket;
 
     new_ %=
             qi::position(position_begin)
@@ -267,9 +276,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     member_function_call %=
             qi::position(position_begin)
-        >>  (
-                    lexer.identifier
-                |   lexer.this_
+        >>  
+            (
+                variable_value
             )
         >>  lexer.dot
         >>  lexer.identifier

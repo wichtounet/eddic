@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -8,25 +8,43 @@
 #include <vector>
 
 #include "iterators.hpp"
+#include "logging.hpp"
 #include "GlobalContext.hpp"
 
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Statement.hpp"
 
 using namespace eddic;
 
-bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
-    bool optimized = false;
+namespace {
 
+void remove_references(std::shared_ptr<mtac::Program> program, mtac::function_p function){
+    for(auto& bb : function){
+        for(auto& statement : bb->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                program->context->removeReference((*ptr)->function); 
+            }
+        }
+    }
+}
+
+} //end of anonymous namespace
+
+bool mtac::remove_unused_functions::operator()(std::shared_ptr<mtac::Program> program){
     auto it = iterate(program->functions);
 
     while(it.has_next()){
         auto function = *it;
 
         if(program->context->referenceCount(function->getName()) == 0){
+            remove_references(program, function);
+            log::emit<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
             it.erase();
             continue;
         } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
+            remove_references(program, function);
+            log::emit<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
             it.erase();
             continue;
         } 
@@ -34,12 +52,11 @@ bool mtac::remove_unused_functions(std::shared_ptr<mtac::Program> program){
         ++it;
     }
 
-    return optimized;
+    //Not necessary to restart the other passes
+    return false;
 }
 
-bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
-    bool optimized = false;
-
+bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> program){
     std::vector<std::string> removed_functions;
 
     auto it = iterate(program->functions);
@@ -52,11 +69,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
             continue;
         }
 
-        unsigned int statements = 0;
-
-        for(auto& block : function->getBasicBlocks()){
-            statements += block->statements.size();
-        }
+        unsigned int statements = function->size();
 
         if(statements == 0){
             removed_functions.push_back(function->getName());
@@ -68,13 +81,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
 
     if(!removed_functions.empty()){
         for(auto& function : program->functions){
-            auto& blocks = function->getBasicBlocks();
-
-            auto bit = blocks.begin();
-
-            while(bit != blocks.end()){
-                auto block = *bit;
-
+            for(auto& block : function){
                 auto fit = block->statements.begin();
 
                 while(fit != block->statements.end()){
@@ -89,9 +96,7 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
                             if(parameters > 0){
                                 //The parameters are in the previous block
                                 if(fit == block->statements.begin()){
-                                    auto pit = bit;
-                                    --pit;
-                                    auto previous = *pit;
+                                    auto previous = block->prev;
 
                                     auto fend = previous->statements.end();
                                     --fend;
@@ -125,12 +130,10 @@ bool mtac::remove_empty_functions(std::shared_ptr<mtac::Program> program){
 
                     ++fit;
                 }
-
-                ++bit;
             }
         }
     }
 
-    return optimized;
+    //Not necessary to restart the other passes
+    return false;
 }
-

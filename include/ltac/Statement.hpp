@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,10 +9,10 @@
 #define LTAC_STATEMENT_H
 
 #include "variant.hpp"
+#include "variant_hash.hpp"
 
 #include "ltac/Instruction.hpp"
 #include "ltac/Jump.hpp"
-#include "ltac/Call.hpp"
 
 namespace eddic {
 
@@ -30,5 +30,17 @@ std::ostream& operator<<(std::ostream& out, std::shared_ptr<Statement> statement
 } //end of ltac
 
 } //end of eddic
+
+namespace std {
+    template<>
+    class hash<eddic::ltac::Statement> {
+    public:
+        size_t operator()(const eddic::ltac::Statement& val) const {
+            std::size_t seed = boost::apply_visitor(boost::detail::variant::variant_hasher(), val);
+            boost::hash_combine(seed, val.which());
+            return seed;
+        }
+    };
+}
 
 #endif

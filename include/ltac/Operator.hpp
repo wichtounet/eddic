@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@ namespace ltac {
 enum class Operator : unsigned int {
     MOV,
     FMOV,
+    MUL3,
 
     //Set the memory to 0
     MEMSET,
@@ -27,6 +28,7 @@ enum class Operator : unsigned int {
 
     //Return from function
     RET,
+    PRE_RET,
 
     //Comparisons
     CMP_INT,
@@ -50,7 +52,7 @@ enum class Operator : unsigned int {
     //Math operations
     ADD,
     SUB,
-    MUL,
+    MUL2,
     DIV,
 
     //Float operations
@@ -79,8 +81,14 @@ enum class Operator : unsigned int {
     CMOVL,
     CMOVLE,
 
+    //Special placeholders to indicate the start of parameter passing
+    PRE_PARAM,
+
     NOP
 };
+
+bool erase_result(ltac::Operator op);
+bool erase_result_complete(ltac::Operator op);
 
 } //end of ltac
 

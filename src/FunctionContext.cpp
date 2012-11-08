@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,51 +11,57 @@
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
 using namespace eddic;
 
-FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context) : Context(parent, global_context){
-    currentPosition = -INT->size(); 
-    
-    if(option_defined("fomit-frame-pointer")){
-        currentParameter = INT->size();
+FunctionContext::FunctionContext(std::shared_ptr<Context> parent, std::shared_ptr<GlobalContext> global_context, Platform platform, std::shared_ptr<Configuration> configuration) : 
+        Context(parent, global_context), platform(platform) {
+    //TODO Should not be done here
+    if(configuration->option_defined("fomit-frame-pointer")){
+        currentParameter = INT->size(platform);
     } else {
-        currentParameter = 2 * INT->size();
+        currentParameter = 2 * INT->size(platform);
     }
 }
 
 int FunctionContext::size() const {
-    auto size = -currentPosition;
+    int size = -currentPosition;
 
-    if(size == -INT->size()){
+    if(size == static_cast<int>(INT->size(platform))){
         return 0;
     }
 
     return size;
 }
+        
+int FunctionContext::stack_position(){
+    return currentPosition;
+}
+
+void FunctionContext::set_stack_position(int current){
+    currentPosition = current;
+}
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter);
 
-    currentParameter += type->size();
+    currentParameter += type->size(platform);
 
     return std::make_shared<Variable>(variable, type, position);
 }
 
 std::shared_ptr<Variable> FunctionContext::newVariable(const std::string& variable, std::shared_ptr<const Type> type){
-    currentPosition -= type->size();
+    auto var = std::make_shared<Variable>(variable, type, Position(PositionType::VARIABLE));
 
-    Position position(PositionType::STACK, currentPosition + INT->size());
-    auto var = std::make_shared<Variable>(variable, type, position);
-
-    storage[variable] = var;
+    storage.push_back(var);
 
     return var;
 }
 
-FunctionContext::Variables FunctionContext::stored_variables(){
+Storage FunctionContext::stored_variables(){
     return storage;
 }
 
@@ -66,11 +72,11 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 std::shared_ptr<Variable> FunctionContext::newVariable(std::shared_ptr<Variable> source){
     std::string name = "g_" + source->name() + "_" + toString(temporary++);
     
-    if(source->position().isTemporary()){
+    if(source->position().is_temporary()){
         Position position(PositionType::TEMPORARY);
 
         auto var = std::make_shared<Variable>(name, source->type(), position); 
-        storage[name] = var;
+        storage.push_back(var);
         return variables[name] = var;
     } else {
         return addVariable(name, source->type());
@@ -88,6 +94,12 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
     return variables[variable] = var;
 }
 
+std::shared_ptr<Variable> FunctionContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
+    std::string name = prefix + "_" + toString(generated++); 
+
+    return addVariable(name, type);
+}
+
 std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& parameter, std::shared_ptr<const Type> type){
     return variables[parameter] = newParameter(parameter, type);
 }
@@ -99,35 +111,8 @@ std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const T
 
     std::string name = "t_" + toString(temporary++);
     auto var = std::make_shared<Variable>(name, type, position); 
-    storage[name] = var;
+    storage.push_back(var);
     return variables[name] = var;
-}
-
-void FunctionContext::storeTemporary(std::shared_ptr<Variable> temp){
-    currentPosition -= temp->type()->size();
-
-    Position position(PositionType::STACK, currentPosition + INT->size());
-    
-    temp->setPosition(position); 
-}
-
-void FunctionContext::reallocate_storage(){
-    currentPosition = -INT->size();
-
-    auto it = storage.begin();
-    auto end = storage.end();
-
-    while(it != end){
-        auto v = it->second;
-
-        if(v->position().isStack()){
-            currentPosition -= v->type()->size();
-            Position position(PositionType::STACK, currentPosition + INT->size());
-            v->setPosition(position);
-        }
-
-        ++it;
-    }
 }
 
 void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
@@ -135,8 +120,6 @@ void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, u
 
     Position position(PositionType::REGISTER, register_);
     variable->setPosition(position);
-
-    reallocate_storage();
 }
 
 void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> variable, unsigned int register_){
@@ -144,19 +127,15 @@ void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> varia
 
     Position position(PositionType::PARAM_REGISTER, register_);
     variable->setPosition(position);
-
-    reallocate_storage();
 }
 
-void FunctionContext::removeVariable(const std::string& variable){
-    auto var = storage[variable];
+void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
+    auto iter_var = std::find(storage.begin(), storage.end(), variable);
+    auto var = *iter_var;
     
-    storage.erase(variable);
-
-    //If its a temporary, no need to recalculate positions
-    if(!var->position().isTemporary()){
-        reallocate_storage();
-    }
+    storage.erase(iter_var);
+    
+    log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
 }
 
 std::shared_ptr<FunctionContext> FunctionContext::function(){

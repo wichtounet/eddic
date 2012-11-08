@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -20,7 +20,7 @@ StringPool::StringPool() : currentString(0) {
 }
 
 std::string StringPool::label(const std::string& value) {
-    std::lock_guard<std::mutex> lock(mutex);
+//    std::lock_guard<std::mutex> lock(mutex);
 
     if (pool.find(value) == pool.end()) {
         std::stringstream ss;
@@ -33,7 +33,7 @@ std::string StringPool::label(const std::string& value) {
 }
 
 std::string StringPool::value(const std::string& label) const {
-    std::lock_guard<std::mutex> lock(mutex);
+//    std::lock_guard<std::mutex> lock(mutex);
 
     for (auto it : pool){
         if(it.second == label){

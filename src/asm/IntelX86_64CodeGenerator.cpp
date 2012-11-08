@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,10 @@
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
 
+#include "mtac/Program.hpp"
+
+#include "ltac/Statement.hpp"
+
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
 #include "asm/IntelAssemblyUtils.hpp"
@@ -23,13 +27,15 @@ using namespace eddic;
 as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
 
 namespace {
+        
+const std::string registers[14] = {
+    "rax", "rbx", "rcx", "rdx", "rsi", "rdi", 
+    "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"};
+
+const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
 struct X86_64StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
     std::string operator()(ltac::Register& reg) const {
-        static std::string registers[14] = {
-            "rax", "rbx", "rcx", "rdx", "rsi", "rdi", 
-            "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"};
-
         if(static_cast<int>(reg) == 1000){
             return "rsp"; 
         } else if(static_cast<int>(reg) == 1001){
@@ -40,10 +46,7 @@ struct X86_64StringConverter : public as::StringConverter, public boost::static_
     }
     
     std::string operator()(ltac::FloatRegister& reg) const {
-        static std::string registers[8] = {
-            "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
-
-        return registers[static_cast<int>(reg)];
+        return float_registers[static_cast<int>(reg)];
     }
     
     std::string operator()(ltac::Address& address) const {
@@ -56,6 +59,14 @@ struct X86_64StringConverter : public as::StringConverter, public boost::static_
 
     std::string operator()(const std::string& value) const {
         return value;
+    }
+    
+    std::string operator()(ltac::PseudoRegister&) const {
+        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
+    }
+
+    std::string operator()(ltac::PseudoFloatRegister&) const {
+        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
     }
 
     std::string operator()(double value) const {
@@ -184,7 +195,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::SUB:
                 writer.stream() << "sub " << *instruction->arg1 << ", " << *instruction->arg2 << std::endl;
                 break;
-            case ltac::Operator::MUL:
+            case ltac::Operator::MUL2:
+            case ltac::Operator::MUL3:
                 if(instruction->arg3){
                     writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << ", " << *instruction->arg3 << std::endl;
                 } else {
@@ -325,11 +337,14 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void as::IntelX86_64CodeGenerator::compile(std::shared_ptr<ltac::Function> function){
+void as::IntelX86_64CodeGenerator::compile(mtac::function_p function){
     writer.stream() << std::endl << function->getName() << ":" << std::endl;
 
     X86_64StatementCompiler compiler(writer);
-    visit_each(compiler, function->getStatements());
+    
+    for(auto& bb : function){
+        visit_each(compiler, bb->l_statements);
+    }
 }
 
 void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){

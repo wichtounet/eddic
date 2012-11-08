@@ -175,6 +175,19 @@ namespace logging {
         static inline typename ::logging::detail::Logger<Level>::return_type& emit (const std::string& subject) {
             return ::logging::detail::Logger<Level>::logging() << Level::level() << Level::desc() << "[" << subject << "] ";
         }
+
+#ifdef LOGGING_DISABLE
+        template<typename Level>
+        static inline bool enabled () {
+            return false;
+        }
+#else
+        template<typename Level>
+        static inline bool enabled () {
+            return ::logging::detail::Logger<Level>::logging().enabled(Level::level());
+        }
+#endif
+        
     };
 
 } /* logging */

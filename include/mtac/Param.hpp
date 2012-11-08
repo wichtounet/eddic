@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,14 +10,13 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "mtac/Argument.hpp"
 
 namespace eddic {
 
-class Function;
 class Variable;
+class Function;
 
 namespace mtac {
 
@@ -26,7 +25,8 @@ struct Param {
 
     std::shared_ptr<Variable> param;
     std::string std_param;
-    std::shared_ptr<Function> function;
+    std::shared_ptr<eddic::Function> function;
+    unsigned int depth;
     
     bool address = false;
 
@@ -35,8 +35,8 @@ struct Param {
 
     Param();
     Param(mtac::Argument arg1);
-    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<Function> function);
-    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<Function> function);
+    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<eddic::Function> function);
+    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<eddic::Function> function);
 };
 
 } //end of mtac

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -20,7 +20,7 @@ namespace eddic {
 class Type;
 class Variable;
 class IntermediateProgram;
-class GlobalContext;
+struct GlobalContext;
 
 /*!
  * \class Context
@@ -69,10 +69,18 @@ class Context {
         virtual std::shared_ptr<Variable> addVariable(const std::string& name, std::shared_ptr<const Type> type, ast::Value& value) = 0;
         
         /*!
+         * Generate a new variable with the given prefix and a generated index.
+         * \param prefix The prefix of the generate variable. 
+         * \param type The type of the variable to generate. 
+         * \return the created Variable.
+         */
+        virtual std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) = 0;
+        
+        /*!
          * Remove the given variable from this context.  
          * \param variable The name of the variable to remove. 
          */
-        virtual void removeVariable(const std::string& variable);
+        virtual void removeVariable(std::shared_ptr<Variable> variable);
 
         /*!
          * \brief Create a new temporary of the given type in this context. 
@@ -123,6 +131,9 @@ class Context {
         
         virtual std::shared_ptr<FunctionContext> function();
         std::shared_ptr<GlobalContext> global() const;
+
+        virtual void add_reference(std::shared_ptr<Variable> variable);
+        virtual unsigned int reference_count(std::shared_ptr<Variable> variable);
 };
 
 } //end of eddic

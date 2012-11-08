@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -62,6 +62,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::False()> false_;
     qi::rule<lexer::Iterator, ast::Null()> null;
     qi::rule<lexer::Iterator, ast::New()> new_;
+    qi::rule<lexer::Iterator, ast::NewArray()> new_array;
     qi::rule<lexer::Iterator, ast::PrefixOperation()> prefix_operation;
     qi::rule<lexer::Iterator, ast::SuffixOperation()> suffix_operation;
 

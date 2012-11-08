@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,14 +12,14 @@ namespace eddic {
 
 #ifdef __GNUG__
     #ifdef __LP64__
-        static bool Target64 = true;
+        static const bool Target64 = true;
     #else
-        static bool Target64 = false;
+        static const bool Target64 = false;
     #endif
-    static bool TargetDetermined = true;
+    static const bool TargetDetermined = true;
 #else
-    static bool Target64 = false;
-    static bool TargetDetermined = false;
+    static const bool Target64 = false;
+    static const bool TargetDetermined = false;
 #endif
 
 } //end of eddic

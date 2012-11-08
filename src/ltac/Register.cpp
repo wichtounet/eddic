@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -38,5 +38,11 @@ bool ltac::Register::operator!=(const Register& rhs) const {
 }
 
 std::ostream& ltac::operator<<(std::ostream& out, const ltac::Register& reg){
+    if(reg == ltac::BP){
+        return out << "bp";
+    } else if(reg == ltac::SP){
+        return out << "sp";
+    }
+
     return out << "r" << reg.reg;
 }

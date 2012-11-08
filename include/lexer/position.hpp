@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -67,7 +67,9 @@ namespace boost { namespace spirit { namespace qi
     struct make_primitive<tag::position, Modifiers>
     {
         typedef position result_type;
-        result_type operator()(unused_type, eddic::lexer::Lexer const& lexer, unused_type) const
+
+        template<typename Arg>
+        result_type operator()(unused_type, const Arg& lexer, unused_type) const
         {
             return result_type(lexer);
         }

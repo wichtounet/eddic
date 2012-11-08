@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -29,12 +29,16 @@ bool Position::is_const() const {
     return m_type == PositionType::CONST;
 }
 
-bool Position::isTemporary() const {
+bool Position::is_temporary() const {
     return m_type == PositionType::TEMPORARY;
 }
 
 bool Position::isParamRegister() const {
     return m_type == PositionType::PARAM_REGISTER;
+}
+
+bool Position::is_variable() const {
+    return m_type == PositionType::VARIABLE;
 }
 
 bool Position::is_register() const {

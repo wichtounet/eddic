@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -8,15 +8,21 @@
 #ifndef LTAC_JUMP_H
 #define LTAC_JUMP_H
 
-#include "tac/Jump.hpp"
+#include <vector>
+#include <memory>
+
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 namespace eddic {
 
+class Function;
+
 namespace ltac {
 
-class BasicBlock;
-
-enum class JumpType : unsigned int {
+enum struct JumpType : unsigned int {
     ALWAYS,
 
     CALL,
@@ -42,7 +48,26 @@ enum class JumpType : unsigned int {
     NZ      //Not zero
 };
 
-typedef tac::Jump<JumpType, BasicBlock> Jump;
+struct Jump {
+    std::string label;
+    JumpType type;
+    std::shared_ptr<eddic::Function> target_function; //Only if a call
+    
+    std::vector<ltac::PseudoRegister> uses;
+    std::vector<ltac::PseudoFloatRegister> float_uses;
+    
+    std::vector<ltac::PseudoRegister> kills;
+    std::vector<ltac::PseudoFloatRegister> float_kills;
+    
+    std::vector<ltac::Register> hard_uses;
+    std::vector<ltac::FloatRegister> hard_float_uses;
+    
+    std::vector<ltac::Register> hard_kills;
+    std::vector<ltac::FloatRegister> hard_float_kills;
+
+    Jump();
+    Jump(const std::string& label, JumpType type);
+};
 
 } //end of ltac
 

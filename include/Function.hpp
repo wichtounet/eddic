@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -18,7 +18,7 @@ class FunctionContext;
 class Type;
 
 /*!
- * \class ParameterType
+ * \struct ParameterType
  * \brief A parameter for a function.  
  */
 struct ParameterType {
@@ -32,23 +32,24 @@ struct ParameterType {
  * \class Function
  * \brief A function entry in the function table. 
  */
-struct Function {
-    std::shared_ptr<const Type> returnType;
-    std::string name;
-    std::string mangledName;
-    std::string struct_;
-    std::vector<ParameterType> parameters;
-    std::shared_ptr<FunctionContext> context;
-    
-    std::shared_ptr<const Type> struct_type = nullptr;
+class Function {
+    public:
+        Function(std::shared_ptr<const Type> ret, const std::string& n);
 
-    int references;
-    bool standard = false;
+        std::shared_ptr<const Type> getParameterType(const std::string& name);
+        unsigned int getParameterPositionByType(const std::string& name);
+        
+        std::shared_ptr<const Type> returnType;
+        std::string name;
+        std::string mangledName;
+        std::string struct_;
+        std::vector<ParameterType> parameters;
+        std::shared_ptr<FunctionContext> context;
 
-    Function(std::shared_ptr<const Type> ret, const std::string& n);
+        std::shared_ptr<const Type> struct_type = nullptr;
 
-    std::shared_ptr<const Type> getParameterType(const std::string& name);
-    unsigned int getParameterPositionByType(const std::string& name);
+        int references;
+        bool standard = false;
 };
 
 } //end of eddic

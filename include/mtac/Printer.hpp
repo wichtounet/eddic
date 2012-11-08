@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -8,12 +8,8 @@
 #ifndef MTAC_PRINTER_H
 #define MTAC_PRINTER_H
 
-#include <memory>
-
-#include "mtac/Program.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
-#include "mtac/Function.hpp"
 
 namespace eddic {
 
@@ -25,14 +21,14 @@ namespace mtac {
  */
 struct Printer {
     void print(std::shared_ptr<mtac::Program> program) const ;
-    void printFunction(std::shared_ptr<mtac::Function> function) const ;
+    void printFunction(mtac::function_p function) const ;
     void printStatement(mtac::Statement program) const ;
     void print_inline(mtac::Statement program, std::ostream& os) const ;
     void printArgument(mtac::Argument& program) const ;
 };
 
 void print(std::shared_ptr<mtac::Program> program);
-void print(std::shared_ptr<mtac::Function> program);
+void print(mtac::function_p program);
 
 } //end of mtac
 

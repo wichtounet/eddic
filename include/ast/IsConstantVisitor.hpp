@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -8,15 +8,16 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
+#include <type_traits>
+
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/contains.hpp>
+
 #include "variant.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 
 #include "ast/Value.hpp"
-
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/contains.hpp>
-#include <boost/utility/enable_if.hpp>
 
 namespace eddic {
 
@@ -29,15 +30,15 @@ namespace ast {
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::CharLiteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
     typedef boost::mpl::vector<ast::ArrayValue, ast::FunctionCall, ast::MemberFunctionCall, ast::SuffixOperation, ast::PrefixOperation,
-        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::DereferenceValue, ast::New> non_constant_types;
+        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::DereferenceValue, ast::New, ast::NewArray> non_constant_types;
 
     template<typename T>
-    typename boost::enable_if<boost::mpl::contains<constant_types, T>, bool>::type operator()(T&) const {
+    typename std::enable_if<boost::mpl::contains<constant_types, T>::value, bool>::type operator()(T&) const {
         return true;
     }
     
     template<typename T>
-    typename boost::enable_if<boost::mpl::contains<non_constant_types, T>, bool>::type operator()(T&) const {
+    typename std::enable_if<boost::mpl::contains<non_constant_types, T>::value, bool>::type operator()(T&) const {
         return false;
     }
 

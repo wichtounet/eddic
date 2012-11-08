@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,16 +12,14 @@
 #include <string>
 #include <iostream>
 
-#include <boost/utility/enable_if.hpp>
-
-#include "AssemblyFileWriter.hpp"
-
 #include "asm/CodeGenerator.hpp"
+
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 class AssemblyFileWriter;
-class GlobalContext;
+struct GlobalContext;
 class Function;
 
 namespace as {
@@ -34,7 +32,7 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
         
-        void generate(std::shared_ptr<ltac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
+        void generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
         std::shared_ptr<GlobalContext> context;
@@ -43,7 +41,7 @@ class IntelCodeGenerator : public CodeGenerator {
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(std::shared_ptr<ltac::Function> function) = 0;
+        virtual void compile(mtac::function_p function) = 0;
 
         virtual void defineDataSection() = 0;
 

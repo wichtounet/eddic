@@ -1,0 +1,108 @@
+//Tests for register allocation
+
+void main(){
+   println(max(5, 7));
+
+   several();
+   spills();
+   renumber();
+   coalesce();
+   floats();
+}
+
+//Test that returns are resolved
+int max(int i, int j){
+    if(i > j){
+        return i;
+    } else {
+        return j;
+    }
+}
+
+void several(){
+    int a = 5;
+    int b = 9;
+    int c = 66;
+
+    println(a);
+    println(b);
+    println(c);
+    println(a);
+
+    a += c;
+    int d = b;
+
+    println(a);
+    println(b);
+    println(c);
+    println(d);
+    println(a);
+}
+
+void spills(){
+   int a1 = 5; 
+   int a2 = 5; 
+   int a3 = 5; 
+   int a4 = 5; 
+   int a5 = 5; 
+   int a6 = 5; 
+   int a7 = 5; 
+   int a8 = 5; 
+    
+   println(a8);
+   println(a7);
+   println(a6);
+   println(a5);
+   println(a4);
+   println(a3);
+   println(a2);
+   println(a1);
+}
+
+void renumber(){
+    int a = 5;
+    println(a);
+    a = 9;
+    println(a);
+    a = 11;
+    println(a);
+    int b = 99;
+    println(b);
+    a = 22;
+    println(a);
+    println(b);
+    a = 22;
+    println(a);
+    b = 66;
+    println(a);
+}
+
+void coalesce(){
+    int a = 5;
+    int b = 7;
+    print(a);
+    b = a;
+    print(b);
+    int c = b;
+    print(c);
+}
+
+void floats(){
+    float a = 5.9;
+    float b = 9.9;
+    float c = 66.6;
+
+    println(a);
+    println(b);
+    println(c);
+    println(a);
+
+    a += c;
+    float d = b;
+
+    println(a);
+    println(b);
+    println(c);
+    println(d);
+    println(a);
+}

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -21,7 +21,7 @@ namespace eddic {
  * \param debug The debug mode flag. 
  * \param verbose The verbose mode flag. 
  */
-void assemble(Platform platform, const std::string& output, bool debug, bool verbose);
+void assemble(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool debug, bool verbose);
 
 } //end of eddic
 

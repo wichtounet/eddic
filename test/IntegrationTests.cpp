@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,10 +13,8 @@
 #include "Utils.hpp"
 #include "Platform.hpp"
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE EddicTestSuites
-#include <boost/test/unit_test.hpp>
-#include <boost/test/detail/unit_test_parameters.hpp>
+#define BOOST_TEST_MODULE eddic_test_suite
+#include <BoostTestTargetConfig.h>
 
 /*
  * \def TEST_APPLICATION(file) 
@@ -24,12 +22,12 @@
  */
 #define TEST_APPLICATION(file)\
 BOOST_AUTO_TEST_CASE( applications_##file ){\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O0");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O1");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O2");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O0");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O1");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O2");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O0", #file ".1.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O1", #file ".2.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O2", #file ".3.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O0", #file ".4.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O1", #file ".5.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O2", #file ".6.out");\
 }
 
 /*
@@ -38,87 +36,85 @@ BOOST_AUTO_TEST_CASE( applications_##file ){\
  */
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
-    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O0");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O1");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O2");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O0");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O1");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O0", #file ".1.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O1", #file ".2.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O2", #file ".3.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O0", #file ".4.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O1", #file ".5.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2", #file ".6.out");\
 }
 
-/* Config Fixture  */
+inline void remove(const std::string& file){
+    remove(file.c_str());
+}
 
-struct ConfigFixture {
-    ConfigFixture(){
-        //NOTE : If possible, configure the show progress parameter
-    }
+inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
+    std::string output_file = "--output=" + param3;
 
-    ~ConfigFixture(){
-        /* Nothing to teard down */
-    }
-};
-
-/* Fixture to delete the a.out file after the compilation */
-
-struct DeleteOutFixture {
-    DeleteOutFixture(){
-        /* Nothing to setup  */    
-    }
-
-    ~DeleteOutFixture(){ 
-        BOOST_TEST_MESSAGE( "Delete the a.out file" ); 
-        remove("a.out"); 
-    }
-};
-
-inline void parse_options(const std::string& file, const std::string& param1, const std::string& param2){
-    const char* argv[5];
+    const char* argv[6];
     argv[0] = "./bin/test";
     argv[1] = param1.c_str();
     argv[2] = "--quiet";
     argv[3] = param2.c_str();
-    argv[4] = file.c_str();
+    argv[4] = output_file.c_str();
+    argv[5] = file.c_str();
+    
+    BOOST_TEST_MESSAGE( std::string("Compile with options ") + argv[1] + " " + argv[2] + " " + argv[3] + " " + argv[4] + " " + argv[5]); 
 
-    BOOST_REQUIRE (eddic::parseOptions(5, argv));
+    auto configuration = eddic::parseOptions(6, argv);
+
+    BOOST_REQUIRE (configuration);
+
+    return configuration;
 }
 
-void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2){
-    BOOST_TEST_MESSAGE( "Compile with options " + param1 + " "  + param2 ); 
-    parse_options(file, param1, param2);
+void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
+    auto configuration = parse_options(file, param1, param2, param3);
 
     eddic::Compiler compiler;
-    int code = compiler.compile(file);
+    int code = compiler.compile(file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 0);
+    
+    remove("./" + param3);
 }
 
-void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2){
-    parse_options("test/cases/" + file, param1, param2);
+void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
+    auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
 
     eddic::Compiler compiler;
-    int code = compiler.compile("test/cases/" + file);
+    int code = compiler.compile("test/cases/" + file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 1);
+    
+    remove("./" + param3);
 }
 
-void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2){
-    assert_compiles("test/cases/" + file, param1, param2);
+void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
+    auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
 
-    std::string out = eddic::execCommand("./a.out"); 
+    eddic::Compiler compiler;
+    int code = compiler.compile("test/cases/" + file, configuration);
+
+    BOOST_REQUIRE_EQUAL (code, 0);
+
+    std::string out = eddic::execCommand("./" + param3); 
     
     BOOST_CHECK_EQUAL (output, out);
+    
+    remove("./" + param3);
 }
 
 void assert_output_32(const std::string& file, const std::string& output){
-    assert_output_equals(file, output, "--32", "--O0");
-    assert_output_equals(file, output, "--32", "--O1");
-    assert_output_equals(file, output, "--32", "--O2");
+    assert_output_equals(file, output, "--32", "--O0", file + ".1.out");
+    assert_output_equals(file, output, "--32", "--O1", file + ".2.out");
+    assert_output_equals(file, output, "--32", "--O2", file + ".3.out");
 }
 
 void assert_output_64(const std::string& file, const std::string& output){
-    assert_output_equals(file, output, "--64", "--O0");
-    assert_output_equals(file, output, "--64", "--O1");
-    assert_output_equals(file, output, "--64", "--O2");
+    assert_output_equals(file, output, "--64", "--O0", file + ".4.out");
+    assert_output_equals(file, output, "--64", "--O1", file + ".5.out");
+    assert_output_equals(file, output, "--64", "--O2", file + ".6.out");
 }
 
 void assert_output(const std::string& file, const std::string& output){
@@ -126,13 +122,9 @@ void assert_output(const std::string& file, const std::string& output){
     assert_output_64(file, output);
 }
 
-/* Configure a global fixture for the configuration */
-
-BOOST_GLOBAL_FIXTURE ( ConfigFixture  )
-
 /* Compiles all the applications */
 
-BOOST_FIXTURE_TEST_SUITE( ApplicationsSuite, DeleteOutFixture )
+BOOST_AUTO_TEST_SUITE( ApplicationsSuite )
 
 TEST_APPLICATION(hangman)
 
@@ -140,7 +132,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 /* Compiles all the samples */
 
-BOOST_FIXTURE_TEST_SUITE( SamplesSuite, DeleteOutFixture )
+BOOST_AUTO_TEST_SUITE( SamplesSuite )
 
 TEST_SAMPLE(arrays)
 TEST_SAMPLE(asm)
@@ -159,13 +151,14 @@ TEST_SAMPLE(optimize)
 TEST_SAMPLE(problem)
 TEST_SAMPLE(sort)
 TEST_SAMPLE(identifiers)
+TEST_SAMPLE(registers)
 TEST_SAMPLE(structures)
 
 BOOST_AUTO_TEST_SUITE_END()
 
 /* Specific tests */ 
 
-BOOST_FIXTURE_TEST_SUITE(SpecificSuite, DeleteOutFixture)
+BOOST_AUTO_TEST_SUITE(SpecificSuite)
 
 BOOST_AUTO_TEST_CASE( array_foreach_local ){
     assert_output("array_foreach_local.eddi", "43210");
@@ -249,7 +242,7 @@ BOOST_AUTO_TEST_CASE( cmove ){
 }
 
 BOOST_AUTO_TEST_CASE( dynamic ){
-    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|");
+    assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|0|1|2|3|4|");
 }
 
 BOOST_AUTO_TEST_CASE( dynamic_struct ){
@@ -300,9 +293,9 @@ BOOST_AUTO_TEST_CASE( defaults ){
 
 BOOST_AUTO_TEST_CASE( float_1 ){
     /* Precision is different regarding to optimizations */
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O0");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O1");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5591|14.4927|3.0|8.0|", "--32", "--O2");
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O0", "float_1.eddi.1.out");
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O1", "float_1.eddi.2.out");
+    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5591|14.4927|3.0|8.0|", "--32", "--O2", "float_1.eddi.3.out");
     
     assert_output_64("float_1.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|");
 }
@@ -399,31 +392,38 @@ BOOST_AUTO_TEST_CASE( nested ){
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
 }
 
-static void test_args(const std::string& arg1, const std::string& arg2){
-    assert_compiles("test/cases/args.eddi", arg1, arg2);
+static void test_args(const std::string& arg1, const std::string& arg2, const std::string& arg3){
+    auto configuration = parse_options("test/cases/args.eddi", arg1, arg2, arg3);
 
-    std::string out = eddic::execCommand("./a.out"); 
-    BOOST_CHECK_EQUAL ("./a.out|", out);
+    eddic::Compiler compiler;
+    int code = compiler.compile("test/cases/args.eddi", configuration);
+
+    BOOST_REQUIRE_EQUAL (code, 0);
+
+    std::string out = eddic::execCommand("./" + arg3); 
+    BOOST_CHECK_EQUAL ("./" + arg3 + "|", out);
     
-    out = eddic::execCommand("./a.out arg1 arg2 arg3"); 
-    BOOST_CHECK_EQUAL ("./a.out|arg1|arg2|arg3|", out);
+    out = eddic::execCommand("./" + arg3 + " arg1 arg2 arg3"); 
+    BOOST_CHECK_EQUAL ("./" + arg3 + "|arg1|arg2|arg3|", out);
+    
+    remove("./" + arg3);
 }
 
 BOOST_AUTO_TEST_CASE( args ){
-    test_args("--32", "--O0");
-    test_args("--32", "--O1");
-    test_args("--32", "--O2");
+    test_args("--32", "--O0", "args.1.out");
+    test_args("--32", "--O1", "args.2.out");
+    test_args("--32", "--O2", "args.3.out");
 
-    test_args("--64", "--O0");
-    test_args("--64", "--O1");
-    test_args("--64", "--O2");
+    test_args("--64", "--O0", "args.4.out");
+    test_args("--64", "--O1", "args.5.out");
+    test_args("--64", "--O2", "args.6.out");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
 /* Template tests */ 
 
-BOOST_FIXTURE_TEST_SUITE(TemplateSuite, DeleteOutFixture)
+BOOST_AUTO_TEST_SUITE(TemplateSuite)
 
 BOOST_AUTO_TEST_CASE( class_templates ){
     assert_output("class_templates.eddi", "C1|C1|C2|100|100|13.3000|13.3000|7|7|88|88|55.2500|55.2500|1.0|10|D|D|D|");
@@ -442,23 +442,23 @@ BOOST_AUTO_TEST_SUITE_END()
 
 /* Verify that the compilation fails for invalid statements */
 
-BOOST_FIXTURE_TEST_SUITE(CompilationErrorsSuite, DeleteOutFixture)
+BOOST_AUTO_TEST_SUITE(CompilationErrorsSuite)
 
 BOOST_AUTO_TEST_CASE( params_assign ){
-    assert_compilation_error("params_assign.eddi", "--32", "--O2");
-    assert_compilation_error("params_assign.eddi", "--64", "--O2");
+    assert_compilation_error("params_assign.eddi", "--32", "--O2", "params_assign.out");
+    assert_compilation_error("params_assign.eddi", "--64", "--O2", "params_assign.out");
 }
 
 BOOST_AUTO_TEST_CASE( wrong_print ){
-    assert_compilation_error("wrong_print.eddi", "--32", "--O2");
-    assert_compilation_error("wrong_print.eddi", "--64", "--O2");
+    assert_compilation_error("wrong_print.eddi", "--32", "--O2", "wrong_print.out");
+    assert_compilation_error("wrong_print.eddi", "--64", "--O2", "wrong_print.out");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
 /* Standard library test suite  */
 
-BOOST_FIXTURE_TEST_SUITE(StandardLibSuite, DeleteOutFixture)
+BOOST_AUTO_TEST_SUITE(StandardLibSuite)
 
 BOOST_AUTO_TEST_CASE( std_lib_arrays_sum ){
     assert_output("stdlib_array_sum.eddi", "100");
@@ -484,11 +484,15 @@ BOOST_AUTO_TEST_CASE( std_lib_str_equals ){
     assert_output("stdlib_str_equals.eddi", "1|0|0|0|1|1|");
 }
 
+BOOST_AUTO_TEST_CASE( std_linked_list ){
+    assert_output("stdlib_linked_list.eddi", "0||1|55|55|2|55|11|3|33|11|4|99|11|{99|33|55|11|}{11|33|99|}4|99|11|3|33|11|2|33|88|1|88|88|");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */
 
-BOOST_FIXTURE_TEST_SUITE(BugFixesSuite, DeleteOutFixture)
+BOOST_AUTO_TEST_SUITE(BugFixesSuite)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
     assert_output("while_bug.eddi", "W1W2W3W4W5");

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011.
+// Copyright Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -39,6 +39,10 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& valu
     return new_pointer_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
 }
 
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::NewArray& value) const {
+    return new_array_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
    return visit(*this, ternary.Content->true_value); 
 }
@@ -71,6 +75,10 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
         if(i == memberNames.size() - 1){
             return member_type;
         } else {
+            if(member_type->is_pointer()){
+                member_type = member_type->data_type();
+            }
+
             struct_name = member_type->mangle();
             struct_type = global_context->get_struct(struct_name);
         }
@@ -92,7 +100,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberVal
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    return variable.variable()->type();
+    return variable.Content->var->type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
