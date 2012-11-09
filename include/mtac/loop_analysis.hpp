@@ -8,9 +8,6 @@
 #ifndef MTAC_LOOP_ANALYSIS_H
 #define MTAC_LOOP_ANALYSIS_H
 
-#include <memory>
-#include <set>
-
 #include "mtac/pass_traits.hpp"
 #include "mtac/forward.hpp"
 
@@ -18,9 +15,7 @@ namespace eddic {
 
 namespace mtac {
 
-struct Program;
-
-void full_loop_analysis(std::shared_ptr<mtac::Program> program);
+void full_loop_analysis(mtac::program_p program);
 void full_loop_analysis(mtac::function_p function);
 
 struct loop_analysis {

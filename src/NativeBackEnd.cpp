@@ -27,7 +27,7 @@
 
 using namespace eddic;
 
-void NativeBackEnd::generate(std::shared_ptr<mtac::Program> mtac_program, Platform platform){
+void NativeBackEnd::generate(mtac::program_p mtac_program, Platform platform){
     std::string output = configuration->option_value("output");
 
     //Prepare the float pool

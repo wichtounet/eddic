@@ -9,21 +9,21 @@
 
 using namespace eddic;
 
-mtac::BasicBlock::BasicBlock(int i) : index(i), label("") {}
+mtac::basic_block::basic_block(int i) : index(i), label("") {}
 
-void mtac::BasicBlock::add(mtac::Statement statement){
+void mtac::basic_block::add(mtac::Statement statement){
     statements.push_back(statement);
 }
 
-mtac::BasicBlock::iterator mtac::BasicBlock::begin(){
+mtac::basic_block::iterator mtac::basic_block::begin(){
     return statements.begin();
 }
 
-mtac::BasicBlock::iterator mtac::BasicBlock::end(){
+mtac::basic_block::iterator mtac::basic_block::end(){
     return statements.end();
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<BasicBlock>& basic_block){
+std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<basic_block>& basic_block){
     if(basic_block){
         return stream << *basic_block;
     } else {
@@ -31,7 +31,7 @@ std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<BasicBlock>
     }
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, BasicBlock& block){
+std::ostream& mtac::operator<<(std::ostream& stream, basic_block& block){
     if(block.index == -1){
         return stream << "ENTRY";
     } else if(block.index == -2){
@@ -41,10 +41,10 @@ std::ostream& mtac::operator<<(std::ostream& stream, BasicBlock& block){
     }
 }
 
-mtac::BasicBlock::iterator mtac::begin(mtac::basic_block_p block){
+mtac::basic_block::iterator mtac::begin(mtac::basic_block_p block){
     return block->begin();
 }
 
-mtac::BasicBlock::iterator mtac::end(mtac::basic_block_p block){
+mtac::basic_block::iterator mtac::end(mtac::basic_block_p block){
     return block->end(); 
 }

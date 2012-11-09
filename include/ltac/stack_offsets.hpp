@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace ltac {
 
-void fix_stack_offsets(std::shared_ptr<mtac::Program> mtac_program, Platform platform);
+void fix_stack_offsets(mtac::program_p mtac_program, Platform platform);
 
 } //end of ltac
 

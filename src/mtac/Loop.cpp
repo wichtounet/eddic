@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "mtac/Loop.hpp"
-#include "mtac/BasicBlock.hpp"
+#include "mtac/basic_block.hpp"
 
 using namespace eddic;
 

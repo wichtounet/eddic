@@ -8,24 +8,21 @@
 #ifndef MTAC_INLINING_H
 #define MTAC_INLINING_H
 
-#include <memory>
-
 #include "Options.hpp"
 
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-struct Program;
-    
 struct inline_functions {
     std::shared_ptr<Configuration> configuration;
 
     void set_configuration(std::shared_ptr<Configuration> configuration);
 
-    bool operator()(std::shared_ptr<mtac::Program> program);
+    bool operator()(mtac::program_p program);
 };
 
 template<>

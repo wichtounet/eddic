@@ -16,7 +16,7 @@
 #include "iterators.hpp"
 
 #include "mtac/forward.hpp"
-#include "mtac/BasicBlock.hpp"
+#include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
 
 #include "ltac/Register.hpp"

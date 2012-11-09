@@ -17,7 +17,7 @@
 
 using namespace eddic;
 
-void mtac::register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+void mtac::register_param_allocation(mtac::program_p program, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
 
     auto maxInt = descriptor->numberOfIntParamRegisters();

@@ -13,16 +13,16 @@
 #include "Platform.hpp"
 #include "Options.hpp"
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 struct StringPool;
 
 namespace mtac {
 
-struct Program;
-
 struct Optimizer {
-    void optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
+    void optimize(mtac::program_p program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
 };
 
 } //end of mtac

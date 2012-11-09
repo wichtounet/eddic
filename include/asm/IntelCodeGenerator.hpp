@@ -32,7 +32,7 @@ class IntelCodeGenerator : public CodeGenerator {
     public:
         IntelCodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
         
-        void generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
+        void generate(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool);
 
     protected:
         std::shared_ptr<GlobalContext> context;

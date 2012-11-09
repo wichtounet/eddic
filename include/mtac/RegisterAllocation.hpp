@@ -5,18 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef REGISTER_ALLOCATION_H
-#define REGISTER_ALLOCATION_H
+#ifndef MTAC_REGISTER_ALLOCATION_H
+#define MTAC_REGISTER_ALLOCATION_H
 
 #include "Platform.hpp"
+
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
-
-struct Program;
     
-void register_param_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
+void register_param_allocation(mtac::program_p program, Platform platform);
 
 } //end of mtac
 

@@ -156,7 +156,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     DebugVisitor(std::ostream& out) : out(out) {}
 
-    void operator()(std::shared_ptr<mtac::Program> program){
+    void operator()(mtac::program_p program){
         out << "LTAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program->functions);
@@ -216,7 +216,7 @@ void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    visit(visitor, statement); 
 }
 
-void ltac::Printer::print(std::shared_ptr<mtac::Program> program) const {
+void ltac::Printer::print(mtac::program_p program) const {
    DebugVisitor visitor(std::cout);
    visitor(program); 
 }

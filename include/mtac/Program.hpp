@@ -8,6 +8,8 @@
 #ifndef MTAC_PROGRAM_H
 #define MTAC_PROGRAM_H
 
+#include <memory>
+
 #include "mtac/Function.hpp"
 
 namespace eddic {
@@ -28,6 +30,8 @@ struct Program {
 
     Mode mode = Mode::MTAC;
 };
+
+typedef std::shared_ptr<mtac::Program> program_p;
 
 } //end of mtac
 

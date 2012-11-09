@@ -68,7 +68,7 @@ void increase_depth(mtac::basic_block_p bb){
 
 } //end of anonymous namespace
 
-void mtac::full_loop_analysis(std::shared_ptr<mtac::Program> program){
+void mtac::full_loop_analysis(mtac::program_p program){
     for(auto& function : program->functions){
         full_loop_analysis(function);
     }

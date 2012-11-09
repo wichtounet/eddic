@@ -19,7 +19,7 @@ using namespace eddic;
 
 namespace {
 
-void remove_references(std::shared_ptr<mtac::Program> program, mtac::function_p function){
+void remove_references(mtac::program_p program, mtac::function_p function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
@@ -31,7 +31,7 @@ void remove_references(std::shared_ptr<mtac::Program> program, mtac::function_p 
 
 } //end of anonymous namespace
 
-bool mtac::remove_unused_functions::operator()(std::shared_ptr<mtac::Program> program){
+bool mtac::remove_unused_functions::operator()(mtac::program_p program){
     auto it = iterate(program->functions);
 
     while(it.has_next()){
@@ -56,7 +56,7 @@ bool mtac::remove_unused_functions::operator()(std::shared_ptr<mtac::Program> pr
     return false;
 }
 
-bool mtac::remove_empty_functions::operator()(std::shared_ptr<mtac::Program> program){
+bool mtac::remove_empty_functions::operator()(mtac::program_p program){
     std::vector<std::string> removed_functions;
 
     auto it = iterate(program->functions);

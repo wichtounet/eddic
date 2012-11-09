@@ -14,7 +14,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/BasicBlock.hpp"
+#include "mtac/basic_block.hpp"
 #include "mtac/BinaryOperator.hpp"
 
 #include "ltac/Argument.hpp"

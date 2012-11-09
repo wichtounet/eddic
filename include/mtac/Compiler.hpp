@@ -10,16 +10,16 @@
 
 #include "ast/source_def.hpp"
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 struct StringPool;
 
 namespace mtac {
 
-struct Program;
-
 struct Compiler {
-    void compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const ;
+    void compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, mtac::program_p mtacProgram) const ;
 };
 
 } //end of mtac

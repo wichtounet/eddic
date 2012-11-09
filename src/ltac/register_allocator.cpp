@@ -893,7 +893,7 @@ void register_allocation(mtac::function_p function, Platform platform){
 
 } //end of anonymous namespace
 
-void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+void ltac::register_allocation(mtac::program_p program, Platform platform){
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program->functions){
