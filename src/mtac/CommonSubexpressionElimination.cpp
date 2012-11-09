@@ -34,7 +34,7 @@ inline bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_p
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
-    ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
+    eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
         return out;

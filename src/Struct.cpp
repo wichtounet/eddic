@@ -39,7 +39,7 @@ std::shared_ptr<Member> Struct::operator[](const std::string& n){
         }
     }
 
-    ASSERT_PATH_NOT_TAKEN("This member is not contained in the struct");
+    eddic_unreachable("This member is not contained in the struct");
 }
     
 void Struct::add_reference(){

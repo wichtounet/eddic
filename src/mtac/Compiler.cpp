@@ -49,7 +49,7 @@ template<typename Call>
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
-    ASSERT(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
+    eddic_assert(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
 
     mtac::Argument left = moveToArgument(value.Content->first, function);
     mtac::Argument right;
@@ -202,7 +202,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
         switch(builtin.Content->type){
             case ast::BuiltinType::SIZE:{
-                ASSERT(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
+                eddic_assert(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
                 
                 auto variable = boost::get<ast::VariableValue>(value).Content->var;
 
@@ -219,13 +219,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     return {t1};
                 }
 
-                ASSERT_PATH_NOT_TAKEN("The variable is not of a valid type");
+                eddic_unreachable("The variable is not of a valid type");
             }
             case ast::BuiltinType::LENGTH:
                 return {visit(*this, value)[1]};
         }
 
-        ASSERT_PATH_NOT_TAKEN("This builtin operator is not handled");
+        eddic_unreachable("This builtin operator is not handled");
     }
 
     result_type operator()(ast::FunctionCall& call) const {
@@ -246,7 +246,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {t1, t2};
         }
         
-        ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
+        eddic_unreachable("Unhandled function return type");
     }
     
     result_type operator()(ast::MemberFunctionCall& call) const {
@@ -267,11 +267,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {t1, t2};
         }
         
-        ASSERT_PATH_NOT_TAKEN("Unhandled function return type");
+        eddic_unreachable("Unhandled function return type");
     }
 
     result_type operator()(ast::Assignment& assignment) const {
-        ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+        eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
         assign(function, assignment);
 
@@ -299,7 +299,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
                 function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                eddic_unreachable("Unhandled type");
             }
 
             return {temp};
@@ -352,7 +352,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             }
         }
         
-        ASSERT_PATH_NOT_TAKEN("Invalid location type");
+        eddic_unreachable("Invalid location type");
     }
    
     result_type operator()(std::shared_ptr<Variable> var) const {
@@ -383,7 +383,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 return {value.first, value.second};
             } 
 
-            ASSERT_PATH_NOT_TAKEN("void is not a type");
+            eddic_unreachable("void is not a type");
         } else if(type->is_array() || type->is_pointer()){
             return {value.Content->var};
         } else {
@@ -400,7 +400,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } 
         }
     
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
+        eddic_unreachable("Unhandled type");
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
@@ -426,14 +426,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {t1, t2};
         } 
         
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
+        eddic_unreachable("Unhandled type");
     }
 
     template<typename Value>
     result_type dereference_sub(Value& value) const {
         auto values = visit_non_variant(*this, value);
 
-        ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+        eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
 
         auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
         return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
@@ -455,7 +455,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return dereference_sub(*ptr);
         } 
         
-        ASSERT_PATH_NOT_TAKEN("Unhandled dereference left value type");
+        eddic_unreachable("Unhandled dereference left value type");
     }
 
     result_type operator()(ast::PrefixOperation& operation) const {
@@ -503,7 +503,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             return {t1, t2};
         } else {
-            ASSERT_PATH_NOT_TAKEN("void is not a variable");
+            eddic_unreachable("void is not a variable");
         }
     }
 
@@ -525,7 +525,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {t1, t2};
         }
 
-        ASSERT_PATH_NOT_TAKEN("Unsupported type");
+        eddic_unreachable("Unsupported type");
     }
 
     result_type operator()(ast::Unary& value) const {
@@ -553,7 +553,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
             return {t1};
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled unary operator");
+            eddic_unreachable("Unhandled unary operator");
         }
     }
     
@@ -609,7 +609,7 @@ struct AbstractVisitor : public boost::static_visitor<> {
         } else if(type == FLOAT){
             floatAssign(ToArgumentsVisitor<>(function)(value));
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
+            eddic_unreachable("Unhandled variable type");
         }
     }
 
@@ -795,7 +795,7 @@ struct AssignVisitor : public boost::static_visitor<> {
 
             source = dest = variable;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled location type");
+            eddic_unreachable("Unhandled location type");
         }
 
         unsigned int offset = 0;
@@ -828,7 +828,7 @@ struct AssignVisitor : public boost::static_visitor<> {
 
                 visit(DereferenceAssign(function, variable, offset), value);
             } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
-                ASSERT_PATH_NOT_TAKEN("Unhandled location");
+                eddic_unreachable("Unhandled location");
             }
         } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
             auto left = *var_ptr;
@@ -841,13 +841,13 @@ struct AssignVisitor : public boost::static_visitor<> {
             auto visitor = ToArgumentsVisitor<>(function);
             auto values = visit_non_variant(visitor, left);
 
-            ASSERT(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+            eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
 
             auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
             visit(DereferenceAssign(function, variable, 0), value);
         } else {
-           ASSERT_PATH_NOT_TAKEN("Unsupported type"); 
+           eddic_unreachable("Unsupported type"); 
         }
     }
 };
@@ -879,7 +879,7 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
 
 template<typename Control>
 void compare(ast::Expression& value, ast::Operator op, mtac::function_p function, const std::string& label){
-    ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
+    eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
     auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -1025,11 +1025,11 @@ std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Tern
         return {t1, t2};
     }
 
-    ASSERT_PATH_NOT_TAKEN("Unhandled ternary type");
+    eddic_unreachable("Unhandled ternary type");
 }
 
 void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
-    ASSERT(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
+    eddic_assert(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
     std::vector<mtac::Argument> arguments;
 
@@ -1086,7 +1086,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
        
         void operator()(ast::Assignment& assignment){
-            ASSERT(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+            eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
             assign(function, assignment);
         }
@@ -1291,7 +1291,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     function->add(std::make_shared<mtac::Quadruple>(lhs_var, INT->size(function->context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t1));  
                 }
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled variable type");
+                eddic_unreachable("Unhandled variable type");
             }
         }
 
@@ -1332,7 +1332,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else if(arguments.size() == 2){
                 function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unhandled arguments size");
+                eddic_unreachable("Unhandled arguments size");
             }   
         }
 
@@ -1368,7 +1368,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         template<typename T>
         void operator()(T&){
-            ASSERT_PATH_NOT_TAKEN("This element should have been transformed"); 
+            eddic_unreachable("This element should have been transformed"); 
         }
 };
 
@@ -1494,7 +1494,7 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
     std::shared_ptr<eddic::Function> definition;
     definition = functionCall.Content->function;
 
-    ASSERT(definition, "All the functions should be in the function table");
+    eddic_assert(definition, "All the functions should be in the function table");
 
     pass_arguments(function, definition, functionCall);
 
@@ -1504,7 +1504,7 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
 void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     auto definition = functionCall.Content->function;
 
-    ASSERT(definition, "All the member functions should be in the function table");
+    eddic_assert(definition, "All the member functions should be in the function table");
 
     //Pass all normal arguments
     pass_arguments(function, definition, functionCall);
@@ -1566,7 +1566,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
     }
     //Relational operators 
     else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        ASSERT(value.Content->operations.size() == 1, "Relational operations cannot be chained");
+        eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
         auto left = moveToArgument(value.Content->first, function);
         auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
@@ -1577,10 +1577,10 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         } else if(typeLeft == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unsupported type in relational operator");
+            eddic_unreachable("Unsupported type in relational operator");
         }
     } else {
-        ASSERT_PATH_NOT_TAKEN("Unsupported operator");
+        eddic_unreachable("Unsupported operator");
     }
     
     return t1;
@@ -1609,7 +1609,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             } else if(operation.Content->op == ast::Operator::DEC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unsupported operator");    
+                eddic_unreachable("Unsupported operator");    
             }
         } else if (t1->type() == INT){
             if(operation.Content->op == ast::Operator::INC){
@@ -1617,7 +1617,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             } else if(operation.Content->op == ast::Operator::DEC){
                 function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
             } else {
-                ASSERT_PATH_NOT_TAKEN("Unsupported operator");    
+                eddic_unreachable("Unsupported operator");    
             }
         } 
     }
@@ -1668,7 +1668,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             return t1;
         } 
         
-        ASSERT_PATH_NOT_TAKEN("Unhandled location type");
+        eddic_unreachable("Unhandled location type");
     }
     
     std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
@@ -1695,7 +1695,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
     
     std::shared_ptr<Variable> operator()(ast::DereferenceValue&){
         //TODO Support this feature
-        ASSERT_PATH_NOT_TAKEN("Unsupported feature");
+        eddic_unreachable("Unsupported feature");
     }
 };
 

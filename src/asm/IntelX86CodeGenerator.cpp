@@ -59,11 +59,11 @@ struct X86_32StringConverter : public as::StringConverter, public boost::static_
     }
 
     std::string operator()(ltac::PseudoRegister&) const {
-        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
+        eddic_unreachable("All the pseudo registers should have been converted into a hard register");
     }
 
     std::string operator()(ltac::PseudoFloatRegister&) const {
-        ASSERT_PATH_NOT_TAKEN("All the pseudo registers should have been converted into a hard register");
+        eddic_unreachable("All the pseudo registers should have been converted into a hard register");
     }
 
     std::string operator()(double value) const {
@@ -268,7 +268,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 //Nothing to output for a nop
                 break;
             default:
-                ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
+                eddic_unreachable("The instruction operator is not supported");
         }
     }
     
@@ -320,7 +320,7 @@ struct X86StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "jnz " << "." << jump->label << std::endl;
                 break;
             default:
-                ASSERT_PATH_NOT_TAKEN("The jump type is not supported");
+                eddic_unreachable("The jump type is not supported");
         }
     }
 

@@ -71,7 +71,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
             value.Content->location = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+            eddic_unreachable("Unhandled left value type");
         }
 
         return value;
@@ -87,7 +87,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
             value.Content->ref = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+            eddic_unreachable("Unhandled left value type");
         }
 
         return value;
@@ -203,7 +203,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
             value.Content->location = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+            eddic_unreachable("Unhandled left value type");
         }
 
         auto fixed = value;
@@ -260,7 +260,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
             value.Content->ref = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled left value type");
+            eddic_unreachable("Unhandled left value type");
         }
 
         return value;

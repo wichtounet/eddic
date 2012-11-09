@@ -42,7 +42,7 @@ bool Context::exists(const std::string& variable) const {
 }
 
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type>){
-    ASSERT_PATH_NOT_TAKEN("Not implemented");
+    eddic_unreachable("Not implemented");
 }
 
 std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
@@ -50,7 +50,7 @@ std::shared_ptr<Variable> Context::operator[](const std::string& variable) const
 }
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
-    ASSERT(exists(variable), "The variable must exists");
+    eddic_assert(exists(variable), "The variable must exists");
 
     auto iter = variables.find(variable);
     auto end = variables.end();

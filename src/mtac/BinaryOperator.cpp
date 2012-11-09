@@ -26,7 +26,7 @@ mtac::BinaryOperator eddic::mtac::toBinaryOperator(ast::Operator op){
         return mtac::BinaryOperator::LESS;
     }
 
-    ASSERT_PATH_NOT_TAKEN("Not an int binary operator"); 
+    eddic_unreachable("Not an int binary operator"); 
 }
 
 mtac::BinaryOperator eddic::mtac::toFloatBinaryOperator(ast::Operator op){
@@ -44,5 +44,5 @@ mtac::BinaryOperator eddic::mtac::toFloatBinaryOperator(ast::Operator op){
         return mtac::BinaryOperator::FL;
     }
 
-    ASSERT_PATH_NOT_TAKEN("Not a float binary operator"); 
+    eddic_unreachable("Not a float binary operator"); 
 }

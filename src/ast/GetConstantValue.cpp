@@ -35,7 +35,7 @@ Val ast::GetConstantValue::operator()(const ast::Unary& minus) const {
         return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
     }
 
-    ASSERT_PATH_NOT_TAKEN("Not constant");
+    eddic_unreachable("Not constant");
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
@@ -49,5 +49,5 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         return boost::get<std::pair<std::string, int>>(val);
     }
 
-    ASSERT_PATH_NOT_TAKEN("This variable is of a type that cannot be constant");
+    eddic_unreachable("This variable is of a type that cannot be constant");
 }

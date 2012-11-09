@@ -26,7 +26,7 @@ void eddic::configure_logging(int level){
     } else if(level == 4){
         ::logging::detail::Logger<Level>::logging()._level.l = Level::user;
     } else {
-        ASSERT_PATH_NOT_TAKEN("Invalid log level");
+        eddic_unreachable("Invalid log level");
     }
 }
 

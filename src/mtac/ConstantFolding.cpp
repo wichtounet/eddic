@@ -142,7 +142,7 @@ bool computeValueInt(T& if_){
         case mtac::BinaryOperator::GREATER_EQUALS:
             return left >= right;
         default:
-            ASSERT_PATH_NOT_TAKEN("Unhandled operator");
+            eddic_unreachable("Unhandled operator");
     }
 }
 
@@ -165,7 +165,7 @@ bool computeValueFloat(T& if_){
         case mtac::BinaryOperator::FGE:
             return left >= right;
         default:
-            ASSERT_PATH_NOT_TAKEN("Unhandled operator");
+            eddic_unreachable("Unhandled operator");
     }
 }
 

@@ -35,7 +35,7 @@ double FloatPool::value(const std::string& label) const {
     }
 
     //This method should not be called on not-existing label
-    ASSERT_PATH_NOT_TAKEN("The float label does not exists");
+    eddic_unreachable("The float label does not exists");
 }
 
 std::unordered_map<double, std::string> FloatPool::get_pool() const {

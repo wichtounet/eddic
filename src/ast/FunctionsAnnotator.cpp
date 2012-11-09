@@ -252,7 +252,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall&){
-            ASSERT_PATH_NOT_TAKEN("Should be handled by check_value");
+            eddic_unreachable("Should be handled by check_value");
         }
 
         void operator()(ast::MemberFunctionCall& functionCall){

@@ -55,7 +55,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
             } else {
                 auto reg = manager.get_pseudo_reg(var);
@@ -65,7 +65,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
             }
         }
@@ -312,7 +312,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         } else {
@@ -338,7 +338,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         }
@@ -383,7 +383,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         } else {
@@ -409,7 +409,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         }
@@ -689,7 +689,7 @@ void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> qu
         } else if(position.isGlobal()){
             ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid position");
+            eddic_unreachable("Invalid position");
         }
         
         manager.remove_from_pseudo_reg(quadruple->result); 
@@ -715,7 +715,7 @@ void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> q
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
 
                 manager.remove_from_pseudo_reg(quadruple->result); 
@@ -740,7 +740,7 @@ void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> q
         } else if(position.isGlobal()){
             ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid position");
+            eddic_unreachable("Invalid position");
         }
         
         manager.remove_from_pseudo_float_reg(quadruple->result); 
@@ -1265,7 +1265,7 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadrupl
     } else if(mtac::is<int>(*quadruple->arg2)){
         ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), boost::get<int>(*quadruple->arg2)); 
     } else {
-        ASSERT_PATH_NOT_TAKEN("Unsupported rhs type in DOT_PASSIGN");
+        eddic_unreachable("Unsupported rhs type in DOT_PASSIGN");
     }
 }
 

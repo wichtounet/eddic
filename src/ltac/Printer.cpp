@@ -110,7 +110,7 @@ std::string to_string(ltac::Operator op){
         case ltac::Operator::NOP:
             return "NOP"; 
         default:
-            ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
+            eddic_unreachable("The instruction operator is not supported");
     }
 }
 
@@ -147,7 +147,7 @@ std::string to_string(ltac::JumpType type){
         case ltac::JumpType::NZ:
             return "nz";
         default:
-            ASSERT_PATH_NOT_TAKEN("The jump type is not supported");
+            eddic_unreachable("The jump type is not supported");
     }
 }
 

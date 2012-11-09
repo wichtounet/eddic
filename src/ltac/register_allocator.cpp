@@ -757,7 +757,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
             }
         }
 
-        ASSERT(allocation.count(reg), "The register must have been allocated a color");
+        eddic_assert(allocation.count(reg), "The register must have been allocated a color");
     }
 
     for(auto& alloc : allocation){

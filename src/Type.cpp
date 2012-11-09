@@ -64,31 +64,31 @@ bool Type::is_template() const {
 }
 
 unsigned int Type::size(Platform) const {
-    ASSERT_PATH_NOT_TAKEN("Not specialized type");
+    eddic_unreachable("Not specialized type");
 }
 
 unsigned int Type::elements() const {
-    ASSERT_PATH_NOT_TAKEN("Not an array type");
+    eddic_unreachable("Not an array type");
 }
 
 bool Type::has_elements() const {
-    ASSERT_PATH_NOT_TAKEN("Not an array type");
+    eddic_unreachable("Not an array type");
 }
 
 std::string Type::type() const {
-    ASSERT_PATH_NOT_TAKEN("Not a custom type");
+    eddic_unreachable("Not a custom type");
 }
 
 std::shared_ptr<const Type> Type::data_type() const {
-    ASSERT_PATH_NOT_TAKEN("No data type");
+    eddic_unreachable("No data type");
 }
         
 std::vector<std::shared_ptr<const Type>> Type::template_types() const {
-    ASSERT_PATH_NOT_TAKEN("No template types");
+    eddic_unreachable("No template types");
 }
 
 BaseType Type::base() const {
-    ASSERT_PATH_NOT_TAKEN("Not a standard type");
+    eddic_unreachable("Not a standard type");
 }
 
 std::string Type::mangle() const {

@@ -89,7 +89,7 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
     std::string name = "functions/" + function + ".s";
     std::ifstream stream(name.c_str());
 
-    ASSERT(stream, "One file in the functions folder does not exist");
+    eddic_assert(stream, "One file in the functions folder does not exist");
 
     std::string str;
 

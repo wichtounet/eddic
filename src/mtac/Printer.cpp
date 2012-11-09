@@ -71,7 +71,7 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
             case PositionType::PARAM_REGISTER:
                 return variable->name() + "(pr," + type + ")";
             default:
-                ASSERT_PATH_NOT_TAKEN("Unhandled position type");
+                eddic_unreachable("Unhandled position type");
         }
    }
 

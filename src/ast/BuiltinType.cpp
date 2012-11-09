@@ -18,6 +18,6 @@ std::ostream& ast::operator<< (std::ostream& stream, ast::BuiltinType type){
         case ast::BuiltinType::LENGTH:
             return stream << "LENGTH";
         default:
-            ASSERT_PATH_NOT_TAKEN("Unhandled builtin type");
+            eddic_unreachable("Unhandled builtin type");
     }
 }

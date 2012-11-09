@@ -740,7 +740,7 @@ ltac::Operator get_cmov_op(ltac::JumpType op){
         case ltac::JumpType::AE:
             return ltac::Operator::CMOVAE;
         default:
-            ASSERT_PATH_NOT_TAKEN("No cmov equivalent");
+            eddic_unreachable("No cmov equivalent");
     }
 }
 

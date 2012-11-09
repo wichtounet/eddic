@@ -106,7 +106,7 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
 
     template<typename T>
     ltac::Argument operator()(T&) const {
-        ASSERT_PATH_NOT_TAKEN("Unhandled arg type");
+        eddic_unreachable("Unhandled arg type");
     }
 };
 

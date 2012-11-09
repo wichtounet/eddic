@@ -306,7 +306,7 @@ void operator()(ast::NewArray& new_){\
 
 /* Break macros  */
     
-#define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ ASSERT_PATH_NOT_TAKEN("Type not supported in the visitor"); }
-#define AUTO_BREAK_OTHERS_CONST() template<typename T> result_type operator()(T&) const { ASSERT_PATH_NOT_TAKEN("Type not supported in the visitor"); }
+#define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ eddic_unreachable("Type not supported in the visitor"); }
+#define AUTO_BREAK_OTHERS_CONST() template<typename T> result_type operator()(T&) const { eddic_unreachable("Type not supported in the visitor"); }
 
 #endif

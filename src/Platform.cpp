@@ -52,7 +52,7 @@ struct X86Descriptor : public PlatformDescriptor {
     }
     
     unsigned short int_variable_register(unsigned int /*position*/) const {
-        ASSERT_PATH_NOT_TAKEN("No int variable register");
+        eddic_unreachable("No int variable register");
 
         return 0;
     }
@@ -193,5 +193,5 @@ const PlatformDescriptor* eddic::getPlatformDescriptor(Platform platform){
             return &x86_64Descriptor;
     }
 
-    ASSERT_PATH_NOT_TAKEN("Unhandled platform");
+    eddic_unreachable("Unhandled platform");
 }

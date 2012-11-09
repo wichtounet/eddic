@@ -84,7 +84,7 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
         }
     }
 
-    ASSERT_PATH_NOT_TAKEN("Problem with the type of members in nested struct values")
+    eddic_unreachable("Problem with the type of members in nested struct values")
 }
 
 } //end of anonymous namespace

@@ -38,7 +38,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
 
     template<typename T>
     Val operator()(const T&) const {
-        ASSERT_PATH_NOT_TAKEN("Is not constant");
+        eddic_unreachable("Is not constant");
     }
 };
 

@@ -48,7 +48,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 }
 
 std::shared_ptr<Variable> GlobalContext::generate_variable(const std::string&, std::shared_ptr<const Type>){
-    ASSERT_PATH_NOT_TAKEN("Cannot generate global variable");
+    eddic_unreachable("Cannot generate global variable");
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
@@ -68,7 +68,7 @@ void GlobalContext::addFunction(std::shared_ptr<Function> function){
 }
 
 std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function){
-    ASSERT(exists(function), "The function must exists");
+    eddic_assert(exists(function), "The function must exists");
 
     return m_functions[function];
 }
@@ -96,7 +96,7 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
         offset += m->type->size(platform);
     }
 
-    ASSERT_PATH_NOT_TAKEN("The member is not part of the struct");
+    eddic_unreachable("The member is not part of the struct");
 }
 
 std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset){
@@ -157,19 +157,19 @@ bool GlobalContext::struct_exists(const std::string& struct_){
 }
 
 void GlobalContext::addReference(const std::string& function){
-    ASSERT(exists(function), "The function must exists");
+    eddic_assert(exists(function), "The function must exists");
     
     ++(m_functions[function]->references);
 }
 
 void GlobalContext::removeReference(const std::string& function){
-    ASSERT(exists(function), "The function must exists");
+    eddic_assert(exists(function), "The function must exists");
     
     --(m_functions[function]->references);
 }
 
 int GlobalContext::referenceCount(const std::string& function){
-    ASSERT(exists(function), "The function must exists");
+    eddic_assert(exists(function), "The function must exists");
     
     return m_functions[function]->references;
 }

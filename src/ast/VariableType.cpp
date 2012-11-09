@@ -37,6 +37,6 @@ std::string ast::to_string(const ast::Type& type){
 
         return printed.str();
     } else {
-        ASSERT_PATH_NOT_TAKEN("Unhandled type");
+        eddic_unreachable("Unhandled type");
     }
 }

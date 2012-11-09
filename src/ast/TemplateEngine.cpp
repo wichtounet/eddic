@@ -94,7 +94,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&ref)){
             copy.Content->ref = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid ref type");
+            eddic_unreachable("Invalid ref type");
         }
         
         return copy;
@@ -259,7 +259,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
             copy.Content->location = *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid ref type");
+            eddic_unreachable("Invalid ref type");
         }
 
         return copy;
@@ -650,7 +650,7 @@ struct Adaptor : public boost::static_visitor<> {
 
             return *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Unhandled type");
+            eddic_unreachable("Unhandled type");
         }
     }
     

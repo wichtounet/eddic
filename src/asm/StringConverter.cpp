@@ -18,7 +18,7 @@ std::string as::StringConverter::register_to_string(eddic::ltac::AddressRegister
     } else if(auto* ptr = boost::get<ltac::Register>(&reg)){
         return (*this)(*ptr);
     } else {
-       ASSERT_PATH_NOT_TAKEN("Invalid variant");
+       eddic_unreachable("Invalid variant");
     }
 }
 
@@ -63,5 +63,5 @@ std::string as::StringConverter::address_to_string(eddic::ltac::Address& address
         return "[" + ::toString(*address.displacement) + "]";
     }
 
-    ASSERT_PATH_NOT_TAKEN("Invalid address type");
+    eddic_unreachable("Invalid address type");
 }

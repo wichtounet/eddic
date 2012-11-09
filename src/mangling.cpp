@@ -72,7 +72,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         return ss.str();
     }
 
-    ASSERT_PATH_NOT_TAKEN("Invalid type");
+    eddic_unreachable("Invalid type");
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){

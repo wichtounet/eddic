@@ -105,5 +105,5 @@ std::ostream& ltac::operator<<(std::ostream& out, const ltac::Address& address){
         return out << "[" << *address.displacement << "]";
     }
 
-    ASSERT_PATH_NOT_TAKEN("Invalid address type");
+    eddic_unreachable("Invalid address type");
 }

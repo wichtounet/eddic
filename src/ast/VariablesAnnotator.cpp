@@ -127,7 +127,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
             visit_non_variant(*this, *ptr);
         } else {
-            ASSERT_PATH_NOT_TAKEN("Not a left value");
+            eddic_unreachable("Not a left value");
         }
 
         auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
@@ -227,7 +227,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         } else if(auto* ptr = boost::get<ast::MemberValue>(&left_value)){
             return *ptr;
         } else {
-            ASSERT_PATH_NOT_TAKEN("Not a left value");
+            eddic_unreachable("Not a left value");
         }
     }
 
@@ -349,7 +349,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
             return context->struct_exists(t->mangle());
         }
 
-        ASSERT_PATH_NOT_TAKEN("Invalid type");
+        eddic_unreachable("Invalid type");
     }
 
     template<typename Function>

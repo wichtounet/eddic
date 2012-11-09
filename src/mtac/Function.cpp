@@ -96,8 +96,8 @@ mtac::basic_block_p mtac::Function::append_bb(){
 mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, mtac::basic_block_p block){
     auto bb = *it;
 
-    ASSERT(block, "Cannot add null block"); 
-    ASSERT(it != begin(), "Cannot add before entry");
+    eddic_assert(block, "Cannot add null block"); 
+    eddic_assert(it != begin(), "Cannot add before entry");
 
     block->context = context;
     
@@ -112,8 +112,8 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
 }
 
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
-    ASSERT(block, "Cannot remove null block"); 
-    ASSERT(block != exit, "Cannot remove exit"); 
+    eddic_assert(block, "Cannot remove null block"); 
+    eddic_assert(block != exit, "Cannot remove exit"); 
 
     log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
 
@@ -173,7 +173,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
 mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block){
     auto source = *it; 
 
-    ASSERT(source->next == block || source->prev == block, "Can only merge sibling blocks");
+    eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
 
     log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
 

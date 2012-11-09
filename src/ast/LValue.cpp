@@ -22,6 +22,6 @@ ast::LValue eddic::ast::to_left_value(ast::Value left_value){
     } else if(auto* ptr = boost::get<ast::DereferenceValue>(&left_value)){
         return *ptr;
     } else {
-        ASSERT_PATH_NOT_TAKEN("Not a left value");
+        eddic_unreachable("Not a left value");
     }
 }
