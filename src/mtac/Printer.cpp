@@ -105,7 +105,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     DebugVisitor() : stream(std::cout) {}
     DebugVisitor(std::ostream& os) : stream(os) {}
 
-    void operator()(std::shared_ptr<mtac::Program> program){
+    void operator()(mtac::program_p program){
         stream << "TAC Program " << endl << endl; 
 
         visit_each_non_variant(*this, program->functions);
@@ -338,7 +338,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void mtac::Printer::print(std::shared_ptr<mtac::Program> program) const {
+void mtac::Printer::print(mtac::program_p program) const {
    DebugVisitor visitor;
    visitor(program); 
 }
@@ -367,7 +367,7 @@ void mtac::Printer::printArgument(mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
 }
 
-void mtac::print(std::shared_ptr<mtac::Program> program){
+void mtac::print(mtac::program_p program){
     mtac::Printer printer;
     printer.print(program);
 }

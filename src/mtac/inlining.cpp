@@ -389,7 +389,7 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
     return false;
 }
 
-mtac::function_p get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mtac::Program> program){
+mtac::function_p get_target(std::shared_ptr<mtac::Call> call, mtac::program_p program){
     auto target_definition = call->functionDefinition;
 
     for(auto& function : program->functions){
@@ -401,7 +401,7 @@ mtac::function_p get_target(std::shared_ptr<mtac::Call> call, std::shared_ptr<mt
     return nullptr;
 }
 
-bool call_site_inlining(mtac::function_p dest_function, std::shared_ptr<mtac::Program> program){
+bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program){
     bool optimized = false;
 
     auto bit = dest_function->begin();
@@ -470,7 +470,7 @@ void mtac::inline_functions::set_configuration(std::shared_ptr<Configuration> co
     this->configuration = configuration;
 }
 
-bool mtac::inline_functions::operator()(std::shared_ptr<mtac::Program> program){
+bool mtac::inline_functions::operator()(mtac::program_p program){
     if(configuration->option_defined("fno-inline-functions")){
         return false;
     }

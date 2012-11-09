@@ -18,6 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct Program;
+typedef std::shared_ptr<mtac::Program> program_p;
 
 class Function;
 typedef std::shared_ptr<mtac::Function> function_p;

@@ -64,7 +64,7 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
-        std::shared_ptr<mtac::Program> program;
+        mtac::program_p program;
    
     private:
         //The function being compiled

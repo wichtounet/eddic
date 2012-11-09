@@ -13,7 +13,7 @@
 namespace eddic {
 
 struct NativeBackEnd : public BackEnd {
-    void generate(std::shared_ptr<mtac::Program> mtacProgram, Platform platform) override;
+    void generate(mtac::program_p mtacProgram, Platform platform) override;
 };
 
 }

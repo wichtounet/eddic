@@ -10,17 +10,13 @@
 
 #include <memory>
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 class FloatPool;
 struct StringPool;
 class AssemblyFileWriter;
-
-namespace mtac {
-
-struct Program;
-
-}
 
 namespace as {
 
@@ -41,7 +37,7 @@ class CodeGenerator {
          * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
          */
-        virtual void generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
+        virtual void generate(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

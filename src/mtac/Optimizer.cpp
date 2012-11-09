@@ -157,14 +157,14 @@ struct disable_if<true,T> {
 struct pass_runner {
     bool optimized = false;
 
-    std::shared_ptr<mtac::Program> program;
+    mtac::program_p program;
     mtac::function_p function;
 
     std::shared_ptr<StringPool> pool;
     std::shared_ptr<Configuration> configuration;
     Platform platform;
 
-    pass_runner(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform) : 
+    pass_runner(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform) : 
             program(program), pool(pool), configuration(configuration), platform(platform) {};
 
     template<typename Pass>
@@ -378,7 +378,7 @@ struct pass_runner {
 
 } //end of anonymous namespace
 
-void mtac::Optimizer::optimize(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
+void mtac::Optimizer::optimize(mtac::program_p program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     PerfsTimer timer("Whole optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)

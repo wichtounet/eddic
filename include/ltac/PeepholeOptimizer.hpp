@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace ltac {
 
-void optimize(std::shared_ptr<mtac::Program> program, Platform platform);
+void optimize(mtac::program_p program, Platform platform);
 
 } //end of ltac
 

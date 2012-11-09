@@ -1068,11 +1068,11 @@ void performStringOperation(ast::Expression& value, mtac::function_p function, s
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         std::shared_ptr<StringPool> pool;
-        std::shared_ptr<mtac::Program> program;
+        mtac::program_p program;
         mtac::function_p function;
     
     public:
-        CompilerVisitor(std::shared_ptr<StringPool> p, std::shared_ptr<mtac::Program> mtacProgram) : pool(p), program(mtacProgram) {}
+        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::program_p mtacProgram) : pool(p), program(mtacProgram) {}
 
         AUTO_RECURSE_STRUCT()
 
@@ -1751,7 +1751,7 @@ std::shared_ptr<Variable> performSuffixOperation(Operation& operation, mtac::fun
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, std::shared_ptr<mtac::Program> mtacProgram) const {
+void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, mtac::program_p mtacProgram) const {
     PerfsTimer timer("MTAC Compilation");
 
     CompilerVisitor visitor(pool, mtacProgram);

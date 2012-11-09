@@ -18,7 +18,7 @@
 
 using namespace eddic;
 
-void ltac::allocate_aggregates(std::shared_ptr<mtac::Program> program){
+void ltac::allocate_aggregates(mtac::program_p program){
     auto global_context = program->context;
     auto platform = global_context->target_platform();
 

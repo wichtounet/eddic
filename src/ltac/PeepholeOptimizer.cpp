@@ -927,7 +927,7 @@ bool debug(const std::string& name, bool b, mtac::function_p function){
 
 } //end of anonymous namespace
 
-void eddic::ltac::optimize(std::shared_ptr<mtac::Program> program, Platform platform){
+void eddic::ltac::optimize(mtac::program_p program, Platform platform){
     PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){
