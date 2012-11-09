@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef STRUCTURES_ANNOTATOR_H
-#define STRUCTURES_ANNOTATOR_H
+#ifndef AST_FUNCTION_COLLECTION_PASS_H
+#define AST_FUNCTION_COLLECTION_PASS_H
 
 #include "ast/ContextAwarePass.hpp"
 
@@ -14,16 +14,11 @@ namespace eddic {
 
 namespace ast {
 
-struct StructureCollectionPass : ContextAwarePass {
-    void apply_struct(ast::Struct& struct_, bool indicator) override;
-};
-
-struct StructureMemberCollectionPass : ContextAwarePass {
-    void apply_struct(ast::Struct& struct_, bool indicator) override;
-};
-
-struct StructureCheckPass : ContextAwarePass {
-    void apply_struct(ast::Struct& struct_, bool indicator) override;
+struct FunctionCollectionPass : ContextAwarePass {
+    void apply_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_constructor(ast::Constructor& constructor) override;
+    void apply_struct_destructor(ast::Destructor& destructor) override;
 };
 
 } //end of ast

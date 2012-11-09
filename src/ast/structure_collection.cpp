@@ -17,7 +17,7 @@
 #include "mangling.hpp"
 #include "VisitorUtils.hpp"
 
-#include "ast/StructuresAnnotator.hpp"
+#include "ast/structure_collection.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
 
@@ -69,49 +69,4 @@ void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indic
 
     auto signature = std::make_shared<eddic::Struct>(mangled_name);
     context->add_struct(signature);
-}
-
-void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
-    if(indicator){
-        return;
-    }
-
-    auto signature = context->get_struct(struct_.Content->struct_type->mangle());
-    std::vector<std::string> names;
-
-    for(auto& member : struct_.Content->members){
-        if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
-            throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
-        }
-
-        names.push_back(member.Content->name);
-
-        auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
-
-        if(member_type->is_array()){
-            throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
-        }
-
-        signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
-    }
-}
-
-void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator){
-    if(indicator){
-        return;
-    }
-
-    auto struct_type = context->get_struct(struct_.Content->struct_type->mangle());
-
-    for(auto& member : struct_.Content->members){
-        auto type = (*struct_type)[member.Content->name]->type;
-
-        if(type->is_custom_type()){
-            auto struct_name = type->mangle();
-
-            if(!context->struct_exists(struct_name)){
-                throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
-            }
-        }
-    }
 }
