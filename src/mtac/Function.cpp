@@ -30,7 +30,7 @@ mtac::basic_block_iterator mtac::Function::end(){
     return basic_block_iterator(nullptr, exit);    
 }
 
-mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<BasicBlock> bb){
+mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
     if(bb){
         return basic_block_iterator(bb, bb->prev);
     } else {
@@ -57,7 +57,7 @@ mtac::basic_block_p mtac::Function::current_bb(){
 void mtac::Function::create_entry_bb(){
     ++count;
 
-    auto new_block = std::make_shared<mtac::BasicBlock>(-1);
+    auto new_block = std::make_shared<mtac::basic_block>(-1);
     new_block->context = context;
 
     entry = exit = new_block;
@@ -66,7 +66,7 @@ void mtac::Function::create_entry_bb(){
 void mtac::Function::create_exit_bb(){
     ++count;
 
-    auto new_block = std::make_shared<mtac::BasicBlock>(-2);
+    auto new_block = std::make_shared<mtac::basic_block>(-2);
     new_block->context = context;
     
     exit->next = new_block;
@@ -76,7 +76,7 @@ void mtac::Function::create_exit_bb(){
 }
 
 mtac::basic_block_p mtac::Function::new_bb(){
-    auto bb = std::make_shared<mtac::BasicBlock>(++index);
+    auto bb = std::make_shared<mtac::basic_block>(++index);
     bb->context = context;
     return bb;
 }
@@ -170,7 +170,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
     return remove(*it);
 }
 
-mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block){
+mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<basic_block> block){
     auto source = *it; 
 
     eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");

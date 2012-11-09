@@ -22,8 +22,8 @@ struct Program;
 class Function;
 typedef std::shared_ptr<mtac::Function> function_p;
 
-class BasicBlock;
-typedef std::shared_ptr<mtac::BasicBlock> basic_block_p;
+class basic_block;
+typedef std::shared_ptr<mtac::basic_block> basic_block_p;
 
 struct If;
 struct IfFalse;
