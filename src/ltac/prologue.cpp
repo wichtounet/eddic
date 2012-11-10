@@ -66,6 +66,7 @@ bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::Register reg
     auto return_type = definition->returnType;
     auto descriptor = getPlatformDescriptor(platform);
 
+    //Do not save the return registers
     if((return_type == INT || return_type == BOOL || return_type == CHAR) && reg.reg == descriptor->int_return_register1()){
         return false;
     } else if(return_type == STRING && (reg.reg == descriptor->int_return_register1() || reg.reg == descriptor->int_return_register2())){
@@ -76,6 +77,7 @@ bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::Register reg
 
     auto parameters = parameter_registers(definition, platform, configuration);
 
+    //Do not save the parameters registers, they are saved by the caller if necessary
     if(parameters.count(reg)){
         return false;
     }
@@ -87,12 +89,14 @@ bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::FloatRegiste
     auto return_type = definition->returnType;
     auto descriptor = getPlatformDescriptor(platform);
 
+    //Do not save the return register
     if(return_type == FLOAT && reg.reg == descriptor->float_return_register()){
         return false;
     } 
 
     auto parameters = float_parameter_registers(definition, platform, configuration);
 
+    //Do not save the parameters registers, they are saved by the caller if necessary
     if(parameters.count(reg)){
         return false;
     }
