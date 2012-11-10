@@ -41,7 +41,7 @@ void ltac::Compiler::compile(mtac::program_p source, mtac::function_p function, 
     resetNumbering();
 
     //First we computes a label for each basic block
-    for(auto block : function){
+    for(auto& block : function){
         block->label = newLabel();
     }
     
@@ -56,7 +56,7 @@ void ltac::Compiler::compile(mtac::program_p source, mtac::function_p function, 
     compiler.collect_parameters(function->definition);
 
     //Then we compile each of them
-    for(auto block : function){
+    for(auto& block : function){
         compiler.ended = false;
         compiler.bb = block;
         compiler.manager.bb = block;

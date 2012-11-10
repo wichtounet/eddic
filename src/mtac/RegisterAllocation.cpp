@@ -23,7 +23,7 @@ void mtac::register_param_allocation(mtac::program_p program, Platform platform)
     auto maxInt = descriptor->numberOfIntParamRegisters();
     auto maxFloat = descriptor->numberOfFloatParamRegisters();
 
-    for(auto function_info : program->context->functions()){
+    for(auto& function_info : program->context->functions()){
         auto function = function_info.second;
 
         //Only custom functions have a context

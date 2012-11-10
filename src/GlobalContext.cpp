@@ -88,7 +88,7 @@ std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_){
 int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
     int offset = 0;
 
-    for(auto m : struct_->members){
+    for(auto& m : struct_->members){
         if(m->name == member){
             return offset;
         }
@@ -103,7 +103,7 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
     int current_offset = 0;
     std::shared_ptr<Member> member = nullptr;
 
-    for(auto m : struct_->members){
+    for(auto& m : struct_->members){
         member = m;
 
         if(offset <= current_offset){
@@ -121,7 +121,7 @@ int GlobalContext::size_of_struct(const std::string& struct_name){
 
     auto struct_ = get_struct(struct_name);
 
-    for(auto m : struct_->members){
+    for(auto& m : struct_->members){
         struct_size += m->type->size(platform);
     }
     
@@ -135,7 +135,7 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
 
     auto struct_ = get_struct(struct_name);
 
-    for(auto m : struct_->members){
+    for(auto& m : struct_->members){
         auto type = m->type;
 
         if(type->is_custom_type()){

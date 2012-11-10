@@ -605,7 +605,7 @@ void add_escaped_registers(RegisterUsage& usage, mtac::function_p function, Plat
 
     add_param_registers(usage, platform);
 
-    for(auto var : function->context->stored_variables()){
+    for(auto& var : function->context->stored_variables()){
         if(var->position().is_register() && mtac::is_single_int_register(var->type())){
             usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }

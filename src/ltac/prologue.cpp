@@ -277,7 +277,7 @@ void ltac::generate_prologue_epilogue(mtac::program_p ltac_program, std::shared_
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
     auto platform = ltac_program->context->target_platform();
 
-    for(auto function : ltac_program->functions){
+    for(auto& function : ltac_program->functions){
         auto size = function->context->size();
 
         //1. Generate prologue

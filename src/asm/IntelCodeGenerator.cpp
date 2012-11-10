@@ -46,7 +46,7 @@ void as::IntelCodeGenerator::generate(mtac::program_p program, std::shared_ptr<S
 void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
      
-    for(auto it : context->getVariables()){
+    for(auto& it : context->getVariables()){
         auto type = it.second->type();
         
         //The const variables are not stored

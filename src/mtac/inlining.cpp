@@ -126,7 +126,7 @@ mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::fun
 
     unsigned int parameters = 0;
 
-    for(auto param : source_definition->parameters){
+    for(auto& param : source_definition->parameters){
         if(param.paramType == STRING){
             parameters += 2;
         } else {
@@ -434,7 +434,7 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program)
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
                     //Allocate storage for the local variables of the inlined function
-                    for(auto variable : source_definition->context->stored_variables()){
+                    for(auto& variable : source_definition->context->stored_variables()){
                         variable_clones[variable] = dest_definition->context->newVariable(variable);
                     }
 
@@ -479,7 +479,7 @@ bool mtac::inline_functions::operator()(mtac::program_p program){
         bool optimized = false;
         auto global_context = program->context;
 
-        for(auto function : program->functions){
+        for(auto& function : program->functions){
             //If the function is never called, no need to optimize it
             if(global_context->referenceCount(function->getName()) <= 0){
                 continue; 

@@ -31,7 +31,7 @@ void ltac::allocate_aggregates(mtac::program_p program){
 
             auto escaped = mtac::escape_analysis(function);
 
-            for(auto variable : function_context->stored_variables()){
+            for(auto& variable : function_context->stored_variables()){
                 auto position = variable->position();
                 auto type = variable->type();
 
