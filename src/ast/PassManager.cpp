@@ -194,7 +194,7 @@ void ast::PassManager::inc_depth(){
     ++template_depth;
 
     if(template_depth > static_cast<unsigned int>(configuration->option_int_value("template-depth"))){
-        throw new SemanticalException("Recursive template-instantiation depth limit reached");
+        throw SemanticalException("Recursive template-instantiation depth limit reached");
     }
 }
 
