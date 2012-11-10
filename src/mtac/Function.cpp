@@ -229,6 +229,22 @@ void mtac::Function::use(ltac::FloatRegister reg){
     _use_float_registers.insert(reg);
 }
 
+const std::set<ltac::Register>& mtac::Function::variable_registers() const {
+    return _variable_registers;
+}
+
+const std::set<ltac::FloatRegister>& mtac::Function::variable_float_registers() const {
+    return _variable_float_registers;
+}
+
+void mtac::Function::variable_use(ltac::Register reg){
+    _variable_registers.insert(reg);
+}
+
+void mtac::Function::variable_use(ltac::FloatRegister reg){
+    _variable_float_registers.insert(reg);
+}
+
 std::size_t mtac::Function::pseudo_registers(){
     return last_pseudo_registers;
 }
