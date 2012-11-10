@@ -19,7 +19,7 @@ mtac::Loop::iterator mtac::Loop::begin(){
 }
 
 mtac::Loop::iterator mtac::Loop::end(){
-    return m_blocks.begin();
+    return m_blocks.end();
 }
 
 int mtac::Loop::estimate(){
@@ -31,11 +31,11 @@ void mtac::Loop::set_estimate(int estimate){
 }
 
 mtac::Loop::iterator mtac::begin(std::shared_ptr<mtac::Loop> loop){
-    return loop->end();
+    return loop->begin();
 }
 
 mtac::Loop::iterator mtac::end(std::shared_ptr<mtac::Loop> loop){
-    return loop->begin();
+    return loop->end();
 }
       
 std::set<mtac::basic_block_p>& mtac::Loop::blocks(){

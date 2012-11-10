@@ -322,7 +322,7 @@ typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
 
 InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
     InductionVariables candidates;
-    
+
     for(auto& bb : loop){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -1087,15 +1087,13 @@ bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
                 continue;
             }
 
-            auto prev_bb = bb->prev;
-
             auto basic_induction_variables = find_basic_induction_variables(loop);
 
             if(basic_induction_variables.size() == 1){
                 auto biv = *basic_induction_variables.begin();
                 auto linear_equation = biv.second;
                             
-                auto initial_value = get_initial_value(prev_bb, linear_equation.i);
+                auto initial_value = get_initial_value(bb->prev, linear_equation.i);
                 if(initial_value.first){
                     auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
 
@@ -1117,6 +1115,8 @@ bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
                         mtac::remove_edge(bb, bb);
 
                         lit.erase();
+
+                        continue;
                     }
                 }
             }
