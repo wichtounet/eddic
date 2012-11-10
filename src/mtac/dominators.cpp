@@ -17,53 +17,30 @@
 using namespace eddic;
 
 struct dominators {
-    unsigned int* parent;
-    unsigned int* semi;
-    unsigned int* vertex;
-    unsigned int* dom;
-    unsigned int* size;
-    unsigned int* child;
-    unsigned int* label;
-    unsigned int* ancestor;
-
-    std::vector<unsigned int>* pred;
-    std::vector<unsigned int>* succ;
-    std::vector<unsigned int>* bucket;
-
     const std::size_t cn;
     mtac::function_p function;
+
+    std::vector<unsigned int> parent;
+    std::vector<unsigned int> semi;
+    std::vector<unsigned int> vertex;
+    std::vector<unsigned int> dom;
+    std::vector<unsigned int> size;
+    std::vector<unsigned int> child;
+    std::vector<unsigned int> label;
+    std::vector<unsigned int> ancestor;
+
+    std::vector<std::vector<unsigned int>> succ;
+    std::vector<std::vector<unsigned int>> pred;
+    std::vector<std::vector<unsigned int>> bucket;
 
     std::unordered_map<mtac::basic_block_p, unsigned int> numbers;
     std::unordered_map<unsigned int, mtac::basic_block_p> blocks;
 
-    dominators(std::size_t cn, mtac::function_p function) : cn(cn), function(function) {
-        parent = new unsigned int[cn+1];
-        semi = new unsigned int[cn+1];
-        vertex = new unsigned int[cn+1];
-        dom = new unsigned int[cn+1];
-        size = new unsigned int[cn+1];
-        child = new unsigned int[cn+1];
-        label = new unsigned int[cn+1];
-        ancestor = new unsigned int[cn+1];
+    dominators(std::size_t cn, mtac::function_p function) : cn(cn), function(function), 
+            parent(cn+1), semi(cn+1), vertex(cn+1), dom(cn+1), size(cn+1), child(cn+1), label(cn+1), ancestor(cn+1),
+            succ(cn+1), pred(cn+1), bucket(cn+1) {
 
-        succ = new std::vector<unsigned int>[cn+1];
-        pred = new std::vector<unsigned int>[cn+1];
-        bucket = new std::vector<unsigned int>[cn+1];
-    }
-
-    ~dominators(){
-        delete[] parent;
-        delete[] semi;
-        delete[] vertex;
-        delete[] dom;
-        delete[] size;
-        delete[] child;
-        delete[] label;
-        delete[] ancestor;
-
-        delete[] bucket;
-        delete[] pred;
-        delete[] succ;
+        //Nothing to init
     }
 
     unsigned int n = 0;
