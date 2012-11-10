@@ -158,12 +158,16 @@ bool is_invariant(mtac::Statement& statement, Usage& usage){
 }
 
 mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+    auto first_bb = *loop->blocks().begin();
+
+    //Remove the fall through edge
+    mtac::remove_edge(first_bb->prev, first_bb);
+    
     auto pre_header = function->new_bb();
     
-    auto first_bb = *loop->blocks().begin();
     function->insert_before(function->at(first_bb), pre_header);
 
-    //Create the fall through edges
+    //Create the fall through edge
     mtac::make_edge(pre_header, pre_header->next);
     mtac::make_edge(pre_header->prev, pre_header);
     
