@@ -155,20 +155,36 @@ void callee_restore_registers(mtac::function_p function, It& it, Platform platfo
     }
 }
 
-bool caller_save(std::shared_ptr<eddic::Function> target_definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto parameters = parameter_registers(target_definition, platform, configuration);
+template<typename T>
+bool contains(const std::set<T>& set, const T& value){
+    return set.find(value) != set.end();
+}
 
-    if(parameters.count(reg)){
+template<typename T>
+bool contains(const std::unordered_set<T>& set, const T& value){
+    return set.find(value) != set.end();
+}
+
+bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> target_definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto source_parameters = parameter_registers(source->definition, platform, configuration);
+    auto target_parameters = parameter_registers(target_definition, platform, configuration);
+    auto variable_registers = source->variable_registers();
+
+    //Only saved is used to hold a variable (not bound) or as a parameter in the source function
+    if(contains(target_parameters, reg) && (contains(variable_registers, reg) || contains(source_parameters, reg))){
         return true;
     }
 
     return false;
 }
 
-bool caller_save(std::shared_ptr<eddic::Function> target_definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto parameters = float_parameter_registers(target_definition, platform, configuration);
+bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> target_definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto source_parameters = float_parameter_registers(source->definition, platform, configuration);
+    auto target_parameters = float_parameter_registers(target_definition, platform, configuration);
+    auto variable_registers = source->variable_float_registers();
 
-    if(parameters.count(reg)){
+    //Only saved is used to hold a variable (not bound) or as a parameter in the source function
+    if(contains(target_parameters, reg) && (contains(variable_registers, reg) || contains(source_parameters, reg))){
         return true;
     }
 
@@ -192,14 +208,14 @@ void caller_save_registers(mtac::function_p function, std::shared_ptr<eddic::Fun
                     (*ptr)->op = ltac::Operator::NOP;
 
                     for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
-                        if(caller_save(target_function, float_reg, platform, configuration)){
+                        if(caller_save(function, target_function, float_reg, platform, configuration)){
                             pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
                             pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                         }
                     }
                     
                     for(auto& reg : boost::adaptors::reverse(function->use_registers())){
-                        if(caller_save(target_function, reg, platform, configuration)){
+                        if(caller_save(function, target_function, reg, platform, configuration)){
                             pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
                         }
                     }
@@ -258,14 +274,14 @@ void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> 
     }
 
     for(auto& float_reg : boost::adaptors::reverse(function->use_float_registers())){
-        if(caller_save(target_function, float_reg, platform, configuration)){
+        if(caller_save(function, target_function, float_reg, platform, configuration)){
             it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
             it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
         }
     }
     
     for(auto& reg : boost::adaptors::reverse(function->use_registers())){
-        if(caller_save(target_function, reg, platform, configuration)){
+        if(caller_save(function, target_function, reg, platform, configuration)){
             it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
         }
     }
