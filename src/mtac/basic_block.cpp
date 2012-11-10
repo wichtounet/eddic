@@ -48,3 +48,30 @@ mtac::basic_block::iterator mtac::begin(mtac::basic_block_p block){
 mtac::basic_block::iterator mtac::end(mtac::basic_block_p block){
     return block->end(); 
 }
+    
+void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream){
+    if(blocks.empty()){
+        stream << "{}";
+    } else {
+        stream << "{" << blocks[0];
+
+        for(std::size_t i = 1; i < blocks.size(); ++i){
+            stream << ", " << blocks[i];
+        }
+
+        stream << "}";
+    }
+}
+
+void mtac::pretty_print(mtac::basic_block_p block, std::ostream& stream){
+    std::string sep(25, '-');
+
+    stream << sep << std::endl;
+    stream << block;
+
+    stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
+    stream << "successors "; ::pretty_print(block->successors, stream); std::cout << std::endl;;
+    stream << "predecessors "; ::pretty_print(block->predecessors, stream); std::cout << std::endl;;
+
+    stream << sep << std::endl;
+}

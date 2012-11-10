@@ -123,34 +123,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << endl;
     }
 
-    void pretty_print(std::vector<mtac::basic_block_p> blocks){
-        if(blocks.empty()){
-            stream << "{}";
-        } else {
-            stream << "{" << blocks[0];
-
-            for(std::size_t i = 1; i < blocks.size(); ++i){
-                stream << ", " << blocks[i];
-            }
-
-            stream << "}";
-        }
-    }
-
     void operator()(mtac::basic_block_p block){
-        std::string sep(25, '-');
-
-        stream << sep << std::endl;
-        stream << block;
-
-        stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
-        stream << "successors "; pretty_print(block->successors); std::cout << std::endl;;
-        stream << "predecessors "; pretty_print(block->predecessors); std::cout << std::endl;;
-        
-        stream << sep << std::endl;
+        pretty_print(block, stream);
         
         visit_each(*this, block->statements);     
-        
     }
 
     void operator()(mtac::Statement& statement){
