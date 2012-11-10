@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "logging.hpp"
+#include "Options.hpp"
+#include "SemanticalException.hpp"
 
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
@@ -169,6 +171,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     log::emit<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
 
+    inc_depth();
+
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
@@ -178,15 +182,30 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
             apply_pass(pass, struct_);
         }
     }
+
+    dec_depth();
     
     log::emit<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
     
     class_instantiated.push_back(struct_);
 }
 
+void ast::PassManager::inc_depth(){
+    ++template_depth;
+
+    if(template_depth > static_cast<unsigned int>(configuration->option_int_value("template-depth"))){
+        throw new SemanticalException("Recursive template-instantiation depth limit reached");
+    }
+}
+
+void ast::PassManager::dec_depth(){
+    --template_depth;
+}
+
 void ast::PassManager::run_passes(){
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
+        //They won't be applied on later instantiated function templates and class templates
         if(pass->is_simple()){
             log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
 
