@@ -37,6 +37,8 @@ class PassManager {
         void struct_instantiated(ast::Struct& struct_);
 
     private:
+        unsigned int template_depth = 0;
+
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
@@ -48,6 +50,9 @@ class PassManager {
         
         std::vector<ast::Struct> class_instantiated;
         std::vector<std::pair<std::string, ast::FunctionDeclaration>> functions_instantiated;
+
+        void inc_depth();
+        void dec_depth();
 };
 
 } //end of ast
