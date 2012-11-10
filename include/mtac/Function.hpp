@@ -79,8 +79,14 @@ class Function : public std::enable_shared_from_this<Function> {
         const std::set<ltac::Register>& use_registers() const;
         const std::set<ltac::FloatRegister>& use_float_registers() const;
         
+        const std::set<ltac::Register>& variable_registers() const;
+        const std::set<ltac::FloatRegister>& variable_float_registers() const;
+        
         void use(ltac::Register reg);
         void use(ltac::FloatRegister reg);
+        
+        void variable_use(ltac::Register reg);
+        void variable_use(ltac::FloatRegister reg);
 
         bool is_main();
 
@@ -96,6 +102,9 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::set<ltac::Register> _use_registers;
         std::set<ltac::FloatRegister> _use_float_registers;
+        
+        std::set<ltac::Register> _variable_registers;
+        std::set<ltac::FloatRegister> _variable_float_registers;
         
         std::size_t last_pseudo_registers = 0;
         std::size_t last_float_pseudo_registers = 0;
