@@ -55,6 +55,8 @@ void init_descriptions(){
        
         ("debug,g", "Add debugging symbols")
         
+        ("template-depth", po::value<int>()->default_value(100), "Define the maximum template depth")
+        
         ("32", "Force the compilation for 32 bits platform")
         ("64", "Force the compilation for 64 bits platform")
 
