@@ -720,19 +720,11 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         std::size_t reg = order.back();
         order.pop_back();
         
-        //Handle bound registers
-        /*if(graph.convert(reg).bound){
-            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
-            allocation[reg] = graph.convert(reg).binding;
-
-            continue;
-        }*/
-
         for(auto color : colors){
             bool found = false;
 
             for(auto neighbor : graph.neighbors(reg)){
-                if((allocation.count(neighbor) && allocation[neighbor] == color)/* || (graph.convert(neighbor).bound && graph.convert(neighbor).binding == color)*/){
+                if((allocation.count(neighbor) && allocation[neighbor] == color)){
                     found = true;
                     break;
                 }

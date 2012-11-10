@@ -233,7 +233,7 @@ void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> 
 
     caller_save_registers(function, target_function, bb, it, platform, configuration);
 
-    //The iterator has bee invalidated by the save, find the call again
+    //The iterator has been invalidated by the save, find the call again
     it.restart();
     find(it, call);
 
