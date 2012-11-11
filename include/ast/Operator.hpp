@@ -14,6 +14,10 @@ namespace eddic {
 
 namespace ast {
 
+/*! 
+ * \enum Operator
+ * \brief Define an operator in the AST for generic node. 
+ */
 enum class Operator : unsigned int {
     ASSIGN,
     ADD,
@@ -34,7 +38,9 @@ enum class Operator : unsigned int {
     LESS,
     LESS_EQUALS,
     GREATER,
-    GREATER_EQUALS
+    GREATER_EQUALS,
+
+    STAR                /**< Star operator, to dereference pointers. */ 
 };
 
 std::string toString(Operator op);
