@@ -164,6 +164,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         level++;
         
         print_each_sub_non_variant(struct_.Content->members, "Members");
+        print_each_sub_non_variant(struct_.Content->arrays, "Arrays");
         print_each_sub_non_variant(struct_.Content->constructors, "Constructors");
         print_each_sub_non_variant(struct_.Content->destructors, "Destructors");
         print_each_sub_non_variant(struct_.Content->functions, "Functions");
