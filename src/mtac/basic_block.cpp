@@ -70,8 +70,8 @@ void mtac::pretty_print(mtac::basic_block_p block, std::ostream& stream){
     stream << block;
 
     stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
-    stream << "successors "; ::pretty_print(block->successors, stream); std::cout << std::endl;;
-    stream << "predecessors "; ::pretty_print(block->predecessors, stream); std::cout << std::endl;;
+    stream << "successors "; ::pretty_print(block->successors, stream); stream << std::endl;;
+    stream << "predecessors "; ::pretty_print(block->predecessors, stream); stream << std::endl;;
 
     stream << sep << std::endl;
 }
