@@ -50,6 +50,16 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& value){
+        auto left = visit(*this, value.Content->ref); 
+       
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            value.Content->ref = *ptr;
+        } else {
+            eddic_unreachable("Unhandled left value type");
+        }
+        
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
@@ -184,6 +194,16 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& value){
+        auto left = visit(*this, value.Content->ref); 
+       
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            value.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            value.Content->ref = *ptr;
+        } else {
+            eddic_unreachable("Unhandled left value type");
+        }
+        
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
@@ -478,11 +498,14 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         ast::DoWhile do_while;
         do_while.Content->context = foreach.Content->context;
         do_while.Content->condition = while_condition;
+        
+        ast::VariableValue array_var_value_2;
+        array_var_value_2.Content->var = arrayVar;
+        array_var_value_2.Content->variableName = arrayVar->name();
+        array_var_value_2.Content->context = foreach.Content->context;
 
         ast::ArrayValue array_value;
-        array_value.Content->context = foreach.Content->context;
-        array_value.Content->arrayName = foreach.Content->arrayName;
-        array_value.Content->var = arrayVar;
+        array_value.Content->ref = array_var_value_2;
         array_value.Content->indexValue = iter_var_value;
 
         ast::VariableDeclaration variable_declaration;
