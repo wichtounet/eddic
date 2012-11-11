@@ -206,14 +206,16 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& array){
-        if (!array.Content->context->exists(array.Content->arrayName)) {
-            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
+        auto left = visit(*this, array.Content->ref);
+        
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            array.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            array.Content->ref = *ptr;
+        } else {
+            eddic_unreachable("Unhandled left value type");
         }
         
-        //Reference the variable
-        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
-        array.Content->context->add_reference(array.Content->var);
-
         array.Content->indexValue = visit(*this, array.Content->indexValue);
 
         return array;
