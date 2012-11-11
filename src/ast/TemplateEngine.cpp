@@ -84,18 +84,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         ast::DereferenceValue copy;
         
         copy.Content->position = source.Content->position;
-        
-        auto ref = visit(*this, source.Content->ref);
-        
-        if(auto* ptr = boost::get<ast::VariableValue>(&ref)){
-            copy.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&ref)){
-            copy.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&ref)){
-            copy.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Invalid ref type");
-        }
+        copy.Content->ref = visit(*this, source.Content->ref);
         
         return copy;
     }
@@ -137,15 +126,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::ArrayValue& source) const {
         ast::ArrayValue copy;
 
-        auto left = visit(*this, source.Content->ref);
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            copy.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            copy.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Invalid ref type");
-        }
-        
+        copy.Content->ref = visit(*this, source.Content->ref);
         copy.Content->indexValue = visit(*this, source.Content->indexValue);
 
         return copy;
@@ -214,7 +195,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
         copy.Content->value = visit(*this, source.Content->value);
-        copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
+        copy.Content->left_value = visit(*this, source.Content->left_value);
 
         return copy;
     }
@@ -224,7 +205,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
-        copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
+        copy.Content->left_value = visit(*this, source.Content->left_value);
 
         return copy;
     }
@@ -234,7 +215,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
-        copy.Content->left_value = ast::to_left_value(visit(*this, source.Content->left_value));
+        copy.Content->left_value = visit(*this, source.Content->left_value);
 
         return copy;
     }
@@ -257,15 +238,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->position = source.Content->position;
         copy.Content->memberNames = source.Content->memberNames;
         
-        auto location = visit(*this, source.Content->location);
-        
-        if(auto* ptr = boost::get<ast::VariableValue>(&location)){
-            copy.Content->location = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
-            copy.Content->location = *ptr;
-        } else {
-            eddic_unreachable("Invalid ref type");
-        }
+        copy.Content->location = visit(*this, source.Content->location);
 
         return copy;
     }
@@ -390,7 +363,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::Assignment copy;
 
         copy.Content->position = source.Content->position;
-        copy.Content->left_value = ast::to_left_value(visit(ValueCopier(), source.Content->left_value));
+        copy.Content->left_value = visit(ValueCopier(), source.Content->left_value);
         copy.Content->value = visit(ValueCopier(), source.Content->value);
         copy.Content->op = source.Content->op;
         
@@ -512,7 +485,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::SuffixOperation copy;
 
         copy.Content->position = source.Content->position;
-        copy.Content->left_value = ast::to_left_value(visit(ValueCopier(), source.Content->left_value));
+        copy.Content->left_value = visit(ValueCopier(), source.Content->left_value);
         copy.Content->op = source.Content->op;
 
         return copy;
@@ -522,7 +495,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::PrefixOperation copy;
 
         copy.Content->position = source.Content->position;
-        copy.Content->left_value = ast::to_left_value(visit(ValueCopier(), source.Content->left_value));
+        copy.Content->left_value = visit(ValueCopier(), source.Content->left_value);
         copy.Content->op = source.Content->op;
 
         return copy;

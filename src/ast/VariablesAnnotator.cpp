@@ -78,13 +78,13 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
 
     ast::Value operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
@@ -206,35 +206,14 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& array){
-        auto left = visit(*this, array.Content->ref);
-        
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            array.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            array.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
-        
+        array.Content->ref = visit(*this, array.Content->ref);
         array.Content->indexValue = visit(*this, array.Content->indexValue);
 
         return array;
     }
 
-    ast::Ref to_ref(ast::Value left_value){
-        if(auto* ptr = boost::get<ast::VariableValue>(&left_value)){
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left_value)){
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left_value)){
-            return *ptr;
-        } else {
-            eddic_unreachable("Not a left value");
-        }
-    }
-
     ast::Value operator()(ast::DereferenceValue& variable){
-        variable.Content->ref = to_ref(visit(*this, variable.Content->ref));
+        variable.Content->ref = visit(*this, variable.Content->ref);
 
         return variable;
     }
@@ -257,7 +236,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(*this, assignment.Content->left_value));
+        assignment.Content->left_value = visit(*this, assignment.Content->left_value);
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;

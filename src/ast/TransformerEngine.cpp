@@ -50,16 +50,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& value){
-        auto left = visit(*this, value.Content->ref); 
-       
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            value.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
-        
+        value.Content->ref = visit(*this, value.Content->ref); 
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
@@ -72,33 +63,14 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
     
     ast::Value operator()(ast::MemberValue& value){
-        auto left = visit(*this, value.Content->location); 
-       
         //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
-
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->location = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
-            value.Content->location = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
+        value.Content->location = visit(*this, value.Content->location); 
 
         return value;
     }
 
     ast::Value operator()(ast::DereferenceValue& value){
-        auto left = visit(*this, value.Content->ref); 
-
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            value.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
+        value.Content->ref = visit(*this, value.Content->ref); 
 
         return value;
     }
@@ -136,7 +108,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(*this, assignment.Content->left_value)); 
+        assignment.Content->left_value = visit(*this, assignment.Content->left_value); 
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
@@ -151,13 +123,13 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
     
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
 
     ast::Value operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
@@ -194,16 +166,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::ArrayValue& value){
-        auto left = visit(*this, value.Content->ref); 
-       
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            value.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
-        
+        value.Content->ref = visit(*this, value.Content->ref); 
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
 
         return value;
@@ -216,19 +179,10 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
     
     ast::Value operator()(ast::MemberValue& value){
-        auto left = visit(*this, value.Content->location); 
-
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->location = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
-            value.Content->location = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
+        value.Content->location = visit(*this, value.Content->location); 
 
         auto fixed = value;
-    
-        auto type = visit(ast::GetTypeVisitor(), left);
+        auto type = visit(ast::GetTypeVisitor(), value.Content->location);
 
         auto struct_name = (type->is_pointer() || type->is_array()) ? type->data_type()->mangle() : type->mangle();
         auto struct_type = value.Content->context->global()->get_struct(struct_name);
@@ -271,17 +225,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::DereferenceValue& value){
-        auto left = visit(*this, value.Content->ref); 
-
-        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left)){
-            value.Content->ref = *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
-            value.Content->ref = *ptr;
-        } else {
-            eddic_unreachable("Unhandled left value type");
-        }
+        value.Content->ref = visit(*this, value.Content->ref); 
 
         return value;
     }
@@ -319,7 +263,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(*this, assignment.Content->left_value)); 
+        assignment.Content->left_value = visit(*this, assignment.Content->left_value); 
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
@@ -334,13 +278,13 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
     
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
 
     ast::Value operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
@@ -734,7 +678,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(transformer, assignment.Content->left_value)); 
+        assignment.Content->left_value = visit(transformer, assignment.Content->left_value); 
         assignment.Content->value = visit(transformer, assignment.Content->value); 
     }
 
@@ -749,11 +693,11 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
+        operation.Content->left_value = visit(transformer, operation.Content->left_value);
     }
 
     void operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
+        operation.Content->left_value = visit(transformer, operation.Content->left_value);
     }
     
     void operator()(ast::StructDeclaration& declaration){
@@ -915,7 +859,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(transformer, assignment.Content->left_value)); 
+        assignment.Content->left_value = visit(transformer, assignment.Content->left_value); 
         assignment.Content->value = visit(transformer, assignment.Content->value);
     }
     
@@ -926,11 +870,11 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
+        operation.Content->left_value = visit(transformer, operation.Content->left_value);
     }
 
     void operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(transformer, operation.Content->left_value));
+        operation.Content->left_value = visit(transformer, operation.Content->left_value);
     }
 
     void operator()(ast::Return& return_){
