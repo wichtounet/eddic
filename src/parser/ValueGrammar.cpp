@@ -98,6 +98,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   member_value
         |   array_value
         |   variable_value
+        |   dereference_value
         |   null
         |   true_
         |   false_
