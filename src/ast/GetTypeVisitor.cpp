@@ -61,7 +61,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cas
    return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::SuffixOperation& operation) const {
+std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PostfixOperation& operation) const {
     return visit(*this, operation.Content->left_value);
 }
 

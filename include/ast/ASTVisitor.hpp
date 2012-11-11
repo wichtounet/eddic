@@ -180,7 +180,7 @@ void operator()(ast::PrefixOperation& operation){\
 }
 
 #define AUTO_RECURSE_SUFFIX()\
-void operator()(ast::SuffixOperation& operation){\
+void operator()(ast::PostfixOperation& operation){\
     visit(*this, operation.Content->left_value);\
 }
         
@@ -244,7 +244,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}
-#define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::SuffixOperation&){}
+#define AUTO_IGNORE_SUFFIX_OPERATION() void operator()(ast::PostfixOperation&){}
 #define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
 #define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
 #define AUTO_IGNORE_SWAP() void operator()(ast::Swap&){}
@@ -284,7 +284,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
-#define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::SuffixOperation& t){return t;}
+#define AUTO_RETURN_SUFFIX_OPERATION(return_type) return_type operator()(ast::PostfixOperation& t){return t;}
 #define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
 #define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
 #define AUTO_RETURN_SWAP(return_type) return_type operator()(ast::Swap& t){return t;}

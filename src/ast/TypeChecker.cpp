@@ -180,7 +180,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::SuffixOperation& operation){
+        void operator()(ast::PostfixOperation& operation){
             checkSuffixOrPrefixOperation(operation);
         }
 

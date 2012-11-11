@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef AST_SUFFIX_OPERATION_H
-#define AST_SUFFIX_OPERATION_H
+#ifndef AST_POSTFIX_OPERATION_H
+#define AST_POSTFIX_OPERATION_H
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -19,7 +19,7 @@ namespace eddic {
 
 namespace ast {
 
-struct ASTSuffixOperation {
+struct ASTPostfixOperation {
     Position position;
     Value left_value;
     ast::Operator op;
@@ -27,7 +27,7 @@ struct ASTSuffixOperation {
     mutable long references = 0;
 };
 
-typedef Deferred<ASTSuffixOperation> SuffixOperation;
+typedef Deferred<ASTPostfixOperation> PostfixOperation;
 
 } //end of ast
 
@@ -35,7 +35,7 @@ typedef Deferred<ASTSuffixOperation> SuffixOperation;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::SuffixOperation, 
+    eddic::ast::PostfixOperation, 
     (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->left_value)
     (eddic::ast::Operator, Content->op)

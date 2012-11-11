@@ -83,7 +83,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return operation;
     }
 
-    ast::Value operator()(ast::SuffixOperation& operation){
+    ast::Value operator()(ast::PostfixOperation& operation){
         operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
@@ -580,7 +580,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit_non_variant(value_visitor, operation);
     }
 
-    void operator()(ast::SuffixOperation& operation){
+    void operator()(ast::PostfixOperation& operation){
         visit_non_variant(value_visitor, operation);
     }
 };

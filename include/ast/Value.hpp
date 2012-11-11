@@ -43,7 +43,7 @@ typedef boost::mpl::vector<
             Cast,
             BuiltinOperator,
             Assignment,
-            SuffixOperation,
+            PostfixOperation,
             PrefixOperation
         > types_initial;
 
@@ -72,7 +72,7 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
 #include "ast/NewArray.hpp"
-#include "ast/SuffixOperation.hpp"
+#include "ast/PostfixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
 #endif

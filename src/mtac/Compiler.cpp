@@ -93,7 +93,7 @@ template<typename Operation>
 std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::function_p function);
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(Operation& operation, mtac::function_p function);
+std::shared_ptr<Variable> performPostfixOperation(Operation& operation, mtac::function_p function);
 
 template<bool Address = false>
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
@@ -478,8 +478,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {performPrefixOperation(operation, function)};
     }
 
-    result_type operator()(ast::SuffixOperation& operation) const {
-        return {performSuffixOperation(operation, function)};
+    result_type operator()(ast::PostfixOperation& operation) const {
+        return {performPostfixOperation(operation, function)};
     }
 
     result_type operator()(ast::ArrayValue& array) const {
@@ -1353,7 +1353,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::SuffixOperation& operation){
+        void operator()(ast::PostfixOperation& operation){
             //As we don't need the return value, we can make it prefix
             performPrefixOperation(operation, function);
         }
@@ -1774,11 +1774,11 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
 };
 
 template<typename Operation>
-struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
+struct PostfixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
     mtac::function_p function;
     Operation& operation;
 
-    SuffixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
+    PostfixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
 
     template<typename V>
     std::shared_ptr<Variable> perform(V& value){
@@ -1827,8 +1827,8 @@ std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::fun
 }
 
 template<typename Operation>
-std::shared_ptr<Variable> performSuffixOperation(Operation& operation, mtac::function_p function){
-    SuffixOperationVisitor<Operation> visitor(function, operation);
+std::shared_ptr<Variable> performPostfixOperation(Operation& operation, mtac::function_p function){
+    PostfixOperationVisitor<Operation> visitor(function, operation);
     return visit(visitor, operation.Content->left_value);
 }
 

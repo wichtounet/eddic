@@ -60,8 +60,8 @@ typedef Deferred<ASTNewArray> NewArray;
 struct ASTArrayValue;
 typedef Deferred<ASTArrayValue> ArrayValue;
 
-struct ASTSuffixOperation;
-typedef Deferred<ASTSuffixOperation> SuffixOperation;
+struct ASTPostfixOperation;
+typedef Deferred<ASTPostfixOperation> PostfixOperation;
 
 struct ASTPrefixOperation;
 typedef Deferred<ASTPrefixOperation> PrefixOperation;

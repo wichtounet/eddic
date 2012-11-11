@@ -19,7 +19,7 @@
 #include "ast/VariableDeclaration.hpp"
 #include "ast/StructDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
-#include "ast/SuffixOperation.hpp"
+#include "ast/PostfixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
 namespace eddic {
@@ -64,7 +64,7 @@ typedef boost::variant<
             DoWhile, 
             Foreach,
             ForeachIn, 
-            SuffixOperation,
+            PostfixOperation,
             PrefixOperation,
             Delete,
             Switch,

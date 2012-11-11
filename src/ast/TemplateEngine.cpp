@@ -191,8 +191,8 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return copy;
     }
     
-    ast::Value operator()(const ast::SuffixOperation& source) const {
-        ast::SuffixOperation copy;
+    ast::Value operator()(const ast::PostfixOperation& source) const {
+        ast::PostfixOperation copy;
 
         copy.Content->position = source.Content->position;
         copy.Content->op = source.Content->op;
@@ -472,8 +472,8 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         return copy;
     }
     
-    ast::Instruction operator()(const ast::SuffixOperation& source) const {
-        ast::SuffixOperation copy;
+    ast::Instruction operator()(const ast::PostfixOperation& source) const {
+        ast::PostfixOperation copy;
 
         copy.Content->position = source.Content->position;
         copy.Content->left_value = visit(ValueCopier(), source.Content->left_value);
