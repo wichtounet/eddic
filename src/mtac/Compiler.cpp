@@ -283,14 +283,43 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
+        auto platform = function->context->global()->target_platform();
+
         if(member_type == STRING){
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
             function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
-            function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(function->context->global()->target_platform())));
+            function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(platform)));
 
             return {t1, t2};
+        } else if(member_type->is_array()){
+            auto elements = member_type->elements();
+            auto data_type = member_type->data_type();
+
+            result_type result;
+
+            for(unsigned int i = 0; i < elements; ++i){
+                if(data_type == STRING){
+                    //TODO
+                } else if(data_type->is_custom_type()){
+                    //TODO
+                } else {
+                    auto temp = function->context->new_temporary(data_type);
+
+                    if(data_type == FLOAT){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
+                    } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+                    } else {
+                        eddic_unreachable("Unhandled type");
+                    }
+
+                    result.push_back(temp);
+                }
+            }
+
+            return result;
         } else {
             auto temp = function->context->new_temporary(member_type);
 
