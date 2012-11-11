@@ -104,7 +104,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    auto array_type = array.Content->var->type();
+    auto array_type = visit(*this, array.Content->ref);
 
     if(array_type == STRING){
         return CHAR;
