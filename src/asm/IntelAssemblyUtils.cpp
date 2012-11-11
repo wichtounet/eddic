@@ -13,7 +13,7 @@ using namespace eddic;
 
 void eddic::as::save(AssemblyFileWriter& writer, const std::vector<std::string>& registers){
     for(auto& reg : registers){
-        writer.stream() << "push " << reg << std::endl;
+        writer.stream() << "push " << reg << '\n';
     }
 }
 
@@ -22,7 +22,7 @@ void eddic::as::restore(AssemblyFileWriter& writer, const std::vector<std::strin
     auto end = registers.rend();
 
     while(it != end){
-        writer.stream() << "pop " << *it << std::endl;
+        writer.stream() << "pop " << *it << '\n';
         ++it;
     }
 }

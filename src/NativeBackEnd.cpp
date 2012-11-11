@@ -81,17 +81,18 @@ void NativeBackEnd::generate(mtac::program_p mtac_program, Platform platform){
         auto asm_file_name = input_file_name + ".s";
         auto object_file_name = input_file_name + ".o";
 
-        //Generate assembly from TAC
-        AssemblyFileWriter writer(asm_file_name);
+        {
+            //Generate assembly from TAC
+            AssemblyFileWriter writer(asm_file_name);
 
-        as::CodeGeneratorFactory factory;
-        auto generator = factory.get(platform, writer, mtac_program->context);
+            as::CodeGeneratorFactory factory;
+            auto generator = factory.get(platform, writer, mtac_program->context);
 
-        //Generate the code from the LTAC Program
-        generator->generate(mtac_program, get_string_pool(), float_pool); 
+            //Generate the code from the LTAC Program
+            generator->generate(mtac_program, get_string_pool(), float_pool);
 
-        //Write the output
-        writer.write(); 
+            //writer's destructor flushes the file
+        }
 
         //If it's necessary, assemble and link the assembly
         if(!configuration->option_defined("assembly")){

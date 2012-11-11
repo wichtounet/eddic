@@ -34,13 +34,6 @@ void as::IntelCodeGenerator::generate(mtac::program_p program, std::shared_ptr<S
     addStandardFunctions();
 
     addGlobalVariables(pool, float_pool);
-
-    auto size = writer.size();
-
-    //Little hack in order for nasm to work with little files
-    for(int i = size; i < 1050; ++i){
-        writer.stream() << " " << std::endl;
-    }
 }
 
 void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
@@ -91,19 +84,17 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
 
     eddic_assert(stream, "One file in the functions folder does not exist");
 
-    std::string str;
-
-    while(!stream.eof()){
-        std::getline(stream, str);
-
-        if(!str.empty()){
-            if(str[0] != ';'){
-                writer.stream() << str << std::endl;
-            }
+    std::string line;
+    while (getline(stream, line))
+    {
+        if (!line.empty() &&
+            (line[0] != ';'))
+        {
+            writer.stream() << line << '\n';
         }
     }
-
-    writer.stream() << std::endl;
+    
+    writer.stream() << '\n';
 }
 
 
