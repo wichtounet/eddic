@@ -406,8 +406,10 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ArrayValue& value) const {
-        std::cout << indent() << "Array value [" << value.Content->arrayName << "]" << std::endl; 
-        print_sub(value.Content->indexValue);
+        std::cout << indent() << "Array value" << std::endl; 
+
+        print_sub(value.Content->ref, "Left Value");
+        print_sub(value.Content->indexValue, "Index Value");
     }
 
     void operator()(ast::Expression& value) const {
