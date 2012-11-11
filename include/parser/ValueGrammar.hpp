@@ -63,6 +63,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::PostfixOperation()> postfix_operation;
     
     qi::rule<lexer::Iterator, ast::Value()> assignment_expression;
+    qi::rule<lexer::Iterator, ast::Value()> postfix_expression;
 
     qi::symbols<char, ast::Operator> multiplicative_op;
     qi::symbols<char, ast::Operator> additive_op;
