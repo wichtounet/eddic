@@ -137,10 +137,15 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::ArrayValue& source) const {
         ast::ArrayValue copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->var = source.Content->var;
-        copy.Content->position = source.Content->position;
-        copy.Content->arrayName = source.Content->arrayName;
+        auto left = visit(*this, source.Content->ref);
+        if(auto* ptr = boost::get<ast::VariableValue>(&left)){
+            copy.Content->ref = *ptr;
+        } else if(auto* ptr = boost::get<ast::MemberValue>(&left)){
+            copy.Content->ref = *ptr;
+        } else {
+            eddic_unreachable("Invalid ref type");
+        }
+        
         copy.Content->indexValue = visit(*this, source.Content->indexValue);
 
         return copy;
