@@ -18,6 +18,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
+#include "ast/ArrayDeclaration.hpp"
 #include "ast/MemberDeclaration.hpp"
 #include "ast/Constructor.hpp"
 #include "ast/Destructor.hpp"
@@ -40,6 +41,7 @@ struct ASTStruct {
     Position position;
     std::string name;
     std::vector<MemberDeclaration> members;
+    std::vector<ArrayDeclaration> arrays;
     std::vector<Constructor> constructors;
     std::vector<Destructor> destructors;
     std::vector<FunctionDeclaration> functions;
@@ -64,6 +66,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::string, Content->name)
     (std::vector<eddic::ast::MemberDeclaration>, Content->members)
+    (std::vector<eddic::ast::ArrayDeclaration>, Content->arrays)
     (std::vector<eddic::ast::Constructor>, Content->constructors)
     (std::vector<eddic::ast::Destructor>, Content->destructors)
     (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)

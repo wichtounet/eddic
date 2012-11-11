@@ -4,6 +4,7 @@ struct Complex {
     float d;
     bool b;
     string s;
+    int i[5];
 }
 
 void main(){
