@@ -355,12 +355,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto array = *ptr;
 
-            auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-            auto temp = array.Content->context->new_temporary(new_pointer_type(INT));
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::PDOT, index));
-            
-            auto member_info = mtac::compute_member(function->context->global(), array.Content->var, member_value.Content->memberNames);
-            return get_member(member_info.first, member_info.second, temp);
+            if(auto* ref_ptr = boost::get<ast::VariableValue>(&array.Content->ref)){
+                auto& ref_var = *ref_ptr;
+
+                auto index = computeIndexOfArray(ref_var.Content->var, array.Content->indexValue, function); 
+                auto temp = ref_var.Content->context->new_temporary(new_pointer_type(INT));
+                function->add(std::make_shared<mtac::Quadruple>(temp, ref_var.Content->var, mtac::Operator::PDOT, index));
+
+                auto member_info = mtac::compute_member(function->context->global(), ref_var.Content->var, member_value.Content->memberNames);
+                return get_member(member_info.first, member_info.second, temp);
+            } else {
+                //TODO
+            }
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -496,43 +502,49 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::ArrayValue& array) const {
-        if(array.Content->var->type() == STRING){
-            auto index = moveToArgument(array.Content->indexValue, function);
-            auto pointer_temp = function->context->new_temporary(INT);
-            auto t1 = function->context->new_temporary(INT);
+        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array.Content->ref)){
+            auto& ref_var = *ref_ptr;
 
-            //Get the label
-            function->add(std::make_shared<mtac::Quadruple>(pointer_temp, array.Content->var, mtac::Operator::ASSIGN));
+            if(ref_var.Content->var->type() == STRING){
+                auto index = moveToArgument(array.Content->indexValue, function);
+                auto pointer_temp = function->context->new_temporary(INT);
+                auto t1 = function->context->new_temporary(INT);
 
-            //Get the specified char 
-            auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
-            quadruple->size = mtac::Size::BYTE;
-            function->add(quadruple);
+                //Get the label
+                function->add(std::make_shared<mtac::Quadruple>(pointer_temp, ref_var.Content->var, mtac::Operator::ASSIGN));
 
-            return {t1};
-        } 
-        
-        auto index = computeIndexOfArray(array.Content->var, array.Content->indexValue, function); 
-        auto type = array.Content->var->type()->data_type();
+                //Get the specified char 
+                auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
+                quadruple->size = mtac::Size::BYTE;
+                function->add(quadruple);
 
-        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
-            auto temp = array.Content->context->new_temporary(type);
-            function->add(std::make_shared<mtac::Quadruple>(temp, array.Content->var, mtac::Operator::DOT, index));
-            return {temp};
-        } else if (type == STRING){
-            auto t1 = array.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(t1, array.Content->var, mtac::Operator::DOT, index));
+                return {t1};
+            } 
 
-            auto t2 = array.Content->context->new_temporary(INT);
-            auto t3 = array.Content->context->new_temporary(INT);
+            auto index = computeIndexOfArray(ref_var.Content->var, array.Content->indexValue, function); 
+            auto type = ref_var.Content->var->type()->data_type();
 
-            //Assign the second part of the string
-            function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
-            function->add(std::make_shared<mtac::Quadruple>(t2, array.Content->var, mtac::Operator::DOT, t3));
+            if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+                auto temp = ref_var.Content->context->new_temporary(type);
+                function->add(std::make_shared<mtac::Quadruple>(temp, ref_var.Content->var, mtac::Operator::DOT, index));
+                return {temp};
+            } else if (type == STRING){
+                auto t1 = ref_var.Content->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(t1, ref_var.Content->var, mtac::Operator::DOT, index));
 
-            return {t1, t2};
+                auto t2 = ref_var.Content->context->new_temporary(INT);
+                auto t3 = ref_var.Content->context->new_temporary(INT);
+
+                //Assign the second part of the string
+                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
+                function->add(std::make_shared<mtac::Quadruple>(t2, ref_var.Content->var, mtac::Operator::DOT, t3));
+
+                return {t1, t2};
+            } else {
+                eddic_unreachable("void is not a variable");
+            }
         } else {
-            eddic_unreachable("void is not a variable");
+            //TODO
         }
     }
 
@@ -811,12 +823,19 @@ struct AssignVisitor : public boost::static_visitor<> {
             source = dest = (*ptr).Content->var;
         } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *ptr;
-            source = left.Content->var;
 
-            auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
+            if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
+                auto& ref_var = *ref_ptr;
 
-            dest = left.Content->context->new_temporary(new_pointer_type(INT));
-            function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
+                source = ref_var.Content->var;
+
+                auto index = computeIndexOfArray(source, left.Content->indexValue, function); 
+
+                dest = ref_var.Content->context->new_temporary(new_pointer_type(INT));
+                function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
+            } else {
+                //TODO
+            }
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -839,10 +858,13 @@ struct AssignVisitor : public boost::static_visitor<> {
 
         visit(AssignValueToVariable(function, variable), value);
     }
-    void operator()(ast::ArrayValue& array_value){
-        auto variable = array_value.Content->var;
 
-        visit(AssignValueToVariable(function, variable, array_value.Content->indexValue), value);
+    void operator()(ast::ArrayValue& array_value){
+        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
+            visit(AssignValueToVariable(function, ref_ptr->Content->var, array_value.Content->indexValue), value);
+        } else {
+            //TODO
+        }
     }
 
     void operator()(ast::DereferenceValue& dereference_value){
@@ -1670,31 +1692,35 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
 
             return t1;
         } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
-            auto left = *left_ptr;
-            
-            auto type = visit_non_variant(ast::GetTypeVisitor(), left);
-            auto t1 = function->context->new_temporary(type);
-                
-            //Load left value in t1
-            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+            auto& left = *left_ptr;
 
-            //Perform the operation
-            perform(t1);
+            if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
+                auto type = visit_non_variant(ast::GetTypeVisitor(), left);
+                auto t1 = function->context->new_temporary(type);
 
-            auto variable = left.Content->var;
+                //Load left value in t1
+                visit(AssignValueToVariable(function, t1), operation.Content->left_value);
 
-            auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
+                //Perform the operation
+                perform(t1);
 
-            auto temp = left.Content->context->new_temporary(INT);
-            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
+                auto variable = ref_ptr->Content->var;
 
-            unsigned int offset = 0;
-            std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
+                auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
 
-            visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
+                auto temp = function->context->new_temporary(INT);
+                function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
 
-            return t1;
+                unsigned int offset = 0;
+                std::shared_ptr<const Type> member_type;
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
+
+                visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
+
+                return t1;
+            } else {
+                //TODO
+            }
         } 
         
         eddic_unreachable("Unhandled location type");
@@ -1709,17 +1735,21 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
     }
 
     std::shared_ptr<Variable> operator()(ast::ArrayValue& array_value){
-        auto type = visit_non_variant(ast::GetTypeVisitor(), array_value);
-        auto t1 = function->context->new_temporary(type);
+        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
+            auto type = visit_non_variant(ast::GetTypeVisitor(), array_value);
+            auto t1 = function->context->new_temporary(type);
 
-        //Load left value in t1
-        visit_non_variant(AssignValueToVariable(function, t1), array_value);
+            //Load left value in t1
+            visit_non_variant(AssignValueToVariable(function, t1), array_value);
 
-        perform(t1);
+            perform(t1);
 
-        visit_non_variant(AssignValueToVariable(function, array_value.Content->var, array_value.Content->indexValue), t1);
+            visit_non_variant(AssignValueToVariable(function, ref_ptr->Content->var, array_value.Content->indexValue), t1);
 
-        return t1;
+            return t1;
+        } else {
+            //TODO
+        }
     }
     
     std::shared_ptr<Variable> operator()(ast::DereferenceValue&){
