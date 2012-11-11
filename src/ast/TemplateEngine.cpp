@@ -611,6 +611,7 @@ struct Adaptor : public boost::static_visitor<> {
 
     void operator()(ast::Struct& struct_){
         visit_each_non_variant(*this, struct_.Content->members);
+        visit_each_non_variant(*this, struct_.Content->arrays);
         visit_each_non_variant(*this, struct_.Content->constructors);
         visit_each_non_variant(*this, struct_.Content->destructors);
         visit_each_non_variant(*this, struct_.Content->functions);
@@ -851,6 +852,25 @@ std::vector<ast::MemberDeclaration> copy(const std::vector<ast::MemberDeclaratio
 
     return destination;
 }
+
+std::vector<ast::ArrayDeclaration> copy(const std::vector<ast::ArrayDeclaration>& source){
+    std::vector<ast::ArrayDeclaration> destination;
+    destination.reserve(source.size());
+
+    for(auto& array_declaration : source){
+        ast::ArrayDeclaration copy;
+
+        copy.Content->context = array_declaration.Content->context;
+        copy.Content->position = array_declaration.Content->position;
+        copy.Content->arrayType = array_declaration.Content->arrayType;
+        copy.Content->arrayName = array_declaration.Content->arrayName;
+        copy.Content->size = array_declaration.Content->size;
+        
+        destination.push_back(copy);
+    }
+
+    return destination;
+}
     
 template<typename Container>
 bool is_instantiated(const Container& container, const std::string& name, const std::vector<ast::Type>& template_types){
@@ -976,6 +996,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     declaration.Content->template_types = template_types; 
 
                     declaration.Content->members = copy(struct_declaration.Content->members);
+                    declaration.Content->arrays = copy(struct_declaration.Content->arrays);
                     declaration.Content->constructors = copy(struct_declaration.Content->constructors);
                     declaration.Content->destructors = copy(struct_declaration.Content->destructors);
                     declaration.Content->functions = copy(struct_declaration.Content->functions);
