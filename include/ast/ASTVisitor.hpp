@@ -222,7 +222,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
 #define AUTO_IGNORE_DELETE() void operator()(ast::Delete&){}
-#define AUTO_IGNORE_DEREFERENCE_VALUE() void operator()(ast::DereferenceValue&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
 #define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
@@ -294,7 +293,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
 #define AUTO_RETURN_MEMBER_VALUE(return_type) return_type operator()(ast::MemberValue& t){return t;}
-#define AUTO_RETURN_DEREFERENCE_VARIABLE_VALUE(return_type) return_type operator()(ast::DereferenceValue& t){return t;}
 
 //The following macros should be used very sparsely as they are increasing the
 //difficulty to add new AST Node in the right way

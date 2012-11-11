@@ -69,12 +69,6 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         return value;
     }
 
-    ast::Value operator()(ast::DereferenceValue& value){
-        value.Content->ref = visit(*this, value.Content->ref); 
-
-        return value;
-    }
-
     ast::Value operator()(ast::FunctionCall& functionCall){
         for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
             *it = visit(*this, *it);
@@ -222,12 +216,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         return fixed;
-    }
-
-    ast::Value operator()(ast::DereferenceValue& value){
-        value.Content->ref = visit(*this, value.Content->ref); 
-
-        return value;
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){

@@ -80,15 +80,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return copy;
     }
     
-    ast::Value operator()(const ast::DereferenceValue& source) const {
-        ast::DereferenceValue copy;
-        
-        copy.Content->position = source.Content->position;
-        copy.Content->ref = visit(*this, source.Content->ref);
-        
-        return copy;
-    }
-    
     ast::Value operator()(const ast::Expression& source) const {
         ast::Expression copy;
 

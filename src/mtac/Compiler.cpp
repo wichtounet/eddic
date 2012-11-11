@@ -473,25 +473,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
         return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
     }
-    
-    result_type operator()(ast::DereferenceValue& dereference_value) const {
-        if(auto* ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
-            auto member_value = *ptr;
-
-            if(boost::get<ast::VariableValue>(&member_value.Content->location)){
-                return dereference_sub(member_value);
-            } 
-        } else if(auto* ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
-            auto& value = *ptr;
-
-            auto type = value.variable()->type()->data_type();
-            return dereference_variable(value.variable(), type);
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
-            return dereference_sub(*ptr);
-        } 
-        
-        eddic_unreachable("Unhandled dereference left value type");
-    }
 
     result_type operator()(ast::PrefixOperation& operation) const {
         return {performPrefixOperation(operation, function)};
@@ -570,7 +551,24 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     }
 
     result_type operator()(ast::Unary& value) const {
-        if(value.Content->op == ast::Operator::ADD){
+        if(value.Content->op == ast::Operator::STAR){
+            if(auto* ptr = boost::get<ast::MemberValue>(&value.Content->value)){
+                auto member_value = *ptr;
+
+                if(boost::get<ast::VariableValue>(&member_value.Content->location)){
+                    return dereference_sub(member_value);
+                } 
+            } else if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->value)){
+                auto& value = *ptr;
+
+                auto type = value.variable()->type()->data_type();
+                return dereference_variable(value.variable(), type);
+            } else if(auto* ptr = boost::get<ast::ArrayValue>(&value.Content->value)){
+                return dereference_sub(*ptr);
+            } 
+
+            eddic_unreachable("Unhandled dereference left value type");
+        } else if(value.Content->op == ast::Operator::ADD){
             return visit(*this, value.Content->value);
         } else if(value.Content->op == ast::Operator::SUB){
             mtac::Argument arg = moveToArgument(value.Content->value, function);
@@ -867,38 +865,42 @@ struct AssignVisitor : public boost::static_visitor<> {
         }
     }
 
-    void operator()(ast::DereferenceValue& dereference_value){
-        if(auto* var_ptr = boost::get<ast::MemberValue>(&dereference_value.Content->ref)){
-            auto member_value = *var_ptr;
+    void operator()(ast::Unary& dereference_value){
+        if(dereference_value.Content->op == ast::Operator::STAR){
+            if(auto* var_ptr = boost::get<ast::MemberValue>(&dereference_value.Content->value)){
+                auto member_value = *var_ptr;
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
-                auto left = *ptr;
+                if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
+                    auto left = *ptr;
 
-                auto variable = left.Content->var;
-                unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
+                    auto variable = left.Content->var;
+                    unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
-                visit(DereferenceAssign(function, variable, offset), value);
-            } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
-                eddic_unreachable("Unhandled location");
+                    visit(DereferenceAssign(function, variable, offset), value);
+                } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
+                    eddic_unreachable("Unhandled location");
+                }
+            } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->value)){
+                auto left = *var_ptr;
+
+                visit(DereferenceAssign(function, left.Content->var, 0), value);
+            } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->value)){
+                auto left = *array_ptr;
+
+                //As the array hold pointers, the visitor will return a temporary
+                auto visitor = ToArgumentsVisitor<>(function);
+                auto values = visit_non_variant(visitor, left);
+
+                eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
+
+                auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
+
+                visit(DereferenceAssign(function, variable, 0), value);
+            } else {
+                eddic_unreachable("Unsupported type"); 
             }
-        } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->ref)){
-            auto left = *var_ptr;
-
-            visit(DereferenceAssign(function, left.Content->var, 0), value);
-        } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->ref)){
-            auto left = *array_ptr;
-
-            //As the array hold pointers, the visitor will return a temporary
-            auto visitor = ToArgumentsVisitor<>(function);
-            auto values = visit_non_variant(visitor, left);
-
-            eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-
-            visit(DereferenceAssign(function, variable, 0), value);
         } else {
-           eddic_unreachable("Unsupported type"); 
+            eddic_unreachable("Unsupported left value");
         }
     }
     
@@ -1757,8 +1759,11 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
         }
     }
     
-    std::shared_ptr<Variable> operator()(ast::DereferenceValue&){
-        //TODO Support this feature
+    std::shared_ptr<Variable> operator()(ast::Unary& unary){
+        if(unary.Content->op == ast::Operator::STAR){
+            //TODO Support this feature
+        }
+
         eddic_unreachable("Unsupported feature");
     }
     
@@ -1801,8 +1806,12 @@ struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
         return perform(array_value);
     }
     
-    std::shared_ptr<Variable> operator()(ast::DereferenceValue& dereference_value){
-        return perform(dereference_value);
+    std::shared_ptr<Variable> operator()(ast::Unary& unary){
+        if(unary.Content->op == ast::Operator::STAR){
+            return perform(unary);
+        } else {
+            eddic_unreachable("Unsupported left value");
+        }
     }
     
     template<typename T>

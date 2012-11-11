@@ -24,7 +24,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
         ("!", ast::Operator::NOT)
-    //    ("*", ast::Operator::STAR)
+        ("*", ast::Operator::STAR)
         ;
 
     additive_op.add
@@ -154,7 +154,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   member_value
         |   array_value
         |   variable_value
-        |   dereference_value
         |   null
         |   true_
         |   false_
@@ -277,15 +276,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  value
         >>  lexer.right_bracket;
    
-    dereference_value %= 
-            qi::position(position_begin)
-        >>  qi::omit[lexer.multiplication]
-        >>  (
-                    member_value
-                |   array_value
-                |   variable_value
-            );
-
     function_call %=
             qi::position(position_begin)
         >>  lexer.identifier
@@ -330,7 +320,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
-    DEBUG_RULE(dereference_value);
     DEBUG_RULE(function_call);
     DEBUG_RULE(primary_value);
     DEBUG_RULE(ternary);

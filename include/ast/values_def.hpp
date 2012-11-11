@@ -45,9 +45,6 @@ typedef Deferred<ASTTernary> Ternary;
 
 struct VariableValue;
 
-struct ASTDereferenceValue;
-typedef Deferred<ASTDereferenceValue> DereferenceValue;
-
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
 

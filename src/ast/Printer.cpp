@@ -399,12 +399,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_sub(value.Content->location, "Location");
     }
 
-    void operator()(ast::DereferenceValue& value) const {
-        std::cout << indent() << "Dereference Variable Value" << std::endl;;
-
-        print_sub(value.Content->ref, "Left Value");
-    }
-
     void operator()(ast::ArrayValue& value) const {
         std::cout << indent() << "Array value" << std::endl; 
 

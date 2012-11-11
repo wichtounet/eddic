@@ -212,12 +212,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return array;
     }
 
-    ast::Value operator()(ast::DereferenceValue& variable){
-        variable.Content->ref = visit(*this, variable.Content->ref);
-
-        return variable;
-    }
-
     ast::Value operator()(ast::Expression& value){
         value.Content->first = visit(*this, value.Content->first);
         

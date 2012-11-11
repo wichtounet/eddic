@@ -32,7 +32,6 @@ typedef boost::mpl::vector<
             Literal, 
             CharLiteral, 
             VariableValue,
-            DereferenceValue,
             Expression,
             Unary,
             Null,
@@ -75,6 +74,5 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/NewArray.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
-#include "ast/DereferenceValue.hpp"
 
 #endif

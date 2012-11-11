@@ -199,10 +199,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             variable.Content->context = currentContext;
         }
         
-        void operator()(ast::DereferenceValue& variable){
-            visit(*this, variable.Content->ref);
-        }
-        
         void operator()(ast::MemberValue& value){
             value.Content->context = currentContext;
 

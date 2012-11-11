@@ -30,7 +30,7 @@ namespace ast {
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::CharLiteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
     typedef boost::mpl::vector<ast::ArrayValue, ast::FunctionCall, ast::MemberFunctionCall, ast::SuffixOperation, ast::PrefixOperation,
-        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::DereferenceValue, ast::New, ast::NewArray> non_constant_types;
+        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::New, ast::NewArray> non_constant_types;
 
     template<typename T>
     typename std::enable_if<boost::mpl::contains<constant_types, T>::value, bool>::type operator()(T&) const {
@@ -43,6 +43,10 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     }
 
     bool operator()(ast::Unary& value) const {
+        if(value.Content->op == ast::Operator::STAR){
+            return false;
+        }
+
         return visit(*this, value.Content->value);
     }
 
