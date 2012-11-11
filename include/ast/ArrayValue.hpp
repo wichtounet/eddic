@@ -30,7 +30,7 @@ typedef boost::variant<ast::VariableValue, ast::MemberValue> ArrayRef;
  */
 struct ASTArrayValue {
     Position position;
-    ArrayRef ref;
+    Value ref;
     Value indexValue;
 
     mutable long references = 0;
@@ -50,7 +50,7 @@ typedef Deferred<ASTArrayValue> ArrayValue;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayValue, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::ArrayRef, Content->ref)
+    (eddic::ast::Value, Content->ref)
     (eddic::ast::Value, Content->indexValue)
 )
 

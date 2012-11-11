@@ -42,7 +42,7 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
 void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
 void assign(mtac::function_p function, ast::Assignment& assignment);
-void assign(mtac::function_p function, ast::LValue& left_value, ast::Value& value);
+void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
 std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
 template<typename Call>
@@ -901,9 +901,14 @@ struct AssignVisitor : public boost::static_visitor<> {
            eddic_unreachable("Unsupported type"); 
         }
     }
+    
+    template<typename T>
+    result_type operator()(T&){
+        eddic_unreachable("Unsupported left value");
+    }
 };
 
-void assign(mtac::function_p function, ast::LValue& left_value, ast::Value& value){
+void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value){
     AssignVisitor visitor(function, value);
     visit(visitor, left_value);
 }
@@ -1756,6 +1761,11 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
         //TODO Support this feature
         eddic_unreachable("Unsupported feature");
     }
+    
+    template<typename T>
+    result_type operator()(T&){
+        eddic_unreachable("Unsupported left value");
+    }
 };
 
 template<typename Operation>
@@ -1793,6 +1803,11 @@ struct SuffixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
     
     std::shared_ptr<Variable> operator()(ast::DereferenceValue& dereference_value){
         return perform(dereference_value);
+    }
+    
+    template<typename T>
+    result_type operator()(T&){
+        eddic_unreachable("Unsupported left value");
     }
 };
 

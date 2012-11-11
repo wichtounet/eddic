@@ -38,7 +38,7 @@ struct ASTMemberValue {
 
     Position position;
 
-    MemberLocation location;
+    Value location;
     std::vector<std::string> memberNames;
 
     mutable long references = 0;
@@ -58,7 +58,7 @@ typedef Deferred<ASTMemberValue> MemberValue;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::MemberValue, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::MemberLocation, Content->location)
+    (eddic::ast::Value, Content->location)
     (std::vector<std::string>, Content->memberNames)
 )
 

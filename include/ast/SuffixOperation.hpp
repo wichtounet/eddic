@@ -13,7 +13,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
 #include "ast/Position.hpp"
-#include "ast/LValue.hpp"
+#include "ast/Value.hpp"
 
 namespace eddic {
 
@@ -21,7 +21,7 @@ namespace ast {
 
 struct ASTSuffixOperation {
     Position position;
-    LValue left_value;
+    Value left_value;
     ast::Operator op;
 
     mutable long references = 0;
@@ -37,7 +37,7 @@ typedef Deferred<ASTSuffixOperation> SuffixOperation;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SuffixOperation, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::LValue, Content->left_value)
+    (eddic::ast::Value, Content->left_value)
     (eddic::ast::Operator, Content->op)
 )
 

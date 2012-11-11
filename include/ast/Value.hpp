@@ -17,7 +17,6 @@
 #include "ast/CharLiteral.hpp"
 #include "ast/Literal.hpp"
 #include "ast/VariableValue.hpp"
-#include "ast/DereferenceValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
@@ -76,5 +75,6 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/NewArray.hpp"
 #include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
+#include "ast/DereferenceValue.hpp"
 
 #endif

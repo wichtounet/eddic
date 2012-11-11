@@ -24,7 +24,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
         ("!", ast::Operator::NOT)
-        ("*", ast::Operator::STAR)
+   //   ("*", ast::Operator::STAR)
         ;
 
     additive_op.add
@@ -80,6 +80,28 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ;
 
     /* Define values */ 
+    
+    primaryValue = 
+            assignment
+        |   integer_suffix
+        |   integer
+        |   float_
+        |   string_literal
+        |   char_literal
+        |   builtin_operator
+        |   member_function_call
+        |   function_call
+        |   prefix_operation
+        |   new_array
+        |   new_
+        |   suffix_operation
+        |   member_value
+        |   array_value
+        |   variable_value
+        |   null
+        |   true_
+        |   false_
+        |   (lexer.left_parenth >> value > lexer.right_parenth);
 
     value = conditional_expression.alias();
 
@@ -141,29 +163,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  type.type
         >>  lexer.right_parenth
         >>  primaryValue;
-    
-    primaryValue = 
-            assignment
-        |   integer_suffix
-        |   integer
-        |   float_
-        |   string_literal
-        |   char_literal
-        |   builtin_operator
-        |   member_function_call
-        |   function_call
-        |   prefix_operation
-        |   new_array
-        |   new_
-        |   suffix_operation
-        |   member_value
-        |   array_value
-        |   variable_value
-        |   dereference_value
-        |   null
-        |   true_
-        |   false_
-        |   (lexer.left_parenth >> value > lexer.right_parenth);
     
     new_array %=
             qi::position(position_begin)
@@ -295,30 +294,31 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
 
-    left_value =
-            member_value
-        |   array_value
-        |   variable_value
-        |   dereference_value;
-    
     assignment %= 
             qi::position(position_begin)
-        >>  left_value
+        >>  (
+                    member_value
+                |   array_value
+                |   variable_value
+                |   dereference_value
+            )
         >>  qi::adapttokens[assign_op]
         >>  value;
 
-    limited_left_value =
-            array_value
-        |   variable_value;
-    
     prefix_operation %=
             qi::position(position_begin)
         >>  qi::adapttokens[prefix_op]
-        >>  limited_left_value;
+        >>  (
+                    array_value
+                |   variable_value
+            );
 
     suffix_operation %=
             qi::position(position_begin)
-        >>  limited_left_value    
+        >>  (
+                    array_value
+                |   variable_value
+            )
         >>  qi::adapttokens[suffix_op];
 
     //Configure debugging
@@ -327,7 +327,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(suffix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
-    DEBUG_RULE(left_value);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
     DEBUG_RULE(dereference_value);
