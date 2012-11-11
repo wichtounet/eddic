@@ -79,91 +79,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("%=", ast::Operator::MOD)
         ;
 
-    /* Define values */ 
-    
-    primaryValue = 
-            assignment
-        |   integer_suffix
-        |   integer
-        |   float_
-        |   string_literal
-        |   char_literal
-        |   builtin_operator
-        |   member_function_call
-        |   function_call
-        |   prefix_operation
-        |   new_array
-        |   new_
-        |   suffix_operation
-        |   member_value
-        |   array_value
-        |   variable_value
-        |   dereference_value
-        |   null
-        |   true_
-        |   false_
-        |   (lexer.left_parenth >> value > lexer.right_parenth);
-
-    value = conditional_expression.alias();
-
-    conditional_expression =
-            ternary
-         |  logicalOrValue;
-
-    ternary %=
-            qi::position(position_begin)
-        >>  logicalOrValue 
-        >>  lexer.question_mark
-        >>  conditional_expression 
-        >>  lexer.double_dot
-        >>  conditional_expression;
-    
-    logicalOrValue %=
-            qi::position(position_begin)
-        >>  logicalAndValue
-        >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
-    
-    logicalAndValue %=
-            qi::position(position_begin)
-        >>  relationalValue
-        >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
-   
-    relationalValue %=
-            qi::position(position_begin)
-        >>  additiveValue
-        >>  *(qi::adapttokens[relational_op] > additiveValue);  
-    
-    additiveValue %=
-            qi::position(position_begin)
-        >>  multiplicativeValue
-        >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
-   
-    multiplicativeValue %=
-            qi::position(position_begin)
-        >>  unaryValue
-        >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
-    
-    unaryValue %= 
-            negated_constant_value
-        |   castValue    
-        |   unary_value
-        |   primaryValue;
-
-    unary_value %=
-            qi::adapttokens[unary_op] 
-        >   primaryValue
-            ;
-    
-    negated_constant_value = 
-            qi::adapttokens[unary_op]
-         >> integer;
-
-    castValue %=
-            qi::position(position_begin)
-        >>  lexer.left_parenth
-        >>  type.type
-        >>  lexer.right_parenth
-        >>  primaryValue;
+    /* Terminal values */
     
     new_array %=
             qi::position(position_begin)
@@ -206,6 +122,122 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::eps 
         >>  lexer.float_;
     
+    string_literal %= 
+            qi::eps 
+        >> lexer.string_literal;
+    
+    char_literal %= 
+            qi::eps 
+        >> lexer.char_literal;
+
+    constant = 
+            negated_constant_value
+        |   integer 
+        |   string_literal
+        |   char_literal;
+
+    /* Define values */ 
+    
+    primary_value = 
+            assignment
+        |   integer_suffix
+        |   integer
+        |   float_
+        |   string_literal
+        |   char_literal
+        |   builtin_operator
+        |   member_function_call
+        |   function_call
+        |   prefix_operation
+        |   new_array
+        |   new_
+        |   suffix_operation
+        |   member_value
+        |   array_value
+        |   variable_value
+        |   dereference_value
+        |   null
+        |   true_
+        |   false_
+        |   (lexer.left_parenth >> value > lexer.right_parenth);
+
+    suffix_operation %=
+            qi::position(position_begin)
+        >>  (
+                    array_value
+                |   variable_value
+            )
+        >>  qi::adapttokens[suffix_op];
+
+    prefix_operation %=
+            qi::position(position_begin)
+        >>  qi::adapttokens[prefix_op]
+        >>  (
+                    array_value
+                |   variable_value
+            );
+
+    castValue %=
+            qi::position(position_begin)
+        >>  lexer.left_parenth
+        >>  type.type
+        >>  lexer.right_parenth
+        >>  primary_value;
+   
+    unaryValue %= 
+            negated_constant_value
+        |   castValue    
+        |   unary_value
+        |   primary_value;
+    
+    negated_constant_value = 
+            qi::adapttokens[unary_op]
+         >> integer;
+
+    unary_value %=
+            qi::adapttokens[unary_op] 
+        >   primary_value
+            ;
+    
+    multiplicativeValue %=
+            qi::position(position_begin)
+        >>  unaryValue
+        >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
+    
+    additiveValue %=
+            qi::position(position_begin)
+        >>  multiplicativeValue
+        >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
+   
+    relationalValue %=
+            qi::position(position_begin)
+        >>  additiveValue
+        >>  *(qi::adapttokens[relational_op] > additiveValue);  
+    
+    logicalAndValue %=
+            qi::position(position_begin)
+        >>  relationalValue
+        >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
+    
+    logicalOrValue %=
+            qi::position(position_begin)
+        >>  logicalAndValue
+        >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
+
+    ternary %=
+            qi::position(position_begin)
+        >>  logicalOrValue 
+        >>  lexer.question_mark
+        >>  conditional_expression 
+        >>  lexer.double_dot
+        >>  conditional_expression;
+
+    conditional_expression =
+            ternary
+         |  logicalOrValue;
+
+    value = conditional_expression.alias();
+    
     member_value %= 
             qi::position(position_begin)
         >>  
@@ -244,28 +276,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 |   array_value
                 |   variable_value
             );
-    
-    string_literal %= 
-            qi::eps 
-        >> lexer.string_literal;
-    
-    char_literal %= 
-            qi::eps 
-        >> lexer.char_literal;
 
-    constant = 
-            negated_constant_value
-        |   integer 
-        |   string_literal
-        |   char_literal;
-   
-    builtin_operator %=
-            qi::position(position_begin)
-        >>  qi::adapttokens[builtin_op]
-        >>  lexer.left_parenth
-        >>  -( value >> *( lexer.comma > value))
-        >   lexer.right_parenth;
-    
     function_call %=
             qi::position(position_begin)
         >>  lexer.identifier
@@ -294,7 +305,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
-
+   
+    builtin_operator %=
+            qi::position(position_begin)
+        >>  qi::adapttokens[builtin_op]
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >   lexer.right_parenth;
+    
     assignment %= 
             qi::position(position_begin)
         >>  (
@@ -306,22 +324,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  qi::adapttokens[assign_op]
         >>  value;
 
-    prefix_operation %=
-            qi::position(position_begin)
-        >>  qi::adapttokens[prefix_op]
-        >>  (
-                    array_value
-                |   variable_value
-            );
-
-    suffix_operation %=
-            qi::position(position_begin)
-        >>  (
-                    array_value
-                |   variable_value
-            )
-        >>  qi::adapttokens[suffix_op];
-
     //Configure debugging
 
     DEBUG_RULE(assignment);
@@ -332,7 +334,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(variable_value);
     DEBUG_RULE(dereference_value);
     DEBUG_RULE(function_call);
-    DEBUG_RULE(primaryValue);
+    DEBUG_RULE(primary_value);
     DEBUG_RULE(ternary);
     DEBUG_RULE(constant);
     DEBUG_RULE(string_literal);
