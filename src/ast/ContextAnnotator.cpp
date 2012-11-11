@@ -210,8 +210,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayValue& array){
-            array.Content->context = currentContext;
-
+            visit(*this, array.Content->ref);
             visit(*this, array.Content->indexValue);
         }
        
