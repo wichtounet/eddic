@@ -227,7 +227,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     array_value %=
             qi::position(position_begin)
-        >>  lexer.identifier
+        >>  (
+                    member_value
+                |   variable_value
+            )
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket;

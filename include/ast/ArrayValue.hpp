@@ -21,17 +21,16 @@ class Variable;
 
 namespace ast {
 
+typedef boost::variant<ast::VariableValue, ast::MemberValue> ArrayRef;
+
 /*!
  * \class ASTArrayValue
  * \brief The AST node for a value of an array. 
  * Should only be used from the Deferred version (eddic::ast::ArrayValue).
  */
 struct ASTArrayValue {
-    std::shared_ptr<Context> context;
-    std::shared_ptr<Variable> var;
-
     Position position;
-    std::string arrayName;
+    ArrayRef ref;
     Value indexValue;
 
     mutable long references = 0;
@@ -51,7 +50,7 @@ typedef Deferred<ASTArrayValue> ArrayValue;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayValue, 
     (eddic::ast::Position, Content->position)
-    (std::string, Content->arrayName)
+    (eddic::ast::ArrayRef, Content->ref)
     (eddic::ast::Value, Content->indexValue)
 )
 

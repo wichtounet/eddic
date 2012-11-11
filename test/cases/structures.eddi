@@ -14,6 +14,7 @@ void main(){
     c.d = 3.23;
     c.b = false;
     c.s = "asdf";
+    c.i[0] = 66;
 
     print(c.imag);
     print("|");
