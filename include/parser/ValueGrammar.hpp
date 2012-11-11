@@ -62,14 +62,16 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::New()> new_;
     qi::rule<lexer::Iterator, ast::NewArray()> new_array;
     qi::rule<lexer::Iterator, ast::PrefixOperation()> prefix_operation;
-    qi::rule<lexer::Iterator, ast::SuffixOperation()> suffix_operation;
+    qi::rule<lexer::Iterator, ast::SuffixOperation()> postfix_operation;
+    
+    qi::rule<lexer::Iterator, ast::Value()> assignment_expression;
 
     qi::symbols<char, ast::Operator> multiplicative_op;
     qi::symbols<char, ast::Operator> additive_op;
     qi::symbols<char, ast::Operator> relational_op;
     qi::symbols<char, ast::Operator> logical_and_op;
     qi::symbols<char, ast::Operator> logical_or_op;
-    qi::symbols<char, ast::Operator> suffix_op;
+    qi::symbols<char, ast::Operator> postfix_op;
     qi::symbols<char, ast::Operator> prefix_op;
     qi::symbols<char, ast::Operator> assign_op;
     qi::symbols<char, ast::Operator> unary_op;

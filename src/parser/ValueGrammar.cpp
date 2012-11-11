@@ -24,7 +24,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
         ("!", ast::Operator::NOT)
-   //   ("*", ast::Operator::STAR)
+    //    ("*", ast::Operator::STAR)
         ;
 
     additive_op.add
@@ -55,7 +55,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("||", ast::Operator::OR) 
         ;
     
-    suffix_op.add
+    postfix_op.add
         ("++", ast::Operator::INC)
         ("--", ast::Operator::DEC)
         ;
@@ -139,8 +139,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     /* Define values */ 
     
     primary_value = 
-            assignment
-        |   integer_suffix
+            integer_suffix
         |   integer
         |   float_
         |   string_literal
@@ -151,7 +150,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   prefix_operation
         |   new_array
         |   new_
-        |   suffix_operation
+        |   postfix_operation
         |   member_value
         |   array_value
         |   variable_value
@@ -161,13 +160,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   false_
         |   (lexer.left_parenth >> value > lexer.right_parenth);
 
-    suffix_operation %=
+    postfix_operation %=
             qi::position(position_begin)
         >>  (
                     array_value
                 |   variable_value
             )
-        >>  qi::adapttokens[suffix_op];
+        >>  qi::adapttokens[postfix_op];
 
     prefix_operation %=
             qi::position(position_begin)
@@ -236,7 +235,17 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             ternary
          |  logicalOrValue;
 
-    value = conditional_expression.alias();
+    assignment_expression %=
+            assignment
+        |   conditional_expression;
+    
+    assignment %= 
+            qi::position(position_begin)
+        >>  unaryValue    
+        >>  qi::adapttokens[assign_op]
+        >>  assignment_expression;
+
+    value = assignment_expression.alias();
     
     member_value %= 
             qi::position(position_begin)
@@ -312,22 +321,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
-    
-    assignment %= 
-            qi::position(position_begin)
-        >>  (
-                    member_value
-                |   array_value
-                |   variable_value
-                |   dereference_value
-            )
-        >>  qi::adapttokens[assign_op]
-        >>  value;
 
     //Configure debugging
 
     DEBUG_RULE(assignment);
-    DEBUG_RULE(suffix_operation);
+    DEBUG_RULE(postfix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(array_value);
