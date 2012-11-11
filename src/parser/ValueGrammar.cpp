@@ -14,7 +14,7 @@
 using namespace eddic;
 
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
-        ValueGrammar::base_type(value, "Value Grammar"),
+        ValueGrammar::base_type(value, "_value Grammar"),
         type(lexer, position_begin),
         position_begin(position_begin){
 
@@ -176,56 +176,56 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 |   variable_value
             );
 
-    castValue %=
+    cast_value %=
             qi::position(position_begin)
         >>  lexer.left_parenth
         >>  type.type
         >>  lexer.right_parenth
         >>  primary_value;
    
-    unaryValue %= 
+    unary_value %= 
             negated_constant_value
-        |   castValue    
-        |   unary_value
+        |   cast_value    
+        |   unary_operation
         |   primary_value;
     
     negated_constant_value = 
             qi::adapttokens[unary_op]
          >> integer;
 
-    unary_value %=
+    unary_operation %=
             qi::adapttokens[unary_op] 
         >   primary_value
             ;
     
-    multiplicativeValue %=
+    multiplicative_value %=
             qi::position(position_begin)
-        >>  unaryValue
-        >>  *(qi::adapttokens[multiplicative_op] > unaryValue);
+        >>  unary_value
+        >>  *(qi::adapttokens[multiplicative_op] > unary_value);
     
-    additiveValue %=
+    additive_value %=
             qi::position(position_begin)
-        >>  multiplicativeValue
-        >>  *(qi::adapttokens[additive_op] > multiplicativeValue);
+        >>  multiplicative_value
+        >>  *(qi::adapttokens[additive_op] > multiplicative_value);
    
-    relationalValue %=
+    relational_value %=
             qi::position(position_begin)
-        >>  additiveValue
-        >>  *(qi::adapttokens[relational_op] > additiveValue);  
+        >>  additive_value
+        >>  *(qi::adapttokens[relational_op] > additive_value);  
     
-    logicalAndValue %=
+    logicalAnd_value %=
             qi::position(position_begin)
-        >>  relationalValue
-        >>  *(qi::adapttokens[logical_and_op] > relationalValue);  
+        >>  relational_value
+        >>  *(qi::adapttokens[logical_and_op] > relational_value);  
     
-    logicalOrValue %=
+    logicalOr_value %=
             qi::position(position_begin)
-        >>  logicalAndValue
-        >>  *(qi::adapttokens[logical_or_op] > logicalAndValue);  
+        >>  logicalAnd_value
+        >>  *(qi::adapttokens[logical_or_op] > logicalAnd_value);  
 
     ternary %=
             qi::position(position_begin)
-        >>  logicalOrValue 
+        >>  logicalOr_value 
         >>  lexer.question_mark
         >>  conditional_expression 
         >>  lexer.double_dot
@@ -233,7 +233,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     conditional_expression =
             ternary
-         |  logicalOrValue;
+         |  logicalOr_value;
 
     assignment_expression %=
             assignment
@@ -241,7 +241,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     assignment %= 
             qi::position(position_begin)
-        >>  unaryValue    
+        >>  unary_value    
         >>  qi::adapttokens[assign_op]
         >>  assignment_expression;
 
