@@ -63,7 +63,10 @@ struct Collector : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            //If this is null, it means that this an array inside a structure
+            if(declaration.Content->context){
+                positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            }
         }
         
         void operator()(ast::VariableDeclaration& declaration){

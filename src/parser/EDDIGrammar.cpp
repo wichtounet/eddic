@@ -297,6 +297,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(arrayDeclaration >> lexer.stop)
         >>  *(constructor)
         >>  *(destructor)
         >>  *(function)

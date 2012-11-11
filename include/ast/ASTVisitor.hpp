@@ -20,6 +20,7 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_TEMPLATE_STRUCT()\
 void operator()(ast::TemplateStruct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->arrays);\
     visit_each_non_variant(*this, struct_.Content->constructors);\
     visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
@@ -28,6 +29,7 @@ void operator()(ast::TemplateStruct& struct_){\
 
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
+    visit_each_non_variant(*this, struct_.Content->arrays);\
     visit_each_non_variant(*this, struct_.Content->constructors);\
     visit_each_non_variant(*this, struct_.Content->destructors);\
     visit_each_non_variant(*this, struct_.Content->functions);\
