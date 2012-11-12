@@ -313,18 +313,45 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  -( value >> *( lexer.comma > value))
         >   lexer.right_parenth;
 
-    //Configure debugging
-
+    //Configure debugging and rule naming
+    
+    DEBUG_RULE(value);
+    DEBUG_RULE(primary_value);
+    DEBUG_RULE(cast_value);
+    DEBUG_RULE(negated_constant_value);
+    DEBUG_RULE(conditional_expression);
+    DEBUG_RULE(additive_value);
+    DEBUG_RULE(multiplicative_value);
+    DEBUG_RULE(relational_value);
+    DEBUG_RULE(logicalAnd_value);
+    DEBUG_RULE(logicalOr_value);
+    DEBUG_RULE(constant);
+    DEBUG_RULE(integer);
+    DEBUG_RULE(integer_suffix);
+    DEBUG_RULE(float_);
+    DEBUG_RULE(member_value);
+    DEBUG_RULE(builtin_operator);
+    DEBUG_RULE(function_call);
+    DEBUG_RULE(member_function_call);
+    DEBUG_RULE(true_);
+    DEBUG_RULE(false_);
+    DEBUG_RULE(null);
+    DEBUG_RULE(new_);
+    DEBUG_RULE(new_array);
+    DEBUG_RULE(unary_operation);
     DEBUG_RULE(assignment);
     DEBUG_RULE(postfix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
-    DEBUG_RULE(function_call);
-    DEBUG_RULE(primary_value);
     DEBUG_RULE(ternary);
     DEBUG_RULE(constant);
     DEBUG_RULE(string_literal);
     DEBUG_RULE(char_literal);
+    
+    DEBUG_RULE(assignment_expression);
+    DEBUG_RULE(postfix_expression);
+    DEBUG_RULE(unary_expression);
+    DEBUG_RULE(cast_expression);
 }

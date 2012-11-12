@@ -9,6 +9,6 @@
 #define PARSER_UTILS_H
 
 #define RULE_DEBUGGING false
-#define DEBUG_RULE(rule_name) if(RULE_DEBUGGING){rule_name .name(#rule_name); debug(rule_name);}
+#define DEBUG_RULE(rule_name) rule_name .name(#rule_name); if(RULE_DEBUGGING){debug(rule_name);}
 
 #endif
