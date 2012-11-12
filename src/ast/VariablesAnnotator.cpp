@@ -65,12 +65,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return builtin;
     }
 
-    ast::Value operator()(ast::Unary& value){
-        value.Content->value = visit(*this, value.Content->value);
-
-        return value;
-    }
-
     ast::Value operator()(ast::Cast& cast){
         cast.Content->value = visit(*this, cast.Content->value);
 

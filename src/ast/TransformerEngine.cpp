@@ -56,12 +56,6 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         return value;
     }
     
-    ast::Value operator()(ast::Unary& value){
-        value.Content->value = visit(*this, value.Content->value); 
-
-        return value;
-    }
-    
     ast::Value operator()(ast::MemberValue& value){
         //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
         value.Content->location = visit(*this, value.Content->location); 
@@ -162,12 +156,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     ast::Value operator()(ast::ArrayValue& value){
         value.Content->ref = visit(*this, value.Content->ref); 
         value.Content->indexValue = visit(*this, value.Content->indexValue); 
-
-        return value;
-    }
-    
-    ast::Value operator()(ast::Unary& value){
-        value.Content->value = visit(*this, value.Content->value); 
 
         return value;
     }

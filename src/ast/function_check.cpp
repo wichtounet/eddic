@@ -286,9 +286,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 check_value(*declaration.Content->value);
             }
         }
-
-        void operator()(ast::Unary& value){
-            check_value(value.Content->value);
+        
+        void operator()(ast::PrefixOperation& operation){
+            check_value(operation.Content->left_value);
         }
 
         void operator()(ast::BuiltinOperator& builtin){

@@ -93,15 +93,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return copy;
     }
     
-    ast::Value operator()(const ast::Unary& source) const {
-        ast::Unary copy;
-
-        copy.Content->op = source.Content->op;
-        copy.Content->value = visit(*this, source.Content->value);
-
-        return copy;
-    }
-    
     ast::Value operator()(const ast::Null& source) const {
         return source;
     }

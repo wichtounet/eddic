@@ -417,11 +417,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         --level;
     }
 
-    void operator()(ast::Unary& value) const {
-        std::cout << indent() << "Unary " << static_cast<int>(value.Content->op) << std::endl; 
-        print_sub(value.Content->value);
-    }
-
     void operator()(ast::Cast& cast) const {
         std::cout << indent() << "Cast " << std::endl; 
         std::cout << indent() << "\tType: " << ast::to_string(cast.Content->type) << std::endl;

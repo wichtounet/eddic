@@ -164,11 +164,6 @@ void operator()(ast::Expression& value){\
         [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
 }
 
-#define AUTO_RECURSE_UNARY_VALUES()\
-void operator()(ast::Unary& value){\
-    visit(*this, value.Content->value);\
-}
-
 #define AUTO_RECURSE_CAST_VALUES()\
 void operator()(ast::Cast& cast){\
     visit(*this, cast.Content->value);\
@@ -253,7 +248,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_DEFAULT_CASE() void operator()(ast::DefaultCase&){}
 #define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
 #define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
-#define AUTO_IGNORE_UNARY() void operator()(ast::Unary&){}
 #define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
@@ -280,7 +274,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
 #define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Literal& t){return t;}
 #define AUTO_RETURN_CHAR_LITERAL(return_type) return_type operator()(ast::CharLiteral& t){return t;}
-#define AUTO_RETURN_UNARY(return_type) return_type operator()(ast::Unary& t){return t;}
 #define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return t;}
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}

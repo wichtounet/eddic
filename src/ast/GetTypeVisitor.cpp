@@ -47,16 +47,6 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& 
    return visit(*this, ternary.Content->true_value); 
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Unary& unary) const {
-    auto type = visit(*this, unary.Content->value);
-
-    if(unary.Content->op == ast::Operator::STAR){
-        return type->data_type();
-    } else {
-        return type; 
-    }
-}
-
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
    return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
 }
@@ -66,7 +56,13 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PostfixOp
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
-    return visit(*this, operation.Content->left_value);
+    auto type = visit(*this, operation.Content->left_value);
+
+    if(operation.Content->op == ast::Operator::STAR){
+        return type->data_type();
+    } else {
+        return type; 
+    }
 }
 
 namespace {

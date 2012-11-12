@@ -30,9 +30,9 @@ Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
     return float_.value;
 }
 
-Val ast::GetConstantValue::operator()(const ast::Unary& minus) const {
+Val ast::GetConstantValue::operator()(const ast::PrefixOperation& minus) const {
     if(minus.Content->op == ast::Operator::SUB){
-        return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->value));
+        return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->left_value));
     }
 
     eddic_unreachable("Not constant");

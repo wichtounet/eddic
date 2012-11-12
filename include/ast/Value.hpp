@@ -33,7 +33,6 @@ typedef boost::mpl::vector<
             CharLiteral, 
             VariableValue,
             Expression,
-            Unary,
             Null,
             True,
             False,
@@ -68,7 +67,6 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
-#include "ast/Unary.hpp"
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
 #include "ast/NewArray.hpp"

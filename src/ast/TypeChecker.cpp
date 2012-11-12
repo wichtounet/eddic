@@ -41,7 +41,6 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_STRUCT_DECLARATION()
         AUTO_RECURSE_MEMBER_VALUE()
@@ -169,14 +168,16 @@ class CheckerVisitor : public boost::static_visitor<> {
 
         template<typename Operation>
         void checkSuffixOrPrefixOperation(Operation& operation){
-            auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
-            
-            if(type != INT && type != FLOAT){
-                throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
-            }
+            if(operation.Content->op == ast::Operator::INC || operation.Content->op == ast::Operator::DEC){
+                auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
 
-            if(type->is_const()){
-                throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
+                if(type != INT && type != FLOAT){
+                    throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
+                }
+
+                if(type->is_const()){
+                    throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
+                }
             }
         }
 

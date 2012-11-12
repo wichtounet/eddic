@@ -32,7 +32,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
         AUTO_RECURSE_BUILTIN_OPERATORS()
-        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()

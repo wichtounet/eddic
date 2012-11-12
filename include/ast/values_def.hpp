@@ -48,9 +48,6 @@ struct VariableValue;
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
 
-struct ASTUnary;
-typedef Deferred<ASTUnary> Unary;
-
 struct ASTNew;
 typedef Deferred<ASTNew> New;
 
