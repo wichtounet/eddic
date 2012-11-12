@@ -67,6 +67,7 @@ void init_descriptions(){
     po::options_description display("Display options");
     display.add_options()
         ("ast", "Print the Abstract Syntax Tree representation of the source")
+        ("ast-raw", "Print the Abstract Syntax Tree representation of the source coming directly from the parser before any pass is run on the AST. ")
         ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
 
         ("mtac", "Print the medium-level Three Address Code representation of the source")

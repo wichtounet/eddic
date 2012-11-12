@@ -42,6 +42,12 @@ mtac::program_p EDDIFrontEnd::compile(const std::string& file, Platform platform
         //Read dependencies
         resolveDependencies(program, parser);
         
+        //If the user asked for it, print the Abstract Syntax Tree coming from the parser
+        if(configuration->option_defined("ast-raw")){
+            ast::Printer printer;
+            printer.print(program);
+        }
+        
         //AST Passes
         generate_program(program, configuration, platform, pool);
 
