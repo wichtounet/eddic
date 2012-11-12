@@ -168,11 +168,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     prefix_operation %=
             qi::position(position_begin)
-        >>  
-            (
-                    qi::adapttokens[prefix_op] >>  unary_expression
-                |   qi::adapttokens[unary_op] >>   cast_expression
-            );
+        >>  qi::adapttokens[prefix_op]  
+        >>  unary_expression;
+    
+    unary_operation %=
+            qi::position(position_begin)
+        >>  qi::adapttokens[unary_op]   
+        >>  cast_expression;
     
     negated_constant_value = 
             qi::position(position_begin)
@@ -182,7 +184,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     unary_expression %=
             postfix_expression
         |   negated_constant_value
-        |   prefix_operation;
+        |   prefix_operation
+        |   unary_operation;
 
     cast_value %=
             qi::position(position_begin)
