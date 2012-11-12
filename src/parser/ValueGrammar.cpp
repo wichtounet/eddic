@@ -96,6 +96,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
+   
+    variable_value %= 
+            qi::position(position_begin)
+        >>  
+            (
+                    lexer.this_
+                |   lexer.identifier
+            );
     
     null %= 
             qi::eps
@@ -149,13 +157,26 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   function_call
         |   new_array
         |   new_
-        |   member_value
-        |   array_value
         |   variable_value
         |   null
         |   true_
         |   false_
         |   (lexer.left_parenth >> value >> lexer.right_parenth);
+    
+    member_value %= 
+            qi::position(position_begin)
+        >>  primary_value
+        >>  +(
+                    lexer.dot
+                >>  lexer.identifier
+             );
+
+    array_value %=
+            qi::position(position_begin)
+        >>  primary_value
+        >>  lexer.left_bracket
+        >>  value
+        >>  lexer.right_bracket;
 
     postfix_operation %=
             qi::position(position_begin)
@@ -163,7 +184,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  qi::adapttokens[postfix_op];
 
     postfix_expression %=
-            postfix_operation
+            array_value
+        |   member_value
+        |   postfix_operation
         |   primary_value;
 
     prefix_operation %=
@@ -246,36 +269,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  assignment_expression;
 
     value = assignment_expression.alias();
-    
-    member_value %= 
-            qi::position(position_begin)
-        >>  
-            (
-                    array_value
-                |   variable_value
-            )
-        >>  +(
-                    lexer.dot
-                >>  lexer.identifier
-             );
-   
-    variable_value %= 
-            qi::position(position_begin)
-        >>  
-            (
-                    lexer.this_
-                |   lexer.identifier
-            );
-   
-    array_value %=
-            qi::position(position_begin)
-        >>  (
-                    //member_value
-                /*|*/   variable_value
-            )
-        >>  lexer.left_bracket
-        >>  value
-        >>  lexer.right_bracket;
    
     function_call %=
             qi::position(position_begin)
