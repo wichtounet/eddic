@@ -147,7 +147,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   builtin_operator
         |   member_function_call
         |   function_call
-        |   prefix_operation
         |   new_array
         |   new_
         |   member_value
@@ -169,38 +168,37 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     prefix_operation %=
             qi::position(position_begin)
-        >>  qi::adapttokens[prefix_op]
-        >>  (
-                    array_value
-                |   variable_value
+        >>  
+            (
+                    qi::adapttokens[prefix_op] >>  unary_expression
+                |   qi::adapttokens[unary_op] >>   cast_expression
             );
+    
+    negated_constant_value = 
+            qi::position(position_begin)
+        >>  qi::adapttokens[unary_op]
+        >>  integer;
+
+    unary_expression %=
+            postfix_expression
+        |   negated_constant_value
+        |   prefix_operation;
 
     cast_value %=
             qi::position(position_begin)
         >>  lexer.left_parenth
         >>  type.type
         >>  lexer.right_parenth
-        >>  primary_value;
-   
-    unary_value %= 
-            negated_constant_value
-        |   cast_value    
-        |   unary_operation
-        |   postfix_expression;
-    
-    negated_constant_value = 
-            qi::adapttokens[unary_op]
-         >> integer;
+        >>  cast_expression;
 
-    unary_operation %=
-            qi::adapttokens[unary_op] 
-        >   primary_value
-            ;
+    cast_expression %=
+            cast_value
+        |   unary_expression;
     
     multiplicative_value %=
             qi::position(position_begin)
-        >>  unary_value
-        >>  *(qi::adapttokens[multiplicative_op] > unary_value);
+        >>  cast_expression
+        >>  *(qi::adapttokens[multiplicative_op] > cast_expression);
     
     additive_value %=
             qi::position(position_begin)
@@ -240,7 +238,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     
     assignment %= 
             qi::position(position_begin)
-        >>  unary_value    
+        >>  unary_expression
         >>  qi::adapttokens[assign_op]
         >>  assignment_expression;
 

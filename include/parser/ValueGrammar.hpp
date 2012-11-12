@@ -32,10 +32,10 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Ternary()> ternary;
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primary_value;
-    qi::rule<lexer::Iterator, ast::Value()> unary_value;
+//    qi::rule<lexer::Iterator, ast::Value()> unary_value;
     qi::rule<lexer::Iterator, ast::Cast()> cast_value;
-    qi::rule<lexer::Iterator, ast::Unary()> unary_operation;
-    qi::rule<lexer::Iterator, ast::Unary()> negated_constant_value;
+    //qi::rule<lexer::Iterator, ast::Unary()> unary_operation;
+    qi::rule<lexer::Iterator, ast::PrefixOperation()> negated_constant_value;
     qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
     qi::rule<lexer::Iterator, ast::Expression()> additive_value;
     qi::rule<lexer::Iterator, ast::Expression()> multiplicative_value;
@@ -64,6 +64,10 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     
     qi::rule<lexer::Iterator, ast::Value()> assignment_expression;
     qi::rule<lexer::Iterator, ast::Value()> postfix_expression;
+    qi::rule<lexer::Iterator, ast::Value()> unary_expression;
+    qi::rule<lexer::Iterator, ast::Value()> cast_expression;
+
+    /* Operators */
 
     qi::symbols<char, ast::Operator> multiplicative_op;
     qi::symbols<char, ast::Operator> additive_op;
