@@ -155,7 +155,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   null
         |   true_
         |   false_
-        |   (lexer.left_parenth >> value > lexer.right_parenth);
+        |   (lexer.left_parenth >> value >> lexer.right_parenth);
 
     postfix_operation %=
             qi::position(position_begin)
@@ -201,27 +201,27 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     multiplicative_value %=
             qi::position(position_begin)
         >>  cast_expression
-        >>  *(qi::adapttokens[multiplicative_op] > cast_expression);
+        >>  *(qi::adapttokens[multiplicative_op] >> cast_expression);
     
     additive_value %=
             qi::position(position_begin)
         >>  multiplicative_value
-        >>  *(qi::adapttokens[additive_op] > multiplicative_value);
+        >>  *(qi::adapttokens[additive_op] >> multiplicative_value);
    
     relational_value %=
             qi::position(position_begin)
         >>  additive_value
-        >>  *(qi::adapttokens[relational_op] > additive_value);  
+        >>  *(qi::adapttokens[relational_op] >> additive_value);  
     
     logicalAnd_value %=
             qi::position(position_begin)
         >>  relational_value
-        >>  *(qi::adapttokens[logical_and_op] > relational_value);  
+        >>  *(qi::adapttokens[logical_and_op] >> relational_value);  
     
     logicalOr_value %=
             qi::position(position_begin)
         >>  logicalAnd_value
-        >>  *(qi::adapttokens[logical_or_op] > logicalAnd_value);  
+        >>  *(qi::adapttokens[logical_or_op] >> logicalAnd_value);  
 
     ternary %=
             qi::position(position_begin)
@@ -287,7 +287,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             )
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
-        >   lexer.right_parenth;
+        >>  lexer.right_parenth;
     
     member_function_call %=
             qi::position(position_begin)
@@ -304,14 +304,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             )
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
-        >   lexer.right_parenth;
+        >>  lexer.right_parenth;
    
     builtin_operator %=
             qi::position(position_begin)
         >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
         >>  -( value >> *( lexer.comma > value))
-        >   lexer.right_parenth;
+        >>  lexer.right_parenth;
 
     //Configure debugging and rule naming
     
