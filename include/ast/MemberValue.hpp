@@ -22,13 +22,6 @@ class Context;
 namespace ast {
 
 /*!
- * \typedef MemberLocation
- * \brief the Type of value that can be accessed to get a member
- * The MemberValue is only nested by transformation never by grammar
- */
-typedef boost::variant<MemberValue, VariableValue, ArrayValue> MemberLocation;
-
-/*!
  * \class ASTMemberValue
  * \brief The AST node for a member value.  
  * Should only be used from the Deferred version (eddic::ast::MemberValue).

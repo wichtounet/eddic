@@ -21,8 +21,6 @@ class Variable;
 
 namespace ast {
 
-typedef boost::variant<ast::VariableValue, ast::MemberValue> ArrayRef;
-
 /*!
  * \class ASTArrayValue
  * \brief The AST node for a value of an array. 
