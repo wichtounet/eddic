@@ -409,11 +409,21 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Expression& value) const {
         std::cout << indent() << "Expression [" << value.Content->operations.size() << "]" << std::endl; 
         ++level;
+        
         visit(*this, value.Content->first);
+
         for(auto& operation : value.Content->operations){
             std::cout << indent() << (int) operation.get<0>() << std::endl;
-            visit(*this, operation.get<1>());
+
+            if(operation.get<1>()){
+                if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
+                    print_sub(*ptr, "Value");
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
+                    print_each_sub(ptr->get<1>(), "Values");
+                }
+            }
         }
+
         --level;
     }
 

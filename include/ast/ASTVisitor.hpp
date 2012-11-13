@@ -157,11 +157,21 @@ void operator()(ast::BuiltinOperator& builtin){\
     visit_each(*this, builtin.Content->values);\
 }
 
+#define VISIT_COMPOSED_VALUE(value)\
+visit(*this, value.Content->first);\
+for(auto& op : value.Content->operations){\
+    if(op.get<1>()){\
+        if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){\
+            visit(*this, *ptr);\
+        } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){\
+            visit_each(*this, ptr->get<1>());\
+        }\
+    }\
+}
+
 #define AUTO_RECURSE_COMPOSED_VALUES()\
 void operator()(ast::Expression& value){\
-    visit(*this, value.Content->first);\
-    for_each(value.Content->operations.begin(), value.Content->operations.end(), \
-        [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });\
+    VISIT_COMPOSED_VALUE(value)\
 }
 
 #define AUTO_RECURSE_CAST_VALUES()\

@@ -58,7 +58,7 @@ std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::functio
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        right = moveToArgument(operation.get<1>(), function);
+        right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
        
         if (i == 0){
             function->add(std::make_shared<mtac::Quadruple>(t1, left, f(operation.get<0>()), right));
@@ -936,7 +936,7 @@ void compare(ast::Expression& value, ast::Operator op, mtac::function_p function
     eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
     auto left = moveToArgument(value.Content->first, function);
-    auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+    auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
 
     auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
 
@@ -964,9 +964,9 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
 
             for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
                 if(i == value.Content->operations.size() - 1){
-                    visit(*this, value.Content->operations[i].get<1>());   
+                    visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));   
                 } else {
-                    visit(JumpIfFalseVisitor(function, codeLabel), value.Content->operations[i].get<1>());
+                    visit(JumpIfFalseVisitor(function, codeLabel), boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
                 }
             }
 
@@ -977,7 +977,7 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
             visit(*this, value.Content->first);
 
             for(auto& operation : value.Content->operations){
-                visit(*this, operation.get<1>());
+                visit(*this, boost::get<ast::Value>(*operation.get<1>()));
             }
         }
         //Relational operators 
@@ -1008,7 +1008,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
         visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            visit(*this, operation.get<1>());
+            visit(*this, boost::get<ast::Value>(*operation.get<1>()));
         }
     } 
     //Logical or operators (||)
@@ -1019,9 +1019,9 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
 
         for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
             if(i == value.Content->operations.size() - 1){
-                visit(*this, value.Content->operations[i].get<1>());   
+                visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
             } else {
-                visit(JumpIfTrueVisitor(function, codeLabel), value.Content->operations[i].get<1>());
+                visit(JumpIfTrueVisitor(function, codeLabel), boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
             }
         }
 
@@ -1094,7 +1094,7 @@ void performStringOperation(ast::Expression& value, mtac::function_p function, s
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
-        auto second = visit(ToArgumentsVisitor<>(function), operation.get<1>());
+        auto second = visit(ToArgumentsVisitor<>(function), boost::get<ast::Value>(*operation.get<1>()));
         arguments.insert(arguments.end(), second.begin(), second.end());
         
         for(auto& arg : arguments){
@@ -1588,7 +1588,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         visit(JumpIfFalseVisitor(function, falseLabel), value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            visit(JumpIfFalseVisitor(function, falseLabel), operation.get<1>());
+            visit(JumpIfFalseVisitor(function, falseLabel), boost::get<ast::Value>(*operation.get<1>()));
         }
 
         function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
@@ -1607,7 +1607,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         visit(JumpIfTrueVisitor(function, trueLabel), value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            visit(JumpIfTrueVisitor(function, trueLabel), operation.get<1>());
+            visit(JumpIfTrueVisitor(function, trueLabel), boost::get<ast::Value>(*operation.get<1>()));
         }
 
         function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
@@ -1623,7 +1623,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
 
         auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(value.Content->operations[0].get<1>(), function);
+        auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
         
         auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
         if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){

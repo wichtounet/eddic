@@ -298,8 +298,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::Expression& value){
             check_value(value.Content->first);
 
-            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-                [&](ast::Operation& operation){ check_value(operation.get<1>()); });
+            for(auto& op : value.Content->operations){
+                if(op.get<1>()){
+                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                        check_value(*ptr);
+                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                        check_each(ptr->get<1>());
+                    }
+                }
+            }
         }
 
         void operator()(ast::Return& return_){

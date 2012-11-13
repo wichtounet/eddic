@@ -36,6 +36,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_SUFFIX()
         AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
+        AUTO_RECURSE_COMPOSED_VALUES()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -186,12 +187,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
-        }
-
-        void operator()(ast::Expression& value){
-            visit(*this, value.Content->first);
-            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-                    [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
         }
         
         void operator()(ast::VariableValue& variable){

@@ -87,7 +87,24 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->first = visit(*this, source.Content->first);
 
         for(auto& operation : source.Content->operations){
-            copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, operation.get<1>())));
+            if(operation.get<1>()){
+                if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
+                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, *ptr)));
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
+                    std::vector<ast::Value> values;
+
+                    for(auto& v : ptr->get<1>()){
+                        values.push_back(visit(*this, v));
+                    }
+
+                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), 
+                                boost::make_tuple(ptr->get<0>(), std::move(values))));
+                } else {
+                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::get<std::string>(*operation.get<1>())));
+                }
+            } else {
+                copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), ast::OperationValue()));
+            }
         }
 
         return copy;

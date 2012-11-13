@@ -260,15 +260,13 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& value){
-            visit(*this, value.Content->first);
-            
-            for_each(value.Content->operations, [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+            VISIT_COMPOSED_VALUE(value);
 
             ast::GetTypeVisitor visitor;
             auto type = visit(visitor, value.Content->first);
 
             for(auto& operation : value.Content->operations){
-                auto operationType = visit(visitor, operation.get<1>());
+                auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
 
                 if(type->is_pointer()){
                     if(!operationType->is_pointer()){

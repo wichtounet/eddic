@@ -208,9 +208,18 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::Expression& value){
         value.Content->first = visit(*this, value.Content->first);
-        
-        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ operation.get<1>() = visit(*this, operation.get<1>()); });
+    
+        for(auto& op : value.Content->operations){
+            if(op.get<1>()){
+                if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                    op.get<1>() = visit(*this, *ptr);
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                    for(auto& v : ptr->get<1>()){
+                        v = visit(*this, v);
+                    }
+                }
+            }
+        }
 
         return value;
     }
