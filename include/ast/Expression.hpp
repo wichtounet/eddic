@@ -13,6 +13,7 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
+#include <boost/optional.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
@@ -24,7 +25,16 @@ class Context;
 
 namespace ast {
 
-typedef boost::tuple<Operator, Value> Operation;
+typedef boost::tuple<std::string, std::vector<Value>> CallOperationValue;
+
+typedef boost::variant<
+        Value, 
+        std::string, 
+        CallOperationValue
+    >  OperationValueVariant;
+
+typedef boost::optional<OperationValueVariant> OperationValue;
+typedef boost::tuple<Operator, OperationValue> Operation;
 typedef std::vector<Operation> Operations;
 
 /*!
