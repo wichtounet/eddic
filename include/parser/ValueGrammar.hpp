@@ -26,6 +26,19 @@ namespace parser {
  * \brief Grammar representing values in EDDI language.
  */
 struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
+    struct cast_impl {
+        template < typename A >
+        struct result { typedef ast::OperationValue type; };
+
+        ast::OperationValue operator()(const ast::Value& arg) const {
+            ast::OperationValueVariant var = arg;
+            ast::OperationValue value = var;
+            return value;
+        }
+    };
+
+    boost::phoenix::function<cast_impl> cast;
+
     ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
@@ -35,11 +48,19 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Cast()> cast_value;
     qi::rule<lexer::Iterator, ast::PrefixOperation()> negated_constant_value;
     qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
+    
     qi::rule<lexer::Iterator, ast::Expression()> additive_value;
     qi::rule<lexer::Iterator, ast::Expression()> multiplicative_value;
     qi::rule<lexer::Iterator, ast::Expression()> relational_value;
     qi::rule<lexer::Iterator, ast::Expression()> logicalAnd_value;
     qi::rule<lexer::Iterator, ast::Expression()> logicalOr_value;
+
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_cast_expression;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_additive_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_multiplicative_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_relational_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_logicalAnd_value;
+
     qi::rule<lexer::Iterator, ast::Value()> constant;
     qi::rule<lexer::Iterator, ast::Integer()> integer;
     qi::rule<lexer::Iterator, ast::IntegerSuffix()> integer_suffix;

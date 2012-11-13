@@ -13,6 +13,32 @@
 
 using namespace eddic;
 
+/*namespace boost {
+namespace spirit {
+
+namespace traits {
+
+template<>
+struct transform_attribute<ast::OperationValue, ast::Value, qi::domain> {
+    typedef ast::Value type;
+
+    static ast::Value pre(ast::OperationValue&){
+        return ast::OperationValue();
+    }
+
+    static void post(ast::OperationValue& val, ast::Value& attr){
+        val = attr;
+    }
+    
+    static void fail(ast::OperationValue&){
+        
+    }
+};
+
+}
+}
+}*/
+
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         ValueGrammar::base_type(value, "_value Grammar"),
         type(lexer, position_begin),
@@ -220,31 +246,37 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     cast_expression %=
             cast_value
         |   unary_expression;
+
+    limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_relational_value = relational_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_logicalAnd_value = logicalAnd_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     
     multiplicative_value %=
             qi::position(position_begin)
         >>  cast_expression
-        >>  *(qi::adapttokens[multiplicative_op] >> cast_expression);
+        >>  *(qi::adapttokens[multiplicative_op] >> limited_cast_expression);
     
     additive_value %=
             qi::position(position_begin)
         >>  multiplicative_value
-        >>  *(qi::adapttokens[additive_op] >> multiplicative_value);
+        >>  *(qi::adapttokens[additive_op] >> limited_multiplicative_value);
    
     relational_value %=
             qi::position(position_begin)
         >>  additive_value
-        >>  *(qi::adapttokens[relational_op] >> additive_value);  
+        >>  *(qi::adapttokens[relational_op] >> limited_additive_value);  
     
     logicalAnd_value %=
             qi::position(position_begin)
         >>  relational_value
-        >>  *(qi::adapttokens[logical_and_op] >> relational_value);  
+        >>  *(qi::adapttokens[logical_and_op] >> limited_relational_value);  
     
     logicalOr_value %=
             qi::position(position_begin)
         >>  logicalAnd_value
-        >>  *(qi::adapttokens[logical_or_op] >> logicalAnd_value);  
+        >>  *(qi::adapttokens[logical_or_op] >> limited_logicalAnd_value);  
 
     ternary %=
             qi::position(position_begin)
