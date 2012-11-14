@@ -81,6 +81,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     //Only here to cast ast::Value to ast::OperationValue via the the boost::phoenix function
 
+    limited_value = value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
@@ -170,6 +171,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   true_
         |   false_
         |   (lexer.left_parenth >> value >> lexer.right_parenth);
+
+    postfix_expression %=
+            qi::position(position_begin)
+        >>  primary_value
+        >>  *(
+                    lexer.left_bracket 
+                >>  boost::spirit::attr(ast::Operator::BRACKET) 
+                >>  limited_value 
+                >>  lexer.right_bracket
+            );
     
     member_value %= 
             qi::position(position_begin)
@@ -179,20 +190,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 >>  lexer.identifier
              );
 
-    array_value %=
-            qi::position(position_begin)
-        >>  primary_value
-        >>  lexer.left_bracket
-        >>  value
-        >>  lexer.right_bracket;
-
     old_postfix_operation %=
             qi::position(position_begin)
         >>  primary_value
         >>  qi::adapttokens[postfix_op];
 
+    //Will be removed totally
     old_postfix_expression %=
-            array_value
+            postfix_expression
         |   member_value
         |   old_postfix_operation
         |   primary_value;
