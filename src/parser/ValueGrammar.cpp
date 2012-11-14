@@ -197,9 +197,9 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     //Will be removed totally
     old_postfix_expression %=
-            postfix_expression
-        |   member_value
+            member_value
         |   old_postfix_operation
+        |   postfix_expression
         |   primary_value;
 
     prefix_operation %=
