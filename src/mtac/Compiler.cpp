@@ -352,7 +352,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else {
                 return get_member(offset, member_type, value.Content->var);
             }
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        /*TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto array = *ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&array.Content->ref)){
@@ -366,7 +366,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 return get_member(member_info.first, member_info.second, temp);
             } else {
                 //TODO
-            }
+            }*/
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -487,9 +487,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
                 auto type = value.variable()->type()->data_type();
                 return dereference_variable(value.variable(), type);
-            } else if(auto* ptr = boost::get<ast::ArrayValue>(&value.Content->left_value)){
+            } /* TODO else if(auto* ptr = boost::get<ast::ArrayValue>(&value.Content->left_value)){
                 return dereference_sub(*ptr);
-            } 
+            } */
 
             eddic_unreachable("Unhandled dereference left value type");
         } else if(value.Content->op == ast::Operator::ADD){
@@ -524,72 +524,76 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return {performPostfixOperation(operation, function)};
     }
 
-    result_type operator()(ast::ArrayValue& array) const {
-        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array.Content->ref)){
-            auto& ref_var = *ref_ptr;
+    result_type operator()(ast::Expression& value) const {
+        //TODO Recurse into operations
+        auto& operation = value.Content->operations[0];
 
-            if(ref_var.Content->var->type() == STRING){
-                auto index = moveToArgument(array.Content->indexValue, function);
-                auto pointer_temp = function->context->new_temporary(INT);
-                auto t1 = function->context->new_temporary(INT);
+        if(operation.get<0>() == ast::Operator::BRACKET){
+            auto& left_value = value.Content->first;
+            if(auto* ref_ptr = boost::get<ast::VariableValue>(&left_value)){
+                auto& ref_var = *ref_ptr;
 
-                //Get the label
-                function->add(std::make_shared<mtac::Quadruple>(pointer_temp, ref_var.Content->var, mtac::Operator::ASSIGN));
+                if(ref_var.Content->var->type() == STRING){
+                    auto index = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
+                    auto pointer_temp = function->context->new_temporary(INT);
+                    auto t1 = function->context->new_temporary(INT);
 
-                //Get the specified char 
-                auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
-                quadruple->size = mtac::Size::BYTE;
-                function->add(quadruple);
+                    //Get the label
+                    function->add(std::make_shared<mtac::Quadruple>(pointer_temp, ref_var.Content->var, mtac::Operator::ASSIGN));
 
-                return {t1};
-            } 
+                    //Get the specified char 
+                    auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
+                    quadruple->size = mtac::Size::BYTE;
+                    function->add(quadruple);
 
-            auto index = computeIndexOfArray(ref_var.Content->var, array.Content->indexValue, function); 
-            auto type = ref_var.Content->var->type()->data_type();
+                    return {t1};
+                }
 
-            if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
-                auto temp = ref_var.Content->context->new_temporary(type);
-                function->add(std::make_shared<mtac::Quadruple>(temp, ref_var.Content->var, mtac::Operator::DOT, index));
-                return {temp};
-            } else if (type == STRING){
-                auto t1 = ref_var.Content->context->new_temporary(INT);
-                function->add(std::make_shared<mtac::Quadruple>(t1, ref_var.Content->var, mtac::Operator::DOT, index));
+                auto index = computeIndexOfArray(ref_var.Content->var, boost::get<ast::Value>(*operation.get<1>()), function); 
+                auto type = ref_var.Content->var->type()->data_type();
 
-                auto t2 = ref_var.Content->context->new_temporary(INT);
-                auto t3 = ref_var.Content->context->new_temporary(INT);
+                if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+                    auto temp = ref_var.Content->context->new_temporary(type);
+                    function->add(std::make_shared<mtac::Quadruple>(temp, ref_var.Content->var, mtac::Operator::DOT, index));
+                    return {temp};
+                } else if (type == STRING){
+                    auto t1 = ref_var.Content->context->new_temporary(INT);
+                    function->add(std::make_shared<mtac::Quadruple>(t1, ref_var.Content->var, mtac::Operator::DOT, index));
 
-                //Assign the second part of the string
-                function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
-                function->add(std::make_shared<mtac::Quadruple>(t2, ref_var.Content->var, mtac::Operator::DOT, t3));
+                    auto t2 = ref_var.Content->context->new_temporary(INT);
+                    auto t3 = ref_var.Content->context->new_temporary(INT);
 
-                return {t1, t2};
+                    //Assign the second part of the string
+                    function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
+                    function->add(std::make_shared<mtac::Quadruple>(t2, ref_var.Content->var, mtac::Operator::DOT, t3));
+
+                    return {t1, t2};
+                } else {
+                    eddic_unreachable("void is not a variable");
+                }
             } else {
-                eddic_unreachable("void is not a variable");
+                //TODO
             }
         } else {
-            //TODO
+            auto type = ast::GetTypeVisitor()(value);
+
+            if(type == INT){
+                return {performIntOperation(value, function)};
+            } else if(type == FLOAT){
+                return {performFloatOperation(value, function)};
+            } else if(type == BOOL){
+                return {performBoolOperation(value, function)};
+            } else if(type == STRING){
+                auto t1 = function->context->new_temporary(INT);
+                auto t2 = function->context->new_temporary(INT);
+
+                performStringOperation(value, function, t1, t2);
+
+                return {t1, t2};
+            }
+
+            eddic_unreachable("Unsupported type");
         }
-    }
-
-    result_type operator()(ast::Expression& value) const {
-        auto type = ast::GetTypeVisitor()(value);
-
-        if(type == INT){
-            return {performIntOperation(value, function)};
-        } else if(type == FLOAT){
-            return {performFloatOperation(value, function)};
-        } else if(type == BOOL){
-            return {performBoolOperation(value, function)};
-        } else if(type == STRING){
-            auto t1 = function->context->new_temporary(INT);
-            auto t2 = function->context->new_temporary(INT);
-
-            performStringOperation(value, function, t1, t2);
-            
-            return {t1, t2};
-        }
-
-        eddic_unreachable("Unsupported type");
     }
 
     result_type operator()(ast::Cast& cast) const {
@@ -815,7 +819,7 @@ struct AssignVisitor : public boost::static_visitor<> {
 
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             source = dest = (*ptr).Content->var;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        /*TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
@@ -829,7 +833,7 @@ struct AssignVisitor : public boost::static_visitor<> {
                 function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
             } else {
                 //TODO
-            }
+            }*/
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -853,12 +857,12 @@ struct AssignVisitor : public boost::static_visitor<> {
         visit(AssignValueToVariable(function, variable), value);
     }
 
-    void operator()(ast::ArrayValue& array_value){
-        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
+    void operator()(ast::Expression& expression){
+        /*TODO if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
             visit(AssignValueToVariable(function, ref_ptr->Content->var, array_value.Content->indexValue), value);
         } else {
             //TODO
-        }
+        }*/
     }
 
     void operator()(ast::PrefixOperation& dereference_value){
@@ -873,14 +877,15 @@ struct AssignVisitor : public boost::static_visitor<> {
                     unsigned int offset = mtac::compute_member_offset(function->context->global(), variable, member_value.Content->memberNames);
 
                     visit(DereferenceAssign(function, variable, offset), value);
-                } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
-                    eddic_unreachable("Unhandled location");
                 }
+                /*TODO} else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
+                    eddic_unreachable("Unhandled location");
+                }*/
             } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->left_value)){
                 auto left = *var_ptr;
 
                 visit(DereferenceAssign(function, left.Content->var, 0), value);
-            } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->left_value)){
+            /*TODO} else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->left_value)){
                 auto left = *array_ptr;
 
                 //As the array hold pointers, the visitor will return a temporary
@@ -891,7 +896,7 @@ struct AssignVisitor : public boost::static_visitor<> {
 
                 auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
-                visit(DereferenceAssign(function, variable, 0), value);
+                visit(DereferenceAssign(function, variable, 0), value);*/
             } else {
                 eddic_unreachable("Unsupported type"); 
             }
@@ -1694,7 +1699,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             assign(function, operation.Content->left_value, value);
 
             return t1;
-        } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        } /*else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto& left = *left_ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
@@ -1724,7 +1729,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             } else {
                 //TODO
             }
-        } 
+        } */
         
         eddic_unreachable("Unhandled location type");
     }
@@ -1737,8 +1742,8 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
         return var;
     }
 
-    std::shared_ptr<Variable> operator()(ast::ArrayValue& array_value){
-        if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
+    std::shared_ptr<Variable> operator()(ast::Expression& array_value){
+        /*TODO if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
             auto type = visit_non_variant(ast::GetTypeVisitor(), array_value);
             auto t1 = function->context->new_temporary(type);
 
@@ -1752,7 +1757,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             return t1;
         } else {
             //TODO
-        }
+        }*/
     }
     
     std::shared_ptr<Variable> operator()(ast::PrefixOperation& unary){
@@ -1798,8 +1803,8 @@ struct PostfixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>
         return perform(variable_value);
     }
 
-    std::shared_ptr<Variable> operator()(ast::ArrayValue& array_value){
-        return perform(array_value);
+    std::shared_ptr<Variable> operator()(ast::Expression& array_value){
+        //TODO return perform(array_value);
     }
     
     std::shared_ptr<Variable> operator()(ast::PrefixOperation& unary){
