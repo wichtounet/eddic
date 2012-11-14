@@ -13,32 +13,6 @@
 
 using namespace eddic;
 
-/*namespace boost {
-namespace spirit {
-
-namespace traits {
-
-template<>
-struct transform_attribute<ast::OperationValue, ast::Value, qi::domain> {
-    typedef ast::Value type;
-
-    static ast::Value pre(ast::OperationValue&){
-        return ast::OperationValue();
-    }
-
-    static void post(ast::OperationValue& val, ast::Value& attr){
-        val = attr;
-    }
-    
-    static void fail(ast::OperationValue&){
-        
-    }
-};
-
-}
-}
-}*/
-
 parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
         ValueGrammar::base_type(value, "_value Grammar"),
         type(lexer, position_begin),
@@ -212,15 +186,15 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  value
         >>  lexer.right_bracket;
 
-    postfix_operation %=
+    old_postfix_operation %=
             qi::position(position_begin)
         >>  primary_value
         >>  qi::adapttokens[postfix_op];
 
-    postfix_expression %=
+    old_postfix_expression %=
             array_value
         |   member_value
-        |   postfix_operation
+        |   old_postfix_operation
         |   primary_value;
 
     prefix_operation %=
@@ -239,7 +213,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  integer;
 
     unary_expression %=
-            postfix_expression
+            old_postfix_expression
         |   negated_constant_value
         |   prefix_operation
         |   unary_operation;
@@ -367,7 +341,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(new_array);
     DEBUG_RULE(unary_operation);
     DEBUG_RULE(assignment);
-    DEBUG_RULE(postfix_operation);
+    DEBUG_RULE(old_postfix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(array_value);
@@ -378,7 +352,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(char_literal);
     
     DEBUG_RULE(assignment_expression);
-    DEBUG_RULE(postfix_expression);
+    DEBUG_RULE(old_postfix_expression);
     DEBUG_RULE(unary_expression);
     DEBUG_RULE(cast_expression);
 }
