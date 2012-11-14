@@ -39,7 +39,8 @@ typedef std::vector<Operation> Operations;
 
 /*!
  * \class ASTExpression
- * \brief The AST node for a composed value.   
+ * \brief The AST node for an expression. 
+ * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values). 
  * Should only be used from the Deferred version (eddic::ast::Expression).
  */
 struct ASTExpression {

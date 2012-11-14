@@ -105,6 +105,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("%=", ast::Operator::MOD)
         ;
 
+    //Only here to cast ast::Value to ast::OperationValue via the the boost::phoenix function
+
+    limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_relational_value = relational_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_logicalAnd_value = logicalAnd_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+
     /* Terminal values */
     
     new_array %=
@@ -246,12 +254,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     cast_expression %=
             cast_value
         |   unary_expression;
-
-    limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    limited_relational_value = relational_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    limited_logicalAnd_value = logicalAnd_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     
     multiplicative_value %=
             qi::position(position_begin)
