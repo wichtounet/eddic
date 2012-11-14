@@ -199,11 +199,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, value.Content->location);
         }
         
-        void operator()(ast::ArrayValue& array){
-            visit(*this, array.Content->ref);
-            visit(*this, array.Content->indexValue);
-        }
-       
         void operator()(ast::Return& return_){
             return_.Content->context = functionContext;
 

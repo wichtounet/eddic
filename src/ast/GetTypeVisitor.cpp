@@ -105,16 +105,6 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
     return variable.Content->var->type();
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::ArrayValue& array) const {
-    auto array_type = visit(*this, array.Content->ref);
-
-    if(array_type == STRING){
-        return CHAR;
-    } 
-
-    return array_type->data_type();
-}
-
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
     return visit(*this, assign.Content->left_value);
 }
@@ -126,6 +116,15 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
         return BOOL;
     } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
         return BOOL;
+    } else if(op == ast::Operator::BRACKET){
+        //TODO In the near future, it will be necessary to recurse into the operations to get the last type
+        auto array_type = visit(*this, value.Content->first);
+
+        if(array_type == STRING){
+            return CHAR;
+        } 
+
+        return array_type->data_type();
     } else {
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);

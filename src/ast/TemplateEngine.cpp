@@ -122,15 +122,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return source;
     }
     
-    ast::Value operator()(const ast::ArrayValue& source) const {
-        ast::ArrayValue copy;
-
-        copy.Content->ref = visit(*this, source.Content->ref);
-        copy.Content->indexValue = visit(*this, source.Content->indexValue);
-
-        return copy;
-    }
-    
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 

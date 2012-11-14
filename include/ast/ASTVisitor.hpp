@@ -189,11 +189,6 @@ void operator()(ast::PostfixOperation& operation){\
     visit(*this, operation.Content->left_value);\
 }
         
-#define AUTO_RECURSE_ARRAY_VALUES()\
-void operator()(ast::ArrayValue& array){\
-    visit(*this, array.Content->indexValue);\
-}
-
 #define AUTO_RECURSE_CONSTRUCTOR()\
 void operator()(ast::Constructor& function){\
     visit_each(*this, function.Content->instructions);\
@@ -222,7 +217,6 @@ void operator()(ast::NewArray& new_){\
 /* Ignore macros  */
 
 #define AUTO_IGNORE_ARRAY_DECLARATION() void operator()(ast::ArrayDeclaration&){}
-#define AUTO_IGNORE_ARRAY_VALUE() void operator()(ast::ArrayValue&){}
 #define AUTO_IGNORE_ASSIGNMENT() void operator()(ast::Assignment&){}
 #define AUTO_IGNORE_BUILTIN_OPERATOR() void operator()(ast::BuiltinOperator&){}
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
@@ -266,7 +260,6 @@ void operator()(ast::NewArray& new_){\
 /* auto return macros */ 
 
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
-#define AUTO_RETURN_ARRAY_VALUE(return_type) return_type operator()(ast::ArrayValue& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}

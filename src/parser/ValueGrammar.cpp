@@ -349,7 +349,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(old_postfix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
-    DEBUG_RULE(array_value);
     DEBUG_RULE(variable_value);
     DEBUG_RULE(ternary);
     DEBUG_RULE(constant);

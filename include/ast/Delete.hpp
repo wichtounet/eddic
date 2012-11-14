@@ -24,7 +24,7 @@ namespace ast {
 /*!
  * \class ASTDelete
  * \brief The AST node for delete a variable. 
- * Should only be used from the Deferred version (eddic::ast::ArrayValue).
+ * Should only be used from the Deferred version (eddic::ast::Delete).
  */
 struct ASTDelete {
     std::shared_ptr<Context> context;

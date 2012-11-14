@@ -36,7 +36,6 @@ typedef boost::mpl::vector<
             Null,
             True,
             False,
-            ArrayValue,
             FunctionCall,
             MemberFunctionCall,
             Cast,
@@ -63,7 +62,6 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/MemberValue.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
-#include "ast/ArrayValue.hpp"
 #include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"

@@ -217,22 +217,6 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::ArrayValue& array){
-            visit(*this, array.Content->ref);
-            visit(*this, array.Content->indexValue);
-
-            auto var_type = visit(ast::GetTypeVisitor(), array.Content->ref);
-
-            if(!var_type->is_array() && var_type != STRING){
-                throw SemanticalException("The left value is not an array, neither a string", array.Content->position);
-            }
-
-            auto index_type = visit(ast::GetTypeVisitor(), array.Content->indexValue);
-            if (index_type != INT || index_type->is_array()) {
-                throw SemanticalException("Invalid type for the index value, only int indices are allowed", array.Content->position);
-            }
-        }
-        
         void operator()(ast::Cast& cast){
             auto dst_type = visit(ast::TypeTransformer(context), cast.Content->type);
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
@@ -266,49 +250,60 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto type = visit(visitor, value.Content->first);
 
             for(auto& operation : value.Content->operations){
-                auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
+                if(operation.get<0>() == ast::Operator::BRACKET){
+                    if(!type->is_array() && type != STRING){
+                        throw SemanticalException("The left value is not an array, neither a string", value.Content->position);
+                    }
 
-                if(type->is_pointer()){
-                    if(!operationType->is_pointer()){
+                    auto index_type = visit(ast::GetTypeVisitor(), boost::get<ast::Value>(*operation.get<1>()));
+                    if (index_type != INT || index_type->is_array()) {
+                        throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.Content->position);
+                    }
+                } else {
+                    auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
+
+                    if(type->is_pointer()){
+                        if(!operationType->is_pointer()){
+                            throw SemanticalException("Incompatible type", value.Content->position);
+                        }
+                    } else if(type != operationType){
                         throw SemanticalException("Incompatible type", value.Content->position);
                     }
-                } else if(type != operationType){
-                    throw SemanticalException("Incompatible type", value.Content->position);
-                }
-                    
-                auto op = operation.get<0>();
 
-                if(type->is_pointer()){
-                    if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers");
-                    }
-                }
-                
-                if(type == INT){
-                    if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
-                        op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
-                            op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int");
-                    }
-                }
+                    auto op = operation.get<0>();
 
-                if(type == FLOAT){
-                    if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
-                        op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
-                            op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float");
+                    if(type->is_pointer()){
+                        if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers", value.Content->position);
+                        }
                     }
-                }
-                
-                if(type == STRING){
-                    if(op != ast::Operator::ADD){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string");
+
+                    if(type == INT){
+                        if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
+                                op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
+                                op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int", value.Content->position);
+                        }
                     }
-                }
-                
-                if(type == BOOL){
-                    if(op != ast::Operator::AND && op != ast::Operator::OR){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool");
+
+                    if(type == FLOAT){
+                        if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
+                                op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
+                                op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float", value.Content->position);
+                        }
+                    }
+
+                    if(type == STRING){
+                        if(op != ast::Operator::ADD){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
+                        }
+                    }
+
+                    if(type == BOOL){
+                        if(op != ast::Operator::AND && op != ast::Operator::OR){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.Content->position);
+                        }
                     }
                 }
             }

@@ -118,8 +118,8 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
             if(!transformed){
                 visit_non_variant(*this, location_variable);
             }
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
-            visit_non_variant(*this, *ptr);
+        /* TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
+            visit_non_variant(*this, *ptr);*/
         } else {
             eddic_unreachable("Not a left value");
         }
@@ -197,13 +197,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         variable.Content->context->add_reference(variable.Content->var);
 
         return variable;
-    }
-
-    ast::Value operator()(ast::ArrayValue& array){
-        array.Content->ref = visit(*this, array.Content->ref);
-        array.Content->indexValue = visit(*this, array.Content->indexValue);
-
-        return array;
     }
 
     ast::Value operator()(ast::Expression& value){
