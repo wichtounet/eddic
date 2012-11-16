@@ -73,7 +73,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::VariableValue()> variable_value;
     qi::rule<lexer::Iterator, ast::BuiltinOperator()> builtin_operator;
     qi::rule<lexer::Iterator, ast::FunctionCall()> function_call;
-    qi::rule<lexer::Iterator, ast::MemberFunctionCall()> member_function_call;
     qi::rule<lexer::Iterator, ast::True()> true_;
     qi::rule<lexer::Iterator, ast::False()> false_;
     qi::rule<lexer::Iterator, ast::Null()> null;
@@ -86,8 +85,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> unary_expression;
     qi::rule<lexer::Iterator, ast::Value()> cast_expression;
     
-    qi::rule<lexer::Iterator, ast::Value()> old_postfix_expression;
-
     //Versions with cast to ast::OperationValue
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_value;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_string_literal;

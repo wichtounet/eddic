@@ -163,7 +163,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   string_literal
         |   char_literal
         |   builtin_operator
-        |   member_function_call
         |   function_call
         |   new_array
         |   new_
@@ -189,11 +188,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                     qi::adapttokens[postfix_op]       
             );
 
-    //Will be removed totally
-    old_postfix_expression %=
-            postfix_expression
-        |   primary_value;
-
     prefix_operation %=
             qi::position(position_begin)
         >>  qi::adapttokens[prefix_op]  
@@ -210,7 +204,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  integer;
 
     unary_expression %=
-            old_postfix_expression
+            postfix_expression
         |   negated_constant_value
         |   prefix_operation
         |   unary_operation;
@@ -329,7 +323,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(float_);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(function_call);
-    DEBUG_RULE(member_function_call);
     DEBUG_RULE(true_);
     DEBUG_RULE(false_);
     DEBUG_RULE(null);
@@ -346,7 +339,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(char_literal);
     
     DEBUG_RULE(assignment_expression);
-    DEBUG_RULE(old_postfix_expression);
     DEBUG_RULE(unary_expression);
     DEBUG_RULE(cast_expression);
 }

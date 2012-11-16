@@ -189,7 +189,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     instruction %= 
             switch_
-        |   (value.member_function_call > lexer.stop)
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
         |   (struct_declaration >> lexer.stop)

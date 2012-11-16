@@ -18,6 +18,7 @@
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
 #include "ast/Position.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
@@ -25,7 +26,7 @@ class Context;
 
 namespace ast {
 
-typedef boost::tuple<std::string, std::vector<Value>> CallOperationValue;
+typedef boost::tuple<std::string, boost::optional<std::vector<ast::Type>>, std::vector<Value>> CallOperationValue;
 
 typedef boost::variant<
         Value, 

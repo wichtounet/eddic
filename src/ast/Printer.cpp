@@ -394,7 +394,7 @@ struct DebugVisitor : public boost::static_visitor<> {
                 if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
                     print_sub(*ptr, "Value");
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
-                    print_each_sub(ptr->get<1>(), "Values");
+                    print_each_sub(ptr->get<2>(), "Values");
                 }
             }
         }

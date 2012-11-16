@@ -159,7 +159,7 @@ for(auto& op : value.Content->operations){\
         if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){\
             visit(*this, *ptr);\
         } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){\
-            visit_each(*this, ptr->get<1>());\
+            visit_each(*this, ptr->get<2>());\
         }\
     }\
 }

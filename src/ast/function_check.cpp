@@ -302,7 +302,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
                         check_value(*ptr);
                     } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                        check_each(ptr->get<1>());
+                        check_each(ptr->get<2>());
                     }
                 }
             }
