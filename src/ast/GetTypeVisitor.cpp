@@ -91,16 +91,6 @@ std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> globa
 
 } //end of anonymous namespace
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberValue& value) const {
-    auto type = visit(*this, value.Content->location);
-
-    if(type->is_pointer()){
-        type = type->data_type();
-    }
-
-    return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
-}
-
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->var->type();
 }
@@ -110,6 +100,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
+    //TODO In the near future, it will be necessary to recurse into the operations to get the last type
+    
     auto op = value.Content->operations[0].get<0>();
 
     if(op == ast::Operator::AND || op == ast::Operator::OR){
@@ -117,7 +109,6 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
     } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
         return BOOL;
     } else if(op == ast::Operator::BRACKET){
-        //TODO In the near future, it will be necessary to recurse into the operations to get the last type
         auto array_type = visit(*this, value.Content->first);
 
         if(array_type == STRING){
@@ -125,6 +116,15 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
         } 
 
         return array_type->data_type();
+    } else if(op == ast::Operator::DOT){
+        auto type = visit(*this, value.Content->first);
+
+        if(type->is_pointer()){
+            type = type->data_type();
+        }
+
+        //TODO return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
+        return type;
     } else {
         //No need to recurse into operations because type are enforced in the check variables phase
         return visit(*this, value.Content->first);

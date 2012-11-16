@@ -28,9 +28,6 @@ typedef Deferred<ASTFunctionCall> FunctionCall;
 struct ASTMemberFunctionCall;
 typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
 
-struct ASTMemberValue;
-typedef Deferred<ASTMemberValue> MemberValue;
-
 struct ASTCast;
 typedef Deferred<ASTCast> Cast;
 

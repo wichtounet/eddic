@@ -193,12 +193,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             variable.Content->context = currentContext;
         }
         
-        void operator()(ast::MemberValue& value){
-            value.Content->context = currentContext;
-
-            visit(*this, value.Content->location);
-        }
-        
         void operator()(ast::Return& return_){
             return_.Content->context = functionContext;
 

@@ -56,13 +56,6 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
 
         return value;
     }
-    
-    ast::Value operator()(ast::MemberValue& value){
-        //TODO Check if there is a pointer on the path (memberNames) and if there is, split the value in several AST nodes
-        value.Content->location = visit(*this, value.Content->location); 
-
-        return value;
-    }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
         for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
@@ -160,52 +153,6 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         }
 
         return value;
-    }
-
-    ast::Value operator()(ast::MemberValue& value){
-        value.Content->location = visit(*this, value.Content->location); 
-
-        auto fixed = value;
-        auto type = visit(ast::GetTypeVisitor(), value.Content->location);
-
-        auto struct_name = (type->is_pointer() || type->is_array()) ? type->data_type()->mangle() : type->mangle();
-        auto struct_type = value.Content->context->global()->get_struct(struct_name);
-
-        std::vector<std::string> members;
-        std::vector<std::string> memberNames = value.Content->memberNames;
-
-        for(std::size_t i = 0; i < memberNames.size(); ++i){
-            auto& member = memberNames[i];
-            
-            members.push_back(member);
-
-            auto member_type = (*struct_type)[member]->type;
-
-            if(i != memberNames.size() - 1){
-                if(member_type->is_pointer()){
-                    ast::MemberValue member_value;
-                    member_value.Content->context = fixed.Content->context;
-                    member_value.Content->position = fixed.Content->position;
-                    member_value.Content->memberNames = members;
-                    member_value.Content->location = fixed.Content->location;
-
-                    for(std::size_t j = 0; j < members.size(); ++j){
-                        fixed.Content->memberNames.erase(fixed.Content->memberNames.begin());
-                    }
-
-                    members.clear();
-
-                    fixed.Content->location = member_value;
-
-                    member_type = member_type->data_type();
-                }
-
-                struct_name = member_type->mangle();
-                struct_type = value.Content->context->global()->get_struct(struct_name);
-            }
-        }
-
-        return fixed;
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){

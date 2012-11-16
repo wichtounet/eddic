@@ -221,18 +221,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return copy;
     }
     
-    ast::Value operator()(const ast::MemberValue& source) const {
-        ast::MemberValue copy;
-
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->memberNames = source.Content->memberNames;
-        
-        copy.Content->location = visit(*this, source.Content->location);
-
-        return copy;
-    }
-    
     ast::Value operator()(const ast::New& source) const {
         ast::New copy;
 

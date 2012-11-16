@@ -86,7 +86,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     //Warning : The location of the MemberValue is not modified
     //TODO If there are new transformation in the future, adapt the following function
 
-    ast::Value operator()(ast::MemberValue& variable){
+    /*ast::Value operator()(ast::MemberValue& variable){
         auto location = variable.Content->location;
 
         if(auto* ptr = boost::get<ast::VariableValue>(&location)){
@@ -118,8 +118,8 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
             if(!transformed){
                 visit_non_variant(*this, location_variable);
             }
-        /* TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
-            visit_non_variant(*this, *ptr);*/
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
+            visit_non_variant(*this, *ptr);
         } else {
             eddic_unreachable("Not a left value");
         }
@@ -162,7 +162,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         }
 
         return variable;
-    }
+    }*/
 
     ast::Value operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
@@ -179,11 +179,10 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                     this_variable.Content->variableName = "this";
                     this_variable.Content->position = variable.Content->position;
 
-                    ast::MemberValue member_value;
-                    member_value.Content->context = variable.Content->context;
+                    ast::Expression member_value;
                     member_value.Content->position = variable.Content->position;
-                    member_value.Content->location = this_variable;
-                    member_value.Content->memberNames.push_back(variable.Content->variableName);
+                    member_value.Content->first = this_variable;
+                    member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
 
                     return visit_non_variant(*this, member_value);
                 }
