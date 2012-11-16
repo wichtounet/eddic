@@ -34,7 +34,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         FunctionCheckerVisitor(std::shared_ptr<ast::TemplateEngine> template_engine) : template_engine(template_engine) {}
 
         AUTO_RECURSE_GLOBAL_DECLARATION() 
-        AUTO_RECURSE_MEMBER_VALUE()
 
         void operator()(ast::DefaultCase& default_case){
             check_each(default_case.instructions);

@@ -335,7 +335,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
     }
     
-    result_type operator()(ast::MemberValue& member_value) const {
+    /*result_type operator()(ast::MemberValue& member_value) const {
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             auto value = *ptr;
             
@@ -352,7 +352,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             } else {
                 return get_member(offset, member_type, value.Content->var);
             }
-        /*TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto array = *ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&array.Content->ref)){
@@ -366,7 +366,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 return get_member(member_info.first, member_info.second, temp);
             } else {
                 //TODO
-            }*/
+            }
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -388,7 +388,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
         
         eddic_unreachable("Invalid location type");
-    }
+    }*/
    
     result_type operator()(std::shared_ptr<Variable> var) const {
         return {var};
@@ -476,13 +476,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
 
     result_type operator()(ast::PrefixOperation& value) const {
         if(value.Content->op == ast::Operator::STAR){
-            if(auto* ptr = boost::get<ast::MemberValue>(&value.Content->left_value)){
+            /*if(auto* ptr = boost::get<ast::MemberValue>(&value.Content->left_value)){
                 auto member_value = *ptr;
 
                 if(boost::get<ast::VariableValue>(&member_value.Content->location)){
                     return dereference_sub(member_value);
                 } 
-            } else if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->left_value)){
+            } else*/ if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->left_value)){
                 auto& value = *ptr;
 
                 auto type = value.variable()->type()->data_type();
@@ -720,7 +720,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
     
-    void operator()(ast::MemberValue& value) const {
+    /*void operator()(ast::MemberValue& value) const {
         if(type){
             if(type->is_pointer()){
                 pointerAssign(ToArgumentsVisitor<true>(function)(value));
@@ -730,7 +730,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         } else {
             complexAssign(visit_non_variant(ast::GetTypeVisitor(), value), value);
         }
-    }
+    }*/
     
     void operator()(ast::VariableValue& value) const {
         if(type){
@@ -814,12 +814,12 @@ struct AssignVisitor : public boost::static_visitor<> {
 
     AssignVisitor(mtac::function_p function, ast::Value& value) : function(function), value(value) {}
 
-    void operator()(ast::MemberValue& member_value){
+    /*void operator()(ast::MemberValue& member_value){
         std::shared_ptr<Variable> source, dest;
 
         if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             source = dest = (*ptr).Content->var;
-        /*TODO } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        } else if(auto* ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto left = *ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
@@ -833,7 +833,7 @@ struct AssignVisitor : public boost::static_visitor<> {
                 function->add(std::make_shared<mtac::Quadruple>(dest, source, mtac::Operator::PDOT, index));
             } else {
                 //TODO
-            }*/
+            }
         } else if(auto* ptr = boost::get<ast::MemberValue>(&member_value.Content->location)){
             auto visitor = ToArgumentsVisitor<true>(function);
             auto left_value = visit_non_variant(visitor, *ptr);
@@ -849,7 +849,7 @@ struct AssignVisitor : public boost::static_visitor<> {
         boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), source, member_value.Content->memberNames);
 
         visit(AssignValueToVariable(function, dest, offset, member_type), value);
-    }
+    }*/
 
     void operator()(ast::VariableValue& variable_value){
         auto variable = variable_value.Content->var;
@@ -867,7 +867,7 @@ struct AssignVisitor : public boost::static_visitor<> {
 
     void operator()(ast::PrefixOperation& dereference_value){
         if(dereference_value.Content->op == ast::Operator::STAR){
-            if(auto* var_ptr = boost::get<ast::MemberValue>(&dereference_value.Content->left_value)){
+            /*if(auto* var_ptr = boost::get<ast::MemberValue>(&dereference_value.Content->left_value)){
                 auto member_value = *var_ptr;
 
                 if(auto* ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
@@ -878,14 +878,14 @@ struct AssignVisitor : public boost::static_visitor<> {
 
                     visit(DereferenceAssign(function, variable, offset), value);
                 }
-                /*TODO} else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
+                } else if(boost::get<ast::ArrayValue>(&member_value.Content->location)){
                     eddic_unreachable("Unhandled location");
-                }*/
+                }
             } else if(auto* var_ptr = boost::get<ast::VariableValue>(&dereference_value.Content->left_value)){
                 auto left = *var_ptr;
 
                 visit(DereferenceAssign(function, left.Content->var, 0), value);
-            /*TODO} else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->left_value)){
+            } else if(auto* array_ptr = boost::get<ast::ArrayValue>(&dereference_value.Content->left_value)){
                 auto left = *array_ptr;
 
                 //As the array hold pointers, the visitor will return a temporary
@@ -896,10 +896,10 @@ struct AssignVisitor : public boost::static_visitor<> {
 
                 auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
 
-                visit(DereferenceAssign(function, variable, 0), value);*/
+                visit(DereferenceAssign(function, variable, 0), value);
             } else {
                 eddic_unreachable("Unsupported type"); 
-            }
+            }*/
         } else {
             eddic_unreachable("Unsupported left value");
         }
@@ -1435,7 +1435,7 @@ mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function){
     return visit(ToArgumentsVisitor<>(function), value)[0];
 }
     
-void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, mtac::function_p function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
+/*void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Type> type, mtac::function_p function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition){
     auto struct_name = type->mangle();
     auto struct_type = function->context->global()->get_struct(struct_name);
 
@@ -1460,7 +1460,7 @@ void push_struct_member(ast::MemberValue& memberValue, std::shared_ptr<const Typ
 
         memberValue.Content->memberNames.pop_back();
     }
-}
+}*/
 
 void push_struct(mtac::function_p function, boost::variant<std::shared_ptr<Variable>, std::string> param, std::shared_ptr<Function> definition, ast::VariableValue& value){
     auto var = value.Content->var;
@@ -1477,7 +1477,7 @@ void push_struct(mtac::function_p function, boost::variant<std::shared_ptr<Varia
         variable_value.Content->variableName = var->name();
         variable_value.Content->var = var;
         
-        ast::MemberValue member_value;
+        /*ast::MemberValue member_value;
         member_value.Content->context = context;
         member_value.Content->location = variable_value;
         member_value.Content->memberNames = {member->name};
@@ -1494,7 +1494,7 @@ void push_struct(mtac::function_p function, boost::variant<std::shared_ptr<Varia
                     function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
                 }
             }
-        }
+        }*/
     }
 }
 
@@ -1681,7 +1681,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
         } 
     }
 
-    std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
+    /*std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
         if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
             auto left = *left_ptr;
             
@@ -1699,7 +1699,7 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             assign(function, operation.Content->left_value, value);
 
             return t1;
-        } /*else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
+        } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
             auto& left = *left_ptr;
 
             if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
@@ -1729,10 +1729,10 @@ struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>>
             } else {
                 //TODO
             }
-        } */
+        }
         
         eddic_unreachable("Unhandled location type");
-    }
+    }*/
     
     std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
         auto var = variable_value.Content->var;
@@ -1793,10 +1793,6 @@ struct PostfixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>
         performPrefixOperation(operation, function);
 
         return t1;
-    }
-
-    std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
-        return perform(member_value);
     }
     
     std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
