@@ -34,7 +34,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
-        AUTO_RECURSE_SUFFIX()
         AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_COMPOSED_VALUES()
 

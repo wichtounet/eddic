@@ -194,7 +194,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         |   (value.assignment > lexer.stop)
         |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
-        |   (value.old_postfix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   if_
@@ -211,7 +210,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     repeatable_instruction = 
             value.assignment 
         |   swap 
-        |   value.old_postfix_operation
         |   value.prefix_operation
         |   value.function_call;
     

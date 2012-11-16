@@ -540,7 +540,6 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_BRANCHES()
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_PREFIX()
-    AUTO_RECURSE_SUFFIX()
     AUTO_RECURSE_SWITCH()
     
     AUTO_IGNORE_SWAP()
