@@ -55,6 +55,8 @@ std::string eddic::ast::toString(Operator op){
             return "*";
         case ast::Operator::BRACKET:
             return "[";
+        case ast::Operator::BRACKET:
+            return ".";
     }
 
     eddic_unreachable("This operator cannot be converted to string");
