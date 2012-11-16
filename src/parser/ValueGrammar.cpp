@@ -185,17 +185,13 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                      lexer.dot 
                      >>  boost::spirit::attr(ast::Operator::DOT) 
                      >>  limited_string_literal 
+                |
+                    qi::adapttokens[postfix_op]       
             );
-    
-    old_postfix_operation %=
-            qi::position(position_begin)
-        >>  primary_value
-        >>  qi::adapttokens[postfix_op];
 
     //Will be removed totally
     old_postfix_expression %=
-            old_postfix_operation
-        |   postfix_expression
+            postfix_expression
         |   primary_value;
 
     prefix_operation %=
@@ -341,7 +337,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(new_array);
     DEBUG_RULE(unary_operation);
     DEBUG_RULE(assignment);
-    DEBUG_RULE(old_postfix_operation);
     DEBUG_RULE(prefix_operation);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(variable_value);

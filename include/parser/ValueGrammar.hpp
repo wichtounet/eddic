@@ -86,7 +86,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> unary_expression;
     qi::rule<lexer::Iterator, ast::Value()> cast_expression;
     
-    qi::rule<lexer::Iterator, ast::PostfixOperation()> old_postfix_operation;
     qi::rule<lexer::Iterator, ast::Value()> old_postfix_expression;
 
     //Versions with cast to ast::OperationValue
