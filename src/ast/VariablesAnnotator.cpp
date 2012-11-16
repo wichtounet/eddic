@@ -77,12 +77,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return operation;
     }
 
-    ast::Value operator()(ast::PostfixOperation& operation){
-        operation.Content->left_value = visit(*this, operation.Content->left_value);
-
-        return operation;
-    }
-
     //Warning : The location of the MemberValue is not modified
     //TODO If there are new transformation in the future, adapt the following function
 
@@ -572,10 +566,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& operation){
-        visit_non_variant(value_visitor, operation);
-    }
-
-    void operator()(ast::PostfixOperation& operation){
         visit_non_variant(value_visitor, operation);
     }
 };

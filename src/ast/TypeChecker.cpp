@@ -165,6 +165,8 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
+        //TODO Check post fix operation for Expression
+
         template<typename Operation>
         void checkSuffixOrPrefixOperation(Operation& operation){
             if(operation.Content->op == ast::Operator::INC || operation.Content->op == ast::Operator::DEC){
@@ -178,10 +180,6 @@ class CheckerVisitor : public boost::static_visitor<> {
                     throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
                 }
             }
-        }
-
-        void operator()(ast::PostfixOperation& operation){
-            checkSuffixOrPrefixOperation(operation);
         }
 
         void operator()(ast::PrefixOperation& operation){

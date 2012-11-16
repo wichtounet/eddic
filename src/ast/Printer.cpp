@@ -320,12 +320,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Array declaration" << std::endl; 
     }
 
-    void operator()(ast::PostfixOperation& op) const {
-        std::cout << indent() << "(suffix)" << (int)op.Content->op << std::endl; 
-        
-        print_sub(op.Content->left_value, "Left Value");
-    }
-
     void operator()(ast::PrefixOperation& op) const {
         std::cout << indent() << (int)op.Content->op << "(prefix)" << std::endl; 
         

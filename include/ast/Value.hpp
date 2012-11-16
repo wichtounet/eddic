@@ -41,15 +41,11 @@ typedef boost::mpl::vector<
             Cast,
             BuiltinOperator,
             Assignment,
-            PostfixOperation,
-            PrefixOperation
-        > types_initial;
-
-typedef boost::mpl::push_back<boost::mpl::push_back<boost::mpl::push_back<types_initial, 
-        Ternary>::type, 
-        New>::type,
-        NewArray>::type 
-    types;
+            PrefixOperation,
+            Ternary,
+            New,
+            NewArray
+        > types;
 
 typedef boost::make_variant_over<types>::type Value;
 
@@ -66,7 +62,6 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
 #include "ast/NewArray.hpp"
-#include "ast/PostfixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
 #endif

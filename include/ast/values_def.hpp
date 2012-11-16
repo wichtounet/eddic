@@ -51,9 +51,6 @@ typedef Deferred<ASTNew> New;
 struct ASTNewArray;
 typedef Deferred<ASTNewArray> NewArray;
 
-struct ASTPostfixOperation;
-typedef Deferred<ASTPostfixOperation> PostfixOperation;
-
 struct ASTPrefixOperation;
 typedef Deferred<ASTPrefixOperation> PrefixOperation;
 

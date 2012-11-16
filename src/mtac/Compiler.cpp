@@ -520,10 +520,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
     }
 
-    result_type operator()(ast::PostfixOperation& operation) const {
-        return {performPostfixOperation(operation, function)};
-    }
-
     result_type operator()(ast::Expression& value) const {
         //TODO Recurse into operations
         auto& operation = value.Content->operations[0];
@@ -1354,11 +1350,6 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::PostfixOperation& operation){
-            //As we don't need the return value, we can make it prefix
-            performPrefixOperation(operation, function);
-        }
-        
         void operator()(ast::PrefixOperation& operation){
             performPrefixOperation(operation, function);
         }
