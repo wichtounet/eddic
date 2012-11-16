@@ -41,7 +41,8 @@ enum class Operator : unsigned int {
     GREATER_EQUALS,
 
     STAR,               /**< Star operator, to dereference pointers. */ 
-    BRACKET             /**< Bracket operator, to access array index. */ 
+    BRACKET,            /**< Bracket operator, to access array index. */ 
+    DOT                 /**< Dot operator, to access to members */ 
 };
 
 std::string toString(Operator op);

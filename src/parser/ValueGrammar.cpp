@@ -82,6 +82,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     //Only here to cast ast::Value to ast::OperationValue via the the boost::phoenix function
 
     limited_value = value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_string_literal = lexer.string_literal[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
@@ -176,20 +177,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  primary_value
         >>  *(
-                    lexer.left_bracket 
-                >>  boost::spirit::attr(ast::Operator::BRACKET) 
-                >>  limited_value 
-                >>  lexer.right_bracket
+                     lexer.left_bracket 
+                     >>  boost::spirit::attr(ast::Operator::BRACKET) 
+                     >>  limited_value 
+                     >>  lexer.right_bracket
+                |
+                     lexer.dot 
+                     >>  boost::spirit::attr(ast::Operator::DOT) 
+                     >>  limited_string_literal 
             );
     
-    member_value %= 
-            qi::position(position_begin)
-        >>  primary_value
-        >>  +(
-                    lexer.dot
-                >>  lexer.identifier
-             );
-
     old_postfix_operation %=
             qi::position(position_begin)
         >>  primary_value
@@ -197,8 +194,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     //Will be removed totally
     old_postfix_expression %=
-            member_value
-        |   old_postfix_operation
+            old_postfix_operation
         |   postfix_expression
         |   primary_value;
 
@@ -335,7 +331,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(integer);
     DEBUG_RULE(integer_suffix);
     DEBUG_RULE(float_);
-    DEBUG_RULE(member_value);
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(function_call);
     DEBUG_RULE(member_function_call);

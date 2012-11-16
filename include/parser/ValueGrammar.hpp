@@ -35,6 +35,12 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
             ast::OperationValue value = var;
             return value;
         }
+        
+        ast::OperationValue operator()(const std::string& arg) const {
+            ast::OperationValueVariant var = arg;
+            ast::OperationValue value = var;
+            return value;
+        }
     };
 
     boost::phoenix::function<cast_impl> cast;
@@ -65,7 +71,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Literal()> string_literal;
     qi::rule<lexer::Iterator, ast::CharLiteral()> char_literal;
     qi::rule<lexer::Iterator, ast::VariableValue()> variable_value;
-    qi::rule<lexer::Iterator, ast::MemberValue()> member_value;
     qi::rule<lexer::Iterator, ast::BuiltinOperator()> builtin_operator;
     qi::rule<lexer::Iterator, ast::FunctionCall()> function_call;
     qi::rule<lexer::Iterator, ast::MemberFunctionCall()> member_function_call;
@@ -86,6 +91,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
 
     //Versions with cast to ast::OperationValue
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_string_literal;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_cast_expression;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_additive_value;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_multiplicative_value;
