@@ -135,9 +135,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             variable_value.Content->var = functionCall.Content->context->getVariable("this");
 
                             ast::CallOperationValue function_call_operation;
-                            function_call_operation.get<0> = functionCall.Content->function_name; 
-                            function_call_operation.get<1> = functionCall.Content->template_types; 
-                            function_call_operation.get<2> = functionCall.Content->values;
+                            function_call_operation.get<0>() = functionCall.Content->function_name; 
+                            function_call_operation.get<1>() = functionCall.Content->template_types; 
+                            function_call_operation.get<2>() = functionCall.Content->values;
 
                             ast::Expression member_function_call;
                             member_function_call.Content->position = functionCall.Content->position;

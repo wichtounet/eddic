@@ -25,7 +25,7 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::mpl::vector<
+typedef boost::variant<
             Integer, 
             IntegerSuffix, 
             Float,
@@ -44,9 +44,7 @@ typedef boost::mpl::vector<
             Ternary,
             New,
             NewArray
-        > types;
-
-typedef boost::make_variant_over<types>::type Value;
+        > Value;
 
 } //end of ast
 
