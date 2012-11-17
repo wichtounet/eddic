@@ -30,13 +30,8 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
         template < typename A >
         struct result { typedef ast::OperationValue type; };
 
-        ast::OperationValue operator()(const ast::Value& arg) const {
-            ast::OperationValueVariant var = arg;
-            ast::OperationValue value = var;
-            return value;
-        }
-        
-        ast::OperationValue operator()(const std::string& arg) const {
+        template<typename V>
+        ast::OperationValue operator()(const V& arg) const {
             ast::OperationValueVariant var = arg;
             ast::OperationValue value = var;
             return value;
@@ -54,6 +49,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Cast()> cast_value;
     qi::rule<lexer::Iterator, ast::PrefixOperation()> negated_constant_value;
     qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
+    qi::rule<lexer::Iterator, ast::CallOperationValue()> call_value;
     
     qi::rule<lexer::Iterator, ast::Expression()> postfix_expression;
     qi::rule<lexer::Iterator, ast::Expression()> postfix_expression_helper;
@@ -87,6 +83,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     
     //Versions with cast to ast::OperationValue
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_call_value;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_string_literal;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_cast_expression;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_additive_value;

@@ -82,6 +82,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     //Only here to cast ast::Value to ast::OperationValue via the the boost::phoenix function
 
     limited_value = value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_call_value = call_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_string_literal = lexer.string_literal[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
@@ -171,17 +172,32 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   true_
         |   false_
         |   (lexer.left_parenth >> value >> lexer.right_parenth);
+    
+    call_value %=
+            lexer.identifier
+        >>  -(
+                    qi::omit[lexer.less]
+                >>  type >> *(lexer.comma > type)
+                >>  qi::omit[lexer.greater]
+            )
+        >>  lexer.left_parenth
+        >>  -( value >> *( lexer.comma > value))
+        >>  lexer.right_parenth;
 
     postfix_expression %=
             qi::position(position_begin)
         >>  primary_value
         >>  *(
-                     lexer.left_bracket 
+                         lexer.left_bracket 
                      >>  boost::spirit::attr(ast::Operator::BRACKET) 
                      >>  limited_value 
                      >>  lexer.right_bracket
                 |
-                     lexer.dot 
+                         lexer.dot
+                     >>  boost::spirit::attr(ast::Operator::CALL) 
+                     >>  limited_call_value 
+                |
+                         lexer.dot 
                      >>  boost::spirit::attr(ast::Operator::DOT) 
                      >>  limited_string_literal 
                 |
@@ -271,23 +287,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
    
     function_call %=
             qi::position(position_begin)
-        >>  lexer.identifier
-        >>  -(
-                    qi::omit[lexer.less]
-                >>  type >> *(lexer.comma > type)
-                >>  qi::omit[lexer.greater]
-            )
-        >>  lexer.left_parenth
-        >>  -( value >> *( lexer.comma > value))
-        >>  lexer.right_parenth;
-    
-    member_function_call %=
-            qi::position(position_begin)
-        >>  
-            (
-                variable_value
-            )
-        >>  lexer.dot
         >>  lexer.identifier
         >>  -(
                     qi::omit[lexer.less]
