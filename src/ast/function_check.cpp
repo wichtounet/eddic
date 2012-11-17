@@ -134,14 +134,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             variable_value.Content->variableName = "this";
                             variable_value.Content->var = functionCall.Content->context->getVariable("this");
 
-                            ast::MemberFunctionCall member_function_call;
-                            member_function_call.Content->function = context->getFunction(mangled);
-                            member_function_call.Content->mangled_name = mangled;
+                            ast::CallOperationValue function_call_operation;
+                            function_call_operation.get<0> = functionCall.Content->function_name; 
+                            function_call_operation.get<1> = functionCall.Content->template_types; 
+                            function_call_operation.get<2> = functionCall.Content->values;
+
+                            ast::Expression member_function_call;
                             member_function_call.Content->position = functionCall.Content->position;
-                            member_function_call.Content->object = variable_value;
-                            member_function_call.Content->function_name = functionCall.Content->function_name;
-                            member_function_call.Content->template_types = functionCall.Content->template_types;
-                            member_function_call.Content->values = functionCall.Content->values;
+                            member_function_call.Content->first = variable_value;
+                            member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
                             value = member_function_call;
 
@@ -226,7 +227,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             eddic_unreachable("Should be handled by check_value");
         }
 
-        void operator()(ast::MemberFunctionCall& functionCall){
+        /*void operator()(ast::MemberFunctionCall& functionCall){
             template_engine->check_member_function(functionCall);
 
             check_value(functionCall.Content->object);
@@ -262,7 +263,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             } else {
                 throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
             }
-        }
+        }*/
         
         void operator()(ast::Switch& switch_){
             check_value(switch_.Content->value);

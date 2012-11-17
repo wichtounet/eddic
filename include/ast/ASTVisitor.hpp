@@ -141,12 +141,6 @@ void operator()(ast::FunctionCall& functionCall){\
     visit_each(*this, functionCall.Content->values);\
 }
 
-#define AUTO_RECURSE_MEMBER_FUNCTION_CALLS()\
-void operator()(ast::MemberFunctionCall& functionCall){\
-    visit(*this, functionCall.Content->object);\
-    visit_each(*this, functionCall.Content->values);\
-}
-
 #define AUTO_RECURSE_BUILTIN_OPERATORS()\
 void operator()(ast::BuiltinOperator& builtin){\
     visit_each(*this, builtin.Content->values);\
@@ -227,7 +221,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Literal&){}
 #define AUTO_IGNORE_CHAR_LITERAL() void operator()(ast::CharLiteral&){}
-#define AUTO_IGNORE_MEMBER_FUNCTION_CALLS() void operator()(ast::MemberFunctionCall&){}
 #define AUTO_IGNORE_NEW() void operator()(ast::New&){}
 #define AUTO_IGNORE_NEW_ARRAY() void operator()(ast::NewArray&){}
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}

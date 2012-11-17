@@ -289,14 +289,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub(call.Content->values);
     }
 
-    void operator()(ast::MemberFunctionCall& call) const {
-        std::cout << indent() << "Member FunctionCall " << call.Content->function_name;
-        print_template_list(call.Content->template_types);
-        std::cout << std::endl;
-        print_sub(call.Content->object, "Object");
-        print_each_sub(call.Content->values, "Values");
-    }
-
     void operator()(ast::BuiltinOperator& builtin) const {
         std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
         print_each_sub(builtin.Content->values);
@@ -394,6 +386,9 @@ struct DebugVisitor : public boost::static_visitor<> {
                 if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
                     print_sub(*ptr, "Value");
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
+                    if(ptr->get<1>()){
+                        print_template_list(*ptr->get<1>());
+                    }
                     print_each_sub(ptr->get<2>(), "Values");
                 }
             }

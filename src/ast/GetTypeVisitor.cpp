@@ -127,9 +127,9 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
     }
 }
 
-std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFunctionCall& call) const {
+/*std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFunctionCall& call) const {
     return call.Content->function->returnType;
-}
+}*/
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;

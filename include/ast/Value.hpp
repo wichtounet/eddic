@@ -37,7 +37,6 @@ typedef boost::mpl::vector<
             True,
             False,
             FunctionCall,
-            MemberFunctionCall,
             Cast,
             BuiltinOperator,
             Assignment,
@@ -56,7 +55,6 @@ typedef boost::make_variant_over<types>::type Value;
 #include "ast/Assignment.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
-#include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
 #include "ast/Cast.hpp"

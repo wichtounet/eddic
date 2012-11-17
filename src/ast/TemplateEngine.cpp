@@ -85,6 +85,9 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         copy.Content->position = source.Content->position;
         copy.Content->first = visit(*this, source.Content->first);
+        
+        //TODO If function call, must be adapted
+        //TODO adapt_function_call(source);
 
         for(auto& operation : source.Content->operations){
             if(operation.get<1>()){
@@ -130,23 +133,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
-        copy.Content->function_name = source.Content->function_name;
-        copy.Content->template_types = source.Content->template_types;
-
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(*this, value));
-        }
-
-        return copy;
-    }
-    
-    ast::Value operator()(const ast::MemberFunctionCall& source) const {
-        ast::MemberFunctionCall copy;
-
-        copy.Content->function = source.Content->function;
-        copy.Content->mangled_name = source.Content->mangled_name;
-        copy.Content->position = source.Content->position;
-        copy.Content->object = visit(*this, source.Content->object);
         copy.Content->function_name = source.Content->function_name;
         copy.Content->template_types = source.Content->template_types;
 
@@ -241,23 +227,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
-    ast::Instruction operator()(const ast::MemberFunctionCall& source) const {
-        ast::MemberFunctionCall copy;
-
-        copy.Content->function = source.Content->function;
-        copy.Content->mangled_name = source.Content->mangled_name;
-        copy.Content->position = source.Content->position;
-        copy.Content->object = visit(ValueCopier(), source.Content->object);
-        copy.Content->function_name = source.Content->function_name;
-        copy.Content->template_types = source.Content->template_types;
-        
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(ValueCopier(), value));
-        }
-        
-        return copy;
-    }
-    
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
@@ -628,10 +597,6 @@ struct Adaptor : public boost::static_visitor<> {
         visit_each(*this, source.Content->values);
     }
 
-    void operator()(ast::MemberFunctionCall& source){
-        adapt_function_call(source);
-    }
-    
     void operator()(ast::FunctionCall& source){
         adapt_function_call(source);
     }
@@ -848,14 +813,14 @@ void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
    }
 }
 
-void ast::TemplateEngine::check_member_function(ast::MemberFunctionCall& member_function_call){
+/*TODO void ast::TemplateEngine::check_member_function(ast::MemberFunctionCall& member_function_call){
    if(member_function_call.Content->template_types.size() > 0){
        auto object_var_type = visit(ast::GetTypeVisitor(), member_function_call.Content->object);
        auto object_type = object_var_type->is_pointer() ? object_var_type->data_type() : object_var_type;
 
        check_function(member_function_call.Content->template_types, member_function_call.Content->function_name, member_function_call.Content->position, object_type->mangle()); 
    }
-}
+}*/
 
 void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
     log::emit<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;

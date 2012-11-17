@@ -209,15 +209,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
         return value;
     }
-
-    ast::Value operator()(ast::MemberFunctionCall& functionCall){
-        functionCall.Content->object = visit(*this, functionCall.Content->object);
-
-        replace_each(functionCall.Content->values);
-
-        return functionCall;
-    }
-
+    
     ast::Value operator()(ast::Assignment& assignment){
         assignment.Content->left_value = visit(*this, assignment.Content->left_value);
         assignment.Content->value = visit(*this, assignment.Content->value);
@@ -554,10 +546,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     /* Forward to value visitor, don't care about return value, as only variable are transformed */
     
     void operator()(ast::FunctionCall& function_call){
-        visit_non_variant(value_visitor, function_call);
-    }
-    
-    void operator()(ast::MemberFunctionCall& function_call){
         visit_non_variant(value_visitor, function_call);
     }
     

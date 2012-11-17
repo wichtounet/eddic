@@ -13,7 +13,6 @@
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
-#include "ast/MemberFunctionCall.hpp"
 #include "ast/Return.hpp"
 #include "ast/Delete.hpp"
 #include "ast/VariableDeclaration.hpp"
@@ -50,7 +49,6 @@ struct ASTDelete;
 typedef Deferred<ASTDelete> Delete;
 
 typedef boost::variant<
-            MemberFunctionCall,
             FunctionCall, 
             Swap, 
             VariableDeclaration,

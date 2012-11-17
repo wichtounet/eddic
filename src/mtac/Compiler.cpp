@@ -39,7 +39,7 @@ namespace {
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
 void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+//void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
 void assign(mtac::function_p function, ast::Assignment& assignment);
 void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
@@ -249,7 +249,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         eddic_unreachable("Unhandled function return type");
     }
     
-    result_type operator()(ast::MemberFunctionCall& call) const {
+    /*result_type operator()(ast::MemberFunctionCall& call) const {
         auto type = call.Content->function->returnType;
 
         if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -268,7 +268,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         }
         
         eddic_unreachable("Unhandled function return type");
-    }
+    }*/
 
     result_type operator()(ast::Assignment& assignment) const {
         eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
@@ -1370,9 +1370,9 @@ class CompilerVisitor : public boost::static_visitor<> {
             execute_call(functionCall, function, {}, {});
         }
         
-        void operator()(ast::MemberFunctionCall& functionCall){
+        /*void operator()(ast::MemberFunctionCall& functionCall){
             execute_member_call(functionCall, function, {}, {});
-        }
+        }*/
 
         void operator()(ast::Return& return_){
             auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
@@ -1551,7 +1551,7 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
-void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
+/*void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
     auto definition = functionCall.Content->function;
 
     eddic_assert(definition, "All the member functions should be in the function table");
@@ -1568,7 +1568,7 @@ void execute_member_call(ast::MemberFunctionCall& functionCall, mtac::function_p
 
     //Call the function
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
-}
+}*/
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
     auto t1 = function->context->new_temporary(INT); 

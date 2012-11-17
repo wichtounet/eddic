@@ -29,7 +29,7 @@ namespace ast {
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::CharLiteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
-    typedef boost::mpl::vector<ast::FunctionCall, ast::MemberFunctionCall, 
+    typedef boost::mpl::vector<ast::FunctionCall,
         ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::New, ast::NewArray> non_constant_types;
 
     template<typename T>
@@ -45,7 +45,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::PrefixOperation& value) const {
         auto op = value.Content->op;
 
-        if(op == ast::Operator::STAR || op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
+        if(op == ast::Operator::STAR || op == ast::Operator::CALL || op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
             return false;
         }
 

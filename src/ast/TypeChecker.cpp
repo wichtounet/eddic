@@ -38,7 +38,6 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_DEFAULT_CASE()
