@@ -61,32 +61,6 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
     }
 }
 
-namespace {
-
-std::shared_ptr<const Type> get_member_type(std::shared_ptr<GlobalContext> global_context, std::shared_ptr<const Type> type, const std::vector<std::string>& memberNames){
-    auto struct_name = type->mangle();
-    auto struct_type = global_context->get_struct(struct_name);
-
-    for(std::size_t i = 0; i < memberNames.size(); ++i){
-        auto member_type = (*struct_type)[memberNames[i]]->type;
-
-        if(i == memberNames.size() - 1){
-            return member_type;
-        } else {
-            if(member_type->is_pointer()){
-                member_type = member_type->data_type();
-            }
-
-            struct_name = member_type->mangle();
-            struct_type = global_context->get_struct(struct_name);
-        }
-    }
-
-    eddic_unreachable("Problem with the type of members in nested struct values")
-}
-
-} //end of anonymous namespace
-
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
     return variable.Content->var->type();
 }
@@ -97,6 +71,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto type = visit(*this, value.Content->first);
+    
+    auto global_context = value.Content->context->global();
 
     for(auto& operation : value.Content->operations){
         auto op = operation.get<0>();
@@ -106,8 +82,14 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
         } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
             type = BOOL;
         } else if(op == ast::Operator::CALL){
-            //TODO Find the function in the left type
-            //return call.Content->function->returnType;
+            if(type->is_pointer()){
+                type = type->data_type();
+            }
+            
+            auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
+            auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
+            
+            type = global_context->getFunction(function_name)->returnType;
         } else if(op == ast::Operator::BRACKET){
             if(type == STRING){
                 type = CHAR;
@@ -119,8 +101,9 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
                 type = type->data_type();
             }
 
-            //TODO return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
-            //return type;
+            auto struct_type = global_context->get_struct(type->mangle());
+            auto member = boost::get<std::string>(*operation.get<1>());
+            type = (*struct_type)[member]->type;
         } else {
             //Other operators are not changing the type
         }
