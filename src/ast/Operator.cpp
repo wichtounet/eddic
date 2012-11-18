@@ -54,7 +54,7 @@ std::string eddic::ast::toString(Operator op){
         case ast::Operator::STAR:
             return "*";
         case ast::Operator::BRACKET:
-            return "[";
+            return "[]";
         case ast::Operator::DOT:
             return ".";
         case ast::Operator::CALL:
