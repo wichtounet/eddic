@@ -17,6 +17,7 @@
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "mangling.hpp"
 
 #include "ast/TypeChecker.hpp"
 #include "ast/SourceFile.hpp"
@@ -150,7 +151,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 }
             }
 
-            //Special rules for assignments of variales
+            //Special rules for assignments of variables
             if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
                 auto var = (*ptr).variable();
 
@@ -164,10 +165,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        //TODO Check post fix operation for Expression
-
-        template<typename Operation>
-        void checkSuffixOrPrefixOperation(Operation& operation){
+        void operator()(ast::PrefixOperation& operation){
             if(operation.Content->op == ast::Operator::INC || operation.Content->op == ast::Operator::DEC){
                 auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
 
@@ -179,10 +177,6 @@ class CheckerVisitor : public boost::static_visitor<> {
                     throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
                 }
             }
-        }
-
-        void operator()(ast::PrefixOperation& operation){
-            checkSuffixOrPrefixOperation(operation);
         }
 
         void operator()(ast::Return& return_){
@@ -244,16 +238,29 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             ast::GetTypeVisitor visitor;
             auto type = visit(visitor, value.Content->first);
+    
+            auto global_context = value.Content->context->global();
 
             for(auto& operation : value.Content->operations){
-                if(operation.get<0>() == ast::Operator::BRACKET){
+                auto op = operation.get<0>();
+
+                //1. Verify that the left type is OK for the current operation
+                if(op == ast::Operator::BRACKET){
                     if(!type->is_array() && type != STRING){
                         throw SemanticalException("The left value is not an array, neither a string", value.Content->position);
                     }
 
-                    auto index_type = visit(ast::GetTypeVisitor(), boost::get<ast::Value>(*operation.get<1>()));
+                    auto index_type = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
                     if (index_type != INT || index_type->is_array()) {
                         throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.Content->position);
+                    }
+                } else if(op == ast::Operator::INC || op == ast::Operator::DEC){
+                    if(type != INT && type != FLOAT){
+                        throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", value.Content->position);
+                    }
+
+                    if(type->is_const()){
+                        throw SemanticalException("The value is const, cannot edit it", value.Content->position);
                     }
                 } else {
                     auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
@@ -301,6 +308,38 @@ class CheckerVisitor : public boost::static_visitor<> {
                             throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.Content->position);
                         }
                     }
+                }
+
+                //2. Compute the next type
+                if(op == ast::Operator::AND || op == ast::Operator::OR){
+                    type = BOOL;
+                } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+                    type = BOOL;
+                } else if(op == ast::Operator::CALL){
+                    if(type->is_pointer()){
+                        type = type->data_type();
+                    }
+
+                    auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
+                    auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
+
+                    type = global_context->getFunction(function_name)->returnType;
+                } else if(op == ast::Operator::BRACKET){
+                    if(type == STRING){
+                        type = CHAR;
+                    } else {
+                        type = type->data_type();
+                    }
+                } else if(op == ast::Operator::DOT){
+                    if(type->is_pointer()){
+                        type = type->data_type();
+                    }
+
+                    auto struct_type = global_context->get_struct(type->mangle());
+                    auto member = boost::get<std::string>(*operation.get<1>());
+                    type = (*struct_type)[member]->type;
+                } else {
+                    //Other operators are not changing the type
                 }
             }
         }
