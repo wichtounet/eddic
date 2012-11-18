@@ -87,9 +87,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->position = source.Content->position;
         copy.Content->first = visit(*this, source.Content->first);
         
-        //TODO If function call, must be adapted
-        //TODO adapt_function_call(source);
-
         for(auto& operation : source.Content->operations){
             if(operation.get<1>()){
                 if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
@@ -595,17 +592,28 @@ struct Adaptor : public boost::static_visitor<> {
         visit(*this, assignment.Content->value);
     }
 
-    template<typename FunctionCall>
-    void adapt_function_call(FunctionCall& source){
+    void operator()(ast::Expression& expression){
+        for(auto& op : expression.Content->operations){
+            if(op.get<0>() == ast::Operator::CALL){
+                auto& value = boost::get<ast::CallOperationValue>(*op.get<1>());
+
+                if(value.get<1>()){
+                    for(std::size_t i = 0; i < (*value.get<1>()).size(); ++i){
+                        (*value.get<1>())[i] = replace((*value.get<1>())[i]);
+                    }
+                }
+            }
+        }
+
+        VISIT_COMPOSED_VALUE(expression);
+    }
+
+    void operator()(ast::FunctionCall& source){
         for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
             source.Content->template_types[i] = replace(source.Content->template_types[i]);
         }
 
         visit_each(*this, source.Content->values);
-    }
-
-    void operator()(ast::FunctionCall& source){
-        adapt_function_call(source);
     }
     
     void operator()(ast::Cast& source){
@@ -820,14 +828,27 @@ void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
    }
 }
 
-/*TODO void ast::TemplateEngine::check_member_function(ast::MemberFunctionCall& member_function_call){
-   if(member_function_call.Content->template_types.size() > 0){
-       auto object_var_type = visit(ast::GetTypeVisitor(), member_function_call.Content->object);
-       auto object_type = object_var_type->is_pointer() ? object_var_type->data_type() : object_var_type;
+void ast::TemplateEngine::check_member_function(ast::Expression& expression){
+    auto type = visit(ast::GetTypeVisitor(), expression.Content->first);
 
-       check_function(member_function_call.Content->template_types, member_function_call.Content->function_name, member_function_call.Content->position, object_type->mangle()); 
-   }
-}*/
+    for(auto& op : expression.Content->operations){
+        if(op.get<0>() == ast::Operator::CALL){
+            auto& value = boost::get<ast::CallOperationValue>(*op.get<1>());
+
+            if(value.get<1>() && ! (*value.get<1>()).empty()){
+                auto object_type = type->is_pointer() ? type->data_type() : type;
+
+                check_function(
+                        *value.get<1>(), 
+                        boost::get<std::string>(value.get<0>()), 
+                        expression.Content->position, 
+                        object_type->mangle()); 
+            }
+        }
+
+        type = ast::operation_type(type, expression.Content->context, op);
+    }
+}
 
 void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
     log::emit<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;

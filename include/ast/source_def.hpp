@@ -44,6 +44,9 @@ typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
+struct ASTExpression;
+typedef Deferred<ASTExpression> Expression;
+
 } //end of ast
 
 } //end of eddic
