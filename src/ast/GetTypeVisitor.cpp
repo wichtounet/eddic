@@ -69,44 +69,52 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
     return visit(*this, assign.Content->left_value);
 }
 
+std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<const eddic::Type> left, std::shared_ptr<Context> context, const ast::Operation& operation){
+    auto op = operation.get<0>();
+    auto global_context = context->global();
+
+    if(op == ast::Operator::AND || op == ast::Operator::OR){
+        return BOOL;
+    } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        return BOOL;
+    } else if(op == ast::Operator::CALL){
+        auto type = left;
+
+        if(type->is_pointer()){
+            type = type->data_type();
+        }
+
+        auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
+        auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
+
+        return global_context->getFunction(function_name)->returnType;
+    } else if(op == ast::Operator::BRACKET){
+        if(left == STRING){
+            return CHAR;
+        } else {
+            return left->data_type();
+        }
+    } else if(op == ast::Operator::DOT){
+        auto type = left;
+
+        if(type->is_pointer()){
+            type = type->data_type();
+        }
+
+        auto struct_type = global_context->get_struct(type->mangle());
+        auto member = boost::get<std::string>(*operation.get<1>());
+        return (*struct_type)[member]->type;
+    } else {
+        //Other operators are not changing the type
+        return left;
+    }
+}
+
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
     auto type = visit(*this, value.Content->first);
-    
-    auto global_context = value.Content->context->global();
 
     for(auto& operation : value.Content->operations){
-        auto op = operation.get<0>();
-
-        if(op == ast::Operator::AND || op == ast::Operator::OR){
-            type = BOOL;
-        } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            type = BOOL;
-        } else if(op == ast::Operator::CALL){
-            if(type->is_pointer()){
-                type = type->data_type();
-            }
-            
-            auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
-            auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
-            
-            type = global_context->getFunction(function_name)->returnType;
-        } else if(op == ast::Operator::BRACKET){
-            if(type == STRING){
-                type = CHAR;
-            } else {
-                type = type->data_type();
-            }
-        } else if(op == ast::Operator::DOT){
-            if(type->is_pointer()){
-                type = type->data_type();
-            }
-
-            auto struct_type = global_context->get_struct(type->mangle());
-            auto member = boost::get<std::string>(*operation.get<1>());
-            type = (*struct_type)[member]->type;
-        } else {
-            //Other operators are not changing the type
-        }
+        type = ast::operation_type(type, value.Content->context, operation);
     }
 
     return type;

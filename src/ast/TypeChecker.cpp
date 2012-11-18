@@ -311,36 +311,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 }
 
                 //2. Compute the next type
-                if(op == ast::Operator::AND || op == ast::Operator::OR){
-                    type = BOOL;
-                } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-                    type = BOOL;
-                } else if(op == ast::Operator::CALL){
-                    if(type->is_pointer()){
-                        type = type->data_type();
-                    }
-
-                    auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
-                    auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
-
-                    type = global_context->getFunction(function_name)->returnType;
-                } else if(op == ast::Operator::BRACKET){
-                    if(type == STRING){
-                        type = CHAR;
-                    } else {
-                        type = type->data_type();
-                    }
-                } else if(op == ast::Operator::DOT){
-                    if(type->is_pointer()){
-                        type = type->data_type();
-                    }
-
-                    auto struct_type = global_context->get_struct(type->mangle());
-                    auto member = boost::get<std::string>(*operation.get<1>());
-                    type = (*struct_type)[member]->type;
-                } else {
-                    //Other operators are not changing the type
-                }
+                type = ast::operation_type(type, value.Content->context, operation);
             }
         }
 
