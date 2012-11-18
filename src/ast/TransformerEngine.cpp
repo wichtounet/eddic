@@ -22,7 +22,6 @@ using namespace eddic;
 namespace {
 
 struct ValueCleaner : public boost::static_visitor<ast::Value> {
-    AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
     AUTO_RETURN_TRUE(ast::Value)
     AUTO_RETURN_NULL(ast::Value)
@@ -55,6 +54,12 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value 
 
         return value;
+    }
+    
+    ast::Value operator()(ast::Cast& cast){
+        cast.Content->value = visit(*this, cast.Content->value);
+
+        return cast;
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
@@ -110,7 +115,6 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
 };
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
-    AUTO_RETURN_CAST(ast::Value)
     AUTO_RETURN_FALSE(ast::Value)
     AUTO_RETURN_TRUE(ast::Value)
     AUTO_RETURN_NULL(ast::Value)
@@ -120,6 +124,12 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_INTEGER(ast::Value)
     AUTO_RETURN_INTEGER_SUFFIX(ast::Value)
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
+
+    ast::Value operator()(ast::Cast& cast){
+        cast.Content->value = visit(*this, cast.Content->value);
+
+        return cast;
+    }
     
     ast::Value operator()(ast::Expression& value){
         value.Content->first = visit(*this, value.Content->first);
