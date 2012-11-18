@@ -543,6 +543,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->context->add_reference(swap.Content->rhs_var);
     }
 
+    void operator()(ast::Expression& value){
+        visit_non_variant(value_visitor, value);
+    }
+
     /* Forward to value visitor, don't care about return value, as only variable are transformed */
     
     void operator()(ast::FunctionCall& function_call){

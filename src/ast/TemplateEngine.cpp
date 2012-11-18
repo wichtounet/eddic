@@ -227,6 +227,10 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 };
 
 struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
+    ast::Instruction operator()(const ast::Expression& expression) const {
+        return boost::get<ast::Expression>(visit_non_variant(ValueCopier(), expression));
+    }
+
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 

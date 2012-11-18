@@ -602,6 +602,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
             declaration.Content->value = visit(transformer, *declaration.Content->value); 
         }
     }
+
+    void operator()(ast::Expression& expression){
+        visit_non_variant(transformer, expression); 
+    }
 };
 
 struct TransformerVisitor : public boost::static_visitor<> {
@@ -752,6 +756,10 @@ struct TransformerVisitor : public boost::static_visitor<> {
     
     void operator()(ast::ArrayDeclaration& declaration){
         declaration.Content->size = visit(transformer, declaration.Content->size); 
+    }
+
+    void operator()(ast::Expression& expression){
+        visit_non_variant(transformer, expression); 
     }
 };
 
