@@ -320,7 +320,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assign) const {
-        std::cout << indent() << "Assignment [operator = " << ast::toString(assign.Content->op) << " ] " << std::endl;
+        std::cout << indent() << "Assignment [" << ast::toString(assign.Content->op) << "] " << std::endl;
 
         print_sub(assign.Content->left_value, "Left Value");
         print_sub(assign.Content->value, "Right Value");
