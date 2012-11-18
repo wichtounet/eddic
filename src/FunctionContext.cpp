@@ -96,7 +96,6 @@ std::shared_ptr<Variable> FunctionContext::addVariable(const std::string& variab
 
 std::shared_ptr<Variable> FunctionContext::generate_variable(const std::string& prefix, std::shared_ptr<const Type> type){
     std::string name = prefix + "_" + toString(generated++); 
-
     return addVariable(name, type);
 }
 

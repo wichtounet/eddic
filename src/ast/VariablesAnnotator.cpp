@@ -420,7 +420,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
             foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
             foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
-            
+
             //Add references to variables
             foreach.Content->context->add_reference(foreach.Content->var);
             foreach.Content->context->add_reference(foreach.Content->iterVar);
