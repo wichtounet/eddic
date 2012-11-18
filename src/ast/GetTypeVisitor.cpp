@@ -96,40 +96,38 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignmen
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
-    //TODO In the near future, it will be necessary to recurse into the operations to get the last type
-    
-    auto op = value.Content->operations[0].get<0>();
+    auto type = visit(*this, value.Content->first);
 
-    if(op == ast::Operator::AND || op == ast::Operator::OR){
-        return BOOL;
-    } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        return BOOL;
-    } else if(op == ast::Operator::BRACKET){
-        auto array_type = visit(*this, value.Content->first);
+    for(auto& operation : value.Content->operations){
+        auto op = operation.get<0>();
 
-        if(array_type == STRING){
-            return CHAR;
-        } 
+        if(op == ast::Operator::AND || op == ast::Operator::OR){
+            type = BOOL;
+        } else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+            type = BOOL;
+        } else if(op == ast::Operator::CALL){
+            //TODO Find the function in the left type
+            //return call.Content->function->returnType;
+        } else if(op == ast::Operator::BRACKET){
+            if(type == STRING){
+                type = CHAR;
+            } else {
+                type = type->data_type();
+            }
+        } else if(op == ast::Operator::DOT){
+            if(type->is_pointer()){
+                type = type->data_type();
+            }
 
-        return array_type->data_type();
-    } else if(op == ast::Operator::DOT){
-        auto type = visit(*this, value.Content->first);
-
-        if(type->is_pointer()){
-            type = type->data_type();
+            //TODO return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
+            //return type;
+        } else {
+            //Other operators are not changing the type
         }
-
-        //TODO return get_member_type(value.Content->context->global(), type, value.Content->memberNames);
-        return type;
-    } else {
-        //No need to recurse into operations because type are enforced in the check variables phase
-        return visit(*this, value.Content->first);
     }
-}
 
-/*std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::MemberFunctionCall& call) const {
-    return call.Content->function->returnType;
-}*/
+    return type;
+}
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
     return call.Content->function->returnType;
