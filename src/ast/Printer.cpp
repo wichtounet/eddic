@@ -7,12 +7,13 @@
 
 #include <iostream>
 
-#include "ast/Printer.hpp"
-
 #include "variant.hpp"
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+
+#include "ast/Printer.hpp"
+#include "ast/Operator.hpp"
 
 using namespace eddic;
 
@@ -313,13 +314,13 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& op) const {
-        std::cout << indent() << (int)op.Content->op << "(prefix)" << std::endl; 
+        std::cout << indent() << ast::toString(op.Content->op) << "(prefix)" << std::endl; 
         
         print_sub(op.Content->left_value, "Left Value");
     }
 
     void operator()(ast::Assignment& assign) const {
-        std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] " << std::endl;
+        std::cout << indent() << "Assignment [operator = " << ast::toString(assign.Content->op) << " ] " << std::endl;
 
         print_sub(assign.Content->left_value, "Left Value");
         print_sub(assign.Content->value, "Right Value");
@@ -380,11 +381,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            std::cout << indent() << (int) operation.get<0>() << std::endl;
+            std::cout << indent() << ast::toString(operation.get<0>()) << std::endl;
 
             if(operation.get<1>()){
                 if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
-                    print_sub(*ptr, "Value");
+                    visit(*this, *ptr);
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
                     if(ptr->get<1>()){
                         print_template_list(*ptr->get<1>());
