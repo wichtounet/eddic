@@ -174,6 +174,8 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Assignment& assignment){
+            assignment.Content->context = currentContext;
+
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
         }

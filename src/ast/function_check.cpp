@@ -140,6 +140,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             function_call_operation.get<2>() = functionCall.Content->values;
 
                             ast::Expression member_function_call;
+                            member_function_call.Content->context = functionCall.Content->context;
                             member_function_call.Content->position = functionCall.Content->position;
                             member_function_call.Content->first = variable_value;
                             member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));

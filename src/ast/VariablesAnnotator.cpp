@@ -174,6 +174,7 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                     this_variable.Content->position = variable.Content->position;
 
                     ast::Expression member_value;
+                    member_value.Content->context = variable.Content->context;
                     member_value.Content->position = variable.Content->position;
                     member_value.Content->first = this_variable;
                     member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
