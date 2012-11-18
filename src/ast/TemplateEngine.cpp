@@ -101,7 +101,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
                     copy.Content->operations.push_back(
                             boost::make_tuple(
                                 operation.get<0>(), 
-                                boost::make_tuple(ptr->get<0>(), ptr->get<1>(), std::move(values))));
+                                boost::make_tuple(ptr->get<0>(), ptr->get<1>(), std::move(values), boost::optional<std::string>(), boost::optional<std::shared_ptr<eddic::Function>>())));
                 } else {
                     copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::get<std::string>(*operation.get<1>())));
                 }

@@ -211,60 +211,82 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             return perms;
         }
-    
-        template<typename T>
-        std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
+        
+        std::vector<std::shared_ptr<const Type>> get_types(std::vector<ast::Value>& values){
             std::vector<std::shared_ptr<const Type>> types;
 
             ast::GetTypeVisitor visitor;
-            for(auto& value : functionCall.Content->values){
+            for(auto& value : values){
                 types.push_back(visit(visitor, value));
             }
 
             return types;
+        }
+    
+        template<typename T>
+        std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
+            return get_types(functionCall.Content->values);
         }
 
         void operator()(ast::FunctionCall&){
             eddic_unreachable("Should be handled by check_value");
         }
 
-        /*void operator()(ast::MemberFunctionCall& functionCall){
-            template_engine->check_member_function(functionCall);
+        void operator()(ast::Expression& value){
+            template_engine->check_member_function(value);
 
-            check_value(functionCall.Content->object);
-            check_each(functionCall.Content->values);
+            check_value(value.Content->first);
 
-            auto type = visit(ast::GetTypeVisitor(), functionCall.Content->object);
-            auto struct_type = type->is_pointer() ? type->data_type() : type;
-
-            std::string name = functionCall.Content->function_name;
-
-            auto types = get_types(functionCall);
-
-            std::string mangled = mangle(name, types, struct_type);
-
-            //If the function does not exists, try implicit conversions to pointers
-            if(!context->exists(mangled)){
-                auto perms = permutations(types);
-
-                for(auto& perm : perms){
-                    mangled = mangle(name, perm, struct_type);
-
-                    if(context->exists(mangled)){
-                        break;
+            for(auto& op : value.Content->operations){
+                if(op.get<1>()){
+                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                        check_value(*ptr);
+                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                        check_each(ptr->get<2>());
                     }
                 }
             }
 
-            if(context->exists(mangled)){
-                context->addReference(mangled);
+            auto context = value.Content->context->global();
+            
+            auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+            for(auto& op : value.Content->operations){
+                if(op.get<0>() == ast::Operator::CALL){
+                    auto struct_type = type->is_pointer() ? type->data_type() : type;
 
-                functionCall.Content->mangled_name = mangled;
-                functionCall.Content->function = context->getFunction(mangled);
-            } else {
-                throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", functionCall.Content->position);
+                    auto& call_value = boost::get<ast::CallOperationValue>(*op.get<1>());
+                    std::string name = call_value.get<0>();
+
+                    auto types = get_types(call_value.get<2>());
+
+                    std::string mangled = mangle(name, types, struct_type);
+
+                    //If the function does not exist, try implicit conversions to pointers
+                    if(!context->exists(mangled)){
+                        auto perms = permutations(types);
+
+                        for(auto& perm : perms){
+                            mangled = mangle(name, perm, struct_type);
+
+                            if(context->exists(mangled)){
+                                break;
+                            }
+                        }
+                    }
+
+                    if(context->exists(mangled)){
+                        context->addReference(mangled);
+
+                        call_value.get<3>() = mangled;
+                        call_value.get<4>() = context->getFunction(mangled);
+                    } else {
+                        throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.Content->position);
+                    }
+                }
+
+                type = ast::operation_type(type, value.Content->context, op);
             }
-        }*/
+        }
         
         void operator()(ast::Switch& switch_){
             check_value(switch_.Content->value);
@@ -294,20 +316,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::BuiltinOperator& builtin){
             check_each(builtin.Content->values);
-        }
-
-        void operator()(ast::Expression& value){
-            check_value(value.Content->first);
-
-            for(auto& op : value.Content->operations){
-                if(op.get<1>()){
-                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
-                        check_value(*ptr);
-                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                        check_each(ptr->get<2>());
-                    }
-                }
-            }
         }
 
         void operator()(ast::Return& return_){

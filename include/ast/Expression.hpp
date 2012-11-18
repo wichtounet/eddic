@@ -23,10 +23,18 @@
 namespace eddic {
 
 class Context;
+class Function;
 
 namespace ast {
 
-typedef boost::tuple<std::string, boost::optional<std::vector<ast::Type>>, std::vector<Value>> CallOperationValue;
+//TODO Transform that in a struct
+typedef boost::tuple<
+            std::string, 
+            boost::optional<std::vector<ast::Type>>, 
+            std::vector<Value>, 
+            boost::optional<std::string>,       //The function mangled name
+            boost::optional<std::shared_ptr<eddic::Function>>
+        > CallOperationValue;
 
 typedef boost::variant<
         Value, 
