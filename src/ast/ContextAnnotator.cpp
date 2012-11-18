@@ -34,7 +34,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
-        AUTO_RECURSE_COMPOSED_VALUES()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -213,6 +212,12 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             new_.Content->context = currentContext;
             
             visit(*this, new_.Content->size);
+        }
+        
+        void operator()(ast::Expression& expression){
+            expression.Content->context = currentContext;
+
+            VISIT_COMPOSED_VALUE(expression);
         }
 };
 
