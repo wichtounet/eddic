@@ -464,34 +464,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         eddic_unreachable("Unhandled type");
     }
 
-    template<typename Value>
-    result_type dereference_sub(Value& value) const {
-        auto values = visit_non_variant(*this, value);
-
-        eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-        auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-        return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
-    }
-
     result_type operator()(ast::PrefixOperation& value) const {
         if(value.Content->op == ast::Operator::STAR){
-            /*if(auto* ptr = boost::get<ast::MemberValue>(&value.Content->left_value)){
-                auto member_value = *ptr;
+            auto values = visit(*this, value.Content->left_value);
 
-                if(boost::get<ast::VariableValue>(&member_value.Content->location)){
-                    return dereference_sub(member_value);
-                } 
-            } else*/ if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->left_value)){
-                auto& value = *ptr;
+            eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
 
-                auto type = value.variable()->type()->data_type();
-                return dereference_variable(value.variable(), type);
-            } /* TODO else if(auto* ptr = boost::get<ast::ArrayValue>(&value.Content->left_value)){
-                return dereference_sub(*ptr);
-            } */
-
-            eddic_unreachable("Unhandled dereference left value type");
+            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
+            return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
         } else if(value.Content->op == ast::Operator::ADD){
             return visit(*this, value.Content->left_value);
         } else if(value.Content->op == ast::Operator::SUB){
