@@ -45,6 +45,8 @@ void assign(mtac::function_p function, ast::Assignment& assignment);
 void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
 std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
+std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation);
+
 template<typename Call>
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
 
@@ -88,12 +90,6 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
    
     return temp;
 }
-
-template<typename Operation>
-std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::function_p function);
-
-template<typename Operation>
-std::shared_ptr<Variable> performPostfixOperation(Operation& operation, mtac::function_p function);
 
 template<bool Address = false>
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
@@ -438,66 +434,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         eddic_unreachable("Unhandled type");
     }
 
-    result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
-        if(type == INT || type == CHAR || type == BOOL){
-            auto temp = function->context->new_temporary(type);
-
-            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, 0));
-
-            return {temp};
-        } else if(type == FLOAT){
-            auto temp = function->context->new_temporary(type);
-
-            function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, 0));
-
-            return {temp};
-        } else if(type == STRING){
-            auto t1 = function->context->new_temporary(INT);
-            auto t2 = function->context->new_temporary(INT);
-
-            function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
-            function->add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
-
-            return {t1, t2};
-        } 
-        
-        eddic_unreachable("Unhandled type");
-    }
-
     result_type operator()(ast::PrefixOperation& value) const {
-        if(value.Content->op == ast::Operator::STAR){
-            auto values = visit(*this, value.Content->left_value);
-
-            eddic_assert(mtac::isVariable(values[0]), "The visitor should return a temporary variable");
-
-            auto variable = boost::get<std::shared_ptr<Variable>>(values[0]);
-            return dereference_variable(variable, visit_non_variant(ast::GetTypeVisitor(), value)->data_type());
-        } else if(value.Content->op == ast::Operator::ADD){
-            return visit(*this, value.Content->left_value);
-        } else if(value.Content->op == ast::Operator::SUB){
-            mtac::Argument arg = moveToArgument(value.Content->left_value, function);
-
-            auto type = visit(ast::GetTypeVisitor(), value.Content->left_value);
-            auto t1 = function->context->new_temporary(type);
-
-            if(type == FLOAT){
-                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::FMINUS));
-            } else {
-                function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::MINUS));
-            }
-
-            return {t1};
-        } else if(value.Content->op == ast::Operator::NOT){
-            mtac::Argument arg = moveToArgument(value.Content->left_value, function);
-            
-            auto t1 = function->context->new_temporary(BOOL);
-
-            function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::NOT));
-
-            return {t1};
-        } else {
-            return {performPrefixOperation(value, function)};
-        }
+        return perform_prefix_operation(function, value);
     }
 
     result_type operator()(ast::Expression& value) const {
@@ -1331,7 +1269,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::PrefixOperation& operation){
-            performPrefixOperation(operation, function);
+            perform_prefix_operation(function, operation);
         }
 
         void operator()(ast::DoWhile& while_){
@@ -1625,179 +1563,109 @@ ast::VariableValue to_variable_value(mtac::function_p function, std::shared_ptr<
     return value;
 }
 
-template<typename Operation>
-struct PrefixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
-    mtac::function_p function;
-    Operation& operation;
+std::vector<mtac::Argument> dereference_variable(mtac::function_p function, std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type){
+    if(type == INT || type == CHAR || type == BOOL){
+        auto temp = function->context->new_temporary(type);
 
-    PrefixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
+        function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, 0));
 
-    void perform(std::shared_ptr<Variable> t1){
-        if(t1->type() == FLOAT){
-            if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
-            } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
-            } else {
-                eddic_unreachable("Unsupported operator");    
-            }
-        } else if (t1->type() == INT){
-            if(operation.Content->op == ast::Operator::INC){
-                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
-            } else if(operation.Content->op == ast::Operator::DEC){
-                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
-            } else {
-                eddic_unreachable("Unsupported operator");    
-            }
-        } 
-    }
+        return {temp};
+    } else if(type == FLOAT){
+        auto temp = function->context->new_temporary(type);
 
-    /*std::shared_ptr<Variable> operator()(ast::MemberValue& member_value){
-        if(auto* left_ptr = boost::get<ast::VariableValue>(&member_value.Content->location)){
-            auto left = *left_ptr;
-            
-            auto type = visit_non_variant(ast::GetTypeVisitor(), member_value);
-            auto t1 = function->context->new_temporary(type);
-                
-            //Load left value in t1
-            visit(AssignValueToVariable(function, t1), operation.Content->left_value);
-    
-            //Perform the operation
-            perform(t1);
-            
-            //Assign the new value to the left value
-            ast::Value value = to_variable_value(function, t1);
-            assign(function, operation.Content->left_value, value);
+        function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, 0));
 
-            return t1;
-        } else if(auto* left_ptr = boost::get<ast::ArrayValue>(&member_value.Content->location)){
-            auto& left = *left_ptr;
+        return {temp};
+    } else if(type == STRING){
+        auto t1 = function->context->new_temporary(INT);
+        auto t2 = function->context->new_temporary(INT);
 
-            if(auto* ref_ptr = boost::get<ast::VariableValue>(&left.Content->ref)){
-                auto type = visit_non_variant(ast::GetTypeVisitor(), left);
-                auto t1 = function->context->new_temporary(type);
+        function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+        function->add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
-                //Load left value in t1
-                visit(AssignValueToVariable(function, t1), operation.Content->left_value);
+        return {t1, t2};
+    } 
 
-                //Perform the operation
-                perform(t1);
-
-                auto variable = ref_ptr->Content->var;
-
-                auto index = computeIndexOfArray(variable, left.Content->indexValue, function); 
-
-                auto temp = function->context->new_temporary(INT);
-                function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, index));
-
-                unsigned int offset = 0;
-                std::shared_ptr<const Type> member_type;
-                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, member_value.Content->memberNames);
-
-                visit_non_variant(AssignValueToVariable(function, temp, offset, member_type), t1);
-
-                return t1;
-            } else {
-                //TODO
-            }
-        }
-        
-        eddic_unreachable("Unhandled location type");
-    }*/
-    
-    std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
-        auto var = variable_value.Content->var;
-
-        perform(var);
-
-        return var;
-    }
-
-    std::shared_ptr<Variable> operator()(ast::Expression& array_value){
-        /*TODO if(auto* ref_ptr = boost::get<ast::VariableValue>(&array_value.Content->ref)){
-            auto type = visit_non_variant(ast::GetTypeVisitor(), array_value);
-            auto t1 = function->context->new_temporary(type);
-
-            //Load left value in t1
-            visit_non_variant(AssignValueToVariable(function, t1), array_value);
-
-            perform(t1);
-
-            visit_non_variant(AssignValueToVariable(function, ref_ptr->Content->var, array_value.Content->indexValue), t1);
-
-            return t1;
-        } else {
-            //TODO
-        }*/
-    }
-    
-    std::shared_ptr<Variable> operator()(ast::PrefixOperation& unary){
-        if(unary.Content->op == ast::Operator::STAR){
-            //TODO Support this feature
-        }
-
-        eddic_unreachable("Unsupported feature");
-    }
-    
-    template<typename T>
-    result_type operator()(T&){
-        eddic_unreachable("Unsupported left value");
-    }
-};
-
-template<typename Operation>
-struct PostfixOperationVisitor : boost::static_visitor<std::shared_ptr<Variable>> {
-    mtac::function_p function;
-    Operation& operation;
-
-    PostfixOperationVisitor(mtac::function_p function, Operation& operation) : function(function), operation(operation) {}
-
-    template<typename V>
-    std::shared_ptr<Variable> perform(V& value){
-        auto type = visit_non_variant(ast::GetTypeVisitor(), value);
-        auto t1 = function->context->new_temporary(type);
-
-        //Load left value in t1
-        visit(AssignValueToVariable(function, t1), operation.Content->left_value);
-
-        //Note: The extra temporary will be removed by optimizations
-        performPrefixOperation(operation, function);
-
-        return t1;
-    }
-    
-    std::shared_ptr<Variable> operator()(ast::VariableValue& variable_value){
-        return perform(variable_value);
-    }
-
-    std::shared_ptr<Variable> operator()(ast::Expression& array_value){
-        //TODO return perform(array_value);
-    }
-    
-    std::shared_ptr<Variable> operator()(ast::PrefixOperation& unary){
-        if(unary.Content->op == ast::Operator::STAR){
-            return perform(unary);
-        } else {
-            eddic_unreachable("Unsupported left value");
-        }
-    }
-    
-    template<typename T>
-    result_type operator()(T&){
-        eddic_unreachable("Unsupported left value");
-    }
-};
-
-template<typename Operation>
-std::shared_ptr<Variable> performPrefixOperation(Operation& operation, mtac::function_p function){
-    PrefixOperationVisitor<Operation> visitor(function, operation);
-    return visit(visitor, operation.Content->left_value);
+    eddic_unreachable("Unhandled type");
 }
 
-template<typename Operation>
-std::shared_ptr<Variable> performPostfixOperation(Operation& operation, mtac::function_p function){
-    PostfixOperationVisitor<Operation> visitor(function, operation);
-    return visit(visitor, operation.Content->left_value);
+std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation){
+    auto op = operation.Content->op;
+    auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+    auto left = visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
+        
+    switch(op){
+        case ast::Operator::STAR:
+        {
+            eddic_assert(left.size() == 1, "STAR only support one value");
+            eddic_assert(mtac::isVariable(left[0]), "The visitor should return a temporary variable");
+
+            auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
+            return dereference_variable(function, variable, type->data_type());
+        }
+
+        case ast::Operator::NOT:
+        {
+            eddic_assert(left.size() == 1, "NOT only support one value");
+
+            auto t1 = function->context->new_temporary(BOOL);
+
+            function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::NOT));
+
+            return {t1};
+        }
+
+        case ast::Operator::ADD:
+            return left;
+
+        case ast::Operator::SUB:
+        {
+            eddic_assert(left.size() == 1, "SUB only support one value");
+
+            auto t1 = function->context->new_temporary(type);
+
+            if(type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::FMINUS));
+            } else {
+                function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::MINUS));
+            }
+
+            return {t1};
+        }
+        
+        case ast::Operator::INC:
+        {
+            eddic_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
+
+            auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
+
+            if(type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+            } else if (type == INT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+            } 
+
+            return {t1};
+        }
+        
+        case ast::Operator::DEC:
+        {
+            eddic_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
+
+            auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
+
+            if(type == FLOAT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+            } else if (type == INT){
+                function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+            }
+
+            return {t1};
+        }
+
+        default:
+            eddic_unreachable("Unsupported operator");    
+    }
 }
 
 } //end of anonymous namespace
