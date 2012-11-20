@@ -36,6 +36,8 @@ using namespace eddic;
 
 namespace {
 
+typedef std::vector<mtac::Argument> arguments;
+
 /* Assignments (left_value = value) */
 
 void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
@@ -45,8 +47,8 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
 void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
-std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
-std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation);
+arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
+arguments perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
@@ -90,7 +92,7 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
     return temp;
 }
     
-std::vector<mtac::Argument> get_member(mtac::function_p function, unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var){
+arguments get_member(mtac::function_p function, unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var){
     auto platform = function->context->global()->target_platform();
 
     if(member_type == STRING){
@@ -105,7 +107,7 @@ std::vector<mtac::Argument> get_member(mtac::function_p function, unsigned int o
         auto elements = member_type->elements();
         auto data_type = member_type->data_type();
 
-        std::vector<mtac::Argument> result;
+        arguments result;
 
         for(unsigned int i = 0; i < elements; ++i){
             if(data_type == STRING){
@@ -144,7 +146,7 @@ std::vector<mtac::Argument> get_member(mtac::function_p function, unsigned int o
 }
 
 template<bool Address>
-std::vector<mtac::Argument> compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, std::vector<mtac::Argument>& left, ast::Operation& operation){
+arguments compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, arguments& left, ast::Operation& operation){
     auto operation_value = operation.get<1>();
 
     switch(operation.get<0>()){
@@ -265,7 +267,7 @@ std::vector<mtac::Argument> compute_expression_operation(mtac::function_p functi
 }
 
 template<bool Address = false>
-struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
+struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     ToArgumentsVisitor(mtac::function_p f) : function(f) {}
     
     mutable mtac::function_p function;
@@ -558,10 +560,10 @@ struct AbstractVisitor : public boost::static_visitor<> {
     
     mutable mtac::function_p function;
     
-    virtual void intAssign(const std::vector<mtac::Argument>& arguments) const = 0;
-    virtual void pointerAssign(const std::vector<mtac::Argument>& arguments) const = 0;
-    virtual void floatAssign(const std::vector<mtac::Argument>& arguments) const = 0;
-    virtual void stringAssign(const std::vector<mtac::Argument>& arguments) const = 0;
+    virtual void intAssign(const arguments& arguments) const = 0;
+    virtual void pointerAssign(const arguments& arguments) const = 0;
+    virtual void floatAssign(const arguments& arguments) const = 0;
+    virtual void stringAssign(const arguments& arguments) const = 0;
     
     template<typename T>
     void complexAssign(std::shared_ptr<const Type> type, T& value) const {
@@ -595,7 +597,7 @@ struct AssignValueToVariable : public AbstractVisitor {
     boost::optional<unsigned int> offset;
     boost::optional<ast::Value> indexValue;
 
-    void intAssign(const std::vector<mtac::Argument>& arguments) const {
+    void intAssign(const arguments& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else if(indexValue){
@@ -606,7 +608,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void pointerAssign(const std::vector<mtac::Argument>& arguments) const {
+    void pointerAssign(const arguments& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else if(indexValue){
@@ -617,7 +619,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void floatAssign(const std::vector<mtac::Argument>& arguments) const {
+    void floatAssign(const arguments& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else if(indexValue){
@@ -628,7 +630,7 @@ struct AssignValueToVariable : public AbstractVisitor {
         }
     }
 
-    void stringAssign(const std::vector<mtac::Argument>& arguments) const {
+    void stringAssign(const arguments& arguments) const {
         if(offset){
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, *offset + INT->size(function->context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, arguments[1]));
@@ -686,7 +688,7 @@ struct DereferenceAssign : public AbstractVisitor {
     std::shared_ptr<Variable> variable;
     unsigned int offset;
 
-    void intAssign(const std::vector<mtac::Argument>& arguments) const {
+    void intAssign(const arguments& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
         } else {
@@ -697,7 +699,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
     
-    void pointerAssign(const std::vector<mtac::Argument>& arguments) const {
+    void pointerAssign(const arguments& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_PASSIGN, arguments[0]));
         } else {
@@ -708,7 +710,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
     
-    void floatAssign(const std::vector<mtac::Argument>& arguments) const {
+    void floatAssign(const arguments& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_FASSIGN, arguments[0]));
         } else {
@@ -719,7 +721,7 @@ struct DereferenceAssign : public AbstractVisitor {
         }
     }
 
-    void stringAssign(const std::vector<mtac::Argument>& arguments) const {
+    void stringAssign(const arguments& arguments) const {
         if(offset == 0){
             function->add(std::make_shared<mtac::Quadruple>(variable, 0, mtac::Operator::DOT_ASSIGN, arguments[0]));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(function->context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, arguments[1]));
@@ -1028,7 +1030,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     }
 }
 
-std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary){
+arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
     auto type = visit_non_variant(ast::GetTypeVisitor(), ternary);
 
     auto falseLabel = newLabel();
@@ -1074,7 +1076,7 @@ std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Tern
 void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
     eddic_assert(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
 
-    std::vector<mtac::Argument> arguments;
+    arguments arguments;
 
     auto first = visit(ToArgumentsVisitor<>(function), value.Content->first);
     arguments.insert(arguments.end(), first.begin(), first.end());
@@ -1508,7 +1510,7 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
                 }
             } 
 
-            std::vector<mtac::Argument> args;
+            arguments args;
             if(param->type()->is_pointer()){
                 args = visit(ToArgumentsVisitor<true>(function), first);
             } else {
@@ -1602,7 +1604,7 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
     return t1;
 }
 
-std::vector<mtac::Argument> dereference_variable(mtac::function_p function, std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type){
+arguments dereference_variable(mtac::function_p function, std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type){
     if(type == INT || type == CHAR || type == BOOL){
         auto temp = function->context->new_temporary(type);
 
@@ -1628,7 +1630,7 @@ std::vector<mtac::Argument> dereference_variable(mtac::function_p function, std:
     eddic_unreachable("Unhandled type");
 }
 
-std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation){
+arguments perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation){
     auto op = operation.Content->op;
     auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
     auto left = visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
