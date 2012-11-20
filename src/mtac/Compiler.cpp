@@ -36,12 +36,15 @@ using namespace eddic;
 
 namespace {
 
+/* Assignments (left_value = value) */
+
+void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
+void assign(mtac::function_p function, std::shared_ptr<Variable> left_value, ast::Value& value);
+
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
 void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
-void assign(mtac::function_p function, ast::Assignment& assignment);
-void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
 std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
@@ -244,7 +247,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::Assignment& assignment) const {
         eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-        assign(function, assignment);
+        assign(function, assignment.Content->left_value, assignment.Content->value);
 
         return visit(*this, assignment.Content->left_value);
     }
@@ -825,8 +828,14 @@ void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value
     visit(visitor, left_value);
 }
 
-void assign(mtac::function_p function, ast::Assignment& assignment){
-    assign(function, assignment.Content->left_value, assignment.Content->value);
+void assign(mtac::function_p function, std::shared_ptr<Variable> variable, ast::Value& value){
+    ast::VariableValue left_value;
+    left_value.Content->var = variable;
+    left_value.Content->variableName = variable->name();
+    left_value.Content->context = function->context;
+
+    AssignVisitor visitor(function, value);
+    visit_non_variant(visitor, left_value);
 }
 
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
@@ -963,11 +972,11 @@ std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Tern
         auto t1 = function->context->new_temporary(type);
 
         visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
-        visit(AssignValueToVariable(function, t1), ternary.Content->true_value);
+        assign(function, t1, ternary.Content->true_value);
         function->add(std::make_shared<mtac::Goto>(endLabel));
         
         function->add(falseLabel);
-        visit(AssignValueToVariable(function, t1), ternary.Content->false_value);
+        assign(function, t1, ternary.Content->false_value);
         
         function->add(endLabel);
 
@@ -1056,7 +1065,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Assignment& assignment){
             eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-            assign(function, assignment);
+            assign(function, assignment.Content->left_value, assignment.Content->value);
         }
         
         void operator()(ast::SourceFile& p){
@@ -1229,7 +1238,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             } else {
                 if(declaration.Content->value){
                     if(!var->type()->is_const()){
-                        visit(AssignValueToVariable(function, var), *declaration.Content->value);
+                        assign(function, var, *declaration.Content->value);
                     }
                 }
             }
@@ -1525,15 +1534,6 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
     }
     
     return t1;
-}
-
-ast::VariableValue to_variable_value(mtac::function_p function, std::shared_ptr<Variable> variable){
-    ast::VariableValue value;
-    value.Content->var = variable;
-    value.Content->variableName = variable->name();
-    value.Content->context = function->context;
-
-    return value;
 }
 
 std::vector<mtac::Argument> dereference_variable(mtac::function_p function, std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type){
