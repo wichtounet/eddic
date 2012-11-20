@@ -89,6 +89,180 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
    
     return temp;
 }
+    
+std::vector<mtac::Argument> get_member(mtac::function_p function, unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var){
+    auto platform = function->context->global()->target_platform();
+
+    if(member_type == STRING){
+        auto t1 = function->context->new_temporary(INT);
+        auto t2 = function->context->new_temporary(INT);
+
+        function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
+        function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(platform)));
+
+        return {t1, t2};
+    } else if(member_type->is_array()){
+        auto elements = member_type->elements();
+        auto data_type = member_type->data_type();
+
+        std::vector<mtac::Argument> result;
+
+        for(unsigned int i = 0; i < elements; ++i){
+            if(data_type == STRING){
+                //TODO
+            } else if(data_type->is_custom_type()){
+                //TODO
+            } else {
+                auto temp = function->context->new_temporary(data_type);
+
+                if(data_type == FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
+                } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
+                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+                } else {
+                    eddic_unreachable("Unhandled type");
+                }
+
+                result.push_back(temp);
+            }
+        }
+
+        return result;
+    } else {
+        auto temp = function->context->new_temporary(member_type);
+
+        if(member_type == FLOAT){
+            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
+        } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
+            function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
+        } else {
+            eddic_unreachable("Unhandled type");
+        }
+
+        return {temp};
+    }
+}
+
+template<bool Address>
+std::vector<mtac::Argument> compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, std::vector<mtac::Argument>& left, ast::Operation& operation){
+    auto operation_value = operation.get<1>();
+
+    switch(operation.get<0>()){
+        case ast::Operator::BRACKET:
+            {
+                auto index_value = boost::get<ast::Value>(*operation_value);
+
+                if(type == STRING){
+                    assert(left.size()  == 1 || left.size() == 2);
+
+                    auto index = moveToArgument(index_value, function);
+                    auto pointer_temp = function->context->new_temporary(INT);
+                    auto t1 = function->context->new_temporary(INT);
+
+                    //Get the label
+                    function->add(std::make_shared<mtac::Quadruple>(pointer_temp, left[0], mtac::Operator::ASSIGN));
+
+                    //Get the specified char 
+                    auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
+                    quadruple->size = mtac::Size::BYTE;
+                    function->add(quadruple);
+
+                    left = {t1};
+                } else {
+                    assert(left.size() == 1);
+
+                    auto index = computeIndexOfArray(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
+                    auto data_type = type->data_type();
+
+                    if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
+                        auto temp = function->context->new_temporary(data_type);
+                        function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
+                        left = {temp};
+                    } else if (data_type == STRING){
+                        auto t1 = function->context->new_temporary(INT);
+                        function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::DOT, index));
+
+                        auto t2 = function->context->new_temporary(INT);
+                        auto t3 = function->context->new_temporary(INT);
+
+                        //Assign the second part of the string
+                        function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
+                        function->add(std::make_shared<mtac::Quadruple>(t2, left[0], mtac::Operator::DOT, t3));
+
+                        left = {t1, t2};
+                    } else {
+                        eddic_unreachable("Type not handled by BRACKET");
+                    }
+                }
+            }
+
+        case ast::Operator::DOT:
+            {
+                assert(left.size() == 1);
+                auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
+                auto member = boost::get<std::string>(*operation_value);
+
+                std::shared_ptr<const Type> member_type;
+                unsigned int offset = 0;
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, {member});
+
+                if(Address){
+                    auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
+
+                    function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, offset));
+
+                    left = {temp};
+                } else {
+                    left = get_member(function, offset, member_type, variable);
+                }
+            }
+
+        case ast::Operator::CALL:
+            {
+                auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
+                auto definition = *call_operation_value.get<4>();
+
+                eddic_assert(definition, "All the member functions should be in the function table");
+
+                auto type = definition->returnType;
+
+                auto left_value = left[0];
+
+                std::shared_ptr<Variable> return_;
+                std::shared_ptr<Variable> return2_;
+
+                if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+                    return_ = function->context->new_temporary(type);
+
+                    left = {return_};
+                } else if(type == STRING){
+                    return_ = function->context->new_temporary(INT);
+                    return2_ = function->context->new_temporary(INT);
+
+                    left = {return_, return2_};
+                } else {
+                    eddic_unreachable("Unhandled function return type");
+                }
+
+                //Pass all normal arguments
+                pass_arguments(function, definition, call_operation_value.get<2>());
+
+                //Pass the address of the object to the member function
+                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
+                mtac_param->address = true;
+                function->add(mtac_param);   
+
+                //Call the function
+                function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
+            }
+
+        default:
+            eddic_unreachable("Invalid operator");
+    }
+
+    //The computed values by this operation
+    return left;
+}
 
 template<bool Address = false>
 struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argument>> {
@@ -307,64 +481,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
     result_type operator()(ast::PrefixOperation& value) const {
         return perform_prefix_operation(function, value);
     }
-    
-    result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
-        auto platform = function->context->global()->target_platform();
-
-        if(member_type == STRING){
-            auto t1 = function->context->new_temporary(INT);
-            auto t2 = function->context->new_temporary(INT);
-
-            function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
-            function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(platform)));
-
-            return {t1, t2};
-        } else if(member_type->is_array()){
-            auto elements = member_type->elements();
-            auto data_type = member_type->data_type();
-
-            result_type result;
-
-            for(unsigned int i = 0; i < elements; ++i){
-                if(data_type == STRING){
-                    //TODO
-                } else if(data_type->is_custom_type()){
-                    //TODO
-                } else {
-                    auto temp = function->context->new_temporary(data_type);
-
-                    if(data_type == FLOAT){
-                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
-                    } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
-                    } else {
-                        eddic_unreachable("Unhandled type");
-                    }
-
-                    result.push_back(temp);
-                }
-            }
-
-            return result;
-        } else {
-            auto temp = function->context->new_temporary(member_type);
-
-            if(member_type == FLOAT){
-                function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
-            } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
-                function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
-            } else {
-                eddic_unreachable("Unhandled type");
-            }
-
-            return {temp};
-        }
-    }
 
     result_type operator()(ast::Expression& value) const {
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
 
-        //TODO Perhaps this special handling should be integrated in the switch case below
+        //TODO Perhaps this special handling should be integrated in the compute_expression function above
         auto& first_operation = value.Content->operations[0];
         auto first_op = first_operation.get<0>();
 
@@ -388,124 +509,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         
         auto left = visit(*this, value.Content->first);
 
+        //Compute each operation
         for(auto& operation : value.Content->operations){
-            auto operation_value = operation.get<1>();
+            //Execute the current operation
+            left = compute_expression_operation<Address>(function, type, left, operation);
 
-            switch(operation.get<0>()){
-                case ast::Operator::BRACKET:
-                {
-                    auto index_value = boost::get<ast::Value>(*operation_value);
-
-                    if(type == STRING){
-                        assert(left.size()  == 1 || left.size() == 2);
-
-                        auto index = moveToArgument(index_value, function);
-                        auto pointer_temp = function->context->new_temporary(INT);
-                        auto t1 = function->context->new_temporary(INT);
-
-                        //Get the label
-                        function->add(std::make_shared<mtac::Quadruple>(pointer_temp, left[0], mtac::Operator::ASSIGN));
-
-                        //Get the specified char 
-                        auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
-                        quadruple->size = mtac::Size::BYTE;
-                        function->add(quadruple);
-
-                        left = {t1};
-                    } else {
-                        assert(left.size() == 1);
-
-                        auto index = computeIndexOfArray(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
-                        auto data_type = type->data_type();
-
-                        if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
-                            auto temp = function->context->new_temporary(data_type);
-                            function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
-                            left = {temp};
-                        } else if (data_type == STRING){
-                            auto t1 = function->context->new_temporary(INT);
-                            function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::DOT, index));
-
-                            auto t2 = function->context->new_temporary(INT);
-                            auto t3 = function->context->new_temporary(INT);
-
-                            //Assign the second part of the string
-                            function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
-                            function->add(std::make_shared<mtac::Quadruple>(t2, left[0], mtac::Operator::DOT, t3));
-
-                            left = {t1, t2};
-                        } else {
-                            eddic_unreachable("Type not handled by BRACKET");
-                        }
-                    }
-                }
-
-                case ast::Operator::DOT:
-                {
-                    assert(left.size() == 1);
-                    auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-                    auto member = boost::get<std::string>(*operation_value);
-
-                    std::shared_ptr<const Type> member_type;
-                    unsigned int offset = 0;
-                    boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, {member});
-
-                    if(Address){
-                        auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
-
-                        function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, offset));
-
-                        left = {temp};
-                    } else {
-                        left = get_member(offset, member_type, variable);
-                    }
-                }
-                
-                case ast::Operator::CALL:
-                {
-                    auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
-                    auto definition = *call_operation_value.get<4>();
-
-                    eddic_assert(definition, "All the member functions should be in the function table");
-
-                    auto type = definition->returnType;
-
-                    auto left_value = left[0];
-
-                    std::shared_ptr<Variable> return_;
-                    std::shared_ptr<Variable> return2_;
-
-                    if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
-                        return_ = function->context->new_temporary(type);
-
-                        left = {return_};
-                    } else if(type == STRING){
-                        return_ = function->context->new_temporary(INT);
-                        return2_ = function->context->new_temporary(INT);
-
-                        left = {return_, return2_};
-                    } else {
-                        eddic_unreachable("Unhandled function return type");
-                    }
-
-                    //Pass all normal arguments
-                    pass_arguments(function, definition, call_operation_value.get<2>());
-
-                    //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
-                    mtac_param->address = true;
-                    function->add(mtac_param);   
-
-                    //Call the function
-                    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
-                }
-                
-                default:
-                    eddic_unreachable("Invalid operator");
-            }
-
+            //Get the type computed by the current operation for the next one
             type = ast::operation_type(type, value.Content->context, operation);
         }
+
+        //Return the value returned by the last operation
+        return left;
     }
 
     result_type operator()(ast::Cast& cast) const {
@@ -820,6 +834,58 @@ struct AssignVisitor : public boost::static_visitor<> {
     template<typename T>
     result_type operator()(T&){
         eddic_unreachable("Unsupported left value");
+    }
+};
+
+//TODO Remove the old visitors once the Assignment visitor is finished
+
+struct AssignmentVisitor : public boost::static_visitor<> {
+    mtac::function_p function;
+    ast::Value& value;
+
+    AssignmentVisitor(mtac::function_p function, ast::Value& value) : function(function), value(value) {}
+
+    void operator()(ast::VariableValue& variable_value){
+        //TODO
+    }
+
+    void operator()(ast::Expression& value){
+        auto left = visit(ToArgumentsVisitor<>(function), value.Content->first);
+        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+
+        //Compute each operation but the last
+        for(std::size_t i = 0; i < value.Content->operations.size() - 1; ++i){
+            auto& operation = value.Content->operations[i];
+
+            //Execute the current operation
+            left = compute_expression_operation<false>(function, type, left, operation);
+
+            //Get the type computed by the current operation for the next one
+            type = ast::operation_type(type, value.Content->context, operation);
+        }
+
+        auto& last_operation = value.Content->operations.back();
+
+        if(last_operation.get<0>() == ast::Operator::BRACKET){
+            //TODO
+        } else if(last_operation.get<0>() == ast::Operator::DOT){
+            //TODO        
+        } else {
+            eddic_unreachable("This postfix operator does not result in a left value");
+        }
+    }
+
+    void operator()(ast::PrefixOperation& dereference_value){
+        if(dereference_value.Content->op == ast::Operator::STAR){
+            //TODO
+        } else {
+            eddic_unreachable("This prefix operator does not result in a left value");
+        }
+    }
+    
+    template<typename T>
+    void operator()(T&){
+        eddic_unreachable("Not a left value");
     }
 };
 
