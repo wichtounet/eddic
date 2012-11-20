@@ -43,11 +43,8 @@ mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
 void assign(mtac::function_p function, ast::Assignment& assignment);
 void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
 std::vector<mtac::Argument> compile_ternary(mtac::function_p function, ast::Ternary& ternary);
-
 std::vector<mtac::Argument> perform_prefix_operation(mtac::function_p function, ast::PrefixOperation& operation);
-
-template<typename Call>
-void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall);
+void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
 
 std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
     eddic_assert(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
@@ -152,7 +149,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 auto ctor_function = function->context->global()->getFunction(ctor_name);
 
                 //Pass all normal arguments
-                pass_arguments(function, ctor_function, new_);
+                pass_arguments(function, ctor_function, new_.Content->values);
 
                 auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
                 ctor_param->address = true;
@@ -308,44 +305,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         return perform_prefix_operation(function, value);
     }
     
-    void execute_member_call(std::vector<ast::Value>& left, ast::CallOperationValue& operation_value, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-        auto definition = *operation_value.get<4>();
-
-        eddic_assert(definition, "All the member functions should be in the function table");
-
-        //Pass all normal arguments
-        //TODO pass_arguments(function, definition, functionCall);
-
-        //Pass the address of the object to the member function
-        auto mtac_param = std::make_shared<mtac::Param>(left[0], definition->context->getVariable(definition->parameters[0].name), definition);
-        mtac_param->address = true;
-        function->add(mtac_param);   
-
-        //Call the function
-        function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
-    }
-    
-    /*result_type operator()(ast::MemberFunctionCall& call) const {
-        auto type = call.Content->function->returnType;
-
-        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
-            auto t1 = function->context->new_temporary(type);
-
-            execute_member_call(call, function, t1, {});
-
-            return {t1};
-        } else if(type == STRING){
-            auto t1 = function->context->new_temporary(INT);
-            auto t2 = function->context->new_temporary(INT);
-
-            execute_member_call(call, function, t1, t2);
-
-            return {t1, t2};
-        }
-        
-        eddic_unreachable("Unhandled function return type");
-    }*/
-    
     result_type get_member(unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var) const {
         auto platform = function->context->global()->target_platform();
 
@@ -398,7 +357,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
             return {temp};
         }
     }
-   
 
     result_type operator()(ast::Expression& value) const {
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
@@ -428,10 +386,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
         auto left = visit(*this, value.Content->first);
 
         for(auto& operation : value.Content->operations){
+            auto operation_value = operation.get<1>();
+
             switch(operation.get<0>()){
                 case ast::Operator::BRACKET:
                 {
-                    auto index_value = boost::get<ast::Value>(*operation.get<1>());
+                    auto index_value = boost::get<ast::Value>(*operation_value);
 
                     if(type == STRING){
                         assert(left.size()  == 1 || left.size() == 2);
@@ -481,7 +441,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                 {
                     assert(left.size() == 1);
                     auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-                    auto member = boost::get<std::string>(*operation.get<1>());
+                    auto member = boost::get<std::string>(*operation_value);
 
                     std::shared_ptr<const Type> member_type;
                     unsigned int offset = 0;
@@ -496,6 +456,45 @@ struct ToArgumentsVisitor : public boost::static_visitor<std::vector<mtac::Argum
                     } else {
                         left = get_member(offset, member_type, variable);
                     }
+                }
+                
+                case ast::Operator::CALL:
+                {
+                    auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
+                    auto definition = *call_operation_value.get<4>();
+
+                    eddic_assert(definition, "All the member functions should be in the function table");
+
+                    auto type = definition->returnType;
+
+                    auto left_value = left[0];
+
+                    std::shared_ptr<Variable> return_;
+                    std::shared_ptr<Variable> return2_;
+
+                    if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+                        return_ = function->context->new_temporary(type);
+
+                        left = {return_};
+                    } else if(type == STRING){
+                        return_ = function->context->new_temporary(INT);
+                        return2_ = function->context->new_temporary(INT);
+
+                        left = {return_, return2_};
+                    } else {
+                        eddic_unreachable("Unhandled function return type");
+                    }
+
+                    //Pass all normal arguments
+                    pass_arguments(function, definition, call_operation_value.get<2>());
+
+                    //Pass the address of the object to the member function
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
+                    mtac_param->address = true;
+                    function->add(mtac_param);   
+
+                    //Call the function
+                    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
                 }
                 
                 default:
@@ -1200,7 +1199,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 auto ctor_function = program->context->getFunction(ctor_name);
                 
                 //Pass all normal arguments
-                pass_arguments(function, ctor_function, declaration);
+                pass_arguments(function, ctor_function, declaration.Content->values);
 
                 auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
                 ctor_param->address = true;
@@ -1403,11 +1402,8 @@ void push_struct(mtac::function_p function, boost::variant<std::shared_ptr<Varia
     }
 }
 
-template<typename Call>
-void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, Call& functionCall){
+void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values){
     auto context = definition->context;
-    
-    auto values = functionCall.Content->values;
 
     //If it's a standard function, there are no context
     if(!context){
@@ -1460,7 +1456,7 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
 
     eddic_assert(definition, "All the functions should be in the function table");
 
-    pass_arguments(function, definition, functionCall);
+    pass_arguments(function, definition, functionCall.Content->values);
 
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
