@@ -191,6 +191,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             switch_
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
+        |   (value.postfix_expression > lexer.stop)
         |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
         |   (value.prefix_operation > lexer.stop)
@@ -343,4 +344,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     DEBUG_RULE(function);
     DEBUG_RULE(template_function);
     DEBUG_RULE(instruction);
+    DEBUG_RULE(struct_);
+    DEBUG_RULE(globalDeclaration);
+    DEBUG_RULE(constructor);
+    DEBUG_RULE(destructor);
 }

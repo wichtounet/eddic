@@ -83,7 +83,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     limited_value = value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_call_value = call_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    limited_string_literal = lexer.string_literal[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
+    limited_identifier = lexer.identifier[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
     limited_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
@@ -187,7 +187,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     postfix_expression %=
             qi::position(position_begin)
         >>  primary_value
-        >>  *(
+        >>  +(
                          lexer.left_bracket 
                      >>  boost::spirit::attr(ast::Operator::BRACKET) 
                      >>  limited_value 
@@ -199,7 +199,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
                 |
                          lexer.dot 
                      >>  boost::spirit::attr(ast::Operator::DOT) 
-                     >>  limited_string_literal 
+                     >>  limited_identifier 
                 |
                     qi::adapttokens[postfix_op]       
             );
@@ -223,7 +223,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             postfix_expression
         |   negated_constant_value
         |   prefix_operation
-        |   unary_operation;
+        |   unary_operation
+        |   primary_value;
 
     cast_value %=
             qi::position(position_begin)
@@ -336,8 +337,19 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(constant);
     DEBUG_RULE(string_literal);
     DEBUG_RULE(char_literal);
+    DEBUG_RULE(call_value);
     
     DEBUG_RULE(assignment_expression);
     DEBUG_RULE(unary_expression);
     DEBUG_RULE(cast_expression);
+    DEBUG_RULE(postfix_expression);
+    
+    DEBUG_RULE(limited_value);
+    DEBUG_RULE(limited_call_value);
+    DEBUG_RULE(limited_identifier);
+    DEBUG_RULE(limited_cast_expression);
+    DEBUG_RULE(limited_additive_value);
+    DEBUG_RULE(limited_multiplicative_value);
+    DEBUG_RULE(limited_relational_value);
+    DEBUG_RULE(limited_logicalAnd_value);
 }

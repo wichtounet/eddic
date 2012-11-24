@@ -84,7 +84,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     //Versions with cast to ast::OperationValue
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_value;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_call_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_string_literal;
+    qi::rule<lexer::Iterator, ast::OperationValue()> limited_identifier;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_cast_expression;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_additive_value;
     qi::rule<lexer::Iterator, ast::OperationValue()> limited_multiplicative_value;
