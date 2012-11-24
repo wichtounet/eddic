@@ -58,6 +58,8 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
         
+        std::shared_ptr<Variable> new_reference(std::shared_ptr<const Type> type, std::shared_ptr<Variable> var, int offset = 0);
+        
         void removeVariable(std::shared_ptr<Variable> variable) override;
 
         void allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_);

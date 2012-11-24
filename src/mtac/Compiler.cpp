@@ -487,7 +487,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::VariableValue& value) const {
-        if(T == ArgumentType::ADDRESS){
+        if(T == ArgumentType::ADDRESS || T == ArgumentType::REFERENCE){
             return {value.Content->var};
         }
 

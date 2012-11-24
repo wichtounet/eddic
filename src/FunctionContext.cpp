@@ -114,6 +114,13 @@ std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const T
     return variables[name] = var;
 }
 
+std::shared_ptr<Variable> FunctionContext::new_reference(std::shared_ptr<const Type> type, std::shared_ptr<Variable> var, int offset){
+    std::string name = "t_" + toString(temporary++);
+    auto variable = std::make_shared<Variable>(name, type, var, offset); 
+    storage.push_back(variable);
+    return variables[name] = variable;
+}
+
 void FunctionContext::allocate_in_register(std::shared_ptr<Variable> variable, unsigned int register_){
     assert(variable->position().isStack()); 
 
