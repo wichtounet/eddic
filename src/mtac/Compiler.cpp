@@ -136,7 +136,13 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
     }
 }
 
-template<bool Address>
+enum class ArgumentType : unsigned int {
+    NORMAL,
+    ADDRESS,
+    REFERENCE
+};
+
+template<ArgumentType T = ArgumentType::NORMAL>
 arguments compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, arguments& left, ast::Operation& operation){
     auto operation_value = operation.get<1>();
     auto op = operation.get<0>();
@@ -202,7 +208,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 unsigned int offset = 0;
                 boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, {member});
 
-                if(Address){
+                if(T == ArgumentType::ADDRESS){
                     auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
 
                     function->add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, offset));
@@ -310,7 +316,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
 //Visitor used to transform a right value into a set of MTAC arguments
 
-template<bool Address = false>
+template<ArgumentType T = ArgumentType::NORMAL>
 struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     ToArgumentsVisitor(mtac::function_p f) : function(f) {}
     
@@ -481,7 +487,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::VariableValue& value) const {
-        if(Address){
+        if(T == ArgumentType::ADDRESS){
             return {value.Content->var};
         }
 
@@ -670,7 +676,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         //Compute each operation
         for(auto& operation : value.Content->operations){
             //Execute the current operation
-            left = compute_expression_operation<Address>(function, type, left, operation);
+            left = compute_expression_operation<T>(function, type, left, operation);
 
             //Get the type computed by the current operation for the next one
             type = ast::operation_type(type, value.Content->context, operation);
@@ -755,7 +761,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto& operation = value.Content->operations[i];
 
             //Execute the current operation
-            left = compute_expression_operation<false>(function, type, left, operation);
+            left = compute_expression_operation<>(function, type, left, operation);
 
             //Get the type computed by the current operation for the next one
             type = ast::operation_type(type, value.Content->context, operation);
@@ -1491,7 +1497,7 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
 
             arguments args;
             if(param->type()->is_pointer()){
-                args = visit(ToArgumentsVisitor<true>(function), first);
+                args = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), first);
             } else {
                 args = visit(ToArgumentsVisitor<>(function), first);
             }
