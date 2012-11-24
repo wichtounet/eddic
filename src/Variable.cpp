@@ -16,7 +16,7 @@ Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Po
 Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value) 
     : m_name(name), m_type(type), m_position(position), v_value(value) {}
 
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, int offset) 
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset) 
     : m_name(name), m_type(type), m_position(PositionType::TEMPORARY), m_reference(reference), m_offset(offset) {}
 
 std::string Variable::name() const  {
@@ -55,6 +55,6 @@ std::shared_ptr<Variable> Variable::reference() const {
     return m_reference;
 }
 
-int Variable::reference_offset() const {
+Offset Variable::reference_offset() const {
     return m_offset;
 }

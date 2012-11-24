@@ -142,6 +142,17 @@ enum class ArgumentType : unsigned int {
     REFERENCE
 };
 
+template<typename Source>
+Offset variant_cast(Source source){
+    if(auto* ptr = boost::get<int>(&source)){
+        return *ptr;
+    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&source)){
+        return *ptr;
+    } else {
+        eddic_unreachable("Invalid source type");
+    }
+}
+
 template<ArgumentType T = ArgumentType::NORMAL>
 arguments compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, arguments& left, ast::Operation& operation){
     auto operation_value = operation.get<1>();
@@ -175,7 +186,14 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     auto data_type = type->data_type();
 
                     if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
-                        auto temp = function->context->new_temporary(data_type);
+                        std::shared_ptr<Variable> temp;
+
+                        if(T == ArgumentType::REFERENCE){
+                            temp = function->context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
+                        } else {
+                            temp = function->context->new_temporary(data_type);
+                        }
+
                         function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
                         left = {temp};
                     } else if (data_type == STRING){

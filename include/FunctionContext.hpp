@@ -19,8 +19,10 @@ namespace eddic {
 
 class Type;
 struct GlobalContext;
+class Variable;
 
 typedef std::vector<std::shared_ptr<Variable>> Storage;
+typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
 
 /*!
  * \class FunctionContext
@@ -58,7 +60,7 @@ class FunctionContext final : public Context, public std::enable_shared_from_thi
         
         std::shared_ptr<Variable> new_temporary(std::shared_ptr<const Type> type);
         
-        std::shared_ptr<Variable> new_reference(std::shared_ptr<const Type> type, std::shared_ptr<Variable> var, int offset = 0);
+        std::shared_ptr<Variable> new_reference(std::shared_ptr<const Type> type, std::shared_ptr<Variable> var, Offset offset);
         
         void removeVariable(std::shared_ptr<Variable> variable) override;
 

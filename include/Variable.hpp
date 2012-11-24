@@ -15,14 +15,17 @@
 
 #include "variant.hpp"
 #include "Position.hpp"
+#include "assert.hpp"
 
 #include "ast/Position.hpp"
 
 namespace eddic {
 
-typedef boost::variant<int, double, std::pair<std::string, int>> Val;
-
 class Type;
+class Variable;
+
+typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
 
 /*!
  * \class Variable
@@ -39,12 +42,12 @@ class Variable {
 
         //For temporary references
         std::shared_ptr<Variable> m_reference = nullptr;
-        int m_offset = 0;
+        Offset m_offset;
 
     public:
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
-        Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, int offset = 0);
+        Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
 
         std::string name() const ;
         std::shared_ptr<const Type> type() const ;
@@ -59,7 +62,7 @@ class Variable {
 
         bool is_reference() const;
         std::shared_ptr<Variable> reference() const;
-        int reference_offset() const;
+        Offset reference_offset() const;
 };
 
 } //end of eddic
