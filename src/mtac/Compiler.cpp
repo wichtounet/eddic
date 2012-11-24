@@ -264,6 +264,50 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 break;
             }
 
+        case ast::Operator::INC:
+            {
+                eddic_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
+
+                auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
+                auto t2 = function->context->new_temporary(type);
+
+                if(type == FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::FASSIGN));
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+                } else if (type == INT){
+                    function->add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::ASSIGN));
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+                } else {
+                    eddic_unreachable("invalid type");
+                }
+
+                left = {t2};
+
+                break;
+            }
+
+        case ast::Operator::DEC:
+            {
+                eddic_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
+
+                auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
+                auto t2 = function->context->new_temporary(type);
+
+                if(type == FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::FASSIGN));
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+                } else if (type == INT){
+                    function->add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::ASSIGN));
+                    function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+                } else {
+                    eddic_unreachable("invalid type");
+                }
+
+                left = {t2};
+
+                break;
+            }
+
         default:
             eddic_unreachable("Invalid operator");
     }
@@ -551,8 +595,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                 if(type == FLOAT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::FMINUS));
-                } else {
+                } else if(type == INT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::MINUS));
+                } else {
+                    eddic_unreachable("Invalid type");
                 }
 
                 return {t1};
@@ -568,7 +614,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
                 } else if (type == INT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
-                } 
+                } else {
+                    eddic_unreachable("Invalid type");
+                }
 
                 return {t1};
             }
@@ -583,6 +631,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
                 } else if (type == INT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+                } else {
+                    eddic_unreachable("Invalid type");
                 }
 
                 return {t1};
