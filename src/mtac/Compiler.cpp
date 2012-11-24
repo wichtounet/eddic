@@ -147,8 +147,9 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 template<bool Address>
 arguments compute_expression_operation(mtac::function_p function, std::shared_ptr<const Type> type, arguments& left, ast::Operation& operation){
     auto operation_value = operation.get<1>();
+    auto op = operation.get<0>();
 
-    switch(operation.get<0>()){
+    switch(op){
         case ast::Operator::BRACKET:
             {
                 auto index_value = boost::get<ast::Value>(*operation_value);
@@ -258,6 +259,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
             }
 
         default:
+            std::cout << op << std::endl;
             eddic_unreachable("Invalid operator");
     }
 
@@ -593,8 +595,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto& first_operation = value.Content->operations[0];
         auto first_op = first_operation.get<0>();
 
-        if(first_op == ast::Operator::ADD || first_op == ast::Operator::SUB || first_op == ast::Operator::DIV || first_op == ast::Operator::MUL || 
-                first_op == ast::Operator::MOD || first_op == ast::Operator::AND || first_op == ast::Operator::OR){
+        if(first_op >= ast::Operator::EQUALS && first_op <= ast::Operator::GREATER_EQUALS){
+            return {performBoolOperation(value, function)};
+        } else if(
+                    (first_op >= ast::Operator::ADD && first_op <= ast::Operator::MOD)
+                ||  first_op == ast::Operator::AND || first_op == ast::Operator::OR){
             if(type == INT){
                 return {performIntOperation(value, function)};
             } else if(type == FLOAT){
@@ -608,6 +613,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 performStringOperation(value, function, t1, t2);
 
                 return {t1, t2};
+            } else {
+                eddic_unreachable("Invalid type for binary operators");
             }
         }
         

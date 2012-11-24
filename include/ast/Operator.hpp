@@ -41,7 +41,12 @@ enum class Operator : unsigned int {
     GREATER,
     GREATER_EQUALS,
 
+    //Prefix operators
+
     STAR,               /**< Star operator, to dereference pointers. */ 
+
+    //Postfix operators
+
     BRACKET,            /**< Bracket operator, to access array index. */ 
     DOT,                /**< Dot operator, to access to members */ 
     CALL                /**< Call operator, to call member functions */ 
