@@ -262,6 +262,10 @@ class CheckerVisitor : public boost::static_visitor<> {
                     if(type->is_const()){
                         throw SemanticalException("The value is const, cannot edit it", value.Content->position);
                     }
+                } else if(op == ast::Operator::DOT){
+                    //Checked by structure and variables annotators
+                } else if(op == ast::Operator::CALL){
+                    //Checked by the function checkers
                 } else {
                     auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
 
