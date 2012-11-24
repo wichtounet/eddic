@@ -72,14 +72,6 @@ std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::functio
     return t1;
 }
 
-std::shared_ptr<Variable> performIntOperation(ast::Expression& value, mtac::function_p function){
-    return performOperation(value, function, function->context->new_temporary(INT), &mtac::toOperator);
-}
-
-std::shared_ptr<Variable> performFloatOperation(ast::Expression& value, mtac::function_p function){
-    return performOperation(value, function, function->context->new_temporary(FLOAT), &mtac::toFloatOperator);
-}
-
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
@@ -656,9 +648,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     (first_op >= ast::Operator::ADD && first_op <= ast::Operator::MOD)
                 ||  first_op == ast::Operator::AND || first_op == ast::Operator::OR){
             if(type == INT){
-                return {performIntOperation(value, function)};
+                return {performOperation(value, function, function->context->new_temporary(INT), &mtac::toOperator)};
             } else if(type == FLOAT){
-                return {performFloatOperation(value, function)};
+                return {performOperation(value, function, function->context->new_temporary(FLOAT), &mtac::toFloatOperator)};
             } else if(type == BOOL){
                 return {performBoolOperation(value, function)};
             } else if(type == STRING){
@@ -954,9 +946,9 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
         } 
         //A bool value
         else { //Perform int operations
-            auto var = performIntOperation(value, function);
+            auto argument = visit_non_variant(ToArgumentsVisitor<>(function), value)[0];
             
-            function->add(std::make_shared<mtac::If>(var, label));
+            function->add(std::make_shared<mtac::If>(argument, label));
         }
     }
    
@@ -1000,10 +992,10 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
         compare<mtac::IfFalse>(value, op, function, label);
     } 
     //A bool value
-    else { //Perform int operations
-        auto var = performIntOperation(value, function);
+    else { //Compute the expression
+        auto argument = visit_non_variant(ToArgumentsVisitor<>(function), value)[0];
 
-        function->add(std::make_shared<mtac::IfFalse>(var, label));
+        function->add(std::make_shared<mtac::If>(argument, label));
     }
 }
 
