@@ -337,6 +337,11 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
     return left;
 }
 
+//Indicate if a postfix operator needs a reference
+bool need_reference(ast::Operator op){
+    return op == ast::Operator::INC || op == ast::Operator::DEC;
+}
+
 //Visitor used to transform a right value into a set of MTAC arguments
 
 template<ArgumentType T = ArgumentType::NORMAL>
@@ -706,12 +711,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             }
         }
         
-        auto left = visit(*this, value.Content->first);
+        arguments left;
+        if(need_reference(value.Content->operations[0].get<0>())){
+            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
+        } else {
+            left = visit(*this, value.Content->first);
+        }
 
         //Compute each operation
-        for(auto& operation : value.Content->operations){
+        for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
+            auto& operation = value.Content->operations[i];
+
             //Execute the current operation
-            left = compute_expression_operation<T>(function, type, left, operation);
+            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>())){
+                left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
+            } else {
+                left = compute_expression_operation<T>(function, type, left, operation);
+            }
 
             //Get the type computed by the current operation for the next one
             type = ast::operation_type(type, value.Content->context, operation);
@@ -786,6 +802,10 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     //Assignment of the form A[i] = X or A.i = X
 
     void operator()(ast::Expression& value){
+        //NOTE: Normally, these operators do not need a reference, no need to test
+        //If new postfix operators yielding a left value is added, check if this is 
+        //still true
+
         auto left = visit(ToArgumentsVisitor<>(function), value.Content->first);
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
 
