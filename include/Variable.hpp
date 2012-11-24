@@ -37,9 +37,14 @@ class Variable {
         ast::Position m_source_position;
         Val v_value;
 
+        //For temporary references
+        std::shared_ptr<Variable> m_reference = nullptr;
+        int m_offset = 0;
+
     public:
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
+        Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, int offset = 0);
 
         std::string name() const ;
         std::shared_ptr<const Type> type() const ;
@@ -51,6 +56,10 @@ class Variable {
         void set_source_position(const ast::Position& position);
 
         void setPosition(Position position);
+
+        bool is_reference() const;
+        std::shared_ptr<Variable> reference() const;
+        int reference_offset() const;
 };
 
 } //end of eddic
