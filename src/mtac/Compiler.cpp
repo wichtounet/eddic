@@ -82,7 +82,25 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
    
     return temp;
 }
+
+template<typename Source>
+Offset variant_cast(Source source){
+    if(auto* ptr = boost::get<int>(&source)){
+        return *ptr;
+    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&source)){
+        return *ptr;
+    } else {
+        eddic_unreachable("Invalid source type");
+    }
+}
+
+enum class ArgumentType : unsigned int {
+    NORMAL,
+    ADDRESS,
+    REFERENCE
+};
     
+template<ArgumentType T = ArgumentType::NORMAL>
 arguments get_member(mtac::function_p function, unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var){
     auto platform = function->context->global()->target_platform();
 
@@ -122,7 +140,12 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         return result;
     } else {
-        auto temp = function->context->new_temporary(member_type);
+        std::shared_ptr<Variable> temp;
+        if(T == ArgumentType::REFERENCE){
+            temp = function->context->new_reference(member_type, var, offset);
+        } else {
+            temp = function->context->new_temporary(member_type);
+        }
 
         if(member_type == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
@@ -133,23 +156,6 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
         }
 
         return {temp};
-    }
-}
-
-enum class ArgumentType : unsigned int {
-    NORMAL,
-    ADDRESS,
-    REFERENCE
-};
-
-template<typename Source>
-Offset variant_cast(Source source){
-    if(auto* ptr = boost::get<int>(&source)){
-        return *ptr;
-    } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&source)){
-        return *ptr;
-    } else {
-        eddic_unreachable("Invalid source type");
     }
 }
 
@@ -187,7 +193,6 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                     if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
                         std::shared_ptr<Variable> temp;
-
                         if(T == ArgumentType::REFERENCE){
                             temp = function->context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
                         } else {
@@ -233,7 +238,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                     left = {temp};
                 } else {
-                    left = get_member(function, offset, member_type, variable);
+                    left = get_member<T>(function, offset, member_type, variable);
                 }
 
                 break;
