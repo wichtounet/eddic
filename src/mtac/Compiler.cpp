@@ -196,6 +196,8 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                         eddic_unreachable("Type not handled by BRACKET");
                     }
                 }
+
+                break;
             }
 
         case ast::Operator::DOT:
@@ -217,6 +219,8 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 } else {
                     left = get_member(function, offset, member_type, variable);
                 }
+
+                break;
             }
 
         case ast::Operator::CALL:
@@ -256,10 +260,11 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                 //Call the function
                 function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
+
+                break;
             }
 
         default:
-            std::cout << op << std::endl;
             eddic_unreachable("Invalid operator");
     }
 
