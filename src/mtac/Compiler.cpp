@@ -738,7 +738,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
                 eddic_unreachable("Unhandled value type");
             }
         } 
-        //Assign to a member of a struct
+        //Assign to a member of a structure
         else if(last_operation.get<0>() == ast::Operator::DOT){
             assert(mtac::isVariable(left[0]));
             auto struct_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
@@ -996,7 +996,7 @@ void performStringOperation(ast::Expression& value, mtac::function_p function, s
     auto first = visit(ToArgumentsVisitor<>(function), value.Content->first);
     arguments.insert(arguments.end(), first.begin(), first.end());
 
-    //Perfom all the additions
+    //Perform all the additions
     for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
         auto operation = value.Content->operations[i];
 
@@ -1528,7 +1528,6 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
     
     return t1;
 }
-
 
 } //end of anonymous namespace
 
