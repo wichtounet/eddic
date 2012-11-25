@@ -85,7 +85,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compare_float_binary(mtac::Argument& arg1, mtac::Argument& arg2);
         void compare_unary(mtac::Argument arg1);
 
-        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple);
+        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple, bool floats);
         
         ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         
