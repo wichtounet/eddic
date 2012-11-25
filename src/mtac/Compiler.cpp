@@ -114,6 +114,8 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
             arguments result;
 
+            result.push_back(elements);
+
             for(unsigned int i = 0; i < elements; ++i){
                 if(data_type == STRING){
                     //TODO
