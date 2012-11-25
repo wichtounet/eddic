@@ -8,6 +8,10 @@ void main(){
     c.a = 55;
     c.b[1] = 66;
     c.b[3] = 77;
+    
+    //Test the builtin operator
+    print(size(c.b));
+    print("|");
 
     print(c.a);
     print("|");
