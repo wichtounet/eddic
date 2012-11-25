@@ -1091,7 +1091,7 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     else { //Compute the expression
         auto argument = visit_non_variant(ToArgumentsVisitor<>(function), value)[0];
 
-        function->add(std::make_shared<mtac::If>(argument, label));
+        function->add(std::make_shared<mtac::IfFalse>(argument, label));
     }
 }
 
