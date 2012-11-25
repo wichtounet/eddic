@@ -74,108 +74,14 @@ Offset variant_cast(Source source){
     }
 }
 
-void jump_if_true(mtac::function_p function, const std::string& l, ast::Value value);
-
-struct JumpIfFalseVisitor : public boost::static_visitor<> {
-    JumpIfFalseVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
-    
-    mutable mtac::function_p function;
-    std::string label;
-   
-    void operator()(ast::Expression& value) const {
-        auto op = value.Content->operations[0].get<0>();
-
-        //Logical and operators (&&)
-        if(op == ast::Operator::AND){
-            visit(*this, value.Content->first);
-
-            for(auto& operation : value.Content->operations){
-                visit(*this, boost::get<ast::Value>(*operation.get<1>()));
-            }
-        } 
-        //Logical or operators (||)
-        else if(op == ast::Operator::OR){
-            std::string codeLabel = newLabel();
-
-            jump_if_true(function, codeLabel, value.Content->first);
-
-            for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
-                if(i == value.Content->operations.size() - 1){
-                    visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
-                } else {
-                    jump_if_true(function, codeLabel, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
-                }
-            }
-
-            function->add(codeLabel);
-        }
-        //A bool value
-        else { //Compute the expression
-            auto argument = moveToArgument(value, function);
-
-            function->add(std::make_shared<mtac::IfFalse>(argument, label));
-        }
-    }
-    
-    template<typename T>
-    void operator()(T& value) const {
-        auto argument = moveToArgument(value, function);
-
-        function->add(std::make_shared<mtac::IfFalse>(argument, label));
-    }
-};
-
-struct JumpIfTrueVisitor : public boost::static_visitor<> {
-    JumpIfTrueVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
-    
-    mutable mtac::function_p function;
-    std::string label;
-   
-    void operator()(ast::Expression& value) const {
-        auto op = value.Content->operations[0].get<0>();
-
-        //Logical and operators (&&)
-        if(op == ast::Operator::AND){
-            std::string codeLabel = newLabel();
-
-            visit(JumpIfFalseVisitor(function, codeLabel), value.Content->first);
-
-            for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
-                if(i == value.Content->operations.size() - 1){
-                    visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));   
-                } else {
-                    visit(JumpIfFalseVisitor(function, codeLabel), boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
-                }
-            }
-
-            function->add(codeLabel);
-        } 
-        //Logical or operators (||)
-        else if(op == ast::Operator::OR){
-            visit(*this, value.Content->first);
-
-            for(auto& operation : value.Content->operations){
-                visit(*this, boost::get<ast::Value>(*operation.get<1>()));
-            }
-        }
-        //A bool value
-        else { //Perform int operations
-            auto argument = moveToArgument(value, function);
-            
-            function->add(std::make_shared<mtac::If>(argument, label));
-        }
-    }
-   
-    template<typename T>
-    void operator()(T& value) const {
-        auto argument = moveToArgument(value, function);
-
-        function->add(std::make_shared<mtac::If>(argument, label));
-    }
-};
-
 void jump_if_true(mtac::function_p function, const std::string& l, ast::Value value){
-    visit(JumpIfTrueVisitor(function, l), value);
+    auto argument = moveToArgument(value, function);
+    function->add(std::make_shared<mtac::If>(argument, l));
+}
+
+void jump_if_false(mtac::function_p function, const std::string& l, ast::Value value){
+    auto argument = moveToArgument(value, function);
+    function->add(std::make_shared<mtac::IfFalse>(argument, l));
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
@@ -189,10 +95,10 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         auto falseLabel = newLabel();
         auto endLabel = newLabel();
 
-        visit(JumpIfFalseVisitor(function, falseLabel), value.Content->first);
+        jump_if_false(function, falseLabel, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            visit(JumpIfFalseVisitor(function, falseLabel), boost::get<ast::Value>(*operation.get<1>()));
+            jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
         }
 
         function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
@@ -208,10 +114,10 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         auto trueLabel = newLabel();
         auto endLabel = newLabel();
 
-        visit(JumpIfTrueVisitor(function, trueLabel), value.Content->first);
+        jump_if_true(function, trueLabel, value.Content->first);
 
         for(auto& operation : value.Content->operations){
-            visit(JumpIfTrueVisitor(function, trueLabel), boost::get<ast::Value>(*operation.get<1>()));
+            jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
         }
 
         function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
@@ -1163,7 +1069,7 @@ arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
     if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
         auto t1 = function->context->new_temporary(type);
 
-        visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
+        jump_if_false(function, falseLabel, ternary.Content->condition); 
         assign(function, t1, ternary.Content->true_value);
         function->add(std::make_shared<mtac::Goto>(endLabel));
         
@@ -1177,7 +1083,7 @@ arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
         auto t1 = function->context->new_temporary(INT);
         auto t2 = function->context->new_temporary(INT);
         
-        visit(JumpIfFalseVisitor(function, falseLabel), ternary.Content->condition); 
+        jump_if_false(function, falseLabel, ternary.Content->condition); 
         auto args = visit(ToArgumentsVisitor<>(function), ternary.Content->true_value);
         function->add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
         function->add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
@@ -1287,7 +1193,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             if (if_.Content->elseIfs.empty()) {
                 std::string endLabel = newLabel();
 
-                visit(JumpIfFalseVisitor(function, endLabel), if_.Content->condition);
+                jump_if_false(function, endLabel, if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
 
@@ -1312,7 +1218,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 std::string end = newLabel();
                 std::string next = newLabel();
 
-                visit(JumpIfFalseVisitor(function, next), if_.Content->condition);
+                jump_if_false(function, next, if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
                 
@@ -1336,7 +1242,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                         next = newLabel();
                     }
 
-                    visit(JumpIfFalseVisitor(function, next), elseIf.condition);
+                    jump_if_false(function, next, elseIf.condition);
 
                     visit_each(*this, elseIf.instructions);
                     
@@ -1438,7 +1344,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             issue_destructors(while_.Content->context);
 
-            visit(JumpIfTrueVisitor(function, startLabel), while_.Content->condition);
+            jump_if_true(function, startLabel, while_.Content->condition);
         }
 
         void operator()(ast::FunctionCall& functionCall){
