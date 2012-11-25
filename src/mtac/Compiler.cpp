@@ -84,56 +84,6 @@ void jump_if_false(mtac::function_p function, const std::string& l, ast::Value v
     function->add(std::make_shared<mtac::IfFalse>(argument, l));
 }
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
-    auto t1 = function->context->new_temporary(INT); 
-   
-    //The first operator defines the kind of operation 
-    auto op = value.Content->operations[0].get<0>();
-
-    //Logical and operators (&&)
-    if(op == ast::Operator::AND){
-        auto falseLabel = newLabel();
-        auto endLabel = newLabel();
-
-        jump_if_false(function, falseLabel, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
-        }
-
-        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-        function->add(std::make_shared<mtac::Goto>(endLabel));
-
-        function->add(falseLabel);
-        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-
-        function->add(endLabel);
-    } 
-    //Logical or operators (||)
-    else if(op == ast::Operator::OR){
-        auto trueLabel = newLabel();
-        auto endLabel = newLabel();
-
-        jump_if_true(function, trueLabel, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
-        }
-
-        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-        function->add(std::make_shared<mtac::Goto>(endLabel));
-
-        function->add(trueLabel);
-        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-
-        function->add(endLabel);
-    } else {
-        eddic_unreachable("Unsupported operator");
-    }
-    
-    return t1;
-}
-
 enum class ArgumentType : unsigned int {
     NORMAL,
     ADDRESS,
@@ -267,6 +217,54 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 } else {
                     eddic_unreachable("Unsupported type in relational operator");
                 }
+
+                left = {t1};
+
+                break;
+            }
+
+        case ast::Operator::AND:
+            {
+                auto t1 = function->context->new_temporary(INT); 
+
+                auto falseLabel = newLabel();
+                auto endLabel = newLabel();
+
+                function->add(std::make_shared<mtac::IfFalse>(left[0], falseLabel));
+
+                jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
+
+                function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+                function->add(std::make_shared<mtac::Goto>(endLabel));
+
+                function->add(falseLabel);
+                function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+
+                function->add(endLabel);
+
+                left = {t1};
+
+                break;
+            }
+
+        case ast::Operator::OR:
+            {
+                auto t1 = function->context->new_temporary(INT); 
+
+                auto trueLabel = newLabel();
+                auto endLabel = newLabel();
+
+                function->add(std::make_shared<mtac::If>(left[0], trueLabel));
+
+                jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
+
+                function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+                function->add(std::make_shared<mtac::Goto>(endLabel));
+
+                function->add(trueLabel);
+                function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+
+                function->add(endLabel);
 
                 left = {t1};
 
@@ -806,12 +804,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
     result_type operator()(ast::Expression& value) const {
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
-
-        //TODO Perhaps this special handling should be integrated in the compute_expression function above
-        auto first_op = value.Content->operations[0].get<0>();
-        if(first_op == ast::Operator::AND || first_op == ast::Operator::OR){
-            return {performBoolOperation(value, function)};
-        } 
         
         arguments left;
         if(need_reference(value.Content->operations[0].get<0>(), type)){
