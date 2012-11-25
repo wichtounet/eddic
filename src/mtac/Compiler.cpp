@@ -151,6 +151,8 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
         } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
+        } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
+            //In this case, the reference is not initialized, will be used to refer to the member
         } else {
             eddic_unreachable("Unhandled type");
         }

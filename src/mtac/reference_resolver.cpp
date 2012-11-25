@@ -59,6 +59,7 @@ void mtac::resolve_references(mtac::program_p program){
 
                         it.insert(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                         ++it;
+                        continue;
                     }
                 } 
                 //(r)z = x => (ref(r))(z+offset(r)) = x
@@ -75,9 +76,10 @@ void mtac::resolve_references(mtac::program_p program){
 
                     it.insert(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                     ++it;
+                    continue;
                 } 
-                //ref = x
                 
+                //ref = x
                 if(mtac::erase_result(quadruple->op)){
                     auto result = quadruple->result;
 
