@@ -217,22 +217,6 @@ std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::fun
         function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
 
         function->add(endLabel);
-    }
-    //Relational operators 
-    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
-
-        auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
-        
-        auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
-            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
-        } else if(typeLeft == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
-        } else {
-            eddic_unreachable("Unsupported type in relational operator");
-        }
     } else {
         eddic_unreachable("Unsupported operator");
     }
@@ -352,6 +336,29 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 } else {
                     eddic_unreachable("Unsupported operator for this type");
                 }
+
+                break;
+            }
+        
+        case ast::Operator::EQUALS:
+        case ast::Operator::NOT_EQUALS:
+        case ast::Operator::LESS:
+        case ast::Operator::LESS_EQUALS:
+        case ast::Operator::GREATER:
+        case ast::Operator::GREATER_EQUALS:
+            {
+                auto t1 = function->context->new_temporary(INT);
+                auto right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
+
+                if(type == INT || type == CHAR || type->is_pointer()){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toRelationalOperator(op), right));
+                } else if(type == FLOAT){
+                    function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toFloatRelationalOperator(op), right));
+                } else {
+                    eddic_unreachable("Unsupported type in relational operator");
+                }
+
+                left = {t1};
 
                 break;
             }
@@ -892,7 +899,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         //TODO Perhaps this special handling should be integrated in the compute_expression function above
         auto first_op = value.Content->operations[0].get<0>();
-        if((first_op >= ast::Operator::EQUALS && first_op <= ast::Operator::GREATER_EQUALS) || first_op == ast::Operator::AND || first_op == ast::Operator::OR){
+        if(first_op == ast::Operator::AND || first_op == ast::Operator::OR){
             return {performBoolOperation(value, function)};
         } 
         
