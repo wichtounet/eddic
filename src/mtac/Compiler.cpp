@@ -103,32 +103,39 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         return {t1, t2};
     } else if(member_type->is_array()){
-        auto elements = member_type->elements();
-        auto data_type = member_type->data_type();
+        //Get a reference to the array
+        if(T == ArgumentType::REFERENCE){
+            return {function->context->new_reference(member_type, var, offset)};
+        } 
+        //Get all the values of an array
+        else {
+            auto elements = member_type->elements();
+            auto data_type = member_type->data_type();
 
-        arguments result;
+            arguments result;
 
-        for(unsigned int i = 0; i < elements; ++i){
-            if(data_type == STRING){
-                //TODO
-            } else if(data_type->is_custom_type()){
-                //TODO
-            } else {
-                auto temp = function->context->new_temporary(data_type);
-
-                if(data_type == FLOAT){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
-                } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+            for(unsigned int i = 0; i < elements; ++i){
+                if(data_type == STRING){
+                    //TODO
+                } else if(data_type->is_custom_type()){
+                    //TODO
                 } else {
-                    eddic_unreachable("Unhandled type");
+                    auto temp = function->context->new_temporary(data_type);
+
+                    if(data_type == FLOAT){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
+                    } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+                    } else {
+                        eddic_unreachable("Unhandled type");
+                    }
+
+                    result.push_back(temp);
                 }
-
-                result.push_back(temp);
             }
-        }
 
-        return result;
+            return result;
+        }
     } else {
         std::shared_ptr<Variable> temp;
         if(T == ArgumentType::REFERENCE){
@@ -460,7 +467,10 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
 //Indicate if a postfix operator needs a reference
 bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
-    return op == ast::Operator::INC || op == ast::Operator::DEC || (op == ast::Operator::DOT && !left_type->is_pointer());
+    return 
+            op == ast::Operator::INC || op == ast::Operator::DEC    //Modifies the left value, needs a reference
+        ||  op == ast::Operator::BRACKET                            //Needs a reference to the left array
+        ||  (op == ast::Operator::DOT && !left_type->is_pointer()); //If it is not a pointer, needs a reference to the struct variable
 }
 
 //Visitor used to transform a right value into a set of MTAC arguments
