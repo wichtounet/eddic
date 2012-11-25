@@ -35,8 +35,10 @@ void ltac::allocate_aggregates(mtac::program_p program){
                 auto position = variable->position();
                 auto type = variable->type();
 
-                if((position.is_temporary() || position.is_variable()) 
-                        && (type == STRING || type->is_template() || type->is_array() || type->is_custom_type() || escaped->count(variable))){
+                if(
+                            !variable->is_reference() 
+                        &&  (position.is_temporary() || position.is_variable()) 
+                        &&  (type == STRING || type->is_template() || type->is_array() || type->is_custom_type() || escaped->count(variable))){
                     current_position -= type->size(platform);
 
                     Position position(PositionType::STACK, current_position + INT->size(platform));

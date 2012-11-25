@@ -180,6 +180,10 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( arrays_in_struct ){
+    assert_output("arrays_in_struct.eddi", "5|55|66|77|66|166|177|66|166|177|5|");
+}
+
 BOOST_AUTO_TEST_CASE( char_type ){
     assert_output("char_type.eddi", "a|0|z|e|e|u|u|");
 }

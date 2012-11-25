@@ -143,6 +143,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/array_foreach_param_local
     SpecificSuite/array_foreach_param_global
     SpecificSuite/array_foreach_param_param
+    SpecificSuite/arrays_in_struct
     SpecificSuite/char_type
     SpecificSuite/char_at
     SpecificSuite/ctor_dtor_heap

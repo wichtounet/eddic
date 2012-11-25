@@ -103,32 +103,43 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         return {t1, t2};
     } else if(member_type->is_array()){
-        auto elements = member_type->elements();
-        auto data_type = member_type->data_type();
+        //Get a reference to the array
+        if(T == ArgumentType::REFERENCE){
+            return {function->context->new_reference(member_type, var, offset)};
+        } 
+        //Get all the values of an array
+        else {
+            auto elements = member_type->elements();
+            auto data_type = member_type->data_type();
 
-        arguments result;
+            arguments result;
 
-        for(unsigned int i = 0; i < elements; ++i){
-            if(data_type == STRING){
-                //TODO
-            } else if(data_type->is_custom_type()){
-                //TODO
-            } else {
-                auto temp = function->context->new_temporary(data_type);
-
-                if(data_type == FLOAT){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
-                } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                    function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+            //All the elements of the array
+            for(unsigned int i = 0; i < elements; ++i){
+                if(data_type == STRING){
+                    //TODO
+                } else if(data_type->is_custom_type()){
+                    //TODO
                 } else {
-                    eddic_unreachable("Unhandled type");
+                    auto temp = function->context->new_temporary(data_type);
+
+                    if(data_type == FLOAT){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
+                    } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
+                    } else {
+                        eddic_unreachable("Unhandled type");
+                    }
+
+                    result.push_back(temp);
                 }
-
-                result.push_back(temp);
             }
-        }
 
-        return result;
+            //The number of elements
+            result.push_back(elements);
+
+            return result;
+        }
     } else {
         std::shared_ptr<Variable> temp;
         if(T == ArgumentType::REFERENCE){
@@ -460,7 +471,10 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
 //Indicate if a postfix operator needs a reference
 bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
-    return op == ast::Operator::INC || op == ast::Operator::DEC || (op == ast::Operator::DOT && !left_type->is_pointer());
+    return 
+            op == ast::Operator::INC || op == ast::Operator::DEC    //Modifies the left value, needs a reference
+        ||  op == ast::Operator::BRACKET                            //Needs a reference to the left array
+        ||  (op == ast::Operator::DOT && !left_type->is_pointer()); //If it is not a pointer, needs a reference to the struct variable
 }
 
 //Visitor used to transform a right value into a set of MTAC arguments
@@ -568,31 +582,37 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
-        auto& value = builtin.Content->values[0];
-
         switch(builtin.Content->type){
-            case ast::BuiltinType::SIZE:{
-                eddic_assert(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
-                
-                auto variable = boost::get<ast::VariableValue>(value).Content->var;
+            case ast::BuiltinType::SIZE:
+                {
+                    //Get a reference to the array
+                    auto right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values[0]);
+                    eddic_assert(mtac::isVariable(right[0]), "The visitor should return a variable");
 
-                if(variable->position().isGlobal()){
-                    return {variable->type()->elements()};
-                } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
-                    return {variable->type()->elements()};
-                } else if(variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
-                    auto t1 = function->context->new_temporary(INT);
+                    auto variable = boost::get<std::shared_ptr<Variable>>(right[0]);
 
-                    //The size of the array is at the address pointed by the variable
-                    function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+                    if(variable->position().isGlobal()){
+                        return {variable->type()->elements()};
+                    } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
+                        return {variable->type()->elements()};
+                    } else if(variable->is_reference() || variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
+                        auto t1 = function->context->new_temporary(INT);
 
-                    return {t1};
+                        //The size of the array is at the address pointed by the variable
+                        function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+
+                        return {t1};
+                    }
+
+                    eddic_unreachable("The variable is not of a valid type");
                 }
-
-                eddic_unreachable("The variable is not of a valid type");
-            }
+            
             case ast::BuiltinType::LENGTH:
-                return {visit(*this, value)[1]};
+                {
+                    auto& value = builtin.Content->values[0];
+
+                    return {visit(*this, value)[1]};
+                }
         }
 
         eddic_unreachable("This builtin operator is not handled");
