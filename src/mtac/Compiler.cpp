@@ -268,7 +268,8 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                     left = {return_, return2_};
                 } else {
-                    eddic_unreachable("Unhandled function return type");
+                    //It is void, does not return anything
+                    left = {};
                 }
 
                 //Pass all normal arguments
