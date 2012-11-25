@@ -855,16 +855,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto& index_value = boost::get<ast::Value>(*last_operation.get<1>());
             auto index = computeIndexOfArray(array_variable, index_value, function); 
         
+            auto left_type = array_variable->type()->data_type();
             auto right_type = visit(ast::GetTypeVisitor(), right_value); 
             
             arguments values;
-            if(array_variable->type()->data_type()->is_pointer()){
+            if(left_type->is_pointer()){
                 values = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), right_value);
             } else {
                 values = visit(ToArgumentsVisitor<>(function), right_value);
             }
 
-            if(right_type->is_pointer()){
+            if(left_type->is_pointer()){
                 function->add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]));
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
                 function->add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]));
