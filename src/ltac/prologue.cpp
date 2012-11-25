@@ -333,7 +333,7 @@ void ltac::generate_prologue_epilogue(mtac::program_p ltac_program, std::shared_
                 } else if(type->is_custom_type()){
                     ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position), static_cast<int>(type->size(platform) / int_size));
 
-                    //Set the lengths of the arrays
+                    //Set lengths of arrays inside structures
                     auto struct_type = function->context->global()->get_struct(type->mangle());
                     for(auto& member : struct_type->members){
                         if(member->type->is_array()){
