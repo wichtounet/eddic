@@ -4,7 +4,6 @@ struct Complex {
     float d;
     bool b;
     string s;
-    int i[5];
 }
 
 void main(){
@@ -14,7 +13,6 @@ void main(){
     c.d = 3.23;
     c.b = false;
     c.s = "asdf";
-    c.i[0] = 66;
 
     print(c.imag);
     print("|");
