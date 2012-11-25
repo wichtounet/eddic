@@ -355,8 +355,8 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 }
 
 //Indicate if a postfix operator needs a reference
-bool need_reference(ast::Operator op){
-    return op == ast::Operator::INC || op == ast::Operator::DEC || op == ast::Operator::DOT;
+bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
+    return op == ast::Operator::INC || op == ast::Operator::DEC || (op == ast::Operator::DOT && !left_type->is_pointer());
 }
 
 //Visitor used to transform a right value into a set of MTAC arguments
@@ -729,7 +729,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         }
         
         arguments left;
-        if(need_reference(value.Content->operations[0].get<0>())){
+        if(need_reference(value.Content->operations[0].get<0>(), type)){
             left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
         } else {
             left = visit(*this, value.Content->first);
@@ -739,15 +739,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
             auto& operation = value.Content->operations[i];
 
+            //Get the type computed by the current operation for the next one
+            auto future_type = ast::operation_type(type, value.Content->context, operation);
+
             //Execute the current operation
-            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>())){
+            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<T>(function, type, left, operation);
             }
 
-            //Get the type computed by the current operation for the next one
-            type = ast::operation_type(type, value.Content->context, operation);
+            type = future_type;
         }
 
         //Return the value returned by the last operation
@@ -819,14 +821,14 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     //Assignment of the form A[i] = X or A.i = X
 
     void operator()(ast::Expression& value){
+        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+
         arguments left;
-        if(need_reference(value.Content->operations[0].get<0>())){
+        if(need_reference(value.Content->operations[0].get<0>(), type)){
             left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
         } else {
             left = visit(ToArgumentsVisitor<>(function), value.Content->first);
         }
-
-        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
 
         auto platform = function->context->global()->target_platform();
 
@@ -834,15 +836,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         for(std::size_t i = 0; i < value.Content->operations.size() - 1; ++i){
             auto& operation = value.Content->operations[i];
 
+            //Get the type computed by the current operation for the next one
+            auto future_type = ast::operation_type(type, value.Content->context, operation);
+
             //Execute the current operation
-            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>())){
+            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<>(function, type, left, operation);
             }
-
-            //Get the type computed by the current operation for the next one
-            type = ast::operation_type(type, value.Content->context, operation);
+            
+            type = future_type;
         }
 
         //Assign the right value to the left value generated
