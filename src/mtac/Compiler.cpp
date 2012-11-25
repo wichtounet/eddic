@@ -43,34 +43,15 @@ typedef std::vector<mtac::Argument> arguments;
 void assign(mtac::function_p function, ast::Value& left_value, ast::Value& value);
 void assign(mtac::function_p function, std::shared_ptr<Variable> left_value, ast::Value& value);
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
-void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2);
-void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+/* Compiles Values in Arguments (use ToArgumentsVisitor) */
+
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function);
+arguments move_to_arguments(ast::Value& value, mtac::function_p function);
+
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
+void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
-
-std::shared_ptr<Variable> performOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> t1, mtac::Operator f(ast::Operator)){
-    eddic_assert(value.Content->operations.size() > 0, "Operations with no operation should have been transformed before");
-
-    mtac::Argument left = moveToArgument(value.Content->first, function);
-    mtac::Argument right;
-
-    //Apply all the operations in chain
-    for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
-        auto operation = value.Content->operations[i];
-
-        right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
-       
-        if (i == 0){
-            function->add(std::make_shared<mtac::Quadruple>(t1, left, f(operation.get<0>()), right));
-        } else {
-            function->add(std::make_shared<mtac::Quadruple>(t1, t1, f(operation.get<0>()), right));
-        }
-    }
-
-    return t1;
-}
 
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
@@ -167,6 +148,49 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
     auto op = operation.get<0>();
 
     switch(op){
+        case ast::Operator::ADD:
+        case ast::Operator::SUB:
+        case ast::Operator::MUL:
+        case ast::Operator::MOD:
+        case ast::Operator::DIV:
+            {
+                if(type == STRING){
+                    eddic_assert(op == ast::Operator::ADD, "Only ADD can be applied to string");
+                    
+                    for(auto& arg : left){
+                        function->add(std::make_shared<mtac::Param>(arg));   
+                    }
+                    
+                    auto right = move_to_arguments(boost::get<ast::Value>(*operation.get<1>()), function);
+                    for(auto& arg : right){
+                        function->add(std::make_shared<mtac::Param>(arg));   
+                    }
+                
+                    auto t1 = function->context->new_temporary(INT);
+                    auto t2 = function->context->new_temporary(INT);
+                    
+                    function->context->global()->addReference("_F6concatSS");
+                    function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), t1, t2)); 
+
+                    left = {t1, t2};
+                } else if(type == INT || type == FLOAT){
+                    auto right_value = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
+                    auto temp = function->context->new_temporary(type);
+
+                    if(type == FLOAT){
+                        function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::toFloatOperator(op), right_value));
+                    } else {
+                        function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::toOperator(op), right_value));
+                    }
+
+                    left = {temp};
+                } else {
+                    eddic_unreachable("Unsupported operator for this type");
+                }
+
+                break;
+            }
+
         case ast::Operator::BRACKET:
             {
                 auto index_value = boost::get<ast::Value>(*operation_value);
@@ -707,22 +731,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         if(first_op >= ast::Operator::EQUALS && first_op <= ast::Operator::GREATER_EQUALS){
             return {performBoolOperation(value, function)};
-        } else if(
-                    (first_op >= ast::Operator::ADD && first_op <= ast::Operator::MOD)
-                ||  first_op == ast::Operator::AND || first_op == ast::Operator::OR){
-            if(type == INT){
-                return {performOperation(value, function, function->context->new_temporary(INT), &mtac::toOperator)};
-            } else if(type == FLOAT){
-                return {performOperation(value, function, function->context->new_temporary(FLOAT), &mtac::toFloatOperator)};
-            } else if(type == BOOL){
+        } else if(first_op == ast::Operator::AND || first_op == ast::Operator::OR){
+            if(type == BOOL){
                 return {performBoolOperation(value, function)};
-            } else if(type == STRING){
-                auto t1 = function->context->new_temporary(INT);
-                auto t2 = function->context->new_temporary(INT);
-
-                performStringOperation(value, function, t1, t2);
-
-                return {t1, t2};
             } else {
                 eddic_unreachable("Invalid type for binary operators");
             }
@@ -1142,43 +1153,6 @@ arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
     eddic_unreachable("Unhandled ternary type");
 }
 
-void performStringOperation(ast::Expression& value, mtac::function_p function, std::shared_ptr<Variable> v1, std::shared_ptr<Variable> v2){
-    eddic_assert(value.Content->operations.size() > 0, "Expression with no operation should have been transformed");
-
-    arguments arguments;
-
-    auto first = visit(ToArgumentsVisitor<>(function), value.Content->first);
-    arguments.insert(arguments.end(), first.begin(), first.end());
-
-    //Perform all the additions
-    for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
-        auto operation = value.Content->operations[i];
-
-        auto second = visit(ToArgumentsVisitor<>(function), boost::get<ast::Value>(*operation.get<1>()));
-        arguments.insert(arguments.end(), second.begin(), second.end());
-        
-        for(auto& arg : arguments){
-            function->add(std::make_shared<mtac::Param>(arg));   
-        }
-
-        arguments.clear();
-        
-        function->context->global()->addReference("_F6concatSS");
-
-        if(i == value.Content->operations.size() - 1){
-            function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), v1, v2)); 
-        } else {
-            auto t1 = function->context->new_temporary(INT);
-            auto t2 = function->context->new_temporary(INT);
-            
-            function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), t1, t2)); 
-          
-            arguments.push_back(t1);
-            arguments.push_back(t2);
-        }
-    }
-}
-
 //Visitor used to compile each source instructions
 
 class CompilerVisitor : public boost::static_visitor<> {
@@ -1489,8 +1463,12 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 };
 
+arguments move_to_arguments(ast::Value& value, mtac::function_p function){
+    return visit(ToArgumentsVisitor<>(function), value);
+}
+
 mtac::Argument moveToArgument(ast::Value& value, mtac::function_p function){
-    return visit(ToArgumentsVisitor<>(function), value)[0];
+    return move_to_arguments(value, function)[0];
 }
 
 typedef boost::variant<std::shared_ptr<Variable>, std::string> call_param;
