@@ -190,31 +190,45 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                     auto index = computeIndexOfArray(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
                     auto data_type = type->data_type();
+                    
+                    if(T == ArgumentType::ADDRESS){
+                        auto temp = function->context->new_temporary(data_type->is_pointer() ? data_type : new_pointer_type(data_type));
 
-                    if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
-                        std::shared_ptr<Variable> temp;
-                        if(T == ArgumentType::REFERENCE){
-                            temp = function->context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
-                        } else {
-                            temp = function->context->new_temporary(data_type);
-                        }
+                        function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::PDOT, index));
 
-                        function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
                         left = {temp};
-                    } else if (data_type == STRING){
-                        auto t1 = function->context->new_temporary(INT);
-                        function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::DOT, index));
-
-                        auto t2 = function->context->new_temporary(INT);
-                        auto t3 = function->context->new_temporary(INT);
-
-                        //Assign the second part of the string
-                        function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
-                        function->add(std::make_shared<mtac::Quadruple>(t2, left[0], mtac::Operator::DOT, t3));
-
-                        left = {t1, t2};
                     } else {
-                        eddic_unreachable("Type not handled by BRACKET");
+                        if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
+                            std::shared_ptr<Variable> temp;
+                            if(T == ArgumentType::REFERENCE){
+                                temp = function->context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
+                            } else {
+                                temp = function->context->new_temporary(data_type);
+                            }
+
+                            function->add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
+                            left = {temp};
+                        } else if (data_type == STRING){
+                            auto t1 = function->context->new_temporary(INT);
+                            function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::DOT, index));
+
+                            auto t2 = function->context->new_temporary(INT);
+                            auto t3 = function->context->new_temporary(INT);
+
+                            //Assign the second part of the string
+                            function->add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
+                            function->add(std::make_shared<mtac::Quadruple>(t2, left[0], mtac::Operator::DOT, t3));
+
+                            left = {t1, t2};
+                        } else {
+                            //A reference to a structure is a special case
+                            //Does not get any value from the array
+                            if(T == ArgumentType::REFERENCE){
+                                left = {function->context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index))};
+                            } else {
+                                eddic_unreachable("Type not handled by BRACKET");
+                            }
+                        }
                     }
                 }
 
@@ -340,7 +354,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
 //Indicate if a postfix operator needs a reference
 bool need_reference(ast::Operator op){
-    return op == ast::Operator::INC || op == ast::Operator::DEC;
+    return op == ast::Operator::INC || op == ast::Operator::DEC || op == ast::Operator::DOT;
 }
 
 //Visitor used to transform a right value into a set of MTAC arguments
@@ -803,11 +817,13 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     //Assignment of the form A[i] = X or A.i = X
 
     void operator()(ast::Expression& value){
-        //NOTE: Normally, these operators do not need a reference, no need to test with need_reference()
-        //If new postfix operators yielding a left value is added, check if this is 
-        //still true
+        arguments left;
+        if(need_reference(value.Content->operations[0].get<0>())){
+            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
+        } else {
+            left = visit(ToArgumentsVisitor<>(function), value.Content->first);
+        }
 
-        auto left = visit(ToArgumentsVisitor<>(function), value.Content->first);
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
 
         auto platform = function->context->global()->target_platform();
@@ -817,13 +833,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto& operation = value.Content->operations[i];
 
             //Execute the current operation
-            left = compute_expression_operation<>(function, type, left, operation);
+            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>())){
+                left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
+            } else {
+                left = compute_expression_operation<>(function, type, left, operation);
+            }
 
             //Get the type computed by the current operation for the next one
             type = ast::operation_type(type, value.Content->context, operation);
         }
 
-        //Assign the right value to the left value generated by 
+        //Assign the right value to the left value generated
 
         auto& last_operation = value.Content->operations.back();
 
