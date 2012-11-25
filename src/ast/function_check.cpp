@@ -138,6 +138,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             function_call_operation.get<0>() = functionCall.Content->function_name; 
                             function_call_operation.get<1>() = functionCall.Content->template_types; 
                             function_call_operation.get<2>() = functionCall.Content->values;
+                            function_call_operation.get<4>() = context->getFunction(mangled);
 
                             ast::Expression member_function_call;
                             member_function_call.Content->context = functionCall.Content->context;
