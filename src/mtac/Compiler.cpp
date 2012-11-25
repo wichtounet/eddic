@@ -90,22 +90,6 @@ struct JumpIfFalseVisitor : public boost::static_visitor<> {
     }
 };
 
-template<typename Control>
-void compare(ast::Expression& value, ast::Operator op, mtac::function_p function, const std::string& label){
-    eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
-
-    auto left = moveToArgument(value.Content->first, function);
-    auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
-
-    auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-
-    if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
-        function->add(std::make_shared<Control>(mtac::toBinaryOperator(op), left, right, label));
-    } else if(typeLeft == FLOAT){
-        function->add(std::make_shared<Control>(mtac::toFloatBinaryOperator(op), left, right, label));
-    } 
-}
-
 struct JumpIfTrueVisitor : public boost::static_visitor<> {
     JumpIfTrueVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
     
@@ -139,10 +123,6 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
                 visit(*this, boost::get<ast::Value>(*operation.get<1>()));
             }
         }
-        //Relational operators 
-        else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-            compare<mtac::If>(value, op, function, label);
-        } 
         //A bool value
         else { //Perform int operations
             auto argument = moveToArgument(value, function);
@@ -186,10 +166,6 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
 
         function->add(codeLabel);
     }
-    //Relational operators 
-    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        compare<mtac::IfFalse>(value, op, function, label);
-    } 
     //A bool value
     else { //Compute the expression
         auto argument = moveToArgument(value, function);
