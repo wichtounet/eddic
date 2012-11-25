@@ -16,6 +16,8 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include <boost/lexical_cast.hpp>
+
 namespace eddic {
 
 template<typename T, typename Function>
@@ -89,7 +91,7 @@ template <typename T>
 inline std::string toString(T number) {
     //PERF: If necessary, use karma
     //PERF: If necessary, come again to lexical_cast
-    return std::to_string(number); 
+    return boost::lexical_cast<std::string>(number); 
 }
 
 bool has_extension(const std::string& file, const std::string& extension);

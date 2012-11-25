@@ -38,4 +38,16 @@ void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator)
             }
         }
     }
+
+    for(auto& member : struct_.Content->arrays){
+        auto type = (*struct_type)[member.Content->arrayName]->type;
+
+        if(type->is_custom_type()){
+            auto struct_name = type->mangle();
+
+            if(!context->struct_exists(struct_name)){
+                throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+            }
+        }
+    }
 }

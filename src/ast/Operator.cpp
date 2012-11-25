@@ -51,6 +51,14 @@ std::string eddic::ast::toString(Operator op){
             return ">";
         case ast::Operator::GREATER_EQUALS:
             return ">=";
+        case ast::Operator::STAR:
+            return "*";
+        case ast::Operator::BRACKET:
+            return "[]";
+        case ast::Operator::DOT:
+            return ".";
+        case ast::Operator::CALL:
+            return "()";
     }
 
     eddic_unreachable("This operator cannot be converted to string");

@@ -189,12 +189,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     
     instruction %= 
             switch_
-        |   (value.member_function_call > lexer.stop)
         |   (value.function_call > lexer.stop)
         |   (value.assignment > lexer.stop)
+        |   (value.postfix_expression > lexer.stop)
         |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
-        |   (value.suffix_operation > lexer.stop)
         |   (value.prefix_operation > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   if_
@@ -211,7 +210,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     repeatable_instruction = 
             value.assignment 
         |   swap 
-        |   value.suffix_operation
         |   value.prefix_operation
         |   value.function_call;
     
@@ -297,6 +295,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(arrayDeclaration >> lexer.stop)
         >>  *(constructor)
         >>  *(destructor)
         >>  *(function)
@@ -309,6 +308,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.identifier
         >>  lexer.left_brace
         >>  *(member_declaration)
+        >>  *(arrayDeclaration >> lexer.stop)
         >>  *(constructor)
         >>  *(destructor)
         >>  *(function)
@@ -344,4 +344,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     DEBUG_RULE(function);
     DEBUG_RULE(template_function);
     DEBUG_RULE(instruction);
+    DEBUG_RULE(struct_);
+    DEBUG_RULE(globalDeclaration);
+    DEBUG_RULE(constructor);
+    DEBUG_RULE(destructor);
 }

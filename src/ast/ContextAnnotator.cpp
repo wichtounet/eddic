@@ -32,11 +32,8 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         std::shared_ptr<Context> currentContext;
 
         AUTO_RECURSE_BUILTIN_OPERATORS()
-        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
-        AUTO_RECURSE_SUFFIX()
-        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -177,6 +174,8 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Assignment& assignment){
+            assignment.Content->context = currentContext;
+
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
         }
@@ -188,33 +187,11 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
         }
-
-        void operator()(ast::Expression& value){
-            visit(*this, value.Content->first);
-            for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-                    [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
-        }
         
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
         }
         
-        void operator()(ast::DereferenceValue& variable){
-            visit(*this, variable.Content->ref);
-        }
-        
-        void operator()(ast::MemberValue& value){
-            value.Content->context = currentContext;
-
-            visit(*this, value.Content->location);
-        }
-        
-        void operator()(ast::ArrayValue& array){
-            array.Content->context = currentContext;
-
-            visit(*this, array.Content->indexValue);
-        }
-       
         void operator()(ast::Return& return_){
             return_.Content->context = functionContext;
 
@@ -237,6 +214,12 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             new_.Content->context = currentContext;
             
             visit(*this, new_.Content->size);
+        }
+        
+        void operator()(ast::Expression& expression){
+            expression.Content->context = currentContext;
+
+            VISIT_COMPOSED_VALUE(expression);
         }
 };
 

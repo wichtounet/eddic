@@ -137,7 +137,12 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
         } else if(position.isParameter()){
             auto reg = manager.get_free_pseudo_reg();
 
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+            //The case of array is special because only the address is passed, not the complete array
+            if(var->type()->is_array()){
+                ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+            } else {
+                ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
+            }
 
             return ltac::Address(reg, offsetReg);
         } else if(position.isGlobal()){

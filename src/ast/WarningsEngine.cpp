@@ -63,7 +63,10 @@ struct Collector : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            //If this is null, it means that this an array inside a structure
+            if(declaration.Content->context){
+                positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            }
         }
         
         void operator()(ast::VariableDeclaration& declaration){
@@ -96,14 +99,12 @@ struct Inspector : public boost::static_visitor<> {
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_FOREACH()
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_RETURN_VALUES()
-        AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_SWITCH()

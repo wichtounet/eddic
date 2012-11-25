@@ -13,26 +13,48 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/adapted/boost_tuple.hpp>
+#include <boost/optional.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
 #include "ast/Position.hpp"
+#include "ast/VariableType.hpp"
 
 namespace eddic {
 
 class Context;
+class Function;
 
 namespace ast {
 
-typedef boost::tuple<Operator, Value> Operation;
+//TODO Transform that in a struct
+typedef boost::tuple<
+            std::string, 
+            boost::optional<std::vector<ast::Type>>, 
+            std::vector<Value>, 
+            boost::optional<std::string>,       //The function mangled name
+            boost::optional<std::shared_ptr<eddic::Function>>
+        > CallOperationValue;
+
+typedef boost::variant<
+        Value, 
+        std::string, 
+        CallOperationValue
+    >  OperationValueVariant;
+
+typedef boost::optional<OperationValueVariant> OperationValue;
+typedef boost::tuple<Operator, OperationValue> Operation;
 typedef std::vector<Operation> Operations;
 
 /*!
  * \class ASTExpression
- * \brief The AST node for a composed value.   
+ * \brief The AST node for an expression. 
+ * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values). 
  * Should only be used from the Deferred version (eddic::ast::Expression).
  */
 struct ASTExpression {
+    std::shared_ptr<Context> context;
+
     Position position;
     Value first;
     Operations operations;

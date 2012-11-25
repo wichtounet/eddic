@@ -65,12 +65,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return builtin;
     }
 
-    ast::Value operator()(ast::Unary& value){
-        value.Content->value = visit(*this, value.Content->value);
-
-        return value;
-    }
-
     ast::Value operator()(ast::Cast& cast){
         cast.Content->value = visit(*this, cast.Content->value);
 
@@ -78,97 +72,13 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
-
-        return operation;
-    }
-
-    ast::Value operator()(ast::SuffixOperation& operation){
-        operation.Content->left_value = ast::to_left_value(visit(*this, operation.Content->left_value));
+        operation.Content->left_value = visit(*this, operation.Content->left_value);
 
         return operation;
     }
 
     //Warning : The location of the MemberValue is not modified
     //TODO If there are new transformation in the future, adapt the following function
-
-    ast::Value operator()(ast::MemberValue& variable){
-        auto location = variable.Content->location;
-
-        if(auto* ptr = boost::get<ast::VariableValue>(&location)){
-            auto location_variable = *ptr;
-            bool transformed = false;
-
-            if (!location_variable.Content->context->exists(location_variable.Content->variableName)) {
-                auto context = location_variable.Content->context->function();
-                auto global_context = location_variable.Content->context->global();
-
-                if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
-                    auto struct_type = global_context->get_struct(context->struct_type->mangle());
-
-                    if(struct_type->member_exists(location_variable.Content->variableName)){
-                        ast::VariableValue this_variable;
-                        this_variable.Content->context = location_variable.Content->context;
-                        this_variable.Content->var = location_variable.Content->context->getVariable("this");
-                        this_variable.Content->variableName = "this";
-                        this_variable.Content->position = location_variable.Content->position;
-
-                        variable.Content->location = this_variable;
-                        variable.Content->memberNames.insert(variable.Content->memberNames.begin(), location_variable.Content->variableName);
-
-                        transformed = true;
-                    }
-                }
-            }
-            
-            if(!transformed){
-                visit_non_variant(*this, location_variable);
-            }
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&location)){
-            visit_non_variant(*this, *ptr);
-        } else {
-            eddic_unreachable("Not a left value");
-        }
-
-        auto type = visit(ast::GetTypeVisitor(), variable.Content->location);
-        auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
-        auto struct_type = context->get_struct(struct_name);
-
-        //We delay it
-        if(!struct_type){
-            return variable;
-        }
-
-        //Reference the structure
-        struct_type->add_reference();
-
-        auto& members = variable.Content->memberNames;
-        for(std::size_t i = 0; i < members.size(); ++i){
-            auto& member = members[i];
-
-            if(!struct_type->member_exists(member)){ 
-                throw SemanticalException("The struct " + struct_name + " has no member named " + member, variable.Content->position);
-            }
-
-            //Add a reference to the member
-            (*struct_type)[member]->add_reference();
-
-            //If it is not the last member
-            if(i != members.size() - 1){
-                //The next member will be a member of the current member type
-                struct_type = context->get_struct((*struct_type)[member]->type->mangle());
-
-                //We delay it
-                if(!struct_type){
-                    return variable;
-                }
-
-                struct_name = struct_type->name;
-            }
-        }
-
-        return variable;
-    }
 
     ast::Value operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
@@ -185,11 +95,11 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                     this_variable.Content->variableName = "this";
                     this_variable.Content->position = variable.Content->position;
 
-                    ast::MemberValue member_value;
+                    ast::Expression member_value;
                     member_value.Content->context = variable.Content->context;
                     member_value.Content->position = variable.Content->position;
-                    member_value.Content->location = this_variable;
-                    member_value.Content->memberNames.push_back(variable.Content->variableName);
+                    member_value.Content->first = this_variable;
+                    member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
 
                     return visit_non_variant(*this, member_value);
                 }
@@ -205,57 +115,89 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return variable;
     }
 
-    ast::Value operator()(ast::ArrayValue& array){
-        if (!array.Content->context->exists(array.Content->arrayName)) {
-            throw SemanticalException("Array " + array.Content->arrayName + " has not been declared", array.Content->position);
-        }
-        
-        //Reference the variable
-        array.Content->var = array.Content->context->getVariable(array.Content->arrayName);
-        array.Content->context->add_reference(array.Content->var);
-
-        array.Content->indexValue = visit(*this, array.Content->indexValue);
-
-        return array;
-    }
-
-    ast::Ref to_ref(ast::Value left_value){
-        if(auto* ptr = boost::get<ast::VariableValue>(&left_value)){
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::ArrayValue>(&left_value)){
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::MemberValue>(&left_value)){
-            return *ptr;
-        } else {
-            eddic_unreachable("Not a left value");
-        }
-    }
-
-    ast::Value operator()(ast::DereferenceValue& variable){
-        variable.Content->ref = to_ref(visit(*this, variable.Content->ref));
-
-        return variable;
-    }
-
     ast::Value operator()(ast::Expression& value){
-        value.Content->first = visit(*this, value.Content->first);
+        //Handle implicit this value
+        bool transformed = false;
+        if(!value.Content->operations.empty() && value.Content->operations[0].get<0>() == ast::Operator::DOT){
+            if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->first)){
+                auto location_variable = *ptr;
+
+                if (!location_variable.Content->context->exists(location_variable.Content->variableName)) {
+                    auto context = location_variable.Content->context->function();
+                    auto global_context = location_variable.Content->context->global();
+
+                    if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
+                        auto struct_type = global_context->get_struct(context->struct_type->mangle());
+
+                        if(struct_type->member_exists(location_variable.Content->variableName)){
+                            ast::VariableValue this_variable;
+                            this_variable.Content->context = location_variable.Content->context;
+                            this_variable.Content->var = location_variable.Content->context->getVariable("this");
+                            this_variable.Content->variableName = "this";
+                            this_variable.Content->position = location_variable.Content->position;
+
+                            value.Content->first = this_variable;
+                            value.Content->operations.insert(value.Content->operations.begin(), 
+                                    boost::make_tuple(ast::Operator::DOT, location_variable.Content->variableName));
+
+                            transformed = true;
+                        }
+                    }
+                }
+            } 
+        }
         
-        for_each(value.Content->operations.begin(), value.Content->operations.end(), 
-            [&](ast::Operation& operation){ operation.get<1>() = visit(*this, operation.get<1>()); });
+        value.Content->first = visit(*this, value.Content->first);
+
+        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+    
+        for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
+            auto& op = value.Content->operations[i];
+
+            if(op.get<0>() == ast::Operator::DOT){
+                auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
+                auto struct_type = value.Content->context->global()->get_struct(struct_name);
+
+                //We delay it
+                if(!struct_type){
+                    return value;
+                }
+
+                //Reference the structure
+                struct_type->add_reference();
+
+                auto member = boost::get<std::string>(*op.get<1>());
+
+                if(!struct_type->member_exists(member)){ 
+                    throw SemanticalException("The struct " + struct_name + " has no member named " + member, value.Content->position);
+                }
+
+                //Add a reference to the member
+                (*struct_type)[member]->add_reference();
+            }
+
+            //Visit the Expression values
+            if(op.get<1>()){
+                if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                    op.get<1>() = visit(*this, *ptr);
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                    for(auto& v : ptr->get<2>()){
+                        v = visit(*this, v);
+                    }
+                }
+            }
+
+            //Only get the type if necessary (member function calls are not initialized for now)
+            if(i != value.Content->operations.size() - 1){
+                type = ast::operation_type(type, value.Content->context, op);
+            }
+        }
 
         return value;
     }
-
-    ast::Value operator()(ast::MemberFunctionCall& functionCall){
-        functionCall.Content->object = visit(*this, functionCall.Content->object);
-
-        replace_each(functionCall.Content->values);
-
-        return functionCall;
-    }
-
+    
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = ast::to_left_value(visit(*this, assignment.Content->left_value));
+        assignment.Content->left_value = visit(*this, assignment.Content->left_value);
         assignment.Content->value = visit(*this, assignment.Content->value);
 
         return assignment;
@@ -464,7 +406,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
             foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
             foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
-            
+
             //Add references to variables
             foreach.Content->context->add_reference(foreach.Content->var);
             foreach.Content->context->add_reference(foreach.Content->iterVar);
@@ -587,13 +529,13 @@ struct VariablesVisitor : public boost::static_visitor<> {
         swap.Content->context->add_reference(swap.Content->rhs_var);
     }
 
+    void operator()(ast::Expression& value){
+        visit_non_variant(value_visitor, value);
+    }
+
     /* Forward to value visitor, don't care about return value, as only variable are transformed */
     
     void operator()(ast::FunctionCall& function_call){
-        visit_non_variant(value_visitor, function_call);
-    }
-    
-    void operator()(ast::MemberFunctionCall& function_call){
         visit_non_variant(value_visitor, function_call);
     }
     
@@ -602,10 +544,6 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& operation){
-        visit_non_variant(value_visitor, operation);
-    }
-
-    void operator()(ast::SuffixOperation& operation){
         visit_non_variant(value_visitor, operation);
     }
 };

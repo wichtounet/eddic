@@ -37,8 +37,13 @@ inline bool is(T& variant){
     return boost::get<V>(&variant);
 }
 
+template<typename V, typename T>
+inline bool optional_is(T& variant){
+    return variant && boost::get<V>(&*variant);
+}
+
 template<typename T>
-inline bool isInt(T& variant){
+inline bool isInt(T variant){
     return boost::get<int>(&variant);
 }
 

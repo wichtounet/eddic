@@ -53,6 +53,10 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
             type = "u";
         }
 
+        if(variable->is_reference()){
+            return variable->name() + "(ref," + type + ")";
+        }
+
         switch(variable->position().type()){
             case PositionType::STACK:
                 return variable->name() + "(s," + type + ")";

@@ -35,7 +35,7 @@ struct TemplateEngine {
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> ClassInstantiationMap;
 
         void check_function(ast::FunctionCall& function_call);
-        void check_member_function(ast::MemberFunctionCall& member_function_call);
+        void check_member_function(ast::Expression& expression);
         void check_type(ast::Type& type, ast::Position& position);
 
         void add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration);
