@@ -151,7 +151,9 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
     
-        for(auto& op : value.Content->operations){
+        for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
+            auto& op = value.Content->operations[i];
+
             if(op.get<0>() == ast::Operator::DOT){
                 auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
                 auto struct_type = value.Content->context->global()->get_struct(struct_name);
@@ -185,7 +187,10 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                 }
             }
 
-            type = ast::operation_type(type, value.Content->context, op);
+            //Only get the type if necessary (member function calls are not initialized for now)
+            if(i != value.Content->operations.size() - 1){
+                type = ast::operation_type(type, value.Content->context, op);
+            }
         }
 
         return value;
