@@ -47,7 +47,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> value;
     qi::rule<lexer::Iterator, ast::Value()> primary_value;
     qi::rule<lexer::Iterator, ast::Cast()> cast_value;
-    qi::rule<lexer::Iterator, ast::PrefixOperation()> negated_constant_value;
     qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
     qi::rule<lexer::Iterator, ast::CallOperationValue()> call_value;
     
@@ -60,7 +59,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Expression()> logicalAnd_value;
     qi::rule<lexer::Iterator, ast::Expression()> logicalOr_value;
 
-    qi::rule<lexer::Iterator, ast::Value()> constant;
     qi::rule<lexer::Iterator, ast::Integer()> integer;
     qi::rule<lexer::Iterator, ast::IntegerSuffix()> integer_suffix;
     qi::rule<lexer::Iterator, ast::Float()> float_;

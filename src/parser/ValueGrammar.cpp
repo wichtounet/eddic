@@ -149,12 +149,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::eps 
         >> lexer.char_literal;
 
-    constant = 
-            negated_constant_value
-        |   integer 
-        |   string_literal
-        |   char_literal;
-
     /* Define values */ 
     
     primary_value = 
@@ -214,14 +208,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  qi::adapttokens[unary_op]   
         >>  cast_expression;
     
-    negated_constant_value = 
-            qi::position(position_begin)
-        >>  qi::adapttokens[unary_op]
-        >>  integer;
-
     unary_expression %=
             postfix_expression
-        |   negated_constant_value
         |   prefix_operation
         |   unary_operation
         |   primary_value;
@@ -310,14 +298,12 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(value);
     DEBUG_RULE(primary_value);
     DEBUG_RULE(cast_value);
-    DEBUG_RULE(negated_constant_value);
     DEBUG_RULE(conditional_expression);
     DEBUG_RULE(additive_value);
     DEBUG_RULE(multiplicative_value);
     DEBUG_RULE(relational_value);
     DEBUG_RULE(logicalAnd_value);
     DEBUG_RULE(logicalOr_value);
-    DEBUG_RULE(constant);
     DEBUG_RULE(integer);
     DEBUG_RULE(integer_suffix);
     DEBUG_RULE(float_);
@@ -334,7 +320,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(builtin_operator);
     DEBUG_RULE(variable_value);
     DEBUG_RULE(ternary);
-    DEBUG_RULE(constant);
     DEBUG_RULE(string_literal);
     DEBUG_RULE(char_literal);
     DEBUG_RULE(call_value);

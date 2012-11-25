@@ -169,7 +169,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  type 
         >>  lexer.identifier 
-        >>  -(lexer.assign >> value.constant)
+        >>  -(lexer.assign >> value)
         >>  lexer.stop;
     
     globalArrayDeclaration %= 
