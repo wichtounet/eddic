@@ -74,13 +74,48 @@ Offset variant_cast(Source source){
     }
 }
 
+void jump_if_true(mtac::function_p function, const std::string& l, ast::Value value);
+
 struct JumpIfFalseVisitor : public boost::static_visitor<> {
     JumpIfFalseVisitor(mtac::function_p f, const std::string& l) : function(f), label(l) {}
     
     mutable mtac::function_p function;
     std::string label;
    
-    void operator()(ast::Expression& value) const ;
+    void operator()(ast::Expression& value) const {
+        auto op = value.Content->operations[0].get<0>();
+
+        //Logical and operators (&&)
+        if(op == ast::Operator::AND){
+            visit(*this, value.Content->first);
+
+            for(auto& operation : value.Content->operations){
+                visit(*this, boost::get<ast::Value>(*operation.get<1>()));
+            }
+        } 
+        //Logical or operators (||)
+        else if(op == ast::Operator::OR){
+            std::string codeLabel = newLabel();
+
+            jump_if_true(function, codeLabel, value.Content->first);
+
+            for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
+                if(i == value.Content->operations.size() - 1){
+                    visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
+                } else {
+                    jump_if_true(function, codeLabel, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
+                }
+            }
+
+            function->add(codeLabel);
+        }
+        //A bool value
+        else { //Compute the expression
+            auto argument = moveToArgument(value, function);
+
+            function->add(std::make_shared<mtac::IfFalse>(argument, label));
+        }
+    }
     
     template<typename T>
     void operator()(T& value) const {
@@ -139,39 +174,8 @@ struct JumpIfTrueVisitor : public boost::static_visitor<> {
     }
 };
 
-void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
-    auto op = value.Content->operations[0].get<0>();
-
-    //Logical and operators (&&)
-    if(op == ast::Operator::AND){
-        visit(*this, value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            visit(*this, boost::get<ast::Value>(*operation.get<1>()));
-        }
-    } 
-    //Logical or operators (||)
-    else if(op == ast::Operator::OR){
-        std::string codeLabel = newLabel();
-
-        visit(JumpIfTrueVisitor(function, codeLabel), value.Content->first);
-
-        for(unsigned int i = 0; i < value.Content->operations.size(); ++i){
-            if(i == value.Content->operations.size() - 1){
-                visit(*this, boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
-            } else {
-                visit(JumpIfTrueVisitor(function, codeLabel), boost::get<ast::Value>(*value.Content->operations[i].get<1>()));
-            }
-        }
-
-        function->add(codeLabel);
-    }
-    //A bool value
-    else { //Compute the expression
-        auto argument = moveToArgument(value, function);
-
-        function->add(std::make_shared<mtac::IfFalse>(argument, label));
-    }
+void jump_if_true(mtac::function_p function, const std::string& l, ast::Value value){
+    visit(JumpIfTrueVisitor(function, l), value);
 }
 
 std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
