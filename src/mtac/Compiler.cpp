@@ -114,8 +114,7 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
             arguments result;
 
-            result.push_back(elements);
-
+            //All the elements of the array
             for(unsigned int i = 0; i < elements; ++i){
                 if(data_type == STRING){
                     //TODO
@@ -135,6 +134,9 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
                     result.push_back(temp);
                 }
             }
+
+            //The number of elements
+            result.push_back(elements);
 
             return result;
         }
