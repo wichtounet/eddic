@@ -582,31 +582,37 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
-        auto& value = builtin.Content->values[0];
-
         switch(builtin.Content->type){
-            case ast::BuiltinType::SIZE:{
-                eddic_assert(boost::get<ast::VariableValue>(&value), "The size builtin can only be applied to variable");
-                
-                auto variable = boost::get<ast::VariableValue>(value).Content->var;
+            case ast::BuiltinType::SIZE:
+                {
+                    //Get a reference to the array
+                    auto right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values[0]);
+                    eddic_assert(mtac::isVariable(right[0]), "The visitor should return a variable");
 
-                if(variable->position().isGlobal()){
-                    return {variable->type()->elements()};
-                } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
-                    return {variable->type()->elements()};
-                } else if(variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
-                    auto t1 = function->context->new_temporary(INT);
+                    auto variable = boost::get<std::shared_ptr<Variable>>(right[0]);
 
-                    //The size of the array is at the address pointed by the variable
-                    function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+                    if(variable->position().isGlobal()){
+                        return {variable->type()->elements()};
+                    } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
+                        return {variable->type()->elements()};
+                    } else if(variable->is_reference() || variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
+                        auto t1 = function->context->new_temporary(INT);
 
-                    return {t1};
+                        //The size of the array is at the address pointed by the variable
+                        function->add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+
+                        return {t1};
+                    }
+
+                    eddic_unreachable("The variable is not of a valid type");
                 }
-
-                eddic_unreachable("The variable is not of a valid type");
-            }
+            
             case ast::BuiltinType::LENGTH:
-                return {visit(*this, value)[1]};
+                {
+                    auto& value = builtin.Content->values[0];
+
+                    return {visit(*this, value)[1]};
+                }
         }
 
         eddic_unreachable("This builtin operator is not handled");
