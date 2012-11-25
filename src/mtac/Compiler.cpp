@@ -726,18 +726,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
 
         //TODO Perhaps this special handling should be integrated in the compute_expression function above
-        auto& first_operation = value.Content->operations[0];
-        auto first_op = first_operation.get<0>();
-
-        if(first_op >= ast::Operator::EQUALS && first_op <= ast::Operator::GREATER_EQUALS){
+        auto first_op = value.Content->operations[0].get<0>();
+        if((first_op >= ast::Operator::EQUALS && first_op <= ast::Operator::GREATER_EQUALS) || first_op == ast::Operator::AND || first_op == ast::Operator::OR){
             return {performBoolOperation(value, function)};
-        } else if(first_op == ast::Operator::AND || first_op == ast::Operator::OR){
-            if(type == BOOL){
-                return {performBoolOperation(value, function)};
-            } else {
-                eddic_unreachable("Invalid type for binary operators");
-            }
-        }
+        } 
         
         arguments left;
         if(need_reference(value.Content->operations[0].get<0>(), type)){
