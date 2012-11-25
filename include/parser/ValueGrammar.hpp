@@ -80,14 +80,14 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> cast_expression;
     
     //Versions with cast to ast::OperationValue
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_call_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_identifier;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_cast_expression;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_additive_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_multiplicative_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_relational_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> limited_logicalAnd_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_call_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_identifier;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_cast_expression;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_additive_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_multiplicative_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_relational_value;
+    qi::rule<lexer::Iterator, ast::OperationValue()> casted_logicalAnd_value;
 
     /* Operators */
 
