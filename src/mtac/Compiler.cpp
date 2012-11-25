@@ -48,7 +48,6 @@ void assign(mtac::function_p function, std::shared_ptr<Variable> left_value, ast
 mtac::Argument moveToArgument(ast::Value value, mtac::function_p function);
 arguments move_to_arguments(ast::Value value, mtac::function_p function);
 
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function);
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
@@ -199,6 +198,71 @@ void JumpIfFalseVisitor::operator()(ast::Expression& value) const {
     }
 }
 
+std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
+    auto t1 = function->context->new_temporary(INT); 
+   
+    //The first operator defines the kind of operation 
+    auto op = value.Content->operations[0].get<0>();
+
+    //Logical and operators (&&)
+    if(op == ast::Operator::AND){
+        auto falseLabel = newLabel();
+        auto endLabel = newLabel();
+
+        visit(JumpIfFalseVisitor(function, falseLabel), value.Content->first);
+
+        for(auto& operation : value.Content->operations){
+            visit(JumpIfFalseVisitor(function, falseLabel), boost::get<ast::Value>(*operation.get<1>()));
+        }
+
+        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Goto>(endLabel));
+
+        function->add(falseLabel);
+        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+
+        function->add(endLabel);
+    } 
+    //Logical or operators (||)
+    else if(op == ast::Operator::OR){
+        auto trueLabel = newLabel();
+        auto endLabel = newLabel();
+
+        visit(JumpIfTrueVisitor(function, trueLabel), value.Content->first);
+
+        for(auto& operation : value.Content->operations){
+            visit(JumpIfTrueVisitor(function, trueLabel), boost::get<ast::Value>(*operation.get<1>()));
+        }
+
+        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+        function->add(std::make_shared<mtac::Goto>(endLabel));
+
+        function->add(trueLabel);
+        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+
+        function->add(endLabel);
+    }
+    //Relational operators 
+    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
+        eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
+
+        auto left = moveToArgument(value.Content->first, function);
+        auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
+        
+        auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
+        if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
+            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
+        } else if(typeLeft == FLOAT){
+            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
+        } else {
+            eddic_unreachable("Unsupported type in relational operator");
+        }
+    } else {
+        eddic_unreachable("Unsupported operator");
+    }
+    
+    return t1;
+}
 
 enum class ArgumentType : unsigned int {
     NORMAL,
@@ -1586,72 +1650,6 @@ void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, st
     pass_arguments(function, definition, functionCall.Content->values);
 
     function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
-}
-
-std::shared_ptr<Variable> performBoolOperation(ast::Expression& value, mtac::function_p function){
-    auto t1 = function->context->new_temporary(INT); 
-   
-    //The first operator defines the kind of operation 
-    auto op = value.Content->operations[0].get<0>();
-
-    //Logical and operators (&&)
-    if(op == ast::Operator::AND){
-        auto falseLabel = newLabel();
-        auto endLabel = newLabel();
-
-        visit(JumpIfFalseVisitor(function, falseLabel), value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            visit(JumpIfFalseVisitor(function, falseLabel), boost::get<ast::Value>(*operation.get<1>()));
-        }
-
-        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-        function->add(std::make_shared<mtac::Goto>(endLabel));
-
-        function->add(falseLabel);
-        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-
-        function->add(endLabel);
-    } 
-    //Logical or operators (||)
-    else if(op == ast::Operator::OR){
-        auto trueLabel = newLabel();
-        auto endLabel = newLabel();
-
-        visit(JumpIfTrueVisitor(function, trueLabel), value.Content->first);
-
-        for(auto& operation : value.Content->operations){
-            visit(JumpIfTrueVisitor(function, trueLabel), boost::get<ast::Value>(*operation.get<1>()));
-        }
-
-        function->add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-        function->add(std::make_shared<mtac::Goto>(endLabel));
-
-        function->add(trueLabel);
-        function->add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-
-        function->add(endLabel);
-    }
-    //Relational operators 
-    else if(op >= ast::Operator::EQUALS && op <= ast::Operator::GREATER_EQUALS){
-        eddic_assert(value.Content->operations.size() == 1, "Relational operations cannot be chained");
-
-        auto left = moveToArgument(value.Content->first, function);
-        auto right = moveToArgument(boost::get<ast::Value>(*value.Content->operations[0].get<1>()), function);
-        
-        auto typeLeft = visit(ast::GetTypeVisitor(), value.Content->first);
-        if(typeLeft == INT || typeLeft == CHAR || typeLeft->is_pointer()){
-            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toRelationalOperator(op), right));
-        } else if(typeLeft == FLOAT){
-            function->add(std::make_shared<mtac::Quadruple>(t1, left, mtac::toFloatRelationalOperator(op), right));
-        } else {
-            eddic_unreachable("Unsupported type in relational operator");
-        }
-    } else {
-        eddic_unreachable("Unsupported operator");
-    }
-    
-    return t1;
 }
 
 } //end of anonymous namespace
