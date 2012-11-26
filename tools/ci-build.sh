@@ -1,5 +1,5 @@
 export CCACHE_DIR=/var/tmp/ccache/
-cmake -DCMAKE_CXX_COMPILER=/usr/lib/ccache/bin/clang++ -DCMAKE_C_COMPILER=/usr/lib/ccache/bin/clang .
+cmake -DCMAKE_CXX_COMPILER=/usr/lib/ccache/bin/g++ -DCMAKE_C_COMPILER=/usr/lib/ccache/bin/gcc -DCMAKE_BUILD_TYPE=Coverage .
 make
 
 echo "Run the test suite"
@@ -10,6 +10,9 @@ cppcheck -v --platform=unix64 --std=c++11 --enable=all --xml -I include/ src/ 2>
 
 echo "Analyze the source code with RATS"
 rats -w 3 --xml src/ include/ > rats-results.xml
+
+echo "Verify memory usage with Valgrind"
+valgrind --xml=yes --xml-file=valgrind-results.xml bin/eddic eddi_samples/asm.eddi
 
 echo "Generate the doc"
 make doc
