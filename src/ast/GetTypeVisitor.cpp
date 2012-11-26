@@ -56,6 +56,8 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
 
     if(operation.Content->op == ast::Operator::STAR){
         return type->data_type();
+    } else if(operation.Content->op == ast::Operator::ADDRESS){
+        return new_pointer_type(type);
     } else {
         return type; 
     }
