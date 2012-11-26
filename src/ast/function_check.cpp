@@ -86,19 +86,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 auto mangled = mangle(name, types);
                 auto original_mangled = mangled;
 
-                //If the function does not exists, try implicit conversions to pointers
-                if(!context->exists(mangled)){
-                    auto perms = permutations(types);
-
-                    for(auto& perm : perms){
-                        mangled = mangle(name, perm);
-
-                        if(context->exists(mangled)){
-                            break;
-                        }
-                    }
-                }
-
                 if(context->exists(mangled)){
                     context->addReference(mangled);
 
@@ -111,19 +98,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         auto struct_type = local_context->struct_type;
 
                         mangled = mangle(name, types, struct_type);
-
-                        //If the function does not exists, try implicit conversions to pointers
-                        if(!context->exists(mangled)){
-                            auto perms = permutations(types);
-
-                            for(auto& perm : perms){
-                                mangled = mangle(name, perm, struct_type);
-
-                                if(context->exists(mangled)){
-                                    break;
-                                }
-                            }
-                        }
 
                         if(context->exists(mangled)){
                             context->addReference(mangled);
@@ -191,28 +165,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             visit_each(*this, program.Content->blocks);
         }
 
-        void permute(std::vector<std::vector<std::shared_ptr<const Type>>>& perms, std::vector<std::shared_ptr<const Type>>& types, int start){
-            for(std::size_t i = start; i < types.size(); ++i){
-                if(!types[i]->is_pointer() && !types[i]->is_array()){
-                    std::vector<std::shared_ptr<const Type>> copy = types;
-
-                    copy[i] = new_pointer_type(types[i]);
-
-                    perms.push_back(copy);
-
-                    permute(perms, copy, i + 1);
-                }
-            }
-        }
-
-        std::vector<std::vector<std::shared_ptr<const Type>>> permutations(std::vector<std::shared_ptr<const Type>>& types){
-            std::vector<std::vector<std::shared_ptr<const Type>>> perms;
-
-            permute(perms, types, 0);
-
-            return perms;
-        }
-        
         std::vector<std::shared_ptr<const Type>> get_types(std::vector<ast::Value>& values){
             std::vector<std::shared_ptr<const Type>> types;
 
@@ -261,19 +213,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto types = get_types(call_value.get<2>());
 
                     std::string mangled = mangle(name, types, struct_type);
-
-                    //If the function does not exist, try implicit conversions to pointers
-                    if(!context->exists(mangled)){
-                        auto perms = permutations(types);
-
-                        for(auto& perm : perms){
-                            mangled = mangle(name, perm, struct_type);
-
-                            if(context->exists(mangled)){
-                                break;
-                            }
-                        }
-                    }
 
                     if(context->exists(mangled)){
                         context->addReference(mangled);
