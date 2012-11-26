@@ -8,6 +8,9 @@ echo "Run the test suite"
 echo "Analyze the source code with cppcheck"
 cppcheck -v --platform=unix64 --std=c++11 --enable=all --xml -I include/ src/ 2> cppcheck-results.xml
 
+echo "Analyze the source code with RATS"
+rats -w 3 --xml src/ include/ > rats-results.xml
+
 echo "Generate the doc"
 make doc
 
