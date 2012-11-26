@@ -5,6 +5,8 @@ make
 echo "Run the test suite"
 ./bin/boosttest--eddic_boost_test --report_level=detailed --report_format=xml --report_sink=test-results.xml
 
+xsltproc tools/boost-junit.xsl test-results.xml > xunit-results.xml
+
 echo "Collect the code coverage results"
 /media/data/server/bin/gcovr -x -r . > gcov-report.xml
 
