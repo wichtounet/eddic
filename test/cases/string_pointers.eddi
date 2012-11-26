@@ -1,6 +1,6 @@
 void main(){
     string a = "a";
-    test(a);
+    test(&a);
 
     print(a);
     print("|");

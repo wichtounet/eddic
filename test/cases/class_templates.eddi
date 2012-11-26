@@ -44,15 +44,15 @@ void main(){
     node<float> second_node(13.3);
     node<int> third_node(2, 5);
 
-    test<int>(first_node);
-    test<float>(second_node);
-    test<int>(third_node);
+    test<int>(&first_node);
+    test<float>(&second_node);
+    test<int>(&third_node);
     
     first_node.value = 88;
     second_node.value = 55.25;
 
-    test<int>(first_node);
-    test<float>(second_node);
+    test<int>(&first_node);
+    test<float>(&second_node);
 
     first_node.print_value<float>(1.0);
     second_node.print_value<int>(10);

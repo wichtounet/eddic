@@ -18,19 +18,19 @@ void debug(linked_list<T>* list){
 
 void main(){
     linked_list<int> list;
-    debug<int>(list);
+    debug<int>(&list);
 
     list.push_back(55);
-    debug<int>(list);
+    debug<int>(&list);
     
     list.push_back(11);
-    debug<int>(list);
+    debug<int>(&list);
     
     list.push_front(33);
-    debug<int>(list);
+    debug<int>(&list);
     
     list.push_front(99);
-    debug<int>(list);
+    debug<int>(&list);
 
     print("{");
 
@@ -78,17 +78,17 @@ void main(){
 
     delete it;
 
-    debug<int>(list);
+    debug<int>(&list);
 
     list.pop_front();
-    debug<int>(list);
+    debug<int>(&list);
 
     list.pop_back();
-    debug<int>(list);
+    debug<int>(&list);
 
     list.pop_front();
-    debug<int>(list);
+    debug<int>(&list);
 
     //list.pop_back();
-    //debug<int>(list);
+    //debug<int>(&list);
 }

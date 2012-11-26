@@ -1,6 +1,6 @@
 void main(){
     float a = 44.4;
-    test(a);
+    test(&a);
 
     print(a);
     print("|");

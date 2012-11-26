@@ -19,7 +19,7 @@ void main(){
     a.d.a = 44;
     a.d.b = "44";
 
-    test(a);
+    test(&a);
 
     print(a.a);
     print("|");
