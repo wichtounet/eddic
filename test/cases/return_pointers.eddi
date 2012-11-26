@@ -2,7 +2,7 @@ void main(){
     int a = 55;
     int b = 66;
 
-    int* c = second(a,b);
+    int* c = second(&a, &b);
     print(*c);
 }
 

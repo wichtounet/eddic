@@ -44,6 +44,7 @@ enum class Operator : unsigned int {
     //Prefix operators
 
     STAR,               /**< Star operator, to dereference pointers. */ 
+    ADDRESS,            /**< Address operator, get address of variable. */
 
     //Postfix operators
 

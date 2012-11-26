@@ -25,6 +25,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("-", ast::Operator::SUB)
         ("!", ast::Operator::NOT)
         ("*", ast::Operator::STAR)
+        ("&", ast::Operator::ADDRESS)
         ;
 
     additive_op.add

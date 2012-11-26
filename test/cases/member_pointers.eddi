@@ -9,12 +9,12 @@ void main(){
     a.a = 44;
     a.b = "44";
 
-    test(a.a);
+    test(&a.a);
 
     print(a.a);
     print("|");
 
-    test(a.b);
+    test(&a.b);
 
     print(a.b);
     print("|");

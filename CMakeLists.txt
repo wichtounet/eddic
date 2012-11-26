@@ -138,6 +138,7 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_identifiers
     SamplesSuite/samples_registers
     SamplesSuite/samples_structures
+    SpecificSuite/addressof
     SpecificSuite/array_foreach_local
     SpecificSuite/array_foreach_global
     SpecificSuite/array_foreach_param_local

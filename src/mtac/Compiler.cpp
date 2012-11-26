@@ -740,6 +740,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
                 return dereference_variable(variable, type->data_type());
             }
+            
+            case ast::Operator::ADDRESS:
+            {
+                auto left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), operation.Content->left_value);
+
+                eddic_assert(left.size() == 1, "ADDRESS only support one value");
+
+                return left;
+            }
 
             case ast::Operator::NOT:
             {
@@ -1044,7 +1053,9 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             } else {
                 eddic_unreachable("Unhandled variable type");
             }
-        } else {
+        } 
+        //The others prefix operators does not yield left values
+        else {
             eddic_unreachable("This prefix operator does not result in a left value");
         }
     }
