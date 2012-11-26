@@ -1,0 +1,40 @@
+struct Counter {
+    int value;
+
+    void add(int number){
+        value = value + number;
+    }
+    
+    int get_value(){
+        return value;
+    }
+}
+
+void main(){
+    Counter counter;
+
+    //Test on the stack
+
+    print(counter.get_value());
+    print("|");
+
+    counter.add(5);
+    print(counter.get_value());
+    print("|");
+
+    //Test as pointer
+
+    Counter* counter_ptr = counter;
+
+    print(counter_ptr.get_value());
+    print("|");
+
+    counter_ptr.add(5);
+    print(counter_ptr.get_value());
+    print("|");
+    
+    //The value should have changed for the base struct too
+
+    print(counter.get_value());
+    print("|");
+}
