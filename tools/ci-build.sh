@@ -21,3 +21,6 @@ echo "Compress the doc"
 cd doc/html/
 tar cvzf doc.tar.gz *
 mv doc.tar.gz ../../
+
+echo "Send the results to Sonar"
+sonar-runner
