@@ -45,7 +45,9 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::PrefixOperation& value) const {
         auto op = value.Content->op;
 
-        if(op == ast::Operator::STAR || op == ast::Operator::CALL || op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
+        if(
+                    op == ast::Operator::STAR || op == ast::Operator::ADDRESS || op == ast::Operator::CALL 
+                ||  op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
             return false;
         }
 

@@ -142,6 +142,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Varia
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
+    
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
@@ -166,6 +167,7 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::share
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
+    
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){

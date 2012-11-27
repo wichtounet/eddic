@@ -1,0 +1,19 @@
+void main(){
+    int a = 44;
+
+    print(a);
+    print("|");
+
+    int* b = &a;
+
+    print(*b);
+    print("|");
+    
+    *b = 55;
+    
+    print(*b);
+    print("|");
+    
+    print(a);
+    print("|");
+}

@@ -17,6 +17,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    
+    set(CMAKE_CXX_FLAGS_COVERAGE        "${CMAKE_CXX_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(COMMON_CXX_FLAGS          "-std=c++11 -Qunused-arguments")
     set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
@@ -138,6 +141,7 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_identifiers
     SamplesSuite/samples_registers
     SamplesSuite/samples_structures
+    SpecificSuite/addressof
     SpecificSuite/array_foreach_local
     SpecificSuite/array_foreach_global
     SpecificSuite/array_foreach_param_local

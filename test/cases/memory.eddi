@@ -14,7 +14,7 @@ void main(){
     print(ga);
     print("|");
 
-    test_ptr(ga);
+    test_ptr(&ga);
     test_value(ga);
 
     string b = "1";
@@ -22,7 +22,7 @@ void main(){
     print(b);
     print("|");
 
-    test_ptr(b);
+    test_ptr(&b);
     test_value(b);
 
     A a;
@@ -41,7 +41,7 @@ void main(){
     print(a.d);
     print("|");
 
-    test_ptr(a);
+    test_ptr(&a);
     test_value(a);
 
     int ai[4];

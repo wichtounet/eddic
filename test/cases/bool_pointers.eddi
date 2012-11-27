@@ -1,6 +1,6 @@
 void main(){
     bool a = false;
-    test(a);
+    test(&a);
 
     print(a);
     print("|");
