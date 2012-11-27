@@ -10,8 +10,13 @@ struct Counter {
     }
 }
 
+Counter* dummy(Counter* a, Counter* b){
+    return b;
+}
+
 void main(){
     Counter counter;
+    Counter counter_dummy;
 
     //Test on the stack
 
@@ -47,5 +52,25 @@ void main(){
 
     counters[1].add(5);
     print(counters[1].get_value());
+    print("|");
+
+    //Test as arrays of pointers
+
+    Counter* ptr_counters[2];
+    ptr_counters[1] = &counter;
+    
+    print(ptr_counters[1].get_value());
+    print("|");
+
+    ptr_counters[1].add(5);
+    print(ptr_counters[1].get_value());
+    print("|");
+
+    //Test as return of functions
+    
+    print(dummy(&counter, &counter_dummy).get_value());
+    print("|");
+
+    print(dummy(&counter, &counter_dummy).get_value());
     print("|");
 }
