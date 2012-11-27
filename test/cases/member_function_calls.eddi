@@ -24,7 +24,7 @@ void main(){
 
     //Test as pointer
 
-    Counter* counter_ptr = counter;
+    Counter* counter_ptr = &counter;
 
     print(counter_ptr.get_value());
     print("|");
@@ -36,5 +36,16 @@ void main(){
     //The value should have changed for the base struct too
 
     print(counter.get_value());
+    print("|");
+
+    //Test as arrays
+
+    Counter counters[2];
+    
+    print(counters[1].get_value());
+    print("|");
+
+    counters[1].add(5);
+    print(counters[1].get_value());
     print("|");
 }
