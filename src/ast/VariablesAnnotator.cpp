@@ -113,34 +113,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Expression& value){
-        //Handle implicit this value
-        if(!value.Content->operations.empty() && value.Content->operations[0].get<0>() == ast::Operator::DOT){
-            if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->first)){
-                auto location_variable = *ptr;
-
-                if (!location_variable.Content->context->exists(location_variable.Content->variableName)) {
-                    auto context = location_variable.Content->context->function();
-                    auto global_context = location_variable.Content->context->global();
-
-                    if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
-                        auto struct_type = global_context->get_struct(context->struct_type->mangle());
-
-                        if(struct_type->member_exists(location_variable.Content->variableName)){
-                            ast::VariableValue this_variable;
-                            this_variable.Content->context = location_variable.Content->context;
-                            this_variable.Content->var = location_variable.Content->context->getVariable("this");
-                            this_variable.Content->variableName = "this";
-                            this_variable.Content->position = location_variable.Content->position;
-
-                            value.Content->first = this_variable;
-                            value.Content->operations.insert(value.Content->operations.begin(), 
-                                    boost::make_tuple(ast::Operator::DOT, location_variable.Content->variableName));
-                        }
-                    }
-                }
-            } 
-        }
-        
         value.Content->first = visit(*this, value.Content->first);
 
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
