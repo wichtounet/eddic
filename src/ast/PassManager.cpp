@@ -108,7 +108,7 @@ void ast::PassManager::init_passes(){
     //Structures check pass
     passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration, pool));
     
-    //Structures check pass
+    //Add default values to declarations
     passes.push_back(make_pass<ast::DefaultValuesPass>("default values", template_engine, platform, configuration, pool));
     
     //Member function collection pass

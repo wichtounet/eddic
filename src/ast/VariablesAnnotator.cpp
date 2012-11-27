@@ -77,9 +77,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
         return operation;
     }
 
-    //Warning : The location of the MemberValue is not modified
-    //TODO If there are new transformation in the future, adapt the following function
-
     ast::Value operator()(ast::VariableValue& variable){
         if (!variable.Content->context->exists(variable.Content->variableName)) {
             auto context = variable.Content->context->function();
@@ -117,7 +114,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
 
     ast::Value operator()(ast::Expression& value){
         //Handle implicit this value
-        bool transformed = false;
         if(!value.Content->operations.empty() && value.Content->operations[0].get<0>() == ast::Operator::DOT){
             if(auto* ptr = boost::get<ast::VariableValue>(&value.Content->first)){
                 auto location_variable = *ptr;
@@ -139,8 +135,6 @@ struct ValueVisitor : public boost::static_visitor<ast::Value> {
                             value.Content->first = this_variable;
                             value.Content->operations.insert(value.Content->operations.begin(), 
                                     boost::make_tuple(ast::Operator::DOT, location_variable.Content->variableName));
-
-                            transformed = true;
                         }
                     }
                 }
