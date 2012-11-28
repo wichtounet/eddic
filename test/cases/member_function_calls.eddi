@@ -1,0 +1,112 @@
+struct Counter {
+    int value;
+
+    void add(int number){
+        value = value + number;
+    }
+    
+    int get_value(){
+        return value;
+    }
+}
+
+struct Nested {
+    Counter a;
+    Counter b;
+}
+
+Counter* dummy(Counter* a, Counter* b){
+    return b;
+}
+
+void main(){
+    Counter counter;
+    Counter counter_dummy;
+
+    //Test on the stack
+
+    print(counter.get_value());
+    print("|");
+
+    counter.add(5);
+    print(counter.get_value());
+    print("|");
+
+    //Test as pointer
+
+    Counter* counter_ptr = &counter;
+
+    print(counter_ptr.get_value());
+    print("|");
+
+    counter_ptr.add(5);
+    print(counter_ptr.get_value());
+    print("|");
+    
+    //The value should have changed for the base struct too
+
+    print(counter.get_value());
+    print("|");
+
+    //Test as arrays
+
+    Counter counters[2];
+    
+    print(counters[1].get_value());
+    print("|");
+
+    counters[1].add(5);
+    print(counters[1].get_value());
+    print("|");
+
+    //Test as arrays of pointers
+
+    Counter* ptr_counters[2];
+    ptr_counters[1] = &counter;
+    
+    print(ptr_counters[1].get_value());
+    print("|");
+
+    ptr_counters[1].add(5);
+    print(ptr_counters[1].get_value());
+    print("|");
+
+    //Test as return of functions
+    
+    print(dummy(&counter, &counter_dummy).get_value());
+    print("|");
+
+    dummy(&counter, &counter_dummy).add(5);
+    print(dummy(&counter, &counter_dummy).get_value());
+    print("|");
+    
+    print(dummy(&counter_dummy, &counter).get_value());
+    print("|");
+
+    dummy(&counter_dummy, &counter).add(5);
+    print(dummy(&counter_dummy, &counter).get_value());
+    print("|");
+
+    //Test with nested struct
+
+    Nested nested;
+    
+    print(nested.a.get_value());
+    print("|");
+
+    nested.a.add(5);
+    print(nested.a.get_value());
+    print("|");
+
+    //Test with struct passed by value
+    test(counter);
+}
+
+void test(Counter counter){
+    print(counter.get_value());
+    print("|");
+
+    counter.add(5);
+    print(counter.get_value());
+    print("|");
+}

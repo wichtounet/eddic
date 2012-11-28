@@ -469,7 +469,12 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
     return left;
 }
 
-//Indicate if a postfix operator needs a reference
+//Indicate if a postfix operator needs a pointer as left value
+bool need_pointer(ast::Operator op, std::shared_ptr<const Type> left_type){
+    return (op == ast::Operator::CALL && !left_type->is_pointer());
+}
+
+//Indicate if a postfix operator needs a reference as left value
 bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
     return 
             op == ast::Operator::INC || op == ast::Operator::DEC    //Modifies the left value, needs a reference
@@ -837,6 +842,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         arguments left;
         if(need_reference(value.Content->operations[0].get<0>(), type)){
             left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
+        } else if(need_pointer(value.Content->operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.Content->first);
         } else {
             left = visit(*this, value.Content->first);
         }
@@ -851,6 +858,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             //Execute the current operation
             if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
+            } else if(i < value.Content->operations.size() - 1 && need_pointer(value.Content->operations[i + 1].get<0>(), future_type)){
+                left = compute_expression_operation<ArgumentType::ADDRESS>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<T>(function, type, left, operation);
             }
@@ -932,6 +941,8 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         arguments left;
         if(need_reference(value.Content->operations[0].get<0>(), type)){
             left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
+        } else if(need_pointer(value.Content->operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.Content->first);
         } else {
             left = visit(ToArgumentsVisitor<>(function), value.Content->first);
         }
@@ -948,6 +959,8 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             //Execute the current operation
             if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
+            } else if(i < value.Content->operations.size() - 1 && need_pointer(value.Content->operations[i + 1].get<0>(), future_type)){
+                left = compute_expression_operation<ArgumentType::ADDRESS>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<>(function, type, left, operation);
             }

@@ -12,6 +12,7 @@
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
+#include "logging.hpp"
 
 #include "ast/function_collection.hpp"
 #include "ast/SourceFile.hpp"
@@ -47,6 +48,8 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     if(context->exists(signature->mangledName)){
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
     }
+    
+    log::emit<Info>("Functions") << "Register function " << signature->mangledName << log::endl;
 
     context->addFunction(signature);
 }
