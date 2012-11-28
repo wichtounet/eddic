@@ -10,6 +10,11 @@ struct Counter {
     }
 }
 
+struct Nested {
+    Counter a;
+    Counter b;
+}
+
 Counter* dummy(Counter* a, Counter* b){
     return b;
 }
@@ -73,5 +78,35 @@ void main(){
 
     dummy(&counter, &counter_dummy).add(5);
     print(dummy(&counter, &counter_dummy).get_value());
+    print("|");
+    
+    print(dummy(&counter_dummy, &counter).get_value());
+    print("|");
+
+    dummy(&counter_dummy, &counter).add(5);
+    print(dummy(&counter_dummy, &counter).get_value());
+    print("|");
+
+    //Test with nested struct
+
+    Nested nested;
+    
+    print(nested.a.get_value());
+    print("|");
+
+    nested.a.add(5);
+    print(nested.a.get_value());
+    print("|");
+
+    //Test with struct passed by value
+    test(counter);
+}
+
+void test(Counter counter){
+    print(counter.get_value());
+    print("|");
+
+    counter.add(5);
+    print(counter.get_value());
     print("|");
 }
