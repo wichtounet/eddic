@@ -828,25 +828,19 @@ void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
    }
 }
 
-void ast::TemplateEngine::check_member_function(ast::Expression& expression){
-    auto type = visit(ast::GetTypeVisitor(), expression.Content->first);
+void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Type> type, ast::Operation& op, ast::Position& position){
+    if(op.get<0>() == ast::Operator::CALL){
+        auto& value = boost::get<ast::CallOperationValue>(*op.get<1>());
 
-    for(auto& op : expression.Content->operations){
-        if(op.get<0>() == ast::Operator::CALL){
-            auto& value = boost::get<ast::CallOperationValue>(*op.get<1>());
+        if(value.get<1>() && ! (*value.get<1>()).empty()){
+            auto object_type = type->is_pointer() ? type->data_type() : type;
 
-            if(value.get<1>() && ! (*value.get<1>()).empty()){
-                auto object_type = type->is_pointer() ? type->data_type() : type;
-
-                check_function(
-                        *value.get<1>(), 
-                        boost::get<std::string>(value.get<0>()), 
-                        expression.Content->position, 
-                        object_type->mangle()); 
-            }
+            check_function(
+                    *value.get<1>(), 
+                    boost::get<std::string>(value.get<0>()), 
+                    position, 
+                    object_type->mangle()); 
         }
-
-        type = ast::operation_type(type, expression.Content->context, op);
     }
 }
 

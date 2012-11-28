@@ -22,8 +22,6 @@
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
-#include "ast/IsConstantVisitor.hpp"
-#include "ast/GetConstantValue.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/VariableType.hpp"
@@ -33,231 +31,33 @@ using namespace eddic;
 
 namespace {
 
-struct ValueVisitor : public boost::static_visitor<ast::Value> {
-    std::shared_ptr<GlobalContext> context;
-    std::shared_ptr<ast::TemplateEngine> template_engine;
-
-    ValueVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) : context(context), template_engine(template_engine) {}
-    
-    void replace_each(std::vector<ast::Value>& values){
-        for(std::size_t i = 0; i < values.size(); ++i){
-            values[i] = visit(*this, values[i]);
-        }
-    }
-
-    ast::Value operator()(ast::FunctionCall& functionCall){
-        replace_each(functionCall.Content->values);
-
-        return functionCall;
-    }
-
-    ast::Value operator()(ast::Ternary& ternary){
-        ternary.Content->condition = visit(*this, ternary.Content->condition);
-        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
-        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
-
-        return ternary;
-    }
-
-    ast::Value operator()(ast::BuiltinOperator& builtin){
-        replace_each(builtin.Content->values);
-
-        return builtin;
-    }
-
-    ast::Value operator()(ast::Cast& cast){
-        cast.Content->value = visit(*this, cast.Content->value);
-
-        return cast;
-    }
-
-    ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = visit(*this, operation.Content->left_value);
-
-        return operation;
-    }
-
-    ast::Value operator()(ast::VariableValue& variable){
-        if (!variable.Content->context->exists(variable.Content->variableName)) {
-            auto context = variable.Content->context->function();
-            auto global_context = variable.Content->context->global();
-
-            if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
-                auto struct_type = global_context->get_struct(context->struct_type->mangle());
-                
-                if(struct_type->member_exists(variable.Content->variableName)){
-                    ast::VariableValue this_variable;
-                    this_variable.Content->context = variable.Content->context;
-                    this_variable.Content->var = variable.Content->context->getVariable("this");
-                    this_variable.Content->variableName = "this";
-                    this_variable.Content->position = variable.Content->position;
-
-                    ast::Expression member_value;
-                    member_value.Content->context = variable.Content->context;
-                    member_value.Content->position = variable.Content->position;
-                    member_value.Content->first = this_variable;
-                    member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
-
-                    return visit_non_variant(*this, member_value);
-                }
-            }
-
-            throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
-        }
-
-        //Reference the variable
-        variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-        variable.Content->context->add_reference(variable.Content->var);
-
-        return variable;
-    }
-
-    ast::Value operator()(ast::Expression& value){
-        value.Content->first = visit(*this, value.Content->first);
-
-        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
-    
-        for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
-            auto& op = value.Content->operations[i];
-
-            if(op.get<0>() == ast::Operator::DOT){
-                auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
-                auto struct_type = value.Content->context->global()->get_struct(struct_name);
-
-                //We delay it
-                if(!struct_type){
-                    return value;
-                }
-
-                //Reference the structure
-                struct_type->add_reference();
-
-                auto member = boost::get<std::string>(*op.get<1>());
-
-                if(!struct_type->member_exists(member)){ 
-                    throw SemanticalException("The struct " + struct_name + " has no member named " + member, value.Content->position);
-                }
-
-                //Add a reference to the member
-                (*struct_type)[member]->add_reference();
-            }
-
-            //Visit the Expression values
-            if(op.get<1>()){
-                if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
-                    op.get<1>() = visit(*this, *ptr);
-                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                    for(auto& v : ptr->get<2>()){
-                        v = visit(*this, v);
-                    }
-                }
-            }
-
-            //Only get the type if necessary (member function calls are not initialized for now)
-            if(i != value.Content->operations.size() - 1){
-                type = ast::operation_type(type, value.Content->context, op);
-            }
-        }
-
-        return value;
-    }
-    
-    ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = visit(*this, assignment.Content->left_value);
-        assignment.Content->value = visit(*this, assignment.Content->value);
-
-        return assignment;
-    }
-    
-    ast::Value operator()(ast::New& new_){
-        replace_each(new_.Content->values);
-
-        return new_;
-    }
-
-    AUTO_RETURN_OTHERS(ast::Value)
-};
-
 struct VariablesVisitor : public boost::static_visitor<> {
-    ValueVisitor value_visitor;
-
     std::shared_ptr<GlobalContext> context;
     std::shared_ptr<ast::TemplateEngine> template_engine;
 
     VariablesVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) : 
-            value_visitor(context, template_engine), context(context), template_engine(template_engine) {
+            context(context), template_engine(template_engine) {
                 //NOP
     }
 
-    AUTO_RECURSE_ELSE()
+    AUTO_RECURSE_RETURN_VALUES()
+    AUTO_RECURSE_SIMPLE_LOOPS()
+    AUTO_RECURSE_BRANCHES()
+    AUTO_RECURSE_SWITCH()
+    AUTO_RECURSE_SWITCH_CASE()
     AUTO_RECURSE_DEFAULT_CASE()
+    AUTO_RECURSE_NEW_ARRAY()
+    AUTO_RECURSE_PREFIX()
+    AUTO_RECURSE_COMPOSED_VALUES()
+    AUTO_RECURSE_BUILTIN_OPERATORS()
+    AUTO_RECURSE_TERNARY()
+    AUTO_RECURSE_CAST_VALUES()
+    AUTO_RECURSE_NEW()
+    AUTO_RECURSE_FUNCTION_CALLS()
 
-    void operator()(ast::Return& return_){
-        return_.Content->value = visit(value_visitor, return_.Content->value);
-    }
-
-    void operator()(ast::For& for_){
-        visit_optional(*this, for_.Content->start);
-
-        if(for_.Content->condition){
-            for_.Content->condition = visit(value_visitor, *for_.Content->condition);
-        }
-
-        visit_optional(*this, for_.Content->repeat);
-        visit_each(*this, for_.Content->instructions);
-    }
-    
-    void operator()(ast::While& while_){
-        while_.Content->condition = visit(value_visitor, while_.Content->condition);
-        visit_each(*this, while_.Content->instructions);
-    }
-    
-    void operator()(ast::DoWhile& while_){
-        while_.Content->condition = visit(value_visitor, while_.Content->condition);
-        visit_each(*this, while_.Content->instructions);
-    }
-
-    void operator()(ast::If& if_){
-        if_.Content->condition = visit(value_visitor, if_.Content->condition);
-        visit_each(*this, if_.Content->instructions);
-        visit_each_non_variant(*this, if_.Content->elseIfs);
-        visit_optional_non_variant(*this, if_.Content->else_);
-    }
-
-    void operator()(ast::ElseIf& elseIf){
-        elseIf.condition = visit(value_visitor, elseIf.condition);
-        visit_each(*this, elseIf.instructions);
-    }
-
-    void operator()(ast::Switch& switch_){
-        switch_.Content->value = visit(value_visitor, switch_.Content->value);
-        visit_each_non_variant(*this, switch_.Content->cases);
-        visit_optional_non_variant(*this, switch_.Content->default_case);
-    }
-
-    void operator()(ast::SwitchCase& switch_case){
-        switch_case.value = visit(value_visitor, switch_case.value);
-        visit_each(*this, switch_case.instructions);
-    }
-
-    bool is_valid(const ast::Type& type){
-        if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-            return is_valid(ptr->type.get());
-        } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
-            if(is_standard_type(ptr->type)){
-                return true;
-            }
-
-            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
-            return context->struct_exists(t->mangle());
-        } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            return is_valid(ptr->type.get());
-        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
-            auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
-            return context->struct_exists(t->mangle());
-        }
-
-        eddic_unreachable("Invalid type");
+    void operator()(ast::Assignment& assignment){
+        visit(*this, assignment.Content->left_value);
+        visit(*this, assignment.Content->value);
     }
 
     template<typename Function>
@@ -265,94 +65,25 @@ struct VariablesVisitor : public boost::static_visitor<> {
         //Add all the parameters to the function context
         for(auto& parameter : declaration.Content->parameters){
             template_engine->check_type(parameter.parameterType, declaration.Content->position);
-
-            if(check_variable(declaration.Content->context, parameter.parameterName, declaration.Content->position)){
-                if(!is_valid(parameter.parameterType)){
-                    throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
-                }
-
-                auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-                auto var = declaration.Content->context->addParameter(parameter.parameterName, type);    
-                var->set_source_position(declaration.Content->position);
-            }
         }
 
         visit_each(*this, declaration.Content->instructions);
     }
 
-    bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
-        if(context->exists(name)){
-            auto var = context->getVariable(name);
-
-            if(var->source_position() == position){
-                return false; 
-            } else {
-                throw SemanticalException("The Variable " + name + " has already been declared", position);
-            }
-        }
-
-        return true;
-    }
-    
     void operator()(ast::GlobalVariableDeclaration& declaration){
         template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
-
-        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-            if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                throw SemanticalException("The value must be constant", declaration.Content->position);
-            }
-
-            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
-            
-            auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-            var->set_source_position(declaration.Content->position);
-        }
-    }
-
-    template<typename ArrayDeclaration>
-    void declare_array(ArrayDeclaration& declaration){
-        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
-
-        declaration.Content->size = visit(value_visitor, declaration.Content->size);
-
-        if(check_variable(declaration.Content->context, declaration.Content->arrayName, declaration.Content->position)){
-            auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
-            
-            if(element_type->is_array()){
-                throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
-            }
-
-            auto constant = visit(ast::IsConstantVisitor(), declaration.Content->size);
-
-            if(!constant){
-                throw SemanticalException("Array size must be constant", declaration.Content->position);
-            }
-
-            auto value = visit(ast::GetConstantValue(), declaration.Content->size);
-            auto size = boost::get<int>(value);
-
-            auto var = declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
-            var->set_source_position(declaration.Content->position);
-        }
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
-        declare_array(declaration);
+        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
     }
     
     void operator()(ast::ArrayDeclaration& declaration){
-        declare_array(declaration);
+        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
     }
     
     void operator()(ast::Foreach& foreach){
         template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
-
-        if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
-            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
-
-            auto var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
-            var->set_source_position(foreach.Content->position);
-        }
 
         visit_each(*this, foreach.Content->instructions);
     }
@@ -360,168 +91,22 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::ForeachIn& foreach){
         template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
 
-        if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
-            if(!foreach.Content->context->exists(foreach.Content->arrayName)){
-                throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
-            }
-
-            auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
-
-            foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
-            foreach.Content->var->set_source_position(foreach.Content->position);
-
-            foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-            foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
-
-            //Add references to variables
-            foreach.Content->context->add_reference(foreach.Content->var);
-            foreach.Content->context->add_reference(foreach.Content->iterVar);
-            foreach.Content->context->add_reference(foreach.Content->arrayVar);
-        }
-
         visit_each(*this, foreach.Content->instructions);
-    }
-
-    void operator()(ast::Delete& delete_){
-        if (!delete_.Content->context->exists(delete_.Content->variable_name)) {
-            throw SemanticalException("Variable " + delete_.Content->variable_name + " has not been declared", delete_.Content->position);
-        }
-        
-        delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
-        delete_.Content->context->add_reference(delete_.Content->variable);
     }
     
     void operator()(ast::StructDeclaration& declaration){
         template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
-
-        value_visitor.replace_each(declaration.Content->values);
-
-        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
-
-            if(!type->is_custom_type() && !type->is_template()){
-                throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
-            }
-
-            auto mangled = type->mangle();
-                
-            if(context->struct_exists(mangled)){
-                if(type->is_const()){
-                    throw SemanticalException("Custom types cannot be const", declaration.Content->position);
-                }
-
-                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                var->set_source_position(declaration.Content->position);
-            } else {
-                throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
-            }
-        }
     }
     
     void operator()(ast::VariableDeclaration& declaration){
         template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
-        
-        if(declaration.Content->value){
-            declaration.Content->value = visit(value_visitor, *declaration.Content->value);
-        }
-
-        if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
-
-            //If it's a standard type
-            if(type->is_standard_type()){
-                if(type->is_const()){
-                    if(!declaration.Content->value){
-                        throw SemanticalException("A constant variable must have a value", declaration.Content->position);
-                    }
-
-                    if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                        throw SemanticalException("The value must be constant", declaration.Content->position);
-                    }
-
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-                    var->set_source_position(declaration.Content->position);
-                } else {
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                    var->set_source_position(declaration.Content->position);
-                }
-            } 
-            //If it's a pointer type
-            else if(type->is_pointer()){
-                if(type->is_const()){
-                    throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
-                }
-                
-                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                var->set_source_position(declaration.Content->position);
-            } 
-            //If it's a array
-            else if(type->is_array()){
-                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                var->set_source_position(declaration.Content->position);
-            } 
-            //If it's a template or custom type
-            else {
-                auto mangled = type->mangle();
-
-                if(context->struct_exists(mangled)){
-                    if(type->is_const()){
-                        throw SemanticalException("Custom types cannot be const", declaration.Content->position);
-                    }
-
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                    var->set_source_position(declaration.Content->position);
-                } else {
-                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
-                }
-            }
-        }
     }
     
-    void operator()(ast::Swap& swap){
-        if (swap.Content->lhs == swap.Content->rhs) {
-            throw SemanticalException("Cannot swap a variable with itself", swap.Content->position);
-        }
-
-        if (!swap.Content->context->exists(swap.Content->lhs) || !swap.Content->context->exists(swap.Content->rhs)) {
-            throw SemanticalException("Variable has not been declared in the swap", swap.Content->position);
-        }
-
-        swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
-        swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
-
-        //Reference both variables
-        swap.Content->context->add_reference(swap.Content->lhs_var);
-        swap.Content->context->add_reference(swap.Content->rhs_var);
-    }
-
-    void operator()(ast::Expression& value){
-        visit_non_variant(value_visitor, value);
-    }
-
-    /* Forward to value visitor, don't care about return value, as only variable are transformed */
-    
-    void operator()(ast::FunctionCall& function_call){
-        visit_non_variant(value_visitor, function_call);
-    }
-    
-    void operator()(ast::Assignment& assignment){
-        visit_non_variant(value_visitor, assignment);
-    }
-
-    void operator()(ast::PrefixOperation& operation){
-        visit_non_variant(value_visitor, operation);
-    }
+    AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
     
-void ast::VariableAnnotationPass::apply_struct(ast::Struct& struct_, bool indicator){
-    if(!indicator && context->is_recursively_nested(struct_.Content->struct_type->mangle())){
-        throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
-    }
-}
-
 void ast::VariableAnnotationPass::apply_function(ast::FunctionDeclaration& function){
     VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);

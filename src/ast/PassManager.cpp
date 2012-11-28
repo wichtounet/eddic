@@ -113,12 +113,12 @@ void ast::PassManager::init_passes(){
     
     //Member function collection pass
     passes.push_back(make_pass<ast::MemberFunctionCollectionPass>("member function collection", template_engine, platform, configuration, pool));
-
-    //Variables annotation pass
-    passes.push_back(make_pass<ast::VariableAnnotationPass>("variable annotation", template_engine, platform, configuration, pool));
     
     //Function collection pass
     passes.push_back(make_pass<ast::FunctionCollectionPass>("function collection", template_engine, platform, configuration, pool));
+    
+    //Function check pass
+    passes.push_back(make_pass<ast::VariableAnnotationPass>("variables annotation", template_engine, platform, configuration, pool));
     
     //Function check pass
     passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration, pool));
