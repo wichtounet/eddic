@@ -116,22 +116,31 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
             //All the elements of the array
             for(unsigned int i = 0; i < elements; ++i){
+                auto index_offset = offset + i * data_type->size(platform);
+
                 if(data_type == STRING){
-                    //TODO
+                    auto t1 = function->context->new_temporary(INT);
+                    auto t2 = function->context->new_temporary(INT);
+                    
+                    function->add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, index_offset));
+                    function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, index_offset + INT->size(function->context->global()->target_platform())));
+
+                    result.push_back(t1);
+                    result.push_back(t2);
                 } else if(data_type->is_custom_type()){
                     //TODO
-                } else {
+                } else if(data_type == FLOAT || data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
                     auto temp = function->context->new_temporary(data_type);
 
                     if(data_type == FLOAT){
-                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset + i * data_type->size(platform)));
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, index_offset));
                     } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset + i * data_type->size(platform)));
-                    } else {
-                        eddic_unreachable("Unhandled type");
+                        function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, index_offset));
                     }
 
                     result.push_back(temp);
+                } else {
+                    eddic_unreachable("Unhandled type");
                 }
             }
 
