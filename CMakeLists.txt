@@ -168,6 +168,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/float_pointers
     SpecificSuite/struct_pointers
     SpecificSuite/member_pointers
+    SpecificSuite/member_function_calls
     SpecificSuite/member_functions
     SpecificSuite/member_functions_param_stack
     SpecificSuite/memory

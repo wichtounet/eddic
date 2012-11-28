@@ -270,6 +270,10 @@ BOOST_AUTO_TEST_CASE( member_pointers ){
     assert_output("member_pointers.eddi", "44|44|55|55|66|66|66|44|44|55|55|66|66|66|");
 }
 
+BOOST_AUTO_TEST_CASE( member_function_calls ){
+    assert_output("member_function_calls.eddi", "0|5|5|10|10|0|5|10|15|0|5|15|20|0|5|20|25|");
+}
+
 BOOST_AUTO_TEST_CASE( member_functions ){
     assert_output("member_functions.eddi", "0|1|100|180|260|");
 }
