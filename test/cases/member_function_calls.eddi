@@ -71,6 +71,7 @@ void main(){
     print(dummy(&counter, &counter_dummy).get_value());
     print("|");
 
+    dummy(&counter, &counter_dummy).add(5);
     print(dummy(&counter, &counter_dummy).get_value());
     print("|");
 }
