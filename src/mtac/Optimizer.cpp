@@ -32,6 +32,7 @@
 #include "mtac/Statement.hpp"
 
 //The custom optimizations
+#include "mtac/conditional_propagation.hpp"
 #include "mtac/VariableOptimizations.hpp"
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
@@ -80,6 +81,7 @@ typedef boost::mpl::vector<
         mtac::ArithmeticIdentities*, 
         mtac::ReduceInStrength*, 
         mtac::ConstantFolding*, 
+        mtac::conditional_propagation*,
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
         mtac::CommonSubexpressionElimination*,
