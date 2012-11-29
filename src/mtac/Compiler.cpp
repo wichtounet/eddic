@@ -128,7 +128,19 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
                     result.push_back(t1);
                     result.push_back(t2);
                 } else if(data_type->is_custom_type()){
-                    //TODO
+                    auto base_var = function->context->new_reference(member_type, var, offset);
+
+                    auto struct_name = data_type->mangle();
+                    auto struct_type = function->context->global()->get_struct(struct_name);
+
+                    for(auto& member : struct_type->members){
+                        std::shared_ptr<const Type> member_type;
+                        unsigned int offset = 0;
+                        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), base_var, {member->name});
+
+                        auto new_args = get_member(function, offset, member_type, base_var);
+                        std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
+                    }
                 } else if(data_type == FLOAT || data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
                     auto temp = function->context->new_temporary(data_type);
 
