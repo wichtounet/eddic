@@ -13,6 +13,8 @@
 #include <vector>
 #include <list>
 
+#include "Variable.hpp"
+
 namespace eddic {
 
 namespace mtac {
