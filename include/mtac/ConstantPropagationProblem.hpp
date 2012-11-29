@@ -25,7 +25,33 @@ class Variable;
 namespace mtac {
 
 typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> ConstantValue;
-typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
+
+class ConstantPropagationLattice {
+    public:
+        ConstantPropagationLattice(){}; //NAC
+        ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
+
+        ConstantValue value(){
+            return *m_value;
+        }
+
+        bool constant(){
+            return m_value;
+        }
+
+        bool nac(){
+            return !constant();
+        }
+
+        void set_nac(){
+            m_value = boost::none;
+        }
+
+    private:
+        boost::optional<ConstantValue> m_value;
+};
+
+typedef std::unordered_map<std::shared_ptr<Variable>, ConstantPropagationLattice> ConstantPropagationValues;
 
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
     mtac::EscapedVariables pointer_escaped;
@@ -46,6 +72,8 @@ struct pass_traits<ConstantPropagationProblem> {
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
+
+std::ostream& operator<<(std::ostream& stream, ConstantPropagationLattice& lattice);
 
 } //end of mtac
 
