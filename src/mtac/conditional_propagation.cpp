@@ -5,12 +5,14 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef EDDIC_BOOST_CFG_H
-#define EDDIC_BOOST_CFG_H
+#include "mtac/conditional_propagation.hpp"
+#include "mtac/Function.hpp"
+#include "mtac/Statement.hpp"
 
-#define EDDIC_BOOST_LIMIT_SIZE 30
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS 
-#define BOOST_MPL_LIMIT_VECTOR_SIZE EDDIC_BOOST_LIMIT_SIZE
-#define BOOST_MPL_LIMIT_LIST_SIZE EDDIC_BOOST_LIMIT_SIZE
+using namespace eddic;
 
-#endif
+bool mtac::conditional_propagation::operator()(mtac::function_p function){
+    bool optimized = false;
+
+    return optimized;
+}
