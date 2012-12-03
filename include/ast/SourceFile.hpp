@@ -37,7 +37,7 @@ struct GlobalContext;
 namespace ast {
 
 /*!
- * \typedef SourceFile
+ * \typedef SourceFileBlock
  * \brief A first level block in a source file.
  */
 typedef boost::variant<
