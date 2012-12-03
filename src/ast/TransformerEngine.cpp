@@ -499,6 +499,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_STRUCT()
         
+    AUTO_IGNORE_MEMBER_DECLARATION()
     AUTO_IGNORE_FALSE()
     AUTO_IGNORE_TRUE()
     AUTO_IGNORE_NULL()
@@ -639,6 +640,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_STRUCT()
     
+    AUTO_IGNORE_MEMBER_DECLARATION()
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_IGNORE_TEMPLATE_STRUCT()
     AUTO_IGNORE_SWAP()

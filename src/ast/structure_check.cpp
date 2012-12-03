@@ -27,26 +27,30 @@ void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator)
 
     auto struct_type = context->get_struct(struct_.Content->struct_type->mangle());
 
-    for(auto& member : struct_.Content->members){
-        auto type = (*struct_type)[member.Content->name]->type;
+    for(auto& block : struct_.Content->blocks){
+        if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
+            auto& member = *ptr;
 
-        if(type->is_custom_type()){
-            auto struct_name = type->mangle();
+            auto type = (*struct_type)[member.Content->name]->type;
 
-            if(!context->struct_exists(struct_name)){
-                throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+            if(type->is_custom_type()){
+                auto struct_name = type->mangle();
+
+                if(!context->struct_exists(struct_name)){
+                    throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+                }
             }
-        }
-    }
+        } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
+            auto& member = *ptr;
 
-    for(auto& member : struct_.Content->arrays){
-        auto type = (*struct_type)[member.Content->arrayName]->type;
+            auto type = (*struct_type)[member.Content->arrayName]->type;
 
-        if(type->is_custom_type()){
-            auto struct_name = type->mangle();
+            if(type->is_custom_type()){
+                auto struct_name = type->mangle();
 
-            if(!context->struct_exists(struct_name)){
-                throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+                if(!context->struct_exists(struct_name)){
+                    throw SemanticalException("Invalid member type " + struct_name, member.Content->position);
+                }
             }
         }
     }

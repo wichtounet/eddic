@@ -37,16 +37,14 @@ namespace {
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     pass->apply_struct(struct_, false);
 
-    for(auto& function : struct_.Content->functions){
-        pass->apply_struct_function(function);
-    }
-
-    for(auto& function : struct_.Content->destructors){
-        pass->apply_struct_destructor(function);
-    }
-
-    for(auto& function : struct_.Content->constructors){
-        pass->apply_struct_constructor(function);
+    for(auto& block : struct_.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            pass->apply_struct_function(*ptr);
+        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+            pass->apply_struct_destructor(*ptr);
+        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+            pass->apply_struct_constructor(*ptr);
+        }
     }
 }
     
@@ -239,7 +237,7 @@ void ast::PassManager::run_passes(){
                     for(auto& block : program.Content->blocks){
                         if(auto* struct_type = boost::get<ast::Struct>(&block)){
                             if(struct_type->Content->struct_type->mangle() == context){
-                                struct_type->Content->functions.push_back(function);
+                                struct_type->Content->blocks.push_back(function);
                                 break;
                             }
                         }

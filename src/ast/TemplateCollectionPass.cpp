@@ -48,6 +48,6 @@ void ast::TemplateCollectionPass::apply_struct(ast::Struct& struct_, bool indica
     if(!indicator){
         Collector collector(*template_engine);
         collector.parent_struct = struct_.Content->struct_type->mangle();
-        visit_each_non_variant(collector, struct_.Content->template_functions);
+        visit_each(collector, struct_.Content->blocks);
     }
 }

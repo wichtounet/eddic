@@ -31,41 +31,45 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
     auto signature = context->get_struct(struct_.Content->struct_type->mangle());
     std::vector<std::string> names;
 
-    for(auto& member : struct_.Content->members){
-        if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
-            throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
-        }
+    for(auto& block : struct_.Content->blocks){
+        if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
+            auto& member = *ptr;
 
-        names.push_back(member.Content->name);
+            if(std::find(names.begin(), names.end(), member.Content->name) != names.end()){
+                throw SemanticalException("The member " + member.Content->name + " has already been defined", member.Content->position);
+            }
 
-        auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
+            names.push_back(member.Content->name);
 
-        if(member_type->is_array()){
-            throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
-        }
+            auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
 
-        signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
-    }
-    
-    for(auto& member : struct_.Content->arrays){
-        auto name = member.Content->arrayName;
+            if(member_type->is_array()){
+                throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
+            }
 
-        if(std::find(names.begin(), names.end(), name) != names.end()){
-            throw SemanticalException("The member " + name + " has already been defined", member.Content->position);
-        }
+            signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
+        } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
+            auto& member = *ptr;
 
-        names.push_back(name);
+            auto name = member.Content->arrayName;
 
-        auto data_member_type = visit(ast::TypeTransformer(context), member.Content->arrayType);
+            if(std::find(names.begin(), names.end(), name) != names.end()){
+                throw SemanticalException("The member " + name + " has already been defined", member.Content->position);
+            }
 
-        if(data_member_type->is_array()){
-            throw SemanticalException("Multidimensional arrays are not permitted", member.Content->position);
-        }
+            names.push_back(name);
 
-        if(auto* ptr = boost::get<ast::Integer>(&member.Content->size)){
-            signature->members.push_back(std::make_shared<Member>(name, new_array_type(data_member_type, ptr->value)));
-        } else {
-            throw SemanticalException("Only arrays of fixed size are supported", member.Content->position);
+            auto data_member_type = visit(ast::TypeTransformer(context), member.Content->arrayType);
+
+            if(data_member_type->is_array()){
+                throw SemanticalException("Multidimensional arrays are not permitted", member.Content->position);
+            }
+
+            if(auto* ptr = boost::get<ast::Integer>(&member.Content->size)){
+                signature->members.push_back(std::make_shared<Member>(name, new_array_type(data_member_type, ptr->value)));
+            } else {
+                throw SemanticalException("Only arrays of fixed size are supported", member.Content->position);
+            }
         }
     }
 }

@@ -43,24 +43,28 @@ void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indic
     }
 
     //Annotate functions with the parent struct
-    for(auto& function : struct_.Content->functions){
-        if(function.Content->context){
-            function.Content->context->struct_type = struct_.Content->struct_type; 
+    for(auto& block : struct_.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            auto& function = *ptr;
+
+            if(function.Content->context){
+                function.Content->context->struct_type = struct_.Content->struct_type; 
+            }
+        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+            auto& function = *ptr;
+
+            if(function.Content->context){
+                function.Content->context->struct_type = struct_.Content->struct_type; 
+            }
+        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+            auto& function = *ptr;
+
+            if(function.Content->context){
+                function.Content->context->struct_type = struct_.Content->struct_type; 
+            }
         }
     }
-
-    for(auto& function : struct_.Content->constructors){
-        if(function.Content->context){
-            function.Content->context->struct_type = struct_.Content->struct_type; 
-        }
-    }
-
-    for(auto& function : struct_.Content->destructors){
-        if(function.Content->context){
-            function.Content->context->struct_type = struct_.Content->struct_type; 
-        }
-    }
-
+    
     auto mangled_name = struct_.Content->struct_type->mangle();
 
     if(context->struct_exists(mangled_name)){

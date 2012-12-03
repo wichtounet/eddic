@@ -20,20 +20,12 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_TEMPLATE_STRUCT()\
 void operator()(ast::TemplateStruct& struct_){\
-    visit_each_non_variant(*this, struct_.Content->arrays);\
-    visit_each_non_variant(*this, struct_.Content->constructors);\
-    visit_each_non_variant(*this, struct_.Content->destructors);\
-    visit_each_non_variant(*this, struct_.Content->functions);\
-    visit_each_non_variant(*this, struct_.Content->template_functions);\
+    visit_each(*this, struct_.Content->blocks);\
 }
 
 #define AUTO_RECURSE_STRUCT()\
 void operator()(ast::Struct& struct_){\
-    visit_each_non_variant(*this, struct_.Content->arrays);\
-    visit_each_non_variant(*this, struct_.Content->constructors);\
-    visit_each_non_variant(*this, struct_.Content->destructors);\
-    visit_each_non_variant(*this, struct_.Content->functions);\
-    visit_each_non_variant(*this, struct_.Content->template_functions);\
+    visit_each(*this, struct_.Content->blocks);\
 }
 
 /* Functions */
@@ -221,6 +213,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_INTEGER_SUFFIX() void operator()(ast::IntegerSuffix&){}
 #define AUTO_IGNORE_LITERAL() void operator()(ast::Literal&){}
 #define AUTO_IGNORE_CHAR_LITERAL() void operator()(ast::CharLiteral&){}
+#define AUTO_IGNORE_MEMBER_DECLARATION() void operator()(ast::MemberDeclaration&){}
 #define AUTO_IGNORE_NEW() void operator()(ast::New&){}
 #define AUTO_IGNORE_NEW_ARRAY() void operator()(ast::NewArray&){}
 #define AUTO_IGNORE_NULL() void operator()(ast::Null&){}
