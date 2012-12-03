@@ -24,8 +24,10 @@ timing_system::timing_system(std::shared_ptr<Configuration> configuration) : con
 }
 
 timing_system::~timing_system(){
-    for(auto& timing : timings){
-        std::cout << timing.first << ":" << timing.second << "ms" << std::endl;
+    if(configuration->option_defined("timing")){
+        for(auto& timing : timings){
+            std::cout << timing.first << ":" << timing.second << "ms" << std::endl;
+        }
     }
 }
 
