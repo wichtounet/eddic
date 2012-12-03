@@ -1181,6 +1181,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_IMPORT()
         AUTO_IGNORE_STANDARD_IMPORT()
+        AUTO_IGNORE_MEMBER_DECLARATION();
        
         void operator()(ast::Assignment& assignment){
             eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");

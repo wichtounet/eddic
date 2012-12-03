@@ -510,6 +510,7 @@ struct Adaptor : public boost::static_visitor<> {
 
     Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
+    AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
@@ -518,15 +519,6 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
     
     AUTO_IGNORE_SWAP()
-
-    void operator()(ast::Struct& struct_){
-        visit_each_non_variant(*this, struct_.Content->members);
-        visit_each_non_variant(*this, struct_.Content->arrays);
-        visit_each_non_variant(*this, struct_.Content->constructors);
-        visit_each_non_variant(*this, struct_.Content->destructors);
-        visit_each_non_variant(*this, struct_.Content->functions);
-        visit_each_non_variant(*this, struct_.Content->template_functions);
-    }
 
     bool has_to_be_replaced(const std::string& type){
         return replacements.find(type) != replacements.end();
@@ -676,114 +668,82 @@ std::vector<ast::Instruction> copy(const std::vector<ast::Instruction>& source){
 
     return destination;
 }
-    
-std::vector<ast::Constructor> copy(const std::vector<ast::Constructor>& source){
-    std::vector<ast::Constructor> destination;
-    destination.reserve(source.size());
 
-    for(auto& constructor : source){
-        ast::Constructor c;
-        c.Content->context = constructor.Content->context;
-        c.Content->struct_name = constructor.Content->struct_name;
-        c.Content->position = constructor.Content->position;
-        c.Content->parameters = constructor.Content->parameters;
-        c.Content->instructions = copy(constructor.Content->instructions);
+std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
+    std::vector<ast::StructBlock> destination;
+    destination.reserve(blocks.size());
 
-        destination.push_back(c);
-    }
+    for(auto& block : blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            auto& function = *ptr;
 
-    return destination;
-}
+            ast::FunctionDeclaration f;
+            f.Content->context = function.Content->context;
+            f.Content->position = function.Content->position;
+            f.Content->struct_name = function.Content->struct_name;
+            f.Content->returnType = function.Content->returnType;
+            f.Content->functionName = function.Content->functionName;
+            f.Content->instructions = copy(function.Content->instructions);
+            f.Content->parameters = function.Content->parameters;
 
-std::vector<ast::Destructor> copy(const std::vector<ast::Destructor>& source){
-    std::vector<ast::Destructor> destination;
-    destination.reserve(source.size());
+            destination.push_back(f);
+        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+            auto& destructor = *ptr;
 
-    for(auto& destructor : source){
-        ast::Destructor d;
-        d.Content->context = destructor.Content->context;
-        d.Content->struct_name = destructor.Content->struct_name;
-        d.Content->position = destructor.Content->position;
-        d.Content->parameters = destructor.Content->parameters;
-        d.Content->instructions = copy(destructor.Content->instructions);
+            ast::Destructor d;
+            d.Content->context = destructor.Content->context;
+            d.Content->struct_name = destructor.Content->struct_name;
+            d.Content->position = destructor.Content->position;
+            d.Content->parameters = destructor.Content->parameters;
+            d.Content->instructions = copy(destructor.Content->instructions);
 
-        destination.push_back(d);
-    }
+            destination.push_back(d);
+        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+            auto& constructor = *ptr;
 
-    return destination;
-}
+            ast::Constructor c;
+            c.Content->context = constructor.Content->context;
+            c.Content->struct_name = constructor.Content->struct_name;
+            c.Content->position = constructor.Content->position;
+            c.Content->parameters = constructor.Content->parameters;
+            c.Content->instructions = copy(constructor.Content->instructions);
 
-std::vector<ast::FunctionDeclaration> copy(const std::vector<ast::FunctionDeclaration>& source){
-    std::vector<ast::FunctionDeclaration> destination;
-    destination.reserve(source.size());
+            destination.push_back(c);
+        } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
+            auto& array_declaration = *ptr;
 
-    for(auto& function : source){
-        ast::FunctionDeclaration f;
-        f.Content->context = function.Content->context;
-        f.Content->position = function.Content->position;
-        f.Content->struct_name = function.Content->struct_name;
-        f.Content->returnType = function.Content->returnType;
-        f.Content->functionName = function.Content->functionName;
-        f.Content->instructions = copy(function.Content->instructions);
-        f.Content->parameters = function.Content->parameters;
+            ast::ArrayDeclaration copy;
+            copy.Content->context = array_declaration.Content->context;
+            copy.Content->position = array_declaration.Content->position;
+            copy.Content->arrayType = array_declaration.Content->arrayType;
+            copy.Content->arrayName = array_declaration.Content->arrayName;
+            copy.Content->size = array_declaration.Content->size;
 
-        destination.push_back(f);
-    }
+            destination.push_back(copy);
+        } else if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
+            auto& member_declaration = *ptr;
 
-    return destination;
-}
+            ast::MemberDeclaration member;
+            member.Content->position = member_declaration.Content->position;
+            member.Content->type = member_declaration.Content->type;
+            member.Content->name = member_declaration.Content->name;
 
-std::vector<ast::TemplateFunctionDeclaration> copy(const std::vector<ast::TemplateFunctionDeclaration>& source){
-    std::vector<ast::TemplateFunctionDeclaration> destination;
-    destination.reserve(source.size());
+            destination.push_back(member);
+        } else if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+            auto& function = *ptr;
 
-    for(auto& function : source){
-        ast::TemplateFunctionDeclaration f;
-        f.Content->context = function.Content->context;
-        f.Content->position = function.Content->position;
-        f.Content->struct_name = function.Content->struct_name;
-        f.Content->template_types = function.Content->template_types;
-        f.Content->returnType = function.Content->returnType;
-        f.Content->functionName = function.Content->functionName;
-        f.Content->instructions = copy(function.Content->instructions);
-        f.Content->parameters = function.Content->parameters;
+            ast::TemplateFunctionDeclaration f;
+            f.Content->context = function.Content->context;
+            f.Content->position = function.Content->position;
+            f.Content->struct_name = function.Content->struct_name;
+            f.Content->template_types = function.Content->template_types;
+            f.Content->returnType = function.Content->returnType;
+            f.Content->functionName = function.Content->functionName;
+            f.Content->instructions = copy(function.Content->instructions);
+            f.Content->parameters = function.Content->parameters;
 
-        destination.push_back(f);
-    }
-
-    return destination;
-}
-
-std::vector<ast::MemberDeclaration> copy(const std::vector<ast::MemberDeclaration>& source){
-    std::vector<ast::MemberDeclaration> destination;   
-    destination.reserve(source.size());
-
-    for(auto& member_declaration : source){
-        ast::MemberDeclaration member;
-        member.Content->position = member_declaration.Content->position;
-        member.Content->type = member_declaration.Content->type;
-        member.Content->name = member_declaration.Content->name;
-
-        destination.push_back(member);
-    }
-
-    return destination;
-}
-
-std::vector<ast::ArrayDeclaration> copy(const std::vector<ast::ArrayDeclaration>& source){
-    std::vector<ast::ArrayDeclaration> destination;
-    destination.reserve(source.size());
-
-    for(auto& array_declaration : source){
-        ast::ArrayDeclaration copy;
-
-        copy.Content->context = array_declaration.Content->context;
-        copy.Content->position = array_declaration.Content->position;
-        copy.Content->arrayType = array_declaration.Content->arrayType;
-        copy.Content->arrayName = array_declaration.Content->arrayName;
-        copy.Content->size = array_declaration.Content->size;
-        
-        destination.push_back(copy);
+            destination.push_back(f);
+        }
     }
 
     return destination;
@@ -919,12 +879,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     declaration.Content->position = struct_declaration.Content->position;
                     declaration.Content->template_types = template_types; 
 
-                    declaration.Content->members = copy(struct_declaration.Content->members);
-                    declaration.Content->arrays = copy(struct_declaration.Content->arrays);
-                    declaration.Content->constructors = copy(struct_declaration.Content->constructors);
-                    declaration.Content->destructors = copy(struct_declaration.Content->destructors);
-                    declaration.Content->functions = copy(struct_declaration.Content->functions);
-                    declaration.Content->template_functions = copy(struct_declaration.Content->template_functions);
+                    declaration.Content->blocks = copy(struct_declaration.Content->blocks);
 
                     std::unordered_map<std::string, ast::Type> replacements;
 

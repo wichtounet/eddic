@@ -24,7 +24,7 @@ class DependencyVisitor : public boost::static_visitor<> {
     private:
         parser::SpiritParser& parser;
         ast::SourceFile& source;
-        std::vector<ast::FirstLevelBlock> blocks;
+        std::vector<ast::SourceFileBlock> blocks;
 
     public:
         DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
@@ -32,7 +32,7 @@ class DependencyVisitor : public boost::static_visitor<> {
         void operator()(ast::SourceFile& program){
             visit_each(*this, program.Content->blocks);
 
-            for(ast::FirstLevelBlock& block : blocks){
+            for(ast::SourceFileBlock& block : blocks){
                 source.Content->blocks.push_back(block);
             }
         }
@@ -48,7 +48,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(parser.parse(headerFile, dependency)){
                 resolveDependencies(dependency, parser); 
 
-                for(ast::FirstLevelBlock& block : dependency.Content->blocks){
+                for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     blocks.push_back(block);
                 }
             } else {
@@ -69,7 +69,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(parser.parse(file, dependency)){
                 resolveDependencies(dependency, parser); 
 
-                for(ast::FirstLevelBlock& block : dependency.Content->blocks){
+                for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     blocks.push_back(block);
                 }
             } else {

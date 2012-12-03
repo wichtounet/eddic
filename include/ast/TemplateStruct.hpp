@@ -14,12 +14,7 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
-#include "ast/ArrayDeclaration.hpp"
-#include "ast/MemberDeclaration.hpp"
-#include "ast/Constructor.hpp"
-#include "ast/Destructor.hpp"
-#include "ast/FunctionDeclaration.hpp"
-#include "ast/TemplateFunctionDeclaration.hpp"
+#include "ast/Struct.hpp"
 
 namespace eddic {
 
@@ -29,12 +24,7 @@ struct ASTTemplateStruct {
     Position position;
     std::vector<std::string> template_types;
     std::string name;
-    std::vector<MemberDeclaration> members;
-    std::vector<ArrayDeclaration> arrays;
-    std::vector<Constructor> constructors;
-    std::vector<Destructor> destructors;
-    std::vector<FunctionDeclaration> functions;
-    std::vector<TemplateFunctionDeclaration> template_functions;
+    std::vector<StructBlock> blocks;
 
     mutable long references = 0;
 };
@@ -51,12 +41,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::vector<std::string>, Content->template_types)
     (std::string, Content->name)
-    (std::vector<eddic::ast::MemberDeclaration>, Content->members)
-    (std::vector<eddic::ast::ArrayDeclaration>, Content->arrays)
-    (std::vector<eddic::ast::Constructor>, Content->constructors)
-    (std::vector<eddic::ast::Destructor>, Content->destructors)
-    (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)
-    (std::vector<eddic::ast::TemplateFunctionDeclaration>, Content->template_functions)
+    (std::vector<eddic::ast::StructBlock>, Content->blocks)
 )
 
 #endif
