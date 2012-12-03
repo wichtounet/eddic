@@ -19,6 +19,7 @@
 #include "iterators.hpp"
 #include "likely.hpp"
 #include "logging.hpp"
+#include "timing.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -165,9 +166,10 @@ struct pass_runner {
     std::shared_ptr<StringPool> pool;
     std::shared_ptr<Configuration> configuration;
     Platform platform;
+    timing_system& system;
 
-    pass_runner(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform) : 
-            program(program), pool(pool), configuration(configuration), platform(platform) {};
+    pass_runner(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
+            program(program), pool(pool), configuration(configuration), platform(platform), system(system) {};
 
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
@@ -363,7 +365,8 @@ struct pass_runner {
     inline void operator()(Pass*){
         bool local = false;
         {
-            PerfsTimer timer(mtac::pass_traits<Pass>::name());
+            PerfsTimer perfs_timer(mtac::pass_traits<Pass>::name());
+            timing_timer timer(system, mtac::pass_traits<Pass>::name());
 
             local = apply<Pass>();
         }
@@ -381,6 +384,7 @@ struct pass_runner {
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(mtac::program_p program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
+    timing_system timing_system(configuration);    
     PerfsTimer timer("Whole optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
@@ -390,14 +394,14 @@ void mtac::Optimizer::optimize(mtac::program_p program, std::shared_ptr<StringPo
 
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
-        pass_runner runner(program, string_pool, configuration, platform);
+        pass_runner runner(program, string_pool, configuration, platform, timing_system);
         do{
             runner.optimized = false;
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        pass_runner runner(program, string_pool, configuration, platform);
+        pass_runner runner(program, string_pool, configuration, platform, timing_system);
         boost::mpl::for_each<ipa_basic_passes>(boost::ref(runner));
     }
 }
