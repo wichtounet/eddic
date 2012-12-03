@@ -10,10 +10,11 @@
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
+#include "mtac/Utils.hpp"
+
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
-
-#include "mtac/Utils.hpp"
+#include "ltac/Instruction.hpp"
 
 using namespace eddic;
 

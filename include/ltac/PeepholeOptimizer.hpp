@@ -8,11 +8,9 @@
 #ifndef LTAC_PEEPHOLE_OPTIMIZER_H
 #define LTAC_PEEPHOLE_OPTIMIZER_H
 
-#include <memory>
-
 #include "Platform.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

@@ -14,6 +14,11 @@
 #include <boost/optional.hpp>
 
 #include "ltac/Operator.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/Address.hpp"
 #include "ltac/Argument.hpp"
 
 namespace eddic {

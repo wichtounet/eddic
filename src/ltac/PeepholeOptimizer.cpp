@@ -24,9 +24,14 @@
 #include "mtac/Statement.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
+#include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
 #include "ltac/Printer.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
+#include "ltac/Instruction.hpp"
+#include "ltac/Jump.hpp"
 
 using namespace eddic;
 

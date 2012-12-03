@@ -9,6 +9,8 @@
 
 #include "Type.hpp"
 
+#include "mtac/Program.hpp"
+
 #include "ltac/stack_offsets.hpp"
 #include "ltac/Address.hpp"
 #include "ltac/Register.hpp"

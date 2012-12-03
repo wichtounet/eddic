@@ -31,6 +31,15 @@ typedef boost::variant<
         std::string                                 //For labels
     > Statement;
 
+typedef boost::variant<
+            ltac::Register, 
+            ltac::PseudoRegister, 
+            ltac::PseudoFloatRegister,  //Not used
+            ltac::FloatRegister>        //Not used
+    AddressRegister;
+
+struct Address;
+
 } //end of ltac
 
 } //end of eddic

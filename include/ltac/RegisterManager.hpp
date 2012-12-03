@@ -19,8 +19,9 @@
 #include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 
-#include "ltac/Register.hpp"
-#include "ltac/FloatRegister.hpp"
+//Forward is not enough for PseudoRegisters
+#include "ltac/Argument.hpp"
+#include "ltac/Operator.hpp"
 #include "ltac/PseudoRegister.hpp"
 #include "ltac/PseudoFloatRegister.hpp"
 

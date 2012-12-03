@@ -8,7 +8,7 @@
 #ifndef LTAC_AGGREGATES_H
 #define LTAC_AGGREGATES_H
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

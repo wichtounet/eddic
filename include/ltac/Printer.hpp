@@ -8,10 +8,10 @@
 #ifndef LTAC_PRINTER_H
 #define LTAC_PRINTER_H
 
-#include <memory>
 #include <iostream>
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

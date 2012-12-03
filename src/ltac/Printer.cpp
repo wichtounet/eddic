@@ -13,6 +13,8 @@
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
 
+#include "mtac/Program.hpp"
+
 #include "ltac/Printer.hpp"
 #include "ltac/Statement.hpp"
 

@@ -57,6 +57,14 @@
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
 
+
+
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/Address.hpp"
+
 using namespace eddic;
 
 namespace eddic {

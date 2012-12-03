@@ -15,6 +15,9 @@
 #include "ltac/prologue.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/Printer.hpp"
+#include "ltac/Address.hpp"
+#include "ltac/Instruction.hpp"
+#include "ltac/Jump.hpp"
 
 using namespace eddic;
 

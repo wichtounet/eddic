@@ -10,6 +10,12 @@
 
 #include "asm/StringConverter.hpp"
 
+#include "ltac/Address.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/PseudoRegister.hpp"
+
 using namespace eddic;
 
 std::string as::StringConverter::register_to_string(eddic::ltac::AddressRegister& reg) const {

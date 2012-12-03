@@ -15,7 +15,7 @@
 #include "Platform.hpp"
 #include "Options.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 

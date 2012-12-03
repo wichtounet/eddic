@@ -11,14 +11,14 @@
 #include <memory>
 #include "variant.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/basic_block.hpp"
 #include "mtac/BinaryOperator.hpp"
 
+#include "ltac/forward.hpp"
+#include "ltac/Operator.hpp"
 #include "ltac/Argument.hpp"
-#include "ltac/Statement.hpp"
 
 namespace eddic {
 

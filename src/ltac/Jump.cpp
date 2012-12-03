@@ -8,6 +8,10 @@
 #include <string>
 
 #include "ltac/Jump.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 using namespace eddic;
 

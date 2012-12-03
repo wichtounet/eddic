@@ -11,10 +11,11 @@
 #include "Type.hpp"
 #include "Variable.hpp"
 
+#include "mtac/EscapeAnalysis.hpp"
+#include "mtac/Program.hpp"
+
 #include "ltac/aggregates.hpp"
 #include "ltac/Statement.hpp"
-
-#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
 

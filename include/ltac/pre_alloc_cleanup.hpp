@@ -8,8 +8,6 @@
 #ifndef LTAC_PRE_ALLOC_CLEANUP_H
 #define LTAC_PRE_ALLOC_CLEANUP_H
 
-#include <memory>
-
 #include "mtac/forward.hpp"
 
 namespace eddic {

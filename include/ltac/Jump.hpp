@@ -11,10 +11,7 @@
 #include <vector>
 #include <memory>
 
-#include "ltac/Register.hpp"
-#include "ltac/FloatRegister.hpp"
-#include "ltac/PseudoRegister.hpp"
-#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

@@ -22,6 +22,10 @@
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"

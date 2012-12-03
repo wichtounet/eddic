@@ -20,6 +20,10 @@
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 using namespace eddic;
 

@@ -15,11 +15,9 @@
 #include "FloatPool.hpp"
 #include "Options.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 #include "ltac/RegisterManager.hpp"
-#include "ltac/Argument.hpp"
-#include "ltac/Operator.hpp"
 
 namespace eddic {
 
