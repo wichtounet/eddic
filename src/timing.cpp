@@ -25,6 +25,6 @@ timing_system::~timing_system(){
     //TODO    
 }
 
-void timing_system::register_timing(std::string name, std::size_t time){
+void timing_system::register_timing(std::string name, double time){
     timings[name] += time;
 }

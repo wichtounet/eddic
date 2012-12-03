@@ -20,10 +20,10 @@ class timing_system {
         timing_system(std::shared_ptr<Configuration> configuration);
         ~timing_system();
 
-        void register_timing(std::string name, std::size_t time);
+        void register_timing(std::string name, double time);
 
     private:
-        std::unordered_map<std::string, std::size_t> timings;
+        std::unordered_map<std::string, double> timings;
         std::shared_ptr<Configuration> configuration;
 };
 
