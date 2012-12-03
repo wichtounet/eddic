@@ -49,7 +49,7 @@ typedef boost::variant<
             Import,
             TemplateStruct,
             Struct
-        > FirstLevelBlock;
+        > SourceFileBlock;
 
 /*!
  * \class ASTSourceFile
@@ -60,7 +60,7 @@ struct ASTSourceFile {
     std::shared_ptr<GlobalContext> context;
 
     Position position;
-    std::vector<FirstLevelBlock> blocks;
+    std::vector<SourceFileBlock> blocks;
 
     mutable long references = 0;
 };
@@ -79,7 +79,7 @@ typedef Deferred<ASTSourceFile> SourceFile;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SourceFile, 
     (eddic::ast::Position, Content->position)
-    (std::vector<eddic::ast::FirstLevelBlock>, Content->blocks)
+    (std::vector<eddic::ast::SourceFileBlock>, Content->blocks)
 )
 
 #endif

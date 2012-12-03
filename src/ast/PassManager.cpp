@@ -57,7 +57,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
 
-        std::vector<ast::FirstLevelBlock> blocks = program.Content->blocks;
+        std::vector<ast::SourceFileBlock> blocks = program.Content->blocks;
         for(auto& block : blocks){
             if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                 pass->apply_function(*ptr);
