@@ -5,16 +5,18 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
+
 #include "timing.hpp"
 
 using namespace eddic;
 
-timing_timer::timing_timer(timing_system& system) : system(system) {
+timing_timer::timing_timer(timing_system& system, const std::string& name) : system(system), name(name) {
     //Nothing
 }
 
 timing_timer::~timing_timer(){
-    //TODO
+    system.register_timing(name, timer.elapsed());
 }
 
 timing_system::timing_system(std::shared_ptr<Configuration> configuration) : configuration(configuration) {
@@ -22,7 +24,9 @@ timing_system::timing_system(std::shared_ptr<Configuration> configuration) : con
 }
 
 timing_system::~timing_system(){
-    //TODO    
+    for(auto& timing : timings){
+        std::cout << timing.first << ":" << timing.second << "ms" << std::endl;
+    }
 }
 
 void timing_system::register_timing(std::string name, double time){

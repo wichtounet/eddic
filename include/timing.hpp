@@ -29,11 +29,12 @@ class timing_system {
 
 class timing_timer {
     public:
-        timing_timer(timing_system& system);
+        timing_timer(timing_system& system, const std::string& name);
         ~timing_timer();
 
     private:
         timing_system& system;
+        std::string name;
         StopWatch timer;
 };
 
