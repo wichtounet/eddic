@@ -441,42 +441,95 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
     result_type operator()(ast::Switch& switch_){
         auto cases = switch_.Content->cases;
+        auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
 
-        ast::Expression first_condition;
-        first_condition.Content->context = switch_.Content->context;
-        first_condition.Content->first = switch_.Content->value; 
-        first_condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, cases[0].value));
-        
-        ast::If if_;
-        if_.Content->context = switch_.Content->context;
-        if_.Content->condition = first_condition;
-        if_.Content->instructions = cases[0].instructions;
+        if(value_type == INT){
+            ast::Expression first_condition;
+            first_condition.Content->context = switch_.Content->context;
+            first_condition.Content->first = switch_.Content->value; 
+            first_condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, cases[0].value));
 
-        for(std::size_t i = 1; i < cases.size(); ++i){
-            auto case_ = cases[i];
+            ast::If if_;
+            if_.Content->context = switch_.Content->context;
+            if_.Content->condition = first_condition;
+            if_.Content->instructions = cases[0].instructions;
 
-            ast::Expression condition;
-            condition.Content->context = switch_.Content->context;
-            condition.Content->first = switch_.Content->value; 
-            condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, case_.value));
+            for(std::size_t i = 1; i < cases.size(); ++i){
+                auto case_ = cases[i];
 
-            ast::ElseIf else_if;
-            else_if.context = case_.context;
-            else_if.condition = condition;
-            else_if.instructions = case_.instructions;
+                ast::Expression condition;
+                condition.Content->context = switch_.Content->context;
+                condition.Content->first = switch_.Content->value; 
+                condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, case_.value));
 
-            if_.Content->elseIfs.push_back(else_if);
+                ast::ElseIf else_if;
+                else_if.context = case_.context;
+                else_if.condition = condition;
+                else_if.instructions = case_.instructions;
+
+                if_.Content->elseIfs.push_back(else_if);
+            }
+
+            if(switch_.Content->default_case){
+                ast::Else else_;
+                else_.context = (*switch_.Content->default_case).context;
+                else_.instructions = (*switch_.Content->default_case).instructions;
+
+                if_.Content->else_ = else_;
+            }
+
+            return {if_};
+        } else if(value_type == STRING){
+            ast::FunctionCall first_condition;
+            first_condition.Content->context = switch_.Content->context;
+            first_condition.Content->position = switch_.Content->position;
+            first_condition.Content->function_name = "str_equals";
+            first_condition.Content->mangled_name = "";
+            first_condition.Content->function = switch_.Content->context->global()->getFunction("_F10str_equalsSS");
+            first_condition.Content->values.push_back(switch_.Content->value);
+            first_condition.Content->values.push_back(cases[0].value);
+    
+            switch_.Content->context->global()->addReference("_F10str_equalsSS");
+            
+            ast::If if_;
+            if_.Content->context = switch_.Content->context;
+            if_.Content->condition = first_condition;
+            if_.Content->instructions = cases[0].instructions;
+
+            for(std::size_t i = 1; i < cases.size(); ++i){
+                auto case_ = cases[i];
+            
+                ast::FunctionCall condition;
+                condition.Content->context = switch_.Content->context;
+                condition.Content->position = case_.position;
+                condition.Content->function_name = "str_equals";
+                condition.Content->mangled_name = "_F10str_equalsSS";
+                condition.Content->function = switch_.Content->context->global()->getFunction("_F10str_equalsSS");
+                condition.Content->values.push_back(switch_.Content->value);
+                condition.Content->values.push_back(case_.value);
+                
+                switch_.Content->context->global()->addReference("_F10str_equalsSS");
+
+                ast::ElseIf else_if;
+                else_if.context = case_.context;
+                else_if.condition = condition;
+                else_if.instructions = case_.instructions;
+
+                if_.Content->elseIfs.push_back(else_if);
+            }
+
+            if(switch_.Content->default_case){
+                ast::Else else_;
+                else_.context = (*switch_.Content->default_case).context;
+                else_.instructions = (*switch_.Content->default_case).instructions;
+
+                if_.Content->else_ = else_;
+            }
+
+            return {if_};
+        } else {
+            eddic_unreachable("Unhandled switch value type");
         }
-
-        if(switch_.Content->default_case){
-            ast::Else else_;
-            else_.context = (*switch_.Content->default_case).context;
-            else_.instructions = (*switch_.Content->default_case).instructions;
-
-            if_.Content->else_ = else_;
-        }
-
-        return {if_};
     }
 
     //No transformation for the other nodes
