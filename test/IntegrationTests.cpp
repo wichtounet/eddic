@@ -399,6 +399,10 @@ BOOST_AUTO_TEST_CASE( switch_ ){
     assert_output("switch.eddi", "5|5|3|6|default|4|");
 }
 
+BOOST_AUTO_TEST_CASE( switch_string ){
+    assert_output("switch_string.eddi", "5|5|3|6|default|4|");
+}
+
 BOOST_AUTO_TEST_CASE( nested ){
     assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
     assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");

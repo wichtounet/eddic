@@ -1,0 +1,43 @@
+include<strings>
+
+void main(){
+    string a = "5";
+
+    switch(a){
+        case "3":
+            print("3");
+        case "4":
+            print("4");
+        case "5":
+            print("5");
+        case "6":
+            print("6");
+        default:
+            print("default");
+    }
+    
+    print("|");
+
+    test(a);
+    test("3");
+    test("6");
+    test("100");
+    test("4");
+}
+
+void test(string a){
+    switch(a){
+        case "3":
+            print("3");
+        case "4":
+            print("4");
+        case "5":
+            print("5");
+        case "6":
+            print("6");
+        default:
+            print("default");
+    }
+            
+    print("|");
+}

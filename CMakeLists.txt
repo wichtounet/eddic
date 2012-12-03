@@ -198,6 +198,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/struct_member_pointers
     SpecificSuite/struct_array
     SpecificSuite/switch_
+    SpecificSuite/switch_string
     SpecificSuite/nested
     SpecificSuite/args
     TemplateSuite/class_templates

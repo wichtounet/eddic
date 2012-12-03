@@ -97,8 +97,8 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
 
-            if(value_type != INT){
-                throw SemanticalException("Switch can only work on int type", switch_.Content->position);
+            if(value_type != INT && value_type != STRING){
+                throw SemanticalException("Switch can only work on int and string types", switch_.Content->position);
             }
             
             visit_each_non_variant(*this, switch_.Content->cases);
@@ -110,8 +110,8 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
-            if(value_type != INT){
-                throw SemanticalException("Switch can only work on int type", switch_.position);
+            if(value_type != INT && value_type != STRING){
+                throw SemanticalException("Switch can only work on int and string types", switch_.position);
             }
 
             visit_each(*this, switch_.instructions);
