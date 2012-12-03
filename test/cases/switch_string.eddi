@@ -1,7 +1,7 @@
 include<strings>
 
 void main(){
-    string a = "3";
+    string a = "5";
 
     switch(a){
         case "3":
