@@ -110,7 +110,7 @@ void init_descriptions(){
     all.add(general).add(display).add(optimization).add(backend);
     visible.add(general).add(display).add(optimization);
 
-    add_trigger("warning-all", {"warning-unused", "warning-cast"});
+    add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects"});
     
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
