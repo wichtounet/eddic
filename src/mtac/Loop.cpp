@@ -41,3 +41,11 @@ mtac::Loop::iterator mtac::end(std::shared_ptr<mtac::Loop> loop){
 std::set<mtac::basic_block_p>& mtac::Loop::blocks(){
     return m_blocks;
 }
+
+mtac::InductionVariables& mtac::Loop::basic_induction_variables(){
+    return biv;
+}
+
+mtac::InductionVariables& mtac::Loop::dependent_induction_variables(){
+    return div;
+}
