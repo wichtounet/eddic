@@ -314,18 +314,8 @@ bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::function
     return optimized;
 }
 
-struct LinearEquation {
-    std::shared_ptr<mtac::Quadruple> def;
-    std::shared_ptr<Variable> i;
-    int e;
-    int d;
-    bool generated;
-};
-
-typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
-
-InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
-    InductionVariables candidates;
+mtac::InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
+    mtac::InductionVariables candidates;
 
     for(auto& bb : loop){
         for(auto& statement : bb->statements){
@@ -340,7 +330,7 @@ InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
     return candidates;
 }
 
-void clean_defaults(InductionVariables& induction_variables){
+void clean_defaults(mtac::InductionVariables& induction_variables){
     auto it = iterate(induction_variables);
 
     //Erase induction variables that have been created by default
@@ -356,7 +346,7 @@ void clean_defaults(InductionVariables& induction_variables){
     }
 }
 
-InductionVariables find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
+mtac::InductionVariables find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
     auto basic_induction_variables = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -412,7 +402,7 @@ InductionVariables find_basic_induction_variables(std::shared_ptr<mtac::Loop> lo
     return basic_induction_variables;
 }
 
-InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, const InductionVariables& basic_induction_variables, mtac::function_p function){
+mtac::InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, const mtac::InductionVariables& basic_induction_variables, mtac::function_p function){
     auto dependent_induction_variables = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -604,11 +594,11 @@ InductionVariables find_dependent_induction_variables(std::shared_ptr<mtac::Loop
     return dependent_induction_variables;
 }
 
-bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equation, InductionVariables& dependent_induction_variables, mtac::function_p function){
+bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& basic_equation, mtac::InductionVariables& dependent_induction_variables, mtac::function_p function){
     mtac::basic_block_p pre_header = nullptr;
     bool optimized = false;
 
-    InductionVariables new_induction_variables;
+    mtac::InductionVariables new_induction_variables;
 
     auto i = basic_equation.i;
 
@@ -683,7 +673,7 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, LinearEquation& basic_equ
     return optimized;
 }
 
-void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVariables& dependent_induction_variables){
+void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, mtac::InductionVariables& dependent_induction_variables){
     Usage usage = compute_read_usage(loop);
 
     //Remove generated copy when useless
@@ -742,7 +732,7 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVaria
     }
 }
 
-void induction_variable_replace(std::shared_ptr<mtac::Loop> loop, InductionVariables& basic_induction_variables, InductionVariables& dependent_induction_variables){
+void induction_variable_replace(std::shared_ptr<mtac::Loop> loop, mtac::InductionVariables& basic_induction_variables, mtac::InductionVariables& dependent_induction_variables){
     auto exit_block = *loop->blocks().rbegin();
 
     auto exit_statement = exit_block->statements.back();
@@ -871,7 +861,7 @@ bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mta
     return optimized;
 }
 
-int number_of_iterations(LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
+int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&if_statement)){
         auto if_ = *ptr;
 
