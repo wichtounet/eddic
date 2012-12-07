@@ -701,8 +701,12 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVaria
                     //If j = tj generated in strength reduction phase
                     if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){
                         if(!usage.read.count(j)){
+                            log::emit<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
+
                             //There is one less read of tj
                             --usage.read[tj];
+
+                            dependent_induction_variables.erase(j);
 
                             it.erase();
                             continue;
@@ -715,6 +719,8 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVaria
         }
     }
 
+    std::vector<std::shared_ptr<Variable>> removed_variables;
+
     //Remove induction variables that contribute only to themselves
     for(auto& var : dependent_induction_variables){
         if(usage.read[var.first] == 1){
@@ -724,7 +730,15 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop, InductionVaria
             var.second.def->arg2.reset();
 
             usage.read[var.first] = 0;
+
+            removed_variables.push_back(var.first);
+
+            log::emit<Trace>("Loops") << "Remove DIV " << var.first->name() << log::endl;
         }
+    }
+
+    for(auto& variable : removed_variables){
+        dependent_induction_variables.erase(variable);
     }
 }
 
@@ -850,10 +864,6 @@ bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mta
 
     //3. Removal of dependent induction variables
     induction_variable_removal(loop, dependent_induction_variables);
-    
-    //Update induction variables for the last phase
-    basic_induction_variables = find_basic_induction_variables(loop);
-    dependent_induction_variables = find_dependent_induction_variables(loop, basic_induction_variables, function);
 
     //4. Replace basic induction variable with another dependent variable
     induction_variable_replace(loop, basic_induction_variables, dependent_induction_variables);
