@@ -41,8 +41,8 @@ class Loop {
         
         std::set<mtac::basic_block_p>& blocks();
 
-        int estimate();
-        void set_estimate(int estimate);
+        bool has_estimate();
+        long& estimate();
 
         InductionVariables& basic_induction_variables();
         InductionVariables& dependent_induction_variables();
@@ -53,7 +53,7 @@ class Loop {
 
         std::set<mtac::basic_block_p> m_blocks;
 
-        int m_estimate = -1;
+        long m_estimate = -1;
 };
 
 Loop::iterator begin(std::shared_ptr<mtac::Loop> loop);
