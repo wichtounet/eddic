@@ -43,6 +43,7 @@ class Loop {
 
         bool has_estimate();
         long& estimate();
+        long& initial_value();
 
         InductionVariables& basic_induction_variables();
         InductionVariables& dependent_induction_variables();
@@ -54,6 +55,7 @@ class Loop {
         std::set<mtac::basic_block_p> m_blocks;
 
         long m_estimate = -1;
+        long m_initial;
 };
 
 Loop::iterator begin(std::shared_ptr<mtac::Loop> loop);

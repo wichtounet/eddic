@@ -344,6 +344,121 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
     clean_defaults(loop->dependent_induction_variables());
 }
 
+std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
+    auto it = bb->statements.rbegin();
+    auto end = bb->statements.rend();
+
+    while(it != end){
+        auto statement = *it;
+
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            if((*ptr)->result == var){
+                if((*ptr)->op == mtac::Operator::ASSIGN){
+                    if(auto* val_ptr = boost::get<int>(&*(*ptr)->arg1)){
+                        return std::make_pair(true, *val_ptr);                    
+                    }
+                }
+
+                return std::make_pair(false, 0);
+            }
+        }
+
+        ++it;
+    }
+    
+    return std::make_pair(false, 0);
+}
+
+int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&if_statement)){
+        auto if_ = *ptr;
+
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } 
+    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&if_statement)){
+        auto if_ = *ptr;
+
+        if(mtac::isVariable(if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+
+            if(var != linear_equation.i){
+                return -1;   
+            }
+
+            if(auto* cst_ptr = boost::get<int>(&*if_->arg2)){
+                int number = *cst_ptr;
+
+                //We found the form "var op number"
+                
+                if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::GREATER){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+            int number = *cst_ptr;
+
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
+                if(*var_ptr != linear_equation.i){
+                    return -1;   
+                }
+                
+                //We found the form "number op var"
+                
+                if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_->op == mtac::BinaryOperator::LESS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+
+                return -1;
+            } 
+        } 
+    }
+
+    return -1;
+}
+
 } //end of anonymous namespace
 
 void mtac::full_loop_analysis(mtac::program_p program){
@@ -429,6 +544,31 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
     for(auto& loop : function->loops()){
         find_basic_induction_variables(loop);
         find_dependent_induction_variables(loop, function);
+    }
+
+    //Basic computation of estimates
+    for(auto& loop : function->loops()){
+        if(loop->blocks().size() == 1){
+            auto& basic_induction_variables = loop->basic_induction_variables();
+
+            if(basic_induction_variables.size() == 1){
+                auto bb = *loop->begin();
+
+                if(bb->prev){
+                    auto biv = *basic_induction_variables.begin();
+                    auto linear_equation = biv.second;
+
+                    auto initial_value = get_initial_value(bb->prev, linear_equation.i);
+
+                    if(initial_value.first){
+                        auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
+
+                        loop->estimate() = it;
+                        loop->initial_value() = initial_value.second;
+                    }
+                }
+            }
+        }
     }
 
     //Analysis only

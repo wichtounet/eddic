@@ -30,6 +30,10 @@ long& mtac::Loop::estimate(){
     return m_estimate;
 }
 
+long& mtac::Loop::initial_value(){
+    return m_initial;
+}
+
 mtac::Loop::iterator mtac::begin(std::shared_ptr<mtac::Loop> loop){
     return loop->begin();
 }
