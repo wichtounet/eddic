@@ -22,12 +22,16 @@ mtac::Loop::iterator mtac::Loop::end(){
     return m_blocks.end();
 }
 
-int mtac::Loop::estimate(){
+bool mtac::Loop::has_estimate(){
+    return m_estimate > 0;
+}
+
+long& mtac::Loop::estimate(){
     return m_estimate;
 }
 
-void mtac::Loop::set_estimate(int estimate){
-    this->m_estimate = estimate;
+long& mtac::Loop::initial_value(){
+    return m_initial;
 }
 
 mtac::Loop::iterator mtac::begin(std::shared_ptr<mtac::Loop> loop){
