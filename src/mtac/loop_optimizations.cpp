@@ -698,6 +698,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
 
                 auto statements = bb->statements;
 
+                //Start at 1 because there is already the original body
                 for(int i = 1; i < it; ++i){
                     for(auto& statement : statements){
                         bb->statements.push_back(mtac::copy(statement, function->context->global())); 
