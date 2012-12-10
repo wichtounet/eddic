@@ -103,6 +103,9 @@ void ast::PassManager::init_passes(){
     
     //Structures member collection pass
     passes.push_back(make_pass<ast::StructureMemberCollectionPass>("structures member collection", template_engine, platform, configuration, pool));
+
+    //Function Generation Pass
+    passes.push_back(make_pass<ast::FunctionGenerationPass>("function generation", template_engine, platform, configuration, pool));
     
     //Structures check pass
     passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration, pool));
@@ -124,9 +127,6 @@ void ast::PassManager::init_passes(){
     
     //String collection pass
     passes.push_back(make_pass<ast::StringCollectionPass>("string collection", template_engine, platform, configuration, pool));
-
-    //Function Generation Pass
-    passes.push_back(make_pass<ast::FunctionGenerationPass>("function generation", template_engine, platform, configuration, pool));
     
     //Type checking pass
     passes.push_back(make_pass<ast::TypeCheckingPass>("Type checking", template_engine, platform, configuration, pool));
