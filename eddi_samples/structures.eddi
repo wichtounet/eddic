@@ -50,8 +50,6 @@ void main(){
     } else {
         println(c.real);
     }
-
-    assign();
 }
 
 void test(Complex a){
@@ -62,10 +60,4 @@ void test(Complex a){
     println(a.s);
     println(a.i[3]);
     println(a.i[1]);
-}
-
-void assign(){
-    Complex a;
-    Complex b;
-    b = a;
 }
