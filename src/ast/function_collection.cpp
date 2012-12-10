@@ -36,7 +36,7 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
 
     for(auto& param : declaration.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = declaration.Content->struct_name;
@@ -63,7 +63,7 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
 
     for(auto& param : constructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = constructor.Content->struct_name;
@@ -84,7 +84,7 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
 
     for(auto& param : destructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = destructor.Content->struct_name;

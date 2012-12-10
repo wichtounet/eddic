@@ -178,7 +178,7 @@ void GlobalContext::addPrintFunction(const std::string& function, std::shared_pt
     auto printFunction = std::make_shared<Function>(VOID, "print");
     printFunction->standard = true;
     printFunction->mangledName = function;
-    printFunction->parameters.push_back({"a", parameterType});
+    printFunction->parameters.emplace_back("a", parameterType);
     addFunction(printFunction);
 }
 
@@ -217,37 +217,37 @@ void GlobalContext::defineStandardFunctions(){
     auto concatFunction = std::make_shared<Function>(STRING, "concat");
     concatFunction->standard = true;
     concatFunction->mangledName = "_F6concatSS";
-    concatFunction->parameters.push_back({"a", STRING});
-    concatFunction->parameters.push_back({"b", STRING});
+    concatFunction->parameters.emplace_back("a", STRING);
+    concatFunction->parameters.emplace_back("b", STRING);
     addFunction(concatFunction);
     
     //alloc function
     auto allocFunction = std::make_shared<Function>(new_pointer_type(INT), "alloc");
     allocFunction->standard = true;
     allocFunction->mangledName = "_F5allocI";
-    allocFunction->parameters.push_back({"a", INT});
+    allocFunction->parameters.emplace_back("a", INT);
     addFunction(allocFunction);
     
     //free function
     auto freeFunction = std::make_shared<Function>(VOID, "free");
     freeFunction->standard = true;
     freeFunction->mangledName = "_F4freePI";
-    freeFunction->parameters.push_back({"a", INT});
+    freeFunction->parameters.emplace_back("a", INT);
     addFunction(freeFunction);
     
     //time function
     auto timeFunction = std::make_shared<Function>(VOID, "time");
     timeFunction->standard = true;
     timeFunction->mangledName = "_F4timeAI";
-    timeFunction->parameters.push_back({"a", new_array_type(INT)});
+    timeFunction->parameters.emplace_back("a", new_array_type(INT));
     addFunction(timeFunction);
     
     //duration function
     auto durationFunction = std::make_shared<Function>(VOID, "duration");
     durationFunction->standard = true;
     durationFunction->mangledName = "_F8durationAIAI";
-    durationFunction->parameters.push_back({"a", new_array_type(INT)});
-    durationFunction->parameters.push_back({"b", new_array_type(INT)});
+    durationFunction->parameters.emplace_back("a", new_array_type(INT));
+    durationFunction->parameters.emplace_back("b", new_array_type(INT));
     addFunction(durationFunction);
 }
 

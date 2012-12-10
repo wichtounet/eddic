@@ -145,10 +145,10 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
                 assignment.Content->left_value = left_expression;
                 assignment.Content->value = right_expression;
 
-                c.Content->instructions.push_back(assignment);
+                c.Content->instructions.push_back(std::move(assignment));
             }
 
-            struct_.Content->blocks.push_back(c);
+            struct_.Content->blocks.push_back(std::move(c));
         }
     }
 }
