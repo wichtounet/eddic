@@ -154,6 +154,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/ctor_dtor_stack
     SpecificSuite/casts
     SpecificSuite/compound
+    SpecificSuite/copy_constructors
     SpecificSuite/if_
     SpecificSuite/includes
     SpecificSuite/int_arrays
