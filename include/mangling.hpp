@@ -60,6 +60,7 @@ std::string mangle_dtor(std::shared_ptr<const Type> struct_type);
  * \return The mangled function name. 
  */
 std::string mangle(const std::string& functionName, const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type = nullptr);
+std::string mangle_ctor(const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type);
 
 } //end of eddic
 

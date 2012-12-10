@@ -158,6 +158,19 @@ std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, std::share
     return ss.str();
 }
 
+std::string eddic::mangle_ctor(const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type){
+    std::ostringstream ss;
+
+    ss << "_C";
+    ss << struct_type->mangle();
+
+    for(auto& type : types){
+        ss << type->mangle();
+    }
+
+    return ss.str();
+}
+
 std::string eddic::mangle_dtor(std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
