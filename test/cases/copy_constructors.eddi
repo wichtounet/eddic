@@ -1,0 +1,19 @@
+struct Complex {
+    int a;
+    int b;
+
+    this(Complex* rhs){
+        a = rhs.a;
+        b = rhs.b;
+    }
+}
+
+void main(){
+    Complex a;
+    a.a = 9;
+    a.b = 5;
+
+    Complex b = a;
+
+    print(b.a);
+}
