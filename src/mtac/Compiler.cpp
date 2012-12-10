@@ -560,22 +560,20 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             
         if(type->is_custom_type() || type->is_template()){
             auto ctor_name = mangle_ctor(new_.Content->values, type);
+            
+            eddic_assert(function->context->global()->exists(ctor_name), "The constructor must exists");
 
-            if(!function->context->global()->exists(ctor_name)){
-                assert(new_.Content->values.empty());
-            } else {
-                auto ctor_function = function->context->global()->getFunction(ctor_name);
+            auto ctor_function = function->context->global()->getFunction(ctor_name);
 
-                //Pass all normal arguments
-                pass_arguments(function, ctor_function, new_.Content->values);
+            //Pass all normal arguments
+            pass_arguments(function, ctor_function, new_.Content->values);
 
-                auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                ctor_param->address = true;
-                function->add(ctor_param);
+            auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+            ctor_param->address = true;
+            function->add(ctor_param);
 
-                function->context->global()->addReference(ctor_name);
-                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
-            }
+            function->context->global()->addReference(ctor_name);
+            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
         }
 
         return {t1};
@@ -1226,18 +1224,17 @@ class CompilerVisitor : public boost::static_visitor<> {
 
                     if(type->is_custom_type() || type->is_template()){
                         auto dtor_name = mangle_dtor(type);
+            
+                        eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
 
-                        //If there is a destructor, call it
-                        if(program->context->exists(dtor_name)){
-                            auto dtor_function = program->context->getFunction(dtor_name);
+                        auto dtor_function = program->context->getFunction(dtor_name);
 
-                            auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                            dtor_param->address = true;
-                            function->add(dtor_param);
+                        auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                        dtor_param->address = true;
+                        function->add(dtor_param);
 
-                            program->context->addReference(dtor_name);
-                            function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
-                        }
+                        program->context->addReference(dtor_name);
+                        function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
                     }
                 }
             }
@@ -1347,19 +1344,19 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
             auto ctor_name = mangle_ctor(declaration.Content->values, var->type());
 
-            if(program->context->exists(ctor_name)){
-                auto ctor_function = program->context->getFunction(ctor_name);
-                
-                //Pass all normal arguments
-                pass_arguments(function, ctor_function, declaration.Content->values);
+            eddic_assert(program->context->exists(ctor_name), "The constructor must exists");
 
-                auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                ctor_param->address = true;
-                function->add(ctor_param);
+            auto ctor_function = program->context->getFunction(ctor_name);
 
-                program->context->addReference(ctor_name);
-                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
-            }
+            //Pass all normal arguments
+            pass_arguments(function, ctor_function, declaration.Content->values);
+
+            auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+            ctor_param->address = true;
+            function->add(ctor_param);
+
+            program->context->addReference(ctor_name);
+            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
         }
 
         void operator()(ast::VariableDeclaration& declaration){
@@ -1392,18 +1389,16 @@ class CompilerVisitor : public boost::static_visitor<> {
                     std::vector<std::shared_ptr<const Type>> ctor_types;
                     auto ctor_name = mangle_ctor(ctor_types, var->type());
 
-                    //TODO Add assertion for constructors that must exist
+                    eddic_assert(program->context->exists(ctor_name), "The constructor must exists");
+                    
+                    auto ctor_function = program->context->getFunction(ctor_name);
 
-                    if(program->context->exists(ctor_name)){
-                        auto ctor_function = program->context->getFunction(ctor_name);
+                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                    ctor_param->address = true;
+                    function->add(ctor_param);
 
-                        auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                        ctor_param->address = true;
-                        function->add(ctor_param);
-
-                        program->context->addReference(ctor_name);
-                        function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
-                    }
+                    program->context->addReference(ctor_name);
+                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
                 }
             } else {
                 if(declaration.Content->value){
@@ -1474,18 +1469,17 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto type = delete_.Content->variable->type()->data_type();
             if(type->is_custom_type() || type->is_template()){
                 auto dtor_name = mangle_dtor(type);
+               
+                eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
 
-                //If there is a destructor, call it
-                if(program->context->exists(dtor_name)){
-                    auto dtor_function = program->context->getFunction(dtor_name);
+                auto dtor_function = program->context->getFunction(dtor_name);
 
-                    auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                    dtor_param->address = true;
-                    function->add(dtor_param);
+                auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+                dtor_param->address = true;
+                function->add(dtor_param);
 
-                    program->context->addReference(dtor_name);
-                    function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
-                }
+                program->context->addReference(dtor_name);
+                function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
             }
 
             auto free_name = "_F4freePI";
