@@ -698,7 +698,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
 
                 auto statements = bb->statements;
 
-                for(int i = 0; i < it - 2; ++i){
+                for(int i = 1; i < it; ++i){
                     for(auto& statement : statements){
                         bb->statements.push_back(mtac::copy(statement, function->context->global())); 
                     }

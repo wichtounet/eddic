@@ -402,7 +402,7 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
                 }
                 
                 //We found the form "number op var"
-                
+
                 if(if_->op == mtac::BinaryOperator::GREATER){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
@@ -562,6 +562,9 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
 
                     if(initial_value.first){
                         auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
+
+                        //number_of_iterations gives the upper bound
+                        it = it - 1;
 
                         loop->estimate() = it;
                         loop->initial_value() = initial_value.second;
