@@ -76,7 +76,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
 
     //Generate copy constructor if necessary
     if(!copy_constructor){
-        std::cout << "Generate copy ctor" << std::endl;
         auto type = struct_.Content->struct_type;
         auto struct_type = context->get_struct(type->mangle());
 
@@ -87,8 +86,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
                 break;
             }
         }
-
-        std::cout << possible << std::endl;
 
         if(possible){
             auto function_context = std::make_shared<FunctionContext>(context, context, platform, configuration);
@@ -121,8 +118,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
 
             for(auto& member : struct_type->members){
                 auto& name = member->name;
-
-                std::cout << name << std::endl;
 
                 ast::Assignment assignment;
                 assignment.Content->context = function_context;
