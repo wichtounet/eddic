@@ -27,8 +27,8 @@ void main(){
     With c;
     c = a;
     
-    print(b.a);
+    print(c.a);
     print("|");
-    print(b.b);
+    print(c.b);
     print("|");
 }
