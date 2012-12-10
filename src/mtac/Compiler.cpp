@@ -1344,17 +1344,21 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
 
             if(var->type()->is_custom_type() || var->type()->is_template()){
-                auto ctor_name = mangle_ctor({}, var->type());
+                if(declaration.Content->value){
+                    eddic_unreachable("Unimplemented feature");
+                } else {
+                    auto ctor_name = mangle_ctor({}, var->type());
 
-                if(program->context->exists(ctor_name)){
-                    auto ctor_function = program->context->getFunction(ctor_name);
+                    if(program->context->exists(ctor_name)){
+                        auto ctor_function = program->context->getFunction(ctor_name);
 
-                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                    ctor_param->address = true;
-                    function->add(ctor_param);
+                        auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                        ctor_param->address = true;
+                        function->add(ctor_param);
 
-                    program->context->addReference(ctor_name);
-                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                        program->context->addReference(ctor_name);
+                        function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                    }
                 }
             } else {
                 if(declaration.Content->value){
