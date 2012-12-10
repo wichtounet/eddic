@@ -949,6 +949,28 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
         } else if(type == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
+        } else if(type->is_custom_type() || type->is_template()){
+            //Copy constructor
+            std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(variable->type())};
+            auto ctor_name = mangle_ctor(ctor_types, variable->type());
+
+            eddic_assert(function->context->global()->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
+
+            auto ctor_function = function->context->global()->getFunction(ctor_name);
+
+            //The values to be passed to the copy constructor
+            std::vector<ast::Value> values;
+            values.push_back(right_value);
+
+            //Pass the other structure (the pointer will automatically be handled
+            pass_arguments(function, ctor_function, values);
+
+            auto ctor_param = std::make_shared<mtac::Param>(variable, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+            ctor_param->address = true;
+            function->add(ctor_param);
+
+            function->context->global()->addReference(ctor_name);
+            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
         } else {
             eddic_unreachable("Unhandled value type");
         }
