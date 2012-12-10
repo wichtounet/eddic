@@ -24,6 +24,7 @@
 #include "ast/DefaultValues.hpp"
 #include "ast/member_function_collection.hpp"
 #include "ast/function_collection.hpp"
+#include "ast/function_generation.hpp"
 #include "ast/function_check.hpp"
 #include "ast/VariablesAnnotator.hpp"
 #include "ast/StringChecker.hpp"
@@ -123,6 +124,9 @@ void ast::PassManager::init_passes(){
     
     //String collection pass
     passes.push_back(make_pass<ast::StringCollectionPass>("string collection", template_engine, platform, configuration, pool));
+
+    //Function Generation Pass
+    passes.push_back(make_pass<ast::FunctionGenerationPass>("function generation", template_engine, platform, configuration, pool));
     
     //Type checking pass
     passes.push_back(make_pass<ast::TypeCheckingPass>("Type checking", template_engine, platform, configuration, pool));
