@@ -1,19 +1,34 @@
-struct Complex {
+//Struct with a copy constructor
+struct With {
     int a;
     int b;
 
-    this(Complex* rhs){
+    this(With* rhs){
         a = rhs.a;
         b = rhs.b;
     }
 }
 
 void main(){
-    Complex a;
+    With a;
     a.a = 9;
     a.b = 5;
 
-    Complex b = a;
+    With b = a;
 
     print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+
+    a.a = 99;
+    a.b = 55;
+
+    With c;
+    c = a;
+    
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
 }
