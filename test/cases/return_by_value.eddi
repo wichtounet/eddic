@@ -1,0 +1,15 @@
+struct A {
+    int a;
+    int b;
+}
+
+void main(){
+    A a = b();
+}
+
+A b(){
+    A a;
+    a.a = 99;
+    a.b = 66;
+    return a;
+}
