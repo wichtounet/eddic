@@ -643,12 +643,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::FunctionCall& call) const {
-        auto type = call.Content->function->returnType;
         auto definition = call.Content->function;
+        auto type = definition->returnType;
 
         eddic_assert(definition, "All the functions should be in the function table");
 
-        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+        if(type == VOID){
+            pass_arguments(function, definition, call.Content->values);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
+
+            return {};
+        } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
             auto t1 = function->context->new_temporary(type);
 
             pass_arguments(function, definition, call.Content->values);
@@ -1484,15 +1490,45 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
+            auto definition = return_.Content->function;
+            auto return_type = definition->returnType;
 
-            if(arguments.size() == 1){
-                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
-            } else if(arguments.size() == 2){
-                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
+            //If the function returns a struct by value, it does not really returns something
+            if(return_type->is_custom_type() || return_type->is_template_type()){
+                //Copy constructor
+                std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(return_type)};
+                auto ctor_name = mangle_ctor(ctor_types, return_type);
+
+                eddic_assert(function->context->global()->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
+
+                auto ctor_function = function->context->global()->getFunction(ctor_name);
+
+                //The values to be passed to the copy constructor
+                std::vector<ast::Value> values;
+                values.push_back(return_.Content->value);
+
+                //Pass the other structure (the pointer will automatically be handled
+                pass_arguments(function, ctor_function, values);
+
+                auto ctor_param = std::make_shared<mtac::Param>(
+                        definition->context->getVariable("__ret"), 
+                        ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+                ctor_param->address = true;
+                function->add(ctor_param);
+
+                function->context->global()->addReference(ctor_name);
+                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
             } else {
-                eddic_unreachable("Unhandled arguments size");
-            }   
+                auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
+
+                if(arguments.size() == 1){
+                    function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
+                } else if(arguments.size() == 2){
+                    function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
+                } else {
+                    eddic_unreachable("Unhandled arguments size");
+                }   
+            }
         }
 
         void operator()(ast::Delete& delete_){
