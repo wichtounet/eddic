@@ -35,16 +35,16 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
         signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
-    //Return by value needs a new parameter on stack
-    if(return_type->is_custom_type()){
-        signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
-    }
-
     signature->struct_ = declaration.Content->struct_name;
     signature->struct_type = declaration.Content->struct_type;
     signature->context = declaration.Content->context;
 
     declaration.Content->mangledName = signature->mangledName = mangle(signature);
+
+    //Return by value needs a new parameter on stack
+    if(return_type->is_custom_type()){
+        signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
+    }
 
     if(context->exists(signature->mangledName)){
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
