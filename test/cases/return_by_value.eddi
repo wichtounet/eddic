@@ -5,6 +5,11 @@ struct A {
 
 void main(){
     A a = b();
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
 }
 
 A b(){
