@@ -30,13 +30,14 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
         throw SemanticalException("Cannot return array from function", declaration.Content->position);
     }
 
-    if(return_type->is_custom_type()){
-        throw SemanticalException("Cannot return struct from function", declaration.Content->position);
-    }
-
     for(auto& param : declaration.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
         signature->parameters.emplace_back(param.parameterName, paramType);
+    }
+
+    //Return by value needs a new parameter on stack
+    if(return_type->is_custom_type()){
+        signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
     }
 
     signature->struct_ = declaration.Content->struct_name;
