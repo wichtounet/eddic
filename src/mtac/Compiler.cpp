@@ -419,9 +419,11 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     return2_ = function->context->new_temporary(INT);
 
                     left = {return_, return2_};
-                } else {
+                } else if(type == VOID){
                     //It is void, does not return anything
                     left = {};
+                } else {
+                    eddic_unreachable("Unhandled return type");
                 }
 
                 //Pass all normal arguments
