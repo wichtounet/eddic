@@ -11,7 +11,7 @@ struct A {
 }
 
 void main(){
-    A a = b();
+    A a = b(99, 66);
 
     print(a.a);
     print("|");
@@ -26,9 +26,9 @@ void main(){
     print("|");
 }
 
-A b(){
+A b(int aa, int bb){
     A a;
-    a.a = 99;
-    a.b = 66;
+    a.a = aa;
+    a.b = bb;
     return a;
 }
