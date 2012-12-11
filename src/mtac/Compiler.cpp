@@ -94,6 +94,33 @@ void construct(mtac::function_p function, std::shared_ptr<const Type> type, std:
     function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
 }
 
+void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg, ast::Value rhs_arg){
+    std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(type)};
+    auto ctor_name = mangle_ctor(ctor_types, type);
+
+    auto global_context = function->context->global();
+
+    eddic_assert(global_context->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
+
+    auto ctor_function = global_context->getFunction(ctor_name);
+
+    //The values to be passed to the copy constructor
+    std::vector<ast::Value> values;
+    values.push_back(rhs_arg);
+
+    //Pass the other structure (the pointer will automatically be handled
+    pass_arguments(function, ctor_function, values);
+
+    auto ctor_param = std::make_shared<mtac::Param>(
+            this_arg, 
+            ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+    ctor_param->address = true;
+    function->add(ctor_param);
+
+    global_context->addReference(ctor_name);
+    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+}
+
 template<typename Source>
 Offset variant_cast(Source source){
     if(auto* ptr = boost::get<int>(&source)){
@@ -998,27 +1025,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         } else if(type == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
         } else if(type->is_custom_type() || type->is_template_type()){
-            //Copy constructor
-            std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(variable->type())};
-            auto ctor_name = mangle_ctor(ctor_types, variable->type());
-
-            eddic_assert(function->context->global()->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
-
-            auto ctor_function = function->context->global()->getFunction(ctor_name);
-
-            //The values to be passed to the copy constructor
-            std::vector<ast::Value> values;
-            values.push_back(right_value);
-
-            //Pass the other structure (the pointer will automatically be handled
-            pass_arguments(function, ctor_function, values);
-
-            auto ctor_param = std::make_shared<mtac::Param>(variable, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-            ctor_param->address = true;
-            function->add(ctor_param);
-
-            function->context->global()->addReference(ctor_name);
-            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            copy_construct(function, variable->type(), variable, right_value);
         } else {
             eddic_unreachable("Unhandled value type");
         }
@@ -1402,27 +1409,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             if(var->type()->is_custom_type() || var->type()->is_template_type()){
                 if(declaration.Content->value){
-                    //Copy constructor
-                    std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(var->type())};
-                    auto ctor_name = mangle_ctor(ctor_types, var->type());
-
-                    eddic_assert(program->context->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
-
-                    auto ctor_function = program->context->getFunction(ctor_name);
-
-                    //The values to be passed to the copy constructor
-                    std::vector<ast::Value> values;
-                    values.push_back(*declaration.Content->value);
-                    
-                    //Pass the other structure (the pointer will automatically be handled
-                    pass_arguments(function, ctor_function, values);
-
-                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                    ctor_param->address = true;
-                    function->add(ctor_param);
-
-                    program->context->addReference(ctor_name);
-                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                    copy_construct(function, var->type(), var, *declaration.Content->value);
                 } else {
                     //If there is no value, it is a simple initialization
                     construct(function, var->type(), {}, var);
@@ -1482,29 +1469,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
             //If the function returns a struct by value, it does not really returns something
             if(return_type->is_custom_type() || return_type->is_template_type()){
-                //Copy constructor
-                std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(return_type)};
-                auto ctor_name = mangle_ctor(ctor_types, return_type);
-
-                eddic_assert(function->context->global()->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
-
-                auto ctor_function = function->context->global()->getFunction(ctor_name);
-
-                //The values to be passed to the copy constructor
-                std::vector<ast::Value> values;
-                values.push_back(return_.Content->value);
-
-                //Pass the other structure (the pointer will automatically be handled
-                pass_arguments(function, ctor_function, values);
-
-                auto ctor_param = std::make_shared<mtac::Param>(
-                        definition->context->getVariable("__ret"), 
-                        ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                ctor_param->address = true;
-                function->add(ctor_param);
-
-                function->context->global()->addReference(ctor_name);
-                function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                copy_construct(function, return_type, function->context->getVariable("__ret"), return_.Content->value);
             } else {
                 auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
 
