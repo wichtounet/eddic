@@ -683,7 +683,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             pass_arguments(function, definition, call.Content->values);
             
             //Pass the address of return
-            auto call_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable("__ret"), definition);
+            auto call_param = std::make_shared<mtac::Param>(var, definition->context->getVariable("__ret"), definition);
             call_param->address = true;
             function->add(call_param);
 

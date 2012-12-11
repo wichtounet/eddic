@@ -601,10 +601,20 @@ void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaratio
     visitor.context = context;
     visitor.currentFunction = context->getFunction(declaration.Content->mangledName);
     visitor.visit_function(declaration);
+
+    auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
+    if(return_type->is_custom_type() || return_type->is_template_type()){
+        declaration.Content->context->addParameter("__ret", new_pointer_type(return_type));
+    }
 }
 
-void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& function){
-    apply_function(function);
+void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& declaration){
+    apply_function(declaration);
+
+    auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
+    if(return_type->is_custom_type() || return_type->is_template_type()){
+        declaration.Content->context->addParameter("__ret", new_pointer_type(return_type));
+    }
 }
 
 void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){

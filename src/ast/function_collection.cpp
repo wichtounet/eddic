@@ -42,7 +42,7 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     declaration.Content->mangledName = signature->mangledName = mangle(signature);
 
     //Return by value needs a new parameter on stack
-    if(return_type->is_custom_type()){
+    if(return_type->is_custom_type() || return_type->is_template_type()){
         signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
     }
 
