@@ -121,6 +121,22 @@ void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type,
     function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
 }
 
+void destruct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
+    auto global_context = function->context->global();
+    auto dtor_name = mangle_dtor(type);
+
+    eddic_assert(global_context->exists(dtor_name), "The destructor must exists");
+
+    auto dtor_function = global_context->getFunction(dtor_name);
+
+    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+    dtor_param->address = true;
+    function->add(dtor_param);
+
+    global_context->addReference(dtor_name);
+    function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+}
+
 template<typename Source>
 Offset variant_cast(Source source){
     if(auto* ptr = boost::get<int>(&source)){
@@ -1280,18 +1296,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                     auto type = var->type();
 
                     if(type->is_custom_type() || type->is_template_type()){
-                        auto dtor_name = mangle_dtor(type);
-            
-                        eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
-
-                        auto dtor_function = program->context->getFunction(dtor_name);
-
-                        auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                        dtor_param->address = true;
-                        function->add(dtor_param);
-
-                        program->context->addReference(dtor_name);
-                        function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                        destruct(function, type, var);
                     }
                 }
             }
@@ -1486,18 +1491,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type()->data_type();
             if(type->is_custom_type() || type->is_template_type()){
-                auto dtor_name = mangle_dtor(type);
-               
-                eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
-
-                auto dtor_function = program->context->getFunction(dtor_name);
-
-                auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                dtor_param->address = true;
-                function->add(dtor_param);
-
-                program->context->addReference(dtor_name);
-                function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                destruct(function, type, delete_.Content->variable);
             }
 
             auto free_name = "_F4freePI";
