@@ -56,7 +56,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p 
                     out[offset] = 0;
                 }
             }
-        } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
+        } else if(variable->type()->is_custom_type() || variable->type()->is_template_type()){
             auto struct_size = variable->type()->size(platform);
 
             //All the values are set to zero

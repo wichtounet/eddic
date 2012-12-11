@@ -54,7 +54,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         return ss.str();
     }
     
-    if(type->is_template()){
+    if(type->is_template_type()){
         std::ostringstream ss;
 
         ss << "T";

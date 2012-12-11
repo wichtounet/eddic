@@ -47,7 +47,7 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
             }
         } else if(variable->type()->is_array()){
             type = "a";
-        } else if(variable->type()->is_template()){
+        } else if(variable->type()->is_template_type()){
             type = "t";
         } else {
             type = "u";

@@ -346,7 +346,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
                 auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
-                if(!type->is_custom_type() && !type->is_template()){
+                if(!type->is_custom_type() && !type->is_template_type()){
                     throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
                 }
 

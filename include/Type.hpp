@@ -101,7 +101,7 @@ class Type : public std::enable_shared_from_this<Type> {
          * Indicates if the type is a template type. 
          * \return true if the type is a template type, false otherwise.
          */
-        virtual bool is_template() const;
+        virtual bool is_template_type() const;
 
         /*!
          * Return the size of the type in memory in octets. 
@@ -279,7 +279,7 @@ struct TemplateType : public Type {
         std::string type() const override;
         std::vector<std::shared_ptr<const Type>> template_types() const override;
 
-        bool is_template() const override;
+        bool is_template_type() const override;
         
         unsigned int size(Platform platform) const override;
 };
