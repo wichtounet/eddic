@@ -481,6 +481,31 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                 auto left_value = left[0];
 
+                if(type->is_custom_type() || type->is_template_type()){
+                    auto var = function->context->generate_variable("ret_t_", type);
+
+                    //Initialize the temporary
+                    construct(function, type, {}, var);
+                    
+                    //Pass the address of return
+                    auto call_param = std::make_shared<mtac::Param>(var, definition->context->getVariable("__ret"), definition);
+                    call_param->address = true;
+                    function->add(call_param);
+
+                    //Pass the normal arguments of the function
+                    pass_arguments(function, definition, call_operation_value.get<2>());
+                    
+                    //Pass the address of the object to the member function
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
+                    mtac_param->address = true;
+                    function->add(mtac_param);   
+
+                    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
+
+                    left = {var};
+                    break;
+                }
+
                 std::shared_ptr<Variable> return_;
                 std::shared_ptr<Variable> return2_;
 
@@ -739,14 +764,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             //Initialize the temporary
             construct(function, type, {}, var);
-    
-            //Pass the normal arguments of the function
-            pass_arguments(function, definition, call.Content->values);
             
             //Pass the address of return
             auto call_param = std::make_shared<mtac::Param>(var, definition->context->getVariable("__ret"), definition);
             call_param->address = true;
             function->add(call_param);
+    
+            //Pass the normal arguments of the function
+            pass_arguments(function, definition, call.Content->values);
 
             function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
             
@@ -1622,6 +1647,14 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
     } else {
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
+
+        if(values.size() != parameters.size()){
+            i = values.size() - 1;
+        }
+
+        if(parameters[0].name == "this"){
+            i++;
+        }
 
         for(auto& first : boost::adaptors::reverse(values)){
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
