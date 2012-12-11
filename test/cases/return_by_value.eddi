@@ -1,6 +1,13 @@
 struct A {
     int a;
     int b;
+
+    A new_a(int aa, int bb){
+        A x;
+        x.a = aa;
+        x.b = bb;
+        return x;
+    }
 }
 
 void main(){
@@ -9,6 +16,13 @@ void main(){
     print(a.a);
     print("|");
     print(a.b);
+    print("|");
+
+    A c = a.new_a(11, 88);
+    
+    print(c.a);
+    print("|");
+    print(c.b);
     print("|");
 }
 
