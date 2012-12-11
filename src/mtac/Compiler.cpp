@@ -49,8 +49,9 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function);
 arguments move_to_arguments(ast::Value value, mtac::function_p function);
 
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
+
+arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
@@ -664,7 +665,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             std::vector<std::shared_ptr<const Type>> ctor_types;
             auto ctor_name = mangle_ctor(ctor_types, type);
 
-            eddic_assert(function->context->exists(ctor_name), "The constructor must exists");
+            eddic_assert(function->context->global()->exists(ctor_name), "The constructor must exists");
 
             auto ctor_function = function->context->global()->getFunction(ctor_name);
 
@@ -674,10 +675,19 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             function->context->global()->addReference(ctor_name);
             function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+    
+            auto definition = call.Content->function;
 
-            //Pass the normal args
-            //Pass it by pointer
-            //Call the function
+            eddic_assert(definition, "All the functions should be in the function table");
+
+            pass_arguments(function, definition, call.Content->values);
+            
+            //Pass the address of return
+            auto call_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable("__ret"), definition);
+            call_param->address = true;
+            function->add(call_param);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
             
             return {var};
         }
@@ -1658,8 +1668,7 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
 }
 
 void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    std::shared_ptr<eddic::Function> definition;
-    definition = functionCall.Content->function;
+    auto definition = functionCall.Content->function;
 
     eddic_assert(definition, "All the functions should be in the function table");
 
