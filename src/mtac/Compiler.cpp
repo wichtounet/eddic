@@ -1629,6 +1629,11 @@ void push_struct(mtac::function_p function, call_param param, std::shared_ptr<Fu
 }
 
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values){
+    //Fail quickly if no values to pass
+    if(values.empty()){
+        return;
+    }
+
     auto context = definition->context;
 
     //If it's a standard function, there are no context
