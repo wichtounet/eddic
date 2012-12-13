@@ -345,6 +345,10 @@ BOOST_AUTO_TEST_CASE( return_string ){
     assert_output("return_string.eddi", "abcdef");
 }
 
+BOOST_AUTO_TEST_CASE( return_by_value ){
+    assert_output("return_by_value.eddi", "99|66|11|88|");
+}
+
 BOOST_AUTO_TEST_CASE( return_int ){
     assert_output("return_int.eddi", "484|");
 }
