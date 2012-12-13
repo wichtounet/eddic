@@ -47,6 +47,8 @@ void FunctionContext::set_stack_position(int current){
 
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter);
+    
+    log::emit<Info>("Variables") << "New parameter " << variable << " at position " << currentParameter << log::endl;
 
     currentParameter += type->size(platform);
 
