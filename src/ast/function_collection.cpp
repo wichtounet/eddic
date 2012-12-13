@@ -30,13 +30,9 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
         throw SemanticalException("Cannot return array from function", declaration.Content->position);
     }
 
-    if(return_type->is_custom_type()){
-        throw SemanticalException("Cannot return struct from function", declaration.Content->position);
-    }
-
     for(auto& param : declaration.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = declaration.Content->struct_name;
@@ -44,6 +40,11 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     signature->context = declaration.Content->context;
 
     declaration.Content->mangledName = signature->mangledName = mangle(signature);
+
+    //Return by value needs a new parameter on stack
+    if(return_type->is_custom_type() || return_type->is_template_type()){
+        signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
+    }
 
     if(context->exists(signature->mangledName)){
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
@@ -63,7 +64,7 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
 
     for(auto& param : constructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = constructor.Content->struct_name;
@@ -84,7 +85,7 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
 
     for(auto& param : destructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.push_back(ParameterType(param.parameterName, paramType));
+        signature->parameters.emplace_back(param.parameterName, paramType);
     }
 
     signature->struct_ = destructor.Content->struct_name;

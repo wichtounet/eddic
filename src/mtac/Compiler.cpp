@@ -48,9 +48,9 @@ void assign(mtac::function_p function, std::shared_ptr<Variable> left_value, ast
 mtac::Argument moveToArgument(ast::Value value, mtac::function_p function);
 arguments move_to_arguments(ast::Value value, mtac::function_p function);
 
-void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
-arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values);
+
+arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
 mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
@@ -61,6 +61,80 @@ mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value i
     function->add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size(function->context->global()->target_platform())));
    
     return temp;
+}
+
+std::vector<std::shared_ptr<const Type>> to_types(std::vector<ast::Value>& values){
+    std::vector<std::shared_ptr<const Type>> types;
+
+    for(auto& value : values){
+        types.push_back(visit(ast::GetTypeVisitor(), value));
+    }
+
+    return types;
+}
+
+void construct(mtac::function_p function, std::shared_ptr<const Type> type, std::vector<ast::Value> values, mtac::Argument this_arg){
+    auto ctor_name = mangle_ctor(to_types(values), type);
+    auto global_context = function->context->global();
+
+    //Get the constructor
+    eddic_assert(global_context->exists(ctor_name), "The constructor must exists");
+    auto ctor_function = global_context->getFunction(ctor_name);
+
+    //Pass all normal arguments
+    pass_arguments(function, ctor_function, values);
+
+    //Pass "this" parameter
+    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+    ctor_param->address = true;
+    function->add(ctor_param);
+
+    //Call the constructor
+    global_context->addReference(ctor_name);
+    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+}
+
+void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg, ast::Value rhs_arg){
+    std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(type)};
+    auto ctor_name = mangle_ctor(ctor_types, type);
+
+    auto global_context = function->context->global();
+
+    eddic_assert(global_context->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
+
+    auto ctor_function = global_context->getFunction(ctor_name);
+
+    //The values to be passed to the copy constructor
+    std::vector<ast::Value> values;
+    values.push_back(rhs_arg);
+
+    //Pass the other structure (the pointer will automatically be handled
+    pass_arguments(function, ctor_function, values);
+
+    auto ctor_param = std::make_shared<mtac::Param>(
+            this_arg, 
+            ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
+    ctor_param->address = true;
+    function->add(ctor_param);
+
+    global_context->addReference(ctor_name);
+    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+}
+
+void destruct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
+    auto global_context = function->context->global();
+    auto dtor_name = mangle_dtor(type);
+
+    eddic_assert(global_context->exists(dtor_name), "The destructor must exists");
+
+    auto dtor_function = global_context->getFunction(dtor_name);
+
+    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
+    dtor_param->address = true;
+    function->add(dtor_param);
+
+    global_context->addReference(dtor_name);
+    function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
 }
 
 template<typename Source>
@@ -407,6 +481,31 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                 auto left_value = left[0];
 
+                if(type->is_custom_type() || type->is_template_type()){
+                    auto var = function->context->generate_variable("ret_t_", type);
+
+                    //Initialize the temporary
+                    construct(function, type, {}, var);
+                    
+                    //Pass the address of return
+                    auto call_param = std::make_shared<mtac::Param>(var, definition->context->getVariable("__ret"), definition);
+                    call_param->address = true;
+                    function->add(call_param);
+
+                    //Pass the normal arguments of the function
+                    pass_arguments(function, definition, call_operation_value.get<2>());
+                    
+                    //Pass the address of the object to the member function
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
+                    mtac_param->address = true;
+                    function->add(mtac_param);   
+
+                    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
+
+                    left = {var};
+                    break;
+                }
+
                 std::shared_ptr<Variable> return_;
                 std::shared_ptr<Variable> return2_;
 
@@ -419,9 +518,11 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     return2_ = function->context->new_temporary(INT);
 
                     left = {return_, return2_};
-                } else {
+                } else if(type == VOID){
                     //It is void, does not return anything
                     left = {};
+                } else {
+                    eddic_unreachable("Unhandled return type");
                 }
 
                 //Pass all normal arguments
@@ -558,22 +659,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         function->context->global()->addReference("_F5allocI");
         function->add(std::make_shared<mtac::Call>("_F5allocI", function->context->global()->getFunction("_F5allocI"), t1)); 
             
-        if(type->is_custom_type() || type->is_template()){
-            auto ctor_name = mangle_ctor(new_.Content->values, type);
-            
-            eddic_assert(function->context->global()->exists(ctor_name), "The constructor must exists");
-
-            auto ctor_function = function->context->global()->getFunction(ctor_name);
-
-            //Pass all normal arguments
-            pass_arguments(function, ctor_function, new_.Content->values);
-
-            auto ctor_param = std::make_shared<mtac::Param>(t1, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-            ctor_param->address = true;
-            function->add(ctor_param);
-
-            function->context->global()->addReference(ctor_name);
-            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+        //If structure type, call the constructor
+        if(type->is_custom_type() || type->is_template_type()){
+            construct(function, type, new_.Content->values, t1);
         }
 
         return {t1};
@@ -643,21 +731,51 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::FunctionCall& call) const {
-        auto type = call.Content->function->returnType;
+        auto definition = call.Content->function;
+        auto type = definition->returnType;
 
-        if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
+        eddic_assert(definition, "All the functions should be in the function table");
+
+        if(type == VOID){
+            pass_arguments(function, definition, call.Content->values);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
+
+            return {};
+        } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
             auto t1 = function->context->new_temporary(type);
 
-            execute_call(call, function, t1, {});
+            pass_arguments(function, definition, call.Content->values);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, t1, nullptr));
 
             return {t1};
         } else if(type == STRING){
             auto t1 = function->context->new_temporary(INT);
             auto t2 = function->context->new_temporary(INT);
 
-            execute_call(call, function, t1, t2);
+            pass_arguments(function, definition, call.Content->values);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, t1, t2));
 
             return {t1, t2};
+        } else if(type->is_custom_type() || type->is_template_type()){
+            auto var = function->context->generate_variable("ret_t_", type);
+
+            //Initialize the temporary
+            construct(function, type, {}, var);
+            
+            //Pass the address of return
+            auto call_param = std::make_shared<mtac::Param>(var, definition->context->getVariable("__ret"), definition);
+            call_param->address = true;
+            function->add(call_param);
+    
+            //Pass the normal arguments of the function
+            pass_arguments(function, definition, call.Content->values);
+
+            function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, nullptr, nullptr));
+            
+            return {var};
         }
         
         eddic_unreachable("Unhandled function return type");
@@ -714,7 +832,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
                 return {value.Content->var, temp};
-            } else if(type->is_custom_type() || type->is_template()) {
+            } else if(type->is_custom_type() || type->is_template_type()) {
                 //If we are here, it means that we want to pass it by reference
                 return {value.Content->var};
             } 
@@ -947,28 +1065,8 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
         } else if(type == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
-        } else if(type->is_custom_type() || type->is_template()){
-            //Copy constructor
-            std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(variable->type())};
-            auto ctor_name = mangle_ctor(ctor_types, variable->type());
-
-            eddic_assert(function->context->global()->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
-
-            auto ctor_function = function->context->global()->getFunction(ctor_name);
-
-            //The values to be passed to the copy constructor
-            std::vector<ast::Value> values;
-            values.push_back(right_value);
-
-            //Pass the other structure (the pointer will automatically be handled
-            pass_arguments(function, ctor_function, values);
-
-            auto ctor_param = std::make_shared<mtac::Param>(variable, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-            ctor_param->address = true;
-            function->add(ctor_param);
-
-            function->context->global()->addReference(ctor_name);
-            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+        } else if(type->is_custom_type() || type->is_template_type()){
+            copy_construct(function, variable->type(), variable, right_value);
         } else {
             eddic_unreachable("Unhandled value type");
         }
@@ -1222,19 +1320,8 @@ class CompilerVisitor : public boost::static_visitor<> {
                 if(var->position().isStack() || var->position().is_variable()){
                     auto type = var->type();
 
-                    if(type->is_custom_type() || type->is_template()){
-                        auto dtor_name = mangle_dtor(type);
-            
-                        eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
-
-                        auto dtor_function = program->context->getFunction(dtor_name);
-
-                        auto dtor_param = std::make_shared<mtac::Param>(var, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                        dtor_param->address = true;
-                        function->add(dtor_param);
-
-                        program->context->addReference(dtor_name);
-                        function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+                    if(type->is_custom_type() || type->is_template_type()){
+                        destruct(function, type, var);
                     }
                 }
             }
@@ -1339,66 +1426,23 @@ class CompilerVisitor : public boost::static_visitor<> {
                 function->add(end);
             }
         }
-        
+
         void operator()(ast::StructDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
-            auto ctor_name = mangle_ctor(declaration.Content->values, var->type());
 
-            eddic_assert(program->context->exists(ctor_name), "The constructor must exists");
-
-            auto ctor_function = program->context->getFunction(ctor_name);
-
-            //Pass all normal arguments
-            pass_arguments(function, ctor_function, declaration.Content->values);
-
-            auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-            ctor_param->address = true;
-            function->add(ctor_param);
-
-            program->context->addReference(ctor_name);
-            function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+            //Initialize the structure variable
+            construct(function, var->type(), declaration.Content->values, var);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
             auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
 
-            if(var->type()->is_custom_type() || var->type()->is_template()){
+            if(var->type()->is_custom_type() || var->type()->is_template_type()){
                 if(declaration.Content->value){
-                    //Copy constructor
-                    std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(var->type())};
-                    auto ctor_name = mangle_ctor(ctor_types, var->type());
-
-                    eddic_assert(program->context->exists(ctor_name), "The copy constructor must exists. Something went wrong in default generation");
-
-                    auto ctor_function = program->context->getFunction(ctor_name);
-
-                    //The values to be passed to the copy constructor
-                    std::vector<ast::Value> values;
-                    values.push_back(*declaration.Content->value);
-                    
-                    //Pass the other structure (the pointer will automatically be handled
-                    pass_arguments(function, ctor_function, values);
-
-                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                    ctor_param->address = true;
-                    function->add(ctor_param);
-
-                    program->context->addReference(ctor_name);
-                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                    copy_construct(function, var->type(), var, *declaration.Content->value);
                 } else {
-                    std::vector<std::shared_ptr<const Type>> ctor_types;
-                    auto ctor_name = mangle_ctor(ctor_types, var->type());
-
-                    eddic_assert(program->context->exists(ctor_name), "The constructor must exists");
-                    
-                    auto ctor_function = program->context->getFunction(ctor_name);
-
-                    auto ctor_param = std::make_shared<mtac::Param>(var, ctor_function->context->getVariable(ctor_function->parameters[0].name), ctor_function);
-                    ctor_param->address = true;
-                    function->add(ctor_param);
-
-                    program->context->addReference(ctor_name);
-                    function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+                    //If there is no value, it is a simple initialization
+                    construct(function, var->type(), {}, var);
                 }
             } else {
                 if(declaration.Content->value){
@@ -1449,37 +1493,30 @@ class CompilerVisitor : public boost::static_visitor<> {
             jump_if_true(function, startLabel, while_.Content->condition);
         }
 
-        void operator()(ast::FunctionCall& functionCall){
-            execute_call(functionCall, function, {}, {});
-        }
-
         void operator()(ast::Return& return_){
-            auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
+            auto definition = return_.Content->function;
+            auto return_type = definition->returnType;
 
-            if(arguments.size() == 1){
-                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
-            } else if(arguments.size() == 2){
-                function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
+            //If the function returns a struct by value, it does not really returns something
+            if(return_type->is_custom_type() || return_type->is_template_type()){
+                copy_construct(function, return_type, function->context->getVariable("__ret"), return_.Content->value);
             } else {
-                eddic_unreachable("Unhandled arguments size");
-            }   
+                auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
+
+                if(arguments.size() == 1){
+                    function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
+                } else if(arguments.size() == 2){
+                    function->add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
+                } else {
+                    eddic_unreachable("Unhandled arguments size");
+                }   
+            }
         }
 
         void operator()(ast::Delete& delete_){
             auto type = delete_.Content->variable->type()->data_type();
-            if(type->is_custom_type() || type->is_template()){
-                auto dtor_name = mangle_dtor(type);
-               
-                eddic_assert(program->context->exists(dtor_name), "The destructor must exists");
-
-                auto dtor_function = program->context->getFunction(dtor_name);
-
-                auto dtor_param = std::make_shared<mtac::Param>(delete_.Content->variable, dtor_function->context->getVariable(dtor_function->parameters[0].name), dtor_function);
-                dtor_param->address = true;
-                function->add(dtor_param);
-
-                program->context->addReference(dtor_name);
-                function->add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+            if(type->is_custom_type() || type->is_template_type()){
+                destruct(function, type, delete_.Content->variable);
             }
 
             auto free_name = "_F4freePI";
@@ -1504,6 +1541,10 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::PrefixOperation& operation){
             visit_non_variant(ToArgumentsVisitor<>(function), operation);
+        }
+        
+        void operator()(ast::FunctionCall& functionCall){
+            visit_non_variant(ToArgumentsVisitor<>(function), functionCall);
         }
 
         //All the other statements should have been transformed during the AST passes
@@ -1533,7 +1574,7 @@ void push_struct_member(ast::Expression& member_value, std::shared_ptr<const Typ
 
         member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
 
-        if(member_type->is_custom_type() || member_type->is_template()){
+        if(member_type->is_custom_type() || member_type->is_template_type()){
             push_struct_member(member_value, member_type, function, param, definition);
         } else {
             auto member_values = visit_non_variant(ToArgumentsVisitor<>(function), member_value);
@@ -1571,7 +1612,7 @@ void push_struct(mtac::function_p function, call_param param, std::shared_ptr<Fu
         member_value.Content->first = variable_value;
         member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
         
-        if(type->is_custom_type() || type->is_template()){
+        if(type->is_custom_type() || type->is_template_type()){
             push_struct_member(member_value, type, function, param, definition);
         } else {
             auto member_values = ToArgumentsVisitor<>(function)(member_value);
@@ -1588,6 +1629,11 @@ void push_struct(mtac::function_p function, call_param param, std::shared_ptr<Fu
 }
 
 void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> definition, std::vector<ast::Value>& values){
+    //Fail quickly if no values to pass
+    if(values.empty()){
+        return;
+    }
+
     auto context = definition->context;
 
     //If it's a standard function, there are no context
@@ -1607,12 +1653,20 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
         auto parameters = definition->parameters;
         int i = parameters.size()-1;
 
+        if(values.size() != parameters.size()){
+            i = values.size() - 1;
+        }
+
+        if(parameters[0].name == "this"){
+            i++;
+        }
+
         for(auto& first : boost::adaptors::reverse(values)){
             std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if((type->is_custom_type() || type->is_template()) && !param->type()->is_pointer()){
+                if((type->is_custom_type() || type->is_template_type()) && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
@@ -1633,17 +1687,6 @@ void pass_arguments(mtac::function_p function, std::shared_ptr<eddic::Function> 
             }
         }
     }
-}
-
-void execute_call(ast::FunctionCall& functionCall, mtac::function_p function, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_){
-    std::shared_ptr<eddic::Function> definition;
-    definition = functionCall.Content->function;
-
-    eddic_assert(definition, "All the functions should be in the function table");
-
-    pass_arguments(function, definition, functionCall.Content->values);
-
-    function->add(std::make_shared<mtac::Call>(definition->mangledName, definition, return_, return2_));
 }
 
 } //end of anonymous namespace

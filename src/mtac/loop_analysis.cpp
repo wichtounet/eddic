@@ -491,10 +491,10 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
         for(auto& succ : block->successors){
             //A node dominates itself
             if(block == succ){
-                back_edges.push_back(std::make_pair(block,succ));
+                back_edges.emplace_back(block, succ);
             } else {
                 if(block->dominator == succ){
-                    back_edges.push_back(std::make_pair(block,succ));
+                    back_edges.emplace_back(block, succ);
                 }
             }
         }

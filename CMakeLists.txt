@@ -185,6 +185,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/inc
     SpecificSuite/void_
     SpecificSuite/return_string
+    SpecificSuite/return_by_value
     SpecificSuite/return_int
     SpecificSuite/return_pointers
     SpecificSuite/pointer_arrays

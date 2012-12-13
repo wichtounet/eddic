@@ -59,7 +59,7 @@ bool Type::is_const() const {
     return false;
 }
 
-bool Type::is_template() const {
+bool Type::is_template_type() const {
     return false;
 }
 
@@ -112,8 +112,8 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
         return rhs->is_standard_type() && lhs->base() == rhs->base();
     }
 
-    if(lhs->is_template()){
-        if(rhs->is_template() && lhs->type() == rhs->type()){
+    if(lhs->is_template_type()){
+        if(rhs->is_template_type() && lhs->type() == rhs->type()){
             return lhs->template_types() == rhs->template_types();
         }
     }
@@ -223,7 +223,7 @@ std::vector<std::shared_ptr<const Type>> TemplateType::template_types() const {
     return sub_types;
 }
 
-bool TemplateType::is_template() const {
+bool TemplateType::is_template_type() const {
     return true;
 }
 
