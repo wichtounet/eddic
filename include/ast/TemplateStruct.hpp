@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/optional.hpp>
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
@@ -24,6 +25,7 @@ struct ASTTemplateStruct {
     Position position;
     std::vector<std::string> template_types;
     std::string name;
+    boost::optional<Type> parent_type;
     std::vector<StructBlock> blocks;
 
     mutable long references = 0;
@@ -41,6 +43,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (eddic::ast::Position, Content->position)
     (std::vector<std::string>, Content->template_types)
     (std::string, Content->name)
+    (boost::optional<eddic::ast::Type>, Content->parent_type)
     (std::vector<eddic::ast::StructBlock>, Content->blocks)
 )
 
