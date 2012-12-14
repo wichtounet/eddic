@@ -67,10 +67,10 @@ void GlobalContext::addFunction(std::shared_ptr<Function> function){
     m_functions[function->mangledName] = function;
 }
 
-std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function){
+std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function) const {
     eddic_assert(exists(function), "The function must exists");
 
-    return m_functions[function];
+    return m_functions.at(function);
 }
 
 bool GlobalContext::exists(const std::string& function) const {
@@ -117,7 +117,7 @@ std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> ty
     return get_struct(struct_name);
 }
 
-int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
+int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member) const {
     int offset = 0;
 
     for(auto& m : struct_->members){
@@ -131,7 +131,7 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
     eddic_unreachable("The member is not part of the struct");
 }
 
-std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset){
+std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset) const {
     int current_offset = 0;
     std::shared_ptr<Member> member = nullptr;
 
@@ -148,7 +148,7 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
     return member->type;
 }
 
-int GlobalContext::size_of_struct(const std::string& struct_name){
+int GlobalContext::size_of_struct(const std::string& struct_name) const {
     int struct_size = 0;
 
     auto struct_ = get_struct(struct_name);
@@ -160,7 +160,7 @@ int GlobalContext::size_of_struct(const std::string& struct_name){
     return struct_size;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsigned int left){
+bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsigned int left) const {
     if(left == 0){
         return true;
     }
@@ -180,7 +180,7 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
     return false;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_){
+bool GlobalContext::is_recursively_nested(const std::string& struct_) const {
     return is_recursively_nested(struct_, 100);
 }
 
@@ -279,11 +279,11 @@ void GlobalContext::defineStandardFunctions(){
     addFunction(durationFunction);
 }
 
-GlobalContext::FunctionMap GlobalContext::functions(){
+const GlobalContext::FunctionMap& GlobalContext::functions() const {
     return m_functions;
 }
 
-Platform GlobalContext::target_platform(){
+Platform GlobalContext::target_platform() const {
     return platform;
 }
         

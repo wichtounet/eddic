@@ -27,6 +27,7 @@ namespace eddic {
 struct GlobalContext final : public Context {
     public: 
         typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
+        typedef std::unordered_map<std::string, std::shared_ptr<const Function>> ConstFunctionMap;
         typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
     
     public:
@@ -52,7 +53,7 @@ struct GlobalContext final : public Context {
          * \param function The function to search for. 
          * \return A pointer to the function with the given name. 
          */
-        std::shared_ptr<Function> getFunction(const std::string& function);
+        std::shared_ptr<Function> getFunction(const std::string& function) const;
         
         /*!
          * Indicates if a function with the given name exists. 
@@ -95,13 +96,13 @@ struct GlobalContext final : public Context {
          */
         bool struct_exists(std::shared_ptr<const Type> type) const ;
         
-        std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset);
-        int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
-        int size_of_struct(const std::string& struct_);
+        std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset) const;
+        int member_offset(std::shared_ptr<Struct> struct_, const std::string& member) const;
+        int size_of_struct(const std::string& struct_) const;
         
-        bool is_recursively_nested(const std::string& struct_);
+        bool is_recursively_nested(const std::string& struct_) const;
 
-        FunctionMap functions();
+        const FunctionMap& functions() const;
 
         /*!
          * Add a reference to the function with the given name. 
@@ -125,7 +126,7 @@ struct GlobalContext final : public Context {
         void add_reference(std::shared_ptr<Variable> variable) override;
         unsigned int reference_count(std::shared_ptr<Variable> variable) override;
 
-        Platform target_platform();
+        Platform target_platform() const;
     
     private:
         FunctionMap m_functions;
@@ -137,7 +138,7 @@ struct GlobalContext final : public Context {
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
         
-        bool is_recursively_nested(const std::string& struct_, unsigned int left);
+        bool is_recursively_nested(const std::string& struct_, unsigned int left) const;
 };
 
 } //end of eddic
