@@ -72,7 +72,14 @@ struct GlobalContext final : public Context {
          * \param struct_ The structure to search for. 
          * \return A pointer to the structure with the given name. 
          */
-        std::shared_ptr<Struct> get_struct(const std::string& struct_);
+        std::shared_ptr<Struct> get_struct(const std::string& struct_) const;
+        
+        /*!
+         * Returns the structure of the given type. 
+         * \param type The structure type to search for. 
+         * \return A pointer to the structure of the given type. 
+         */
+        std::shared_ptr<Struct> get_struct(std::shared_ptr<const Type> type) const;
         
         /*!
          * Indicates if a structure with the given name exists. 

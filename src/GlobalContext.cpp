@@ -81,8 +81,25 @@ void GlobalContext::add_struct(std::shared_ptr<Struct> struct_){
     m_structs[struct_->name] = struct_;
 }
 
-std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_){
-    return m_structs[struct_];
+std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_name) const {
+    auto it = m_structs.find(struct_name);
+    
+    if(it == m_structs.end()){
+        return nullptr;
+    } else {
+        return it->second;
+    }
+}
+        
+std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> type) const {
+    if(type->is_pointer()){
+        type = type->data_type();
+    }
+
+    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    
+    auto struct_name = type->mangle();
+    return get_struct(struct_name);
 }
 
 int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
