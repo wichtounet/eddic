@@ -1,0 +1,33 @@
+struct A {
+    float a;
+
+    void test_a(){
+        print(a);
+    }
+}
+
+struct B extends A {
+    char a;
+
+    void test_b(){
+        print(a);
+
+        //test_a();
+    }
+}
+
+struct C extends B {
+    int a;
+
+    void test(){
+        print(a);
+
+        //test_b();
+    }
+}
+
+
+void main(){
+    C c;
+    c.test();
+}
