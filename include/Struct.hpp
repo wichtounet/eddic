@@ -48,7 +48,8 @@ struct Member {
 struct Struct {
     std::string name;
     std::vector<std::shared_ptr<Member>> members;
-    
+    std::shared_ptr<Struct> parent_type;
+   
     Struct(const std::string& n);
 
     /*!
