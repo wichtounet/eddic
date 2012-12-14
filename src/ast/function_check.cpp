@@ -442,8 +442,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 template_engine->check_member_function(type, op, value.Content->position);
 
                 if(op.get<0>() == ast::Operator::DOT){
-                    auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
-                    auto struct_type = value.Content->context->global()->get_struct(struct_name);
+                    auto struct_type = value.Content->context->global()->get_struct(type);
 
                     //We delay it
                     if(!struct_type){
@@ -456,7 +455,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto member = boost::get<std::string>(*op.get<1>());
 
                     if(!struct_type->member_exists(member)){ 
-                        throw SemanticalException("The struct " + struct_name + " has no member named " + member, value.Content->position);
+                        throw SemanticalException("The struct " + struct_type->name + " has no member named " + member, value.Content->position);
                     }
 
                     //Add a reference to the member

@@ -73,12 +73,27 @@ std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function
     return m_functions[function];
 }
 
-bool GlobalContext::exists(const std::string& function){
+bool GlobalContext::exists(const std::string& function) const {
     return m_functions.find(function) != m_functions.end();
 }
 
 void GlobalContext::add_struct(std::shared_ptr<Struct> struct_){
     m_structs[struct_->name] = struct_;
+}
+
+bool GlobalContext::struct_exists(const std::string& struct_) const {
+    return m_structs.find(struct_) != m_structs.end();
+}
+
+bool GlobalContext::struct_exists(std::shared_ptr<const Type> type) const {
+    if(type->is_pointer()){
+        type = type->data_type();
+    }
+
+    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    
+    auto struct_name = type->mangle();
+    return struct_exists(struct_name);
 }
 
 std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_name) const {
@@ -167,10 +182,6 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
 
 bool GlobalContext::is_recursively_nested(const std::string& struct_){
     return is_recursively_nested(struct_, 100);
-}
-
-bool GlobalContext::struct_exists(const std::string& struct_){
-    return m_structs.find(struct_) != m_structs.end();
 }
 
 void GlobalContext::addReference(const std::string& function){

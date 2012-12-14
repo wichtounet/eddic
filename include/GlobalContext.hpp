@@ -59,7 +59,7 @@ struct GlobalContext final : public Context {
          * \param function The function to search for. 
          * \return true if a function with the given name exists, otherwise false. 
          */
-        bool exists(const std::string& function);
+        bool exists(const std::string& function) const;
 
         /*!
          * Add the given structure to the symbol table. 
@@ -86,7 +86,14 @@ struct GlobalContext final : public Context {
          * \param struct_ The structure to search for. 
          * \return true if a structure with the given name exists, otherwise false. 
          */
-        bool struct_exists(const std::string& struct_);
+        bool struct_exists(const std::string& struct_) const ;
+        
+        /*!
+         * Indicates if a structure for the given type exists. 
+         * \param struct_ The structure type to search for. 
+         * \return true if a structure for the given type exists, otherwise false. 
+         */
+        bool struct_exists(std::shared_ptr<const Type> type) const ;
         
         std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset);
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
