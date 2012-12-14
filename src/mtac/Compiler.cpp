@@ -204,8 +204,7 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
                 } else if(data_type->is_custom_type()){
                     auto base_var = function->context->new_reference(member_type, var, offset);
 
-                    auto struct_name = data_type->mangle();
-                    auto struct_type = function->context->global()->get_struct(struct_name);
+                    auto struct_type = function->context->global()->get_struct(data_type);
 
                     for(auto& member : struct_type->members){
                         std::shared_ptr<const Type> member_type;
@@ -1566,8 +1565,7 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function){
 typedef boost::variant<std::shared_ptr<Variable>, std::string> call_param;
 
 void push_struct_member(ast::Expression& member_value, std::shared_ptr<const Type> type, mtac::function_p function, call_param param, std::shared_ptr<Function> definition){
-    auto struct_name = type->mangle();
-    auto struct_type = function->context->global()->get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(type);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto member_type = member->type;
@@ -1596,8 +1594,7 @@ void push_struct(mtac::function_p function, call_param param, std::shared_ptr<Fu
     auto var = value.Content->var;
     auto context = value.Content->context;
 
-    auto struct_name = var->type()->mangle();
-    auto struct_type = function->context->global()->get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(var->type());
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;
