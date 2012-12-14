@@ -20,6 +20,7 @@
 #include "ast/ContextAnnotator.hpp"
 #include "ast/structure_check.hpp"
 #include "ast/structure_collection.hpp"
+#include "ast/structure_inheritance.hpp"
 #include "ast/structure_member_collection.hpp"
 #include "ast/DefaultValues.hpp"
 #include "ast/member_function_collection.hpp"
@@ -97,6 +98,9 @@ void ast::PassManager::init_passes(){
     
     //Structures collection pass
     passes.push_back(make_pass<ast::StructureCollectionPass>("structures collection", template_engine, platform, configuration, pool));
+    
+    //Structures inheritance pass
+    passes.push_back(make_pass<ast::StructureInheritancePass>("structures inheritance", template_engine, platform, configuration, pool));
 
     //Template Collection pass
     passes.push_back(make_pass<ast::TemplateCollectionPass>("templates collection", template_engine, platform, configuration, pool));
