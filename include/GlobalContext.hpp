@@ -123,17 +123,12 @@ struct GlobalContext final : public Context {
          */
         int referenceCount(const std::string& function);
 
-        void add_reference(std::shared_ptr<Variable> variable) override;
-        unsigned int reference_count(std::shared_ptr<Variable> variable) override;
-
         Platform target_platform() const;
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
         Platform platform;
-
-        std::shared_ptr<std::map<std::shared_ptr<Variable>, unsigned int>> references;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();

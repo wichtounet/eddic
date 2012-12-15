@@ -33,6 +33,8 @@ typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
  */
 class Variable {
     private:
+        std::size_t m_references = 0;
+
         const std::string m_name;
         std::shared_ptr<const Type> m_type;
 
@@ -48,6 +50,9 @@ class Variable {
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
         Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
+
+        std::size_t references() const;
+        void add_reference();
 
         std::string name() const ;
         std::shared_ptr<const Type> type() const ;

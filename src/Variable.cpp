@@ -63,6 +63,14 @@ std::ostream& eddic::operator<<(std::ostream& stream, Variable& variable){
     return stream << variable.name();
 }
 
+std::size_t eddic::Variable::references() const {
+    return m_references;
+}
+
+void eddic::Variable::add_reference(){
+    ++m_references;
+}
+
 std::ostream& eddic::operator<<(std::ostream& stream, std::shared_ptr<Variable>& variable){
     if(variable){
         return stream << *variable;

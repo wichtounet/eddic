@@ -69,9 +69,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
 
                 //Add references to variables
-                foreach.Content->context->add_reference(foreach.Content->var);
-                foreach.Content->context->add_reference(foreach.Content->iterVar);
-                foreach.Content->context->add_reference(foreach.Content->arrayVar);
+                foreach.Content->var->add_reference();
+                foreach.Content->iterVar->add_reference();
+                foreach.Content->arrayVar->add_reference();
             }
 
             check_each(foreach.Content->instructions);
@@ -195,7 +195,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                 //Reference the variable
                 variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-                variable.Content->context->add_reference(variable.Content->var);
+                variable.Content->var->add_reference();
             } else {
                 visit(*this, value);
             }
@@ -335,7 +335,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
 
             delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
-            delete_.Content->context->add_reference(delete_.Content->variable);
+            delete_.Content->variable->add_reference();
         }
     
         void operator()(ast::StructDeclaration& declaration){
@@ -503,8 +503,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
             //Reference both variables
-            swap.Content->context->add_reference(swap.Content->lhs_var);
-            swap.Content->context->add_reference(swap.Content->rhs_var);
+            swap.Content->lhs_var->add_reference();
+            swap.Content->rhs_var->add_reference();
         }
 
         bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
