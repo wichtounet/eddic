@@ -478,6 +478,11 @@ BOOST_AUTO_TEST_CASE( wrong_print ){
     assert_compilation_error("wrong_print.eddi", "--64", "--O2", "wrong_print.out");
 }
 
+BOOST_AUTO_TEST_CASE( invalid_inheritance ){
+    assert_compilation_error("invalid_inheritance.eddi", "--32", "--O2", "invalid_inheritance.out");
+    assert_compilation_error("invalid_inheritance.eddi", "--64", "--O2", "invalid_inheritance.out");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 /* Standard library test suite  */
