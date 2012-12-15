@@ -8,13 +8,13 @@
 #ifndef AST_STRUCTURE_INHERITANCE_PASS_H
 #define AST_STRUCTURE_INHERITANCE_PASS_H
 
-#include "ast/ContextAwarePass.hpp"
+#include "ast/Pass.hpp"
 
 namespace eddic {
 
 namespace ast {
 
-struct StructureInheritancePass : ContextAwarePass {
+struct StructureInheritancePass : Pass {
     void apply_program(ast::SourceFile& program, bool indicator);
 };
 
