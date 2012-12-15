@@ -32,8 +32,6 @@ struct GlobalContext final : public Context {
     
     public:
         GlobalContext(Platform platform);
-
-        void release_references();
         
         Variables getVariables();
         
