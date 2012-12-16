@@ -112,7 +112,7 @@ std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> ty
     return get_struct(struct_name);
 }
 
-int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member) const {
+int GlobalContext::member_offset(std::shared_ptr<const Struct> struct_, const std::string& member) const {
     int offset = 0;
 
     for(auto& m : struct_->members){
@@ -126,7 +126,7 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
     eddic_unreachable("The member is not part of the struct");
 }
 
-std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset) const {
+std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<const Struct> struct_, int offset) const {
     int current_offset = 0;
     std::shared_ptr<Member> member = nullptr;
 
@@ -143,10 +143,8 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
     return member->type;
 }
 
-int GlobalContext::self_size_of_struct(const std::string& struct_name) const {
+int GlobalContext::self_size_of_struct(std::shared_ptr<const Struct> struct_) const {
     int struct_size = 0;
-
-    auto struct_ = get_struct(struct_name);
 
     for(auto& m : struct_->members){
         struct_size += m->type->size(platform);
@@ -155,18 +153,16 @@ int GlobalContext::self_size_of_struct(const std::string& struct_name) const {
     return struct_size;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsigned int left) const {
+bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_, unsigned int left) const {
     if(left == 0){
         return true;
     }
 
-    auto struct_ = get_struct(struct_name);
-
     for(auto& m : struct_->members){
         auto type = m->type;
 
-        if(type->is_custom_type()){
-            if(is_recursively_nested(type->mangle(), left - 1)){
+        if(type->is_structure()){
+            if(is_recursively_nested(get_struct(type), left - 1)){
                 return true;
             }
         }
@@ -175,7 +171,7 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
     return false;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_) const {
+bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_) const {
     return is_recursively_nested(struct_, 100);
 }
 

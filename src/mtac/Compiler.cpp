@@ -1035,7 +1035,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                     bool is_parent = false;
                     auto parent = src_struct_type->parent_type;
-                    int offset = global_context->self_size_of_struct(src_struct_type->name);
+                    int offset = global_context->self_size_of_struct(src_struct_type);
 
                     while(parent){
                         if(parent == dest_type->data_type()){
@@ -1046,7 +1046,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                         auto struct_type = global_context->get_struct(parent);
                         parent = struct_type->parent_type;
                         
-                        offset += global_context->self_size_of_struct(struct_type->name);
+                        offset += global_context->self_size_of_struct(struct_type);
                     }
 
                     if(is_parent){

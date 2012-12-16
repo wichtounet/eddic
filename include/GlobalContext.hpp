@@ -94,11 +94,11 @@ struct GlobalContext final : public Context {
          */
         bool struct_exists(std::shared_ptr<const Type> type) const ;
         
-        std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset) const;
-        int member_offset(std::shared_ptr<Struct> struct_, const std::string& member) const;
-        int self_size_of_struct(const std::string& struct_) const;
-        
-        bool is_recursively_nested(const std::string& struct_) const;
+        std::shared_ptr<const Type> member_type(std::shared_ptr<const Struct> struct_, int offset) const;
+        int member_offset(std::shared_ptr<const Struct> struct_, const std::string& member) const;
+
+        int self_size_of_struct(std::shared_ptr<const Struct> struct_) const;
+        bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
 
         const FunctionMap& functions() const;
 
@@ -131,7 +131,7 @@ struct GlobalContext final : public Context {
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
         
-        bool is_recursively_nested(const std::string& struct_, unsigned int left) const;
+        bool is_recursively_nested(std::shared_ptr<const Struct> struct_, unsigned int left) const;
 };
 
 } //end of eddic
