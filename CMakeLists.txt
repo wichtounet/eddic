@@ -196,6 +196,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/concat
     SpecificSuite/println
     SpecificSuite/prints
+    SpecificSuite/single_inheritance
     SpecificSuite/structures
     SpecificSuite/struct_member_pointers
     SpecificSuite/struct_array

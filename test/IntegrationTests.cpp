@@ -365,6 +365,11 @@ BOOST_AUTO_TEST_CASE( recursive_functions ){
     assert_output("recursive.eddi", "362880");
 }
 
+BOOST_AUTO_TEST_CASE( single_inheritance ){
+    assert_output_32("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.2999|55|B|55|66|57.3999|55|58.4999|55|55|66|77|");
+    assert_output_64("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.3000|55|B|55|66|57.4000|55|58.5000|55|55|66|77|");
+}
+
 BOOST_AUTO_TEST_CASE( math ){
     assert_output("math.eddi", "333|111|-111|0|24642|2|-2|-1|1|2|0|-111|232|40|");
 }
