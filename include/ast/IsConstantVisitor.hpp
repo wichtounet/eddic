@@ -71,7 +71,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
                             return false;
                         }
                     } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                        for(auto& v : ptr->get<2>()){
+                        for(auto& v : ptr->values){
                             if(!visit(*this, v)){
                                 return false;
                             }

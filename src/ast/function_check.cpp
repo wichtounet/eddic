@@ -149,10 +149,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                                 cast_value.Content->value = this_variable(functionCall.Content->context, functionCall.Content->position);
 
                                 ast::CallOperationValue function_call_operation;
-                                function_call_operation.get<0>() = functionCall.Content->function_name; 
-                                function_call_operation.get<1>() = functionCall.Content->template_types; 
-                                function_call_operation.get<2>() = functionCall.Content->values;
-                                function_call_operation.get<4>() = context->getFunction(mangled);
+                                function_call_operation.function_name = functionCall.Content->function_name; 
+                                function_call_operation.template_types = functionCall.Content->template_types; 
+                                function_call_operation.values = functionCall.Content->values;
+                                function_call_operation.function = context->getFunction(mangled);
 
                                 ast::Expression member_function_call;
                                 member_function_call.Content->context = functionCall.Content->context;
@@ -442,7 +442,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
                         check_value(*ptr);
                     } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                        check_each(ptr->get<2>());
+                        check_each(ptr->values);
                     }
                 }
 
@@ -473,9 +473,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                     auto& call_value = boost::get<ast::CallOperationValue>(*op.get<1>());
-                    std::string name = call_value.get<0>();
+                    std::string name = call_value.function_name;
 
-                    auto types = get_types(call_value.get<2>());
+                    auto types = get_types(call_value.values);
 
                     bool found = false;
                     std::string mangled;
@@ -486,8 +486,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         if(context->exists(mangled)){
                             context->addReference(mangled);
 
-                            call_value.get<3>() = mangled;
-                            call_value.get<4>() = context->getFunction(mangled);
+                            call_value.mangled_name = mangled;
+                            call_value.function = context->getFunction(mangled);
                             found = true;
                             break;
                         }

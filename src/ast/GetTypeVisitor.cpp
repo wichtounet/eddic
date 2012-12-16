@@ -92,11 +92,11 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
 
         auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
 
-        if(operation_value.get<4>()){
-            return (*operation_value.get<4>())->returnType;
+        if(operation_value.function){
+            return operation_value.function->returnType;
         }
 
-        auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
+        auto function_name = mangle(operation_value.function_name, operation_value.values, type);
 
         return global_context->getFunction(function_name)->returnType;
     } else if(op == ast::Operator::BRACKET){

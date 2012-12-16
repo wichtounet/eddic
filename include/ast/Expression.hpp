@@ -27,14 +27,14 @@ class Function;
 
 namespace ast {
 
-//TODO Transform that in a struct
-typedef boost::tuple<
-            std::string, 
-            boost::optional<std::vector<ast::Type>>, 
-            std::vector<Value>, 
-            boost::optional<std::string>,       //The function mangled name
-            boost::optional<std::shared_ptr<eddic::Function>>
-        > CallOperationValue;
+struct CallOperationValue {
+    std::string function_name;
+    std::vector<ast::Type> template_types;
+    std::vector<ast::Value> values;
+    std::string mangled_name;
+    std::shared_ptr<eddic::Function> function;
+    std::shared_ptr<const Type> left_type;
+};
 
 typedef boost::variant<
         Value, 
@@ -72,12 +72,20 @@ typedef Deferred<ASTExpression> Expression;
 
 } //end of eddic
 
-//Adapt the struct for the AST
+//Adapt the structures for the AST
+
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Expression, 
     (eddic::ast::Position, Content->position)
     (eddic::ast::Value, Content->first)
     (eddic::ast::Operations, Content->operations)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::CallOperationValue, 
+    (std::string, function_name)
+    (std::vector<eddic::ast::Type>, template_types)
+    (std::vector<eddic::ast::Value>, values)
 )
 
 #endif

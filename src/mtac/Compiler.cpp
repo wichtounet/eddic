@@ -472,7 +472,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
         case ast::Operator::CALL:
             {
                 auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
-                auto definition = *call_operation_value.get<4>();
+                auto definition = call_operation_value.function;
 
                 eddic_assert(definition, "All the member functions should be in the function table");
 
@@ -492,7 +492,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     function->add(call_param);
 
                     //Pass the normal arguments of the function
-                    pass_arguments(function, definition, call_operation_value.get<2>());
+                    pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
                     auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
@@ -525,7 +525,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 }
 
                 //Pass all normal arguments
-                pass_arguments(function, definition, call_operation_value.get<2>());
+                pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
                 auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
