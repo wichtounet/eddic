@@ -4,8 +4,8 @@ project("EDDI Compiler")
 
 #Set the version number
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 1)
-set(VERSION_PATCH 4)
+set(VERSION_MINOR 2)
+set(VERSION_PATCH 0)
 
 #Boost is necessary
 FIND_PACKAGE(Boost REQUIRED) 
