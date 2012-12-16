@@ -209,7 +209,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Cast& cast){
-            auto dst_type = visit(ast::TypeTransformer(context), cast.Content->type);
+            auto dst_type = visit_non_variant(ast::GetTypeVisitor(), cast);
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
             //Cast with no effects are always valid

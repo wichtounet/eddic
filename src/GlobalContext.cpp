@@ -19,19 +19,14 @@ using namespace eddic;
 GlobalContext::GlobalContext(Platform platform) : Context(NULL), platform(platform) {
     Val zero = 0;
 
-    references = std::make_shared<std::map<std::shared_ptr<Variable>, unsigned int>>();
-    
     variables["_mem_start"] = std::make_shared<Variable>("_mem_start", INT, Position(PositionType::GLOBAL, "_mem_start"), zero);
     variables["_mem_last"] = std::make_shared<Variable>("_mem_last", INT, Position(PositionType::GLOBAL, "_mem_last"), zero);
-
-    add_reference(variables["_mem_start"]); //In order to not display a warning
-    add_reference(variables["_mem_last"]);  //In order to not display a warning
     
-    defineStandardFunctions();
-}
+    //In order to not display a warning
+    variables["_mem_start"]->add_reference();
+    variables["_mem_last"]->add_reference();      
 
-void GlobalContext::release_references(){
-    references = nullptr;
+    defineStandardFunctions();
 }
 
 std::unordered_map<std::string, std::shared_ptr<Variable>> GlobalContext::getVariables(){
@@ -67,13 +62,13 @@ void GlobalContext::addFunction(std::shared_ptr<Function> function){
     m_functions[function->mangledName] = function;
 }
 
-std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function){
+std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function) const {
     eddic_assert(exists(function), "The function must exists");
 
-    return m_functions[function];
+    return m_functions.at(function);
 }
 
-bool GlobalContext::exists(const std::string& function){
+bool GlobalContext::exists(const std::string& function) const {
     return m_functions.find(function) != m_functions.end();
 }
 
@@ -81,11 +76,47 @@ void GlobalContext::add_struct(std::shared_ptr<Struct> struct_){
     m_structs[struct_->name] = struct_;
 }
 
-std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_){
-    return m_structs[struct_];
+bool GlobalContext::struct_exists(const std::string& struct_) const {
+    return m_structs.find(struct_) != m_structs.end();
 }
 
-int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::string& member){
+bool GlobalContext::struct_exists(std::shared_ptr<const Type> type) const {
+    if(type->is_pointer()){
+        type = type->data_type();
+    }
+
+    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    
+    auto struct_name = type->mangle();
+    return struct_exists(struct_name);
+}
+
+std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_name) const {
+    auto it = m_structs.find(struct_name);
+    
+    if(it == m_structs.end()){
+        return nullptr;
+    } else {
+        return it->second;
+    }
+}
+        
+std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> type) const {
+    if(!type){
+        return nullptr;
+    }
+
+    if(type->is_pointer()){
+        type = type->data_type();
+    }
+
+    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    
+    auto struct_name = type->mangle();
+    return get_struct(struct_name);
+}
+
+int GlobalContext::member_offset(std::shared_ptr<const Struct> struct_, const std::string& member) const {
     int offset = 0;
 
     for(auto& m : struct_->members){
@@ -99,7 +130,7 @@ int GlobalContext::member_offset(std::shared_ptr<Struct> struct_, const std::str
     eddic_unreachable("The member is not part of the struct");
 }
 
-std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> struct_, int offset){
+std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<const Struct> struct_, int offset) const {
     int current_offset = 0;
     std::shared_ptr<Member> member = nullptr;
 
@@ -116,10 +147,8 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
     return member->type;
 }
 
-int GlobalContext::size_of_struct(const std::string& struct_name){
+int GlobalContext::self_size_of_struct(std::shared_ptr<const Struct> struct_) const {
     int struct_size = 0;
-
-    auto struct_ = get_struct(struct_name);
 
     for(auto& m : struct_->members){
         struct_size += m->type->size(platform);
@@ -128,18 +157,27 @@ int GlobalContext::size_of_struct(const std::string& struct_name){
     return struct_size;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsigned int left){
+int GlobalContext::total_size_of_struct(std::shared_ptr<const Struct> struct_) const {
+   int total = self_size_of_struct(struct_);
+
+   while(struct_->parent_type){
+       struct_ = get_struct(struct_->parent_type);
+       total += self_size_of_struct(struct_);
+   }
+
+   return total;
+}
+
+bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_, unsigned int left) const {
     if(left == 0){
         return true;
     }
 
-    auto struct_ = get_struct(struct_name);
-
     for(auto& m : struct_->members){
         auto type = m->type;
 
-        if(type->is_custom_type()){
-            if(is_recursively_nested(type->mangle(), left - 1)){
+        if(type->is_structure()){
+            if(is_recursively_nested(get_struct(type), left - 1)){
                 return true;
             }
         }
@@ -148,12 +186,8 @@ bool GlobalContext::is_recursively_nested(const std::string& struct_name, unsign
     return false;
 }
 
-bool GlobalContext::is_recursively_nested(const std::string& struct_){
+bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_) const {
     return is_recursively_nested(struct_, 100);
-}
-
-bool GlobalContext::struct_exists(const std::string& struct_){
-    return m_structs.find(struct_) != m_structs.end();
 }
 
 void GlobalContext::addReference(const std::string& function){
@@ -251,18 +285,10 @@ void GlobalContext::defineStandardFunctions(){
     addFunction(durationFunction);
 }
 
-GlobalContext::FunctionMap GlobalContext::functions(){
+const GlobalContext::FunctionMap& GlobalContext::functions() const {
     return m_functions;
 }
 
-Platform GlobalContext::target_platform(){
+Platform GlobalContext::target_platform() const {
     return platform;
-}
-        
-void GlobalContext::add_reference(std::shared_ptr<Variable> variable){
-    ++((*references)[variable]);
-}
-
-unsigned int GlobalContext::reference_count(std::shared_ptr<Variable> variable){
-    return (*references)[variable];
 }

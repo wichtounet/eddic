@@ -293,6 +293,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  qi::omit[lexer.greater]
         >>  lexer.struct_
         >>  lexer.identifier
+        >>  -(
+                    lexer.extends
+                >>  type 
+             )
         >>  lexer.left_brace
         >>  *(
 
@@ -309,6 +313,10 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             qi::position(position_begin)
         >>  lexer.struct_
         >>  lexer.identifier
+        >>  -(
+                    lexer.extends
+                >>  type 
+             )
         >>  lexer.left_brace
         >>  *(
 

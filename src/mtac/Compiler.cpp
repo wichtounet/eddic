@@ -204,13 +204,12 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
                 } else if(data_type->is_custom_type()){
                     auto base_var = function->context->new_reference(member_type, var, offset);
 
-                    auto struct_name = data_type->mangle();
-                    auto struct_type = function->context->global()->get_struct(struct_name);
+                    auto struct_type = function->context->global()->get_struct(data_type);
 
                     for(auto& member : struct_type->members){
                         std::shared_ptr<const Type> member_type;
                         unsigned int offset = 0;
-                        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), base_var, {member->name});
+                        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), base_var->type(), member->name);
 
                         auto new_args = get_member(function, offset, member_type, base_var);
                         std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
@@ -455,7 +454,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                 std::shared_ptr<const Type> member_type;
                 unsigned int offset = 0;
-                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, {member});
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable->type(), member);
 
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
@@ -472,14 +471,48 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
         case ast::Operator::CALL:
             {
-                auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
-                auto definition = *call_operation_value.get<4>();
+                auto& call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
+                auto definition = call_operation_value.function;
 
                 eddic_assert(definition, "All the member functions should be in the function table");
 
-                auto type = definition->returnType;
-
                 auto left_value = left[0];
+
+                if(call_operation_value.left_type){
+                    auto global_context = function->context->global();
+                    auto dest_type = call_operation_value.left_type;
+                    dest_type = dest_type->is_pointer() ? dest_type->data_type() : dest_type;
+
+                    auto src_struct_type = global_context->get_struct(type);
+                    auto dest_struct_type = global_context->get_struct(dest_type);
+
+                    auto parent = src_struct_type->parent_type;
+                    int offset = global_context->self_size_of_struct(src_struct_type);
+
+                    while(parent){
+                        if(parent == dest_type){
+                            break;
+                        }
+                        
+                        auto struct_type = global_context->get_struct(parent);
+                        parent = struct_type->parent_type;
+                        
+                        offset += global_context->self_size_of_struct(struct_type);
+                    }
+                    
+                    auto t1 = function->context->new_temporary(type->is_pointer() ? type : new_pointer_type(type));
+
+                    if(type->is_pointer()){
+                        function->add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::ADD, offset));
+                    } else {
+                        function->add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::PASSIGN));
+                        function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, offset));
+                    }
+
+                    left_value = t1;
+                }
+
+                auto type = definition->returnType;
 
                 if(type->is_custom_type() || type->is_template_type()){
                     auto var = function->context->generate_variable("ret_t_", type);
@@ -493,7 +526,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     function->add(call_param);
 
                     //Pass the normal arguments of the function
-                    pass_arguments(function, definition, call_operation_value.get<2>());
+                    pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
                     auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
@@ -526,7 +559,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 }
 
                 //Pass all normal arguments
-                pass_arguments(function, definition, call_operation_value.get<2>());
+                pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
                 auto mtac_param = std::make_shared<mtac::Param>(left_value, definition->context->getVariable(definition->parameters[0].name), definition);
@@ -1011,22 +1044,54 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::Cast& cast) const {
         mtac::Argument arg = moveToArgument(cast.Content->value, function);
         
-        auto srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-        auto destType = visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type);
+        auto dest_type = visit_non_variant(ast::GetTypeVisitor(), cast);
+        auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
-        if(srcType != destType){
-            auto t1 = function->context->new_temporary(destType);
+        if(src_type != dest_type){
+            auto t1 = function->context->new_temporary(dest_type);
 
-            if(destType == FLOAT){
+            if(dest_type == FLOAT){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
-            } else if(destType == INT){
-                if(srcType == FLOAT){
+            } else if(dest_type == INT){
+                if(src_type == FLOAT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
-                } else if(srcType == CHAR){
+                } else if(src_type == CHAR){
                     function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
                 }
-            } else if(destType == CHAR){
+            } else if(dest_type == CHAR){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+            } else if(dest_type->is_pointer() && src_type->is_pointer()){
+                if(dest_type->data_type()->is_structure() && src_type->data_type()->is_structure()){
+                    auto global_context = function->context->global();
+
+                    auto src_struct_type = global_context->get_struct(src_type);
+                    auto dest_struct_type = global_context->get_struct(dest_type);
+
+                    bool is_parent = false;
+                    auto parent = src_struct_type->parent_type;
+                    int offset = global_context->self_size_of_struct(src_struct_type);
+
+                    while(parent){
+                        if(parent == dest_type->data_type()){
+                            is_parent = true;
+                            break;
+                        }
+                        
+                        auto struct_type = global_context->get_struct(parent);
+                        parent = struct_type->parent_type;
+                        
+                        offset += global_context->self_size_of_struct(struct_type);
+                    }
+
+                    if(is_parent){
+                        function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ADD, offset));
+
+                        return {t1};
+                    }
+                }
+
+                //At this point, the cast has no effect
+                return {arg};
             } else {
                 return {arg};
             }
@@ -1034,7 +1099,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             return {t1};
         }
 
-        //If srcType == destType, there is nothing to do
+        //If src_type == dest_type, there is nothing to do
         return {arg};
     }
 };
@@ -1154,7 +1219,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), struct_variable, {member});
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), struct_variable->type(), member);
             
             arguments values;
             if(member_type->is_pointer()){
@@ -1566,8 +1631,7 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function){
 typedef boost::variant<std::shared_ptr<Variable>, std::string> call_param;
 
 void push_struct_member(ast::Expression& member_value, std::shared_ptr<const Type> type, mtac::function_p function, call_param param, std::shared_ptr<Function> definition){
-    auto struct_name = type->mangle();
-    auto struct_type = function->context->global()->get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(type);
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto member_type = member->type;
@@ -1596,8 +1660,7 @@ void push_struct(mtac::function_p function, call_param param, std::shared_ptr<Fu
     auto var = value.Content->var;
     auto context = value.Content->context;
 
-    auto struct_name = var->type()->mangle();
-    auto struct_type = function->context->global()->get_struct(struct_name);
+    auto struct_type = function->context->global()->get_struct(var->type());
 
     for(auto& member : boost::adaptors::reverse(struct_type->members)){
         auto type = member->type;

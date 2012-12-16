@@ -72,8 +72,8 @@ void visit_all_statements(Visitor& visitor, mtac::function_p function){
 bool is_single_int_register(std::shared_ptr<const Type> type);
 bool is_single_float_register(std::shared_ptr<const Type> type);
 
-unsigned int compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
-std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames);
+unsigned int compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> typer, const std::string& member);
+std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member);
 
 void computeBlockUsage(mtac::function_p function, std::unordered_set<mtac::basic_block_p>& usage);
 

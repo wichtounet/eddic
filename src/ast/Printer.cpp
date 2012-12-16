@@ -382,11 +382,11 @@ struct DebugVisitor : public boost::static_visitor<> {
                 if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
                     visit(*this, *ptr);
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
-                    std::cout << indent() << ptr->get<0>() << std::endl;
-                    if(ptr->get<1>()){
-                        print_template_list(*ptr->get<1>());
+                    std::cout << indent() << ptr->function_name << std::endl;
+                    if(!ptr->template_types.empty()){
+                        print_template_list(ptr->template_types);
                     }
-                    print_each_sub(ptr->get<2>(), "Values");
+                    print_each_sub(ptr->values, "Values");
                 } else if(auto* ptr = boost::get<std::string>(&*operation.get<1>())){
                     std::cout << indent() << *ptr << std::endl;
                 }

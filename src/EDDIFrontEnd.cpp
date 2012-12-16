@@ -87,8 +87,6 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 
     //Check that there is a main in the program
     check_for_main(program.Content->context);
-
-    program.Content->context->release_references();
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){

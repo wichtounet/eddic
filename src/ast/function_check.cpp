@@ -69,9 +69,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
 
                 //Add references to variables
-                foreach.Content->context->add_reference(foreach.Content->var);
-                foreach.Content->context->add_reference(foreach.Content->iterVar);
-                foreach.Content->context->add_reference(foreach.Content->arrayVar);
+                foreach.Content->var->add_reference();
+                foreach.Content->iterVar->add_reference();
+                foreach.Content->arrayVar->add_reference();
             }
 
             check_each(foreach.Content->instructions);
@@ -98,6 +98,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             for(std::size_t i = 0; i < values.size(); ++i){
                 check_value(values[i]);
             }
+        }
+
+        ast::VariableValue this_variable(std::shared_ptr<Context> context, ast::Position position){
+            ast::VariableValue variable_value;
+
+            variable_value.Content->context = context;
+            variable_value.Content->position = position;
+            variable_value.Content->variableName = "this";
+            variable_value.Content->var = context->getVariable("this");
+            
+            return variable_value;
         }
 
         template<typename V>
@@ -127,35 +138,37 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(local_context && local_context->struct_type && context->struct_exists(local_context->struct_type->mangle())){
                         auto struct_type = local_context->struct_type;
 
-                        mangled = mangle(name, types, struct_type);
+                        do {
+                            mangled = mangle(name, types, struct_type);
 
-                        if(context->exists(mangled)){
-                            context->addReference(mangled);
+                            if(context->exists(mangled)){
+                                context->addReference(mangled);
 
-                            ast::VariableValue variable_value;
-                            variable_value.Content->context = functionCall.Content->context;
-                            variable_value.Content->position = functionCall.Content->position;
-                            variable_value.Content->variableName = "this";
-                            variable_value.Content->var = functionCall.Content->context->getVariable("this");
+                                ast::Cast cast_value;
+                                cast_value.Content->resolved_type = new_pointer_type(struct_type);
+                                cast_value.Content->value = this_variable(functionCall.Content->context, functionCall.Content->position);
 
-                            ast::CallOperationValue function_call_operation;
-                            function_call_operation.get<0>() = functionCall.Content->function_name; 
-                            function_call_operation.get<1>() = functionCall.Content->template_types; 
-                            function_call_operation.get<2>() = functionCall.Content->values;
-                            function_call_operation.get<4>() = context->getFunction(mangled);
+                                ast::CallOperationValue function_call_operation;
+                                function_call_operation.function_name = functionCall.Content->function_name; 
+                                function_call_operation.template_types = functionCall.Content->template_types; 
+                                function_call_operation.values = functionCall.Content->values;
+                                function_call_operation.function = context->getFunction(mangled);
 
-                            ast::Expression member_function_call;
-                            member_function_call.Content->context = functionCall.Content->context;
-                            member_function_call.Content->position = functionCall.Content->position;
-                            member_function_call.Content->first = variable_value;
-                            member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
+                                ast::Expression member_function_call;
+                                member_function_call.Content->context = functionCall.Content->context;
+                                member_function_call.Content->position = functionCall.Content->position;
+                                member_function_call.Content->first = cast_value;
+                                member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
-                            value = member_function_call;
+                                value = member_function_call;
 
-                            check_value(value);
+                                check_value(value);
 
-                            return;
-                        }
+                                return;
+                            }
+
+                            struct_type = context->get_struct(struct_type)->parent_type;
+                        } while(struct_type);
                     }
 
                     throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.Content->position);
@@ -167,27 +180,25 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto global_context = variable.Content->context->global();
 
                     if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
-                        auto struct_type = global_context->get_struct(context->struct_type->mangle());
+                        auto struct_type = global_context->get_struct(context->struct_type);
+                        
+                        do {
+                            if(struct_type->member_exists(variable.Content->variableName)){
+                                ast::Expression member_value;
+                                member_value.Content->context = variable.Content->context;
+                                member_value.Content->position = variable.Content->position;
+                                member_value.Content->first = this_variable(variable.Content->context, variable.Content->position);
+                                member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
 
-                        if(struct_type->member_exists(variable.Content->variableName)){
-                            ast::VariableValue this_variable;
-                            this_variable.Content->context = variable.Content->context;
-                            this_variable.Content->var = variable.Content->context->getVariable("this");
-                            this_variable.Content->variableName = "this";
-                            this_variable.Content->position = variable.Content->position;
+                                value = member_value;
 
-                            ast::Expression member_value;
-                            member_value.Content->context = variable.Content->context;
-                            member_value.Content->position = variable.Content->position;
-                            member_value.Content->first = this_variable;
-                            member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
+                                check_value(value);
 
-                            value = member_value;
+                                return;
+                            }
 
-                            check_value(value);
-
-                            return;
-                        }
+                            struct_type = global_context->get_struct(struct_type->parent_type);
+                        } while(struct_type);
                     }
 
                     throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
@@ -195,7 +206,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                 //Reference the variable
                 variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-                variable.Content->context->add_reference(variable.Content->var);
+                variable.Content->var->add_reference();
             } else {
                 visit(*this, value);
             }
@@ -335,7 +346,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
 
             delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
-            delete_.Content->context->add_reference(delete_.Content->variable);
+            delete_.Content->variable->add_reference();
         }
     
         void operator()(ast::StructDeclaration& declaration){
@@ -435,15 +446,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
                         check_value(*ptr);
                     } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                        check_each(ptr->get<2>());
+                        check_each(ptr->values);
                     }
                 }
 
                 template_engine->check_member_function(type, op, value.Content->position);
 
                 if(op.get<0>() == ast::Operator::DOT){
-                    auto struct_name = type->is_pointer() ? type->data_type()->mangle() : type->mangle();
-                    auto struct_type = value.Content->context->global()->get_struct(struct_name);
+                    auto struct_type = value.Content->context->global()->get_struct(type);
+                    auto orig = struct_type;
 
                     //We delay it
                     if(!struct_type){
@@ -454,9 +465,19 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     struct_type->add_reference();
 
                     auto member = boost::get<std::string>(*op.get<1>());
+                    bool found = false;
 
-                    if(!struct_type->member_exists(member)){ 
-                        throw SemanticalException("The struct " + struct_name + " has no member named " + member, value.Content->position);
+                    do {
+                        if(struct_type->member_exists(member)){
+                            found = true;
+                            break;
+                        }
+
+                        struct_type = value.Content->context->global()->get_struct(struct_type->parent_type);
+                    } while(struct_type);
+
+                    if(!found){ 
+                        throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.Content->position);
                     }
 
                     //Add a reference to the member
@@ -467,18 +488,36 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                     auto& call_value = boost::get<ast::CallOperationValue>(*op.get<1>());
-                    std::string name = call_value.get<0>();
+                    std::string name = call_value.function_name;
 
-                    auto types = get_types(call_value.get<2>());
+                    auto types = get_types(call_value.values);
 
-                    std::string mangled = mangle(name, types, struct_type);
+                    bool found = false;
+                    bool parent = false;
+                    std::string mangled;
+                    
+                    do {
+                        mangled = mangle(name, types, struct_type);
 
-                    if(context->exists(mangled)){
-                        context->addReference(mangled);
+                        if(context->exists(mangled)){
+                            context->addReference(mangled);
 
-                        call_value.get<3>() = mangled;
-                        call_value.get<4>() = context->getFunction(mangled);
-                    } else {
+                            call_value.mangled_name = mangled;
+                            call_value.function = context->getFunction(mangled);
+
+                            if(parent){
+                                call_value.left_type = struct_type;
+                            }
+
+                            found = true;
+                            break;
+                        }
+
+                        struct_type = context->get_struct(struct_type)->parent_type;
+                        parent = true;
+                    } while(struct_type);
+
+                    if(!found){
                         throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.Content->position);
                     }
                 }
@@ -504,8 +543,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
 
             //Reference both variables
-            swap.Content->context->add_reference(swap.Content->lhs_var);
-            swap.Content->context->add_reference(swap.Content->rhs_var);
+            swap.Content->lhs_var->add_reference();
+            swap.Content->rhs_var->add_reference();
         }
 
         bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
@@ -591,7 +630,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 } //end of anonymous namespace
     
 void ast::FunctionCheckPass::apply_struct(ast::Struct& struct_, bool indicator){
-    if(!indicator && context->is_recursively_nested(struct_.Content->struct_type->mangle())){
+    if(!indicator && context->is_recursively_nested(context->get_struct(struct_.Content->struct_type))){
         throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
     }
 }

@@ -174,43 +174,29 @@ bool eddic::mtac::is_expression(mtac::Operator op){
     return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
 }
 
-unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    return compute_member(context, var, memberNames).first;
+unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){
+    return compute_member(context, type, member).first;
 }
 
-std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<GlobalContext> context, std::shared_ptr<Variable> var, const std::vector<std::string>& memberNames){
-    auto type = var->type();
-
-    std::string struct_name;
-    if(type->is_pointer() || type->is_array()){
-        struct_name = type->data_type()->mangle();
-    } else {
-        struct_name = type->mangle();
-    }
-
-    auto struct_type = context->get_struct(struct_name);
+std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){
+    auto struct_type = context->get_struct(type);
     std::shared_ptr<const Type> member_type;
-
     unsigned int offset = 0;
 
-    auto& members = memberNames;
-    for(std::size_t i = 0; i < members.size(); ++i){
-        auto& member = members[i];
-
-        member_type = (*struct_type)[member]->type;
-
-        offset += context->member_offset(struct_type, member);
-
-        if(i != members.size() - 1){
-            //Warnings, this will not work for the offset calculation
-            if(member_type->is_pointer()){
-                member_type = member_type->data_type();
-            }
-
-            struct_name = member_type->mangle();
-            struct_type = context->get_struct(struct_name);
+    do {
+        if(struct_type->member_exists(member)){
+            member_type = (*struct_type)[member]->type;
+            break;
         }
-    }
+
+        offset += context->self_size_of_struct(struct_type);
+
+        struct_type = context->get_struct(struct_type->parent_type);
+    } while(struct_type);
+
+    eddic_assert(member_type, "The member must exist");
+
+    offset += context->member_offset(struct_type, member);
 
     return std::make_pair(offset, member_type);
 }

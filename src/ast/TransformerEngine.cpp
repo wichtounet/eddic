@@ -44,7 +44,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
                 if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                    for(auto& v : ptr->get<2>()){
+                    for(auto& v : ptr->values){
                         v = visit(*this, v);
                     }
                 }
@@ -139,7 +139,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
                 if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
                 } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
-                    for(auto& v : ptr->get<2>()){
+                    for(auto& v : ptr->values){
                         v = visit(*this, v);
                     }
                 }

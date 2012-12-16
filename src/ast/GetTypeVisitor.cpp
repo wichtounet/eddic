@@ -48,7 +48,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-   return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
+    if(cast.Content->resolved_type){
+        return cast.Content->resolved_type;
+    } else {
+        return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
+    }
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
@@ -87,7 +91,12 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
         }
 
         auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
-        auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
+
+        if(operation_value.function){
+            return operation_value.function->returnType;
+        }
+
+        auto function_name = mangle(operation_value.function_name, operation_value.values, type);
 
         return global_context->getFunction(function_name)->returnType;
     } else if(op == ast::Operator::BRACKET){
@@ -102,10 +111,20 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
         if(type->is_pointer()){
             type = type->data_type();
         }
+        
+        auto member = boost::get<std::string>(*operation.get<1>());
 
         auto struct_type = global_context->get_struct(type->mangle());
-        auto member = boost::get<std::string>(*operation.get<1>());
-        return (*struct_type)[member]->type;
+
+        do {
+            if(struct_type->member_exists(member)){
+                return (*struct_type)[member]->type;
+            }
+
+            struct_type = global_context->get_struct(struct_type->parent_type);
+        } while(struct_type);
+
+        eddic_unreachable("The member must exists");
     } else {
         //Other operators are not changing the type
         return left;

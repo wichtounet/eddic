@@ -196,6 +196,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/concat
     SpecificSuite/println
     SpecificSuite/prints
+    SpecificSuite/single_inheritance
     SpecificSuite/structures
     SpecificSuite/struct_member_pointers
     SpecificSuite/struct_array
@@ -208,6 +209,7 @@ add_boost_test(eddic_boost_test
     TemplateSuite/member_function_templates
     CompilationErrorsSuite/params_assign
     CompilationErrorsSuite/wrong_print
+    CompilationErrorsSuite/invalid_inheritance
     StandardLibSuite/std_lib_arrays_sum
     StandardLibSuite/std_lib_math_min
     StandardLibSuite/std_lib_math_max

@@ -1,0 +1,14 @@
+struct A extends C {
+    float a;
+}
+
+struct B extends A {
+    char a;
+}
+
+struct C extends B {
+    int a;
+}
+
+void main(){
+}

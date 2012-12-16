@@ -36,8 +36,8 @@ class Function {
     public:
         Function(std::shared_ptr<const Type> ret, const std::string& n);
 
-        std::shared_ptr<const Type> getParameterType(const std::string& name);
-        unsigned int getParameterPositionByType(const std::string& name);
+        std::shared_ptr<const Type> getParameterType(const std::string& name) const;
+        unsigned int getParameterPositionByType(const std::string& name) const;
         
         std::shared_ptr<const Type> returnType;
         std::string name;

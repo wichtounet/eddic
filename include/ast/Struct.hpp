@@ -16,6 +16,7 @@
 #include "variant.hpp"
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/optional.hpp>
 
 #include "Type.hpp"
 
@@ -56,6 +57,7 @@ struct ASTStruct {
 
     Position position;
     std::string name;
+    boost::optional<Type> parent_type;
     std::vector<StructBlock> blocks;
 
     mutable long references = 0;
@@ -76,6 +78,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Struct,
     (eddic::ast::Position, Content->position)
     (std::string, Content->name)
+    (boost::optional<eddic::ast::Type>, Content->parent_type)
     (std::vector<eddic::ast::StructBlock>, Content->blocks)
 )
 
