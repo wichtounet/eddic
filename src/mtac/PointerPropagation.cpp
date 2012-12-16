@@ -26,10 +26,12 @@ bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op,
 
             quadruple->arg1 = alias;
 
-            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
-                if(*offset_ptr == 0){
-                    quadruple->op = op;
-                    quadruple->arg2.reset();
+            if((alias->type()->is_pointer() && alias->type()->data_type()->is_standard_type()) || alias->type()->is_standard_type()){
+                if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+                    if(*offset_ptr == 0){
+                        quadruple->op = op;
+                        quadruple->arg2.reset();
+                    }
                 }
             }
 
@@ -48,11 +50,13 @@ bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Opera
 
         quadruple->result = alias;
 
-        if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
-            if(*offset_ptr == 0){
-                quadruple->op = op;
-                quadruple->arg1.reset();
-                quadruple->arg1 = quadruple->arg2;
+        if((alias->type()->is_pointer() && alias->type()->data_type()->is_standard_type()) || alias->type()->is_standard_type()){
+            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
+                if(*offset_ptr == 0){
+                    quadruple->op = op;
+                    quadruple->arg1.reset();
+                    quadruple->arg1 = quadruple->arg2;
+                }
             }
         }
 
@@ -118,8 +122,9 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
 
     if(quadruple->op == mtac::Operator::PASSIGN){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-            if((*ptr)->type()->is_standard_type()){
+            if(!(*ptr)->type()->is_pointer()){
                 aliases[quadruple->result] = *ptr;
+                std::cout << quadruple->result->name() << " is an alias of " << (*ptr)->name() << std::endl;
             } else if((*ptr)->type()->is_pointer()){
                 if(aliases.count(*ptr)){
                     auto alias = aliases[*ptr];
