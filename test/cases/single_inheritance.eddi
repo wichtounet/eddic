@@ -1,5 +1,6 @@
 struct A {
     float a;
+    int a_a;
     
     void init_a(){
         a = 55.2;
@@ -15,6 +16,7 @@ struct A {
 
 struct B extends A {
     char a;
+    int a_b;
     
     void init_b(){
         a = 'B';
@@ -31,6 +33,7 @@ struct B extends A {
 
 struct C extends B {
     int a;
+    int a_c;
 
     void init(){
         a = 99;
@@ -51,4 +54,6 @@ void main(){
 
     c.init();
     c.test();
+    c.test_b();
+    c.test_a();
 }
