@@ -76,6 +76,12 @@ class Type : public std::enable_shared_from_this<Type> {
          * \return true if it's a custom type, false otherwise.
          */
         virtual bool is_custom_type() const;
+        
+        /*!
+         * Indicates if it is a structure type. It can be a custom type or a template type. 
+         * \return true if it's a structure type, false otherwise.
+         */
+        bool is_structure() const;
 
         /*!
          * Indicates if it is a standard type

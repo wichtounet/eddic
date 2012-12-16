@@ -143,7 +143,7 @@ std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<Struct> s
     return member->type;
 }
 
-int GlobalContext::size_of_struct(const std::string& struct_name) const {
+int GlobalContext::self_size_of_struct(const std::string& struct_name) const {
     int struct_size = 0;
 
     auto struct_ = get_struct(struct_name);

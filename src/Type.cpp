@@ -43,6 +43,10 @@ bool Type::is_dynamic_array() const {
     return is_array() && !has_elements();
 }
 
+bool Type::is_structure() const {
+    return is_custom_type() || is_template_type();
+}
+
 bool Type::is_pointer() const {
     return false;
 }
@@ -160,7 +164,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size(Platform) const {
-    return context->size_of_struct(mangle());
+    return context->self_size_of_struct(mangle());
 }
         
 /* Implementation of ArrayType  */
@@ -228,7 +232,7 @@ bool TemplateType::is_template_type() const {
 }
 
 unsigned int TemplateType::size(Platform) const {
-    return context->size_of_struct(mangle());
+    return context->self_size_of_struct(mangle());
 }
 
 /* Implementation of factories  */

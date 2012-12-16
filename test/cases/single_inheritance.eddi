@@ -1,32 +1,52 @@
 struct A {
     float a;
+    
+    void init_a(){
+        a = 55.2;
+    }
 
     void test_a(){
         print(a);
+        print("|");
     }
 }
 
 struct B extends A {
     char a;
+    
+    void init_b(){
+        a = 'B';
+        init_a();
+    }
 
     void test_b(){
         print(a);
+        print("|");
 
-        //test_a();
+        test_a();
     }
 }
 
 struct C extends B {
     int a;
 
+    void init(){
+        a = 99;
+        init_b();
+    }
+
     void test(){
         print(a);
+        print("|");
 
         test_b();
+        test_a();
     }
 }
 
 void main(){
     C c;
+
+    c.init();
     c.test();
 }

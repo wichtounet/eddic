@@ -96,7 +96,7 @@ struct GlobalContext final : public Context {
         
         std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset) const;
         int member_offset(std::shared_ptr<Struct> struct_, const std::string& member) const;
-        int size_of_struct(const std::string& struct_) const;
+        int self_size_of_struct(const std::string& struct_) const;
         
         bool is_recursively_nested(const std::string& struct_) const;
 

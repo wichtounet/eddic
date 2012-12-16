@@ -1010,22 +1010,54 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::Cast& cast) const {
         mtac::Argument arg = moveToArgument(cast.Content->value, function);
         
-        auto srcType = visit(ast::GetTypeVisitor(), cast.Content->value);
-        auto destType = visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type);
+        auto dest_type = visit_non_variant(ast::GetTypeVisitor(), cast);
+        auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
-        if(srcType != destType){
-            auto t1 = function->context->new_temporary(destType);
+        if(src_type != dest_type){
+            auto t1 = function->context->new_temporary(dest_type);
 
-            if(destType == FLOAT){
+            if(dest_type == FLOAT){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
-            } else if(destType == INT){
-                if(srcType == FLOAT){
+            } else if(dest_type == INT){
+                if(src_type == FLOAT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
-                } else if(srcType == CHAR){
+                } else if(src_type == CHAR){
                     function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
                 }
-            } else if(destType == CHAR){
+            } else if(dest_type == CHAR){
                 function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+            } else if(dest_type->is_pointer() && src_type->is_pointer()){
+                if(dest_type->data_type()->is_structure() && src_type->data_type()->is_structure()){
+                    auto global_context = function->context->global();
+
+                    auto src_struct_type = global_context->get_struct(src_type);
+                    auto dest_struct_type = global_context->get_struct(dest_type);
+
+                    bool is_parent = false;
+                    auto parent = src_struct_type->parent_type;
+                    int offset = global_context->self_size_of_struct(src_struct_type->name);
+
+                    while(parent){
+                        if(parent == dest_type->data_type()){
+                            is_parent = true;
+                            break;
+                        }
+                        
+                        auto struct_type = global_context->get_struct(parent);
+                        parent = struct_type->parent_type;
+                        
+                        offset += global_context->self_size_of_struct(struct_type->name);
+                    }
+
+                    if(is_parent){
+                        function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::SUB, offset));
+
+                        return {t1};
+                    }
+                }
+
+                //At this point, the cast has no effect
+                return {arg};
             } else {
                 return {arg};
             }
@@ -1033,7 +1065,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             return {t1};
         }
 
-        //If srcType == destType, there is nothing to do
+        //If src_type == dest_type, there is nothing to do
         return {arg};
     }
 };
