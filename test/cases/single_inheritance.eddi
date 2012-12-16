@@ -4,10 +4,14 @@ struct A {
     
     void init_a(){
         a = 55.2;
+        a_a = 55;
     }
 
     void test_a(){
         print(a);
+        print("|");
+        
+        print(a_a);
         print("|");
 
         a += 1.1;
@@ -20,11 +24,17 @@ struct B extends A {
     
     void init_b(){
         a = 'B';
+        a_b = 66;
         init_a();
     }
 
     void test_b(){
         print(a);
+        print("|");
+        
+        print(a_a);
+        print("|");
+        print(a_b);
         print("|");
 
         test_a();
@@ -37,11 +47,19 @@ struct C extends B {
 
     void init(){
         a = 99;
+        a_c = 77;
         init_b();
     }
 
     void test(){
         print(a);
+        print("|");
+        
+        print(a_a);
+        print("|");
+        print(a_b);
+        print("|");
+        print(a_c);
         print("|");
 
         test_b();
@@ -56,4 +74,11 @@ void main(){
     c.test();
     c.test_b();
     c.test_a();
+        
+    print(c.a_a);
+    print("|");
+    print(c.a_b);
+    print("|");
+    print(c.a_c);
+    print("|");
 }
