@@ -209,7 +209,7 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
                     for(auto& member : struct_type->members){
                         std::shared_ptr<const Type> member_type;
                         unsigned int offset = 0;
-                        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), base_var, {member->name});
+                        boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), base_var->type(), member->name);
 
                         auto new_args = get_member(function, offset, member_type, base_var);
                         std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
@@ -454,7 +454,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
                 std::shared_ptr<const Type> member_type;
                 unsigned int offset = 0;
-                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable, {member});
+                boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), variable->type(), member);
 
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function->context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
@@ -1219,7 +1219,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
-            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), struct_variable, {member});
+            boost::tie(offset, member_type) = mtac::compute_member(function->context->global(), struct_variable->type(), member);
             
             arguments values;
             if(member_type->is_pointer()){

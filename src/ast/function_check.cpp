@@ -180,21 +180,25 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto global_context = variable.Content->context->global();
 
                     if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
-                        auto struct_type = global_context->get_struct(context->struct_type->mangle());
+                        auto struct_type = global_context->get_struct(context->struct_type);
+                        
+                        do {
+                            if(struct_type->member_exists(variable.Content->variableName)){
+                                ast::Expression member_value;
+                                member_value.Content->context = variable.Content->context;
+                                member_value.Content->position = variable.Content->position;
+                                member_value.Content->first = this_variable(variable.Content->context, variable.Content->position);
+                                member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
 
-                        if(struct_type->member_exists(variable.Content->variableName)){
-                            ast::Expression member_value;
-                            member_value.Content->context = variable.Content->context;
-                            member_value.Content->position = variable.Content->position;
-                            member_value.Content->first = this_variable(variable.Content->context, variable.Content->position);
-                            member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
+                                value = member_value;
 
-                            value = member_value;
+                                check_value(value);
 
-                            check_value(value);
+                                return;
+                            }
 
-                            return;
-                        }
+                            struct_type = global_context->get_struct(struct_type->parent_type);
+                        } while(struct_type);
                     }
 
                     throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
@@ -450,6 +454,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                 if(op.get<0>() == ast::Operator::DOT){
                     auto struct_type = value.Content->context->global()->get_struct(type);
+                    auto orig = struct_type;
 
                     //We delay it
                     if(!struct_type){
@@ -460,9 +465,19 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     struct_type->add_reference();
 
                     auto member = boost::get<std::string>(*op.get<1>());
+                    bool found = false;
 
-                    if(!struct_type->member_exists(member)){ 
-                        throw SemanticalException("The struct " + struct_type->name + " has no member named " + member, value.Content->position);
+                    do {
+                        if(struct_type->member_exists(member)){
+                            found = true;
+                            break;
+                        }
+
+                        struct_type = value.Content->context->global()->get_struct(struct_type->parent_type);
+                    } while(struct_type);
+
+                    if(!found){ 
+                        throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.Content->position);
                     }
 
                     //Add a reference to the member

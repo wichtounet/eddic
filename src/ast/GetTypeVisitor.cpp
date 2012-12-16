@@ -111,10 +111,20 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
         if(type->is_pointer()){
             type = type->data_type();
         }
+        
+        auto member = boost::get<std::string>(*operation.get<1>());
 
         auto struct_type = global_context->get_struct(type->mangle());
-        auto member = boost::get<std::string>(*operation.get<1>());
-        return (*struct_type)[member]->type;
+
+        do {
+            if(struct_type->member_exists(member)){
+                return (*struct_type)[member]->type;
+            }
+
+            struct_type = global_context->get_struct(struct_type->parent_type);
+        } while(struct_type);
+
+        eddic_unreachable("The member must exists");
     } else {
         //Other operators are not changing the type
         return left;
