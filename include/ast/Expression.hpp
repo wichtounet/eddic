@@ -24,6 +24,7 @@ namespace eddic {
 
 class Context;
 class Function;
+class Type;
 
 namespace ast {
 
@@ -33,7 +34,7 @@ struct CallOperationValue {
     std::vector<ast::Value> values;
     std::string mangled_name;
     std::shared_ptr<eddic::Function> function;
-    std::shared_ptr<const Type> left_type;
+    std::shared_ptr<const eddic::Type> left_type;
 };
 
 typedef boost::variant<

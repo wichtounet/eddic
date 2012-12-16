@@ -471,14 +471,48 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
 
         case ast::Operator::CALL:
             {
-                auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
+                auto& call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
                 auto definition = call_operation_value.function;
 
                 eddic_assert(definition, "All the member functions should be in the function table");
 
-                auto type = definition->returnType;
-
                 auto left_value = left[0];
+
+                if(call_operation_value.left_type){
+                    auto global_context = function->context->global();
+                    auto dest_type = call_operation_value.left_type;
+                    dest_type = dest_type->is_pointer() ? dest_type->data_type() : dest_type;
+
+                    auto src_struct_type = global_context->get_struct(type);
+                    auto dest_struct_type = global_context->get_struct(dest_type);
+
+                    auto parent = src_struct_type->parent_type;
+                    int offset = global_context->self_size_of_struct(src_struct_type);
+
+                    while(parent){
+                        if(parent == dest_type){
+                            break;
+                        }
+                        
+                        auto struct_type = global_context->get_struct(parent);
+                        parent = struct_type->parent_type;
+                        
+                        offset += global_context->self_size_of_struct(struct_type);
+                    }
+                    
+                    auto t1 = function->context->new_temporary(type->is_pointer() ? type : new_pointer_type(type));
+
+                    if(type->is_pointer()){
+                        function->add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::ADD, offset));
+                    } else {
+                        function->add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::PASSIGN));
+                        function->add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, offset));
+                    }
+
+                    left_value = t1;
+                }
+
+                auto type = definition->returnType;
 
                 if(type->is_custom_type() || type->is_template_type()){
                     auto var = function->context->generate_variable("ret_t_", type);

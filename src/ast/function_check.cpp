@@ -478,6 +478,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto types = get_types(call_value.values);
 
                     bool found = false;
+                    bool parent = false;
                     std::string mangled;
                     
                     do {
@@ -488,11 +489,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                             call_value.mangled_name = mangled;
                             call_value.function = context->getFunction(mangled);
+
+                            if(parent){
+                                call_value.left_type = struct_type;
+                            }
+
                             found = true;
                             break;
                         }
 
                         struct_type = context->get_struct(struct_type)->parent_type;
+                        parent = true;
                     } while(struct_type);
 
                     if(!found){
