@@ -8,6 +8,8 @@ struct A {
     void test_a(){
         print(a);
         print("|");
+
+        a += 1.1;
     }
 }
 

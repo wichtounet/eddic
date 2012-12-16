@@ -98,6 +98,7 @@ struct GlobalContext final : public Context {
         int member_offset(std::shared_ptr<const Struct> struct_, const std::string& member) const;
 
         int self_size_of_struct(std::shared_ptr<const Struct> struct_) const;
+        int total_size_of_struct(std::shared_ptr<const Struct> struct_) const;
         bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
 
         const FunctionMap& functions() const;

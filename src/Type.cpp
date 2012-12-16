@@ -164,7 +164,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size(Platform) const {
-    return context->self_size_of_struct(context->get_struct(shared_from_this()));
+    return context->total_size_of_struct(context->get_struct(shared_from_this()));
 }
         
 /* Implementation of ArrayType  */
@@ -232,7 +232,7 @@ bool TemplateType::is_template_type() const {
 }
 
 unsigned int TemplateType::size(Platform) const {
-    return context->self_size_of_struct(context->get_struct(shared_from_this()));
+    return context->total_size_of_struct(context->get_struct(shared_from_this()));
 }
 
 /* Implementation of factories  */

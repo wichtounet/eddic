@@ -153,6 +153,17 @@ int GlobalContext::self_size_of_struct(std::shared_ptr<const Struct> struct_) co
     return struct_size;
 }
 
+int GlobalContext::total_size_of_struct(std::shared_ptr<const Struct> struct_) const {
+   int total = self_size_of_struct(struct_);
+
+   while(struct_->parent_type){
+       struct_ = get_struct(struct_->parent_type);
+       total += self_size_of_struct(struct_);
+   }
+
+   return total;
+}
+
 bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_, unsigned int left) const {
     if(left == 0){
         return true;

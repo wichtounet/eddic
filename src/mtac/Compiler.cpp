@@ -1050,7 +1050,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     }
 
                     if(is_parent){
-                        function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::SUB, offset));
+                        function->add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ADD, offset));
 
                         return {t1};
                     }
