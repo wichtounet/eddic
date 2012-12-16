@@ -337,13 +337,19 @@ void ltac::generate_prologue_epilogue(mtac::program_p ltac_program, std::shared_
                     ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position), static_cast<int>(type->size(platform) / int_size));
 
                     //Set lengths of arrays inside structures
-                    auto struct_type = function->context->global()->get_struct(type->mangle());
-                    for(auto& member : struct_type->members){
-                        if(member->type->is_array()){
-                            ltac::add_instruction(bb, ltac::Operator::MOV, 
-                                    ltac::Address(ltac::BP, position + function->context->global()->member_offset(struct_type, member->name)),
-                                    static_cast<int>(member->type->elements()));
+                    auto struct_type = function->context->global()->get_struct(type);
+                    auto offset = 0;
+
+                    while(struct_type){
+                        for(auto& member : struct_type->members){
+                            if(member->type->is_array()){
+                                ltac::add_instruction(bb, ltac::Operator::MOV, 
+                                        ltac::Address(ltac::BP, position + offset + function->context->global()->member_offset(struct_type, member->name)),
+                                        static_cast<int>(member->type->elements()));
+                            }
                         }
+
+                        struct_type = function->context->global()->get_struct(struct_type->parent_type);
                     }
                 }
             }

@@ -67,11 +67,16 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p 
             
             //Except the length of arrays that are set
             auto struct_type = function->context->global()->get_struct(variable->type()->mangle());
-            for(auto& member : struct_type->members){
-                if(member->type->is_array()){
-                    mtac::Offset offset(variable, function->context->global()->member_offset(struct_type, member->name));
-                    out[offset] = static_cast<int>(member->type->elements());
+
+            while(struct_type){
+                for(auto& member : struct_type->members){
+                    if(member->type->is_array()){
+                        mtac::Offset offset(variable, function->context->global()->member_offset(struct_type, member->name));
+                        out[offset] = static_cast<int>(member->type->elements());
+                    }
                 }
+
+                struct_type = function->context->global()->get_struct(struct_type->parent_type);
             }
         }
     }

@@ -102,6 +102,10 @@ std::shared_ptr<Struct> GlobalContext::get_struct(const std::string& struct_name
 }
         
 std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> type) const {
+    if(!type){
+        return nullptr;
+    }
+
     if(type->is_pointer()){
         type = type->data_type();
     }
