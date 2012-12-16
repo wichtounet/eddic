@@ -17,17 +17,17 @@ ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t
 
 Function::Function(std::shared_ptr<const Type> ret, const std::string& n) : returnType(ret), name(n), references(0) {}
 
-std::shared_ptr<const Type> Function::getParameterType(const std::string& name){
+std::shared_ptr<const Type> Function::getParameterType(const std::string& name) const {
     for(auto& p : parameters){
         if(p.name == name){
             return p.paramType;
         }
     }
 
-    ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
+    eddic_unreachable("This parameter does not exists in the given function");
 }
 
-unsigned int Function::getParameterPositionByType(const std::string& name){
+unsigned int Function::getParameterPositionByType(const std::string& name) const {
     auto type = getParameterType(name);
 
     if(mtac::is_single_int_register(type)){
@@ -43,7 +43,7 @@ unsigned int Function::getParameterPositionByType(const std::string& name){
             }
         }
         
-        ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
+        eddic_unreachable("This parameter does not exists in the given function");
     } else if(mtac::is_single_float_register(type)){
         unsigned int position = 0;
         
@@ -57,7 +57,7 @@ unsigned int Function::getParameterPositionByType(const std::string& name){
             }
         }
         
-        ASSERT_PATH_NOT_TAKEN("This parameter does not exists in the given function");
+        eddic_unreachable("This parameter does not exists in the given function");
     } else {
         return 0;
     }

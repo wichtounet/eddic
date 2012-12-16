@@ -54,7 +54,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         return ss.str();
     }
     
-    if(type->is_template()){
+    if(type->is_template_type()){
         std::ostringstream ss;
 
         ss << "T";
@@ -72,7 +72,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         return ss.str();
     }
 
-    ASSERT_PATH_NOT_TAKEN("Invalid type");
+    eddic_unreachable("Invalid type");
 }
 
 std::string eddic::mangle(std::shared_ptr<Function> function){
@@ -88,7 +88,7 @@ std::string eddic::mangle(std::shared_ptr<Function> function){
     ss << function->name.length();
     ss << function->name;
 
-    for(auto type : function->parameters){
+    for(auto& type : function->parameters){
         if(type.name != "this"){
             ss << type.paramType->mangle();
         }
@@ -103,7 +103,7 @@ std::string eddic::mangle_ctor(const std::shared_ptr<Function> function){
     ss << "_C";
     ss << function->struct_type->mangle();
 
-    for(auto type : function->parameters){
+    for(auto& type : function->parameters){
         if(type.name != "this"){
             ss << type.paramType->mangle();
         }
@@ -158,6 +158,19 @@ std::string eddic::mangle_ctor(const std::vector<ast::Value>& values, std::share
     return ss.str();
 }
 
+std::string eddic::mangle_ctor(const std::vector<std::shared_ptr<const Type>>& types, std::shared_ptr<const Type> struct_type){
+    std::ostringstream ss;
+
+    ss << "_C";
+    ss << struct_type->mangle();
+
+    for(auto& type : types){
+        ss << type->mangle();
+    }
+
+    return ss.str();
+}
+
 std::string eddic::mangle_dtor(std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
@@ -180,7 +193,7 @@ std::string eddic::mangle(const std::string& functionName, const std::vector<std
     ss << functionName.length();
     ss << functionName;
 
-    for(auto type : types){
+    for(auto& type : types){
         ss << type->mangle();
     }
 

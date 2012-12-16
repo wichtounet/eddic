@@ -8,10 +8,10 @@
 #ifndef LTAC_PRINTER_H
 #define LTAC_PRINTER_H
 
-#include <memory>
 #include <iostream>
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
+#include "ltac/forward.hpp"
 
 namespace eddic {
 
@@ -22,7 +22,7 @@ namespace ltac {
  * \brief Utility class to print the three-address-code representation on the console. 
  */
 struct Printer {
-    void print(std::shared_ptr<mtac::Program> program) const ;
+    void print(mtac::program_p program) const ;
     void print(mtac::function_p function) const ;
     void print(ltac::Statement& statement) const ;
 };

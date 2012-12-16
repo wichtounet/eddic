@@ -12,13 +12,13 @@
 
 #include "Platform.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void register_allocation(std::shared_ptr<mtac::Program> program, Platform platform);
+void register_allocation(mtac::program_p program, Platform platform);
 
 } //end of mtac
 

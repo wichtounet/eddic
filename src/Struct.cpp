@@ -23,7 +23,7 @@ unsigned int Member::get_references(){
 Struct::Struct(const std::string& n) : name(n) {}
 
 bool Struct::member_exists(const std::string& n){
-    for(auto member : members){
+    for(auto& member : members){
         if(member->name == n){
             return true;
         }
@@ -33,15 +33,15 @@ bool Struct::member_exists(const std::string& n){
 }
 
 std::shared_ptr<Member> Struct::operator[](const std::string& n){
-    for(auto member : members){
+    for(auto& member : members){
         if(member->name == n){
             return member;
         }
     }
 
-    ASSERT_PATH_NOT_TAKEN("This member is not contained in the struct");
+    eddic_unreachable("This member is not contained in the struct");
 }
-    
+
 void Struct::add_reference(){
     ++references;
 }

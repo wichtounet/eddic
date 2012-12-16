@@ -237,7 +237,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(mtac::fun
     } else if(Type == DataFlowType::Low_Backward){
         return backward_data_flow<true>(function, problem);
     } else {
-        ASSERT_PATH_NOT_TAKEN("This data-flow type is not handled");
+        eddic_unreachable("This data-flow type is not handled");
     }
 }
 

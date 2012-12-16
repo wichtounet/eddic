@@ -22,6 +22,10 @@
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 #include "mtac/Utils.hpp"
 #include "mtac/Printer.hpp"
@@ -142,6 +146,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Varia
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
+    
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
@@ -166,6 +171,7 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::share
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
+    
     log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
@@ -204,7 +210,7 @@ bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
 }
     
 void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
-    for(auto parameter : definition->parameters){
+    for(auto& parameter : definition->parameters){
         auto param = definition->context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){

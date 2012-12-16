@@ -17,7 +17,6 @@
 #include "ast/CharLiteral.hpp"
 #include "ast/Literal.hpp"
 #include "ast/VariableValue.hpp"
-#include "ast/DereferenceValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
 #include "ast/Null.hpp"
@@ -26,55 +25,39 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::mpl::vector<
+typedef boost::variant<
             Integer, 
             IntegerSuffix, 
             Float,
             Literal, 
             CharLiteral, 
             VariableValue,
-            DereferenceValue,
             Expression,
-            Unary,
             Null,
             True,
             False,
-            ArrayValue,
             FunctionCall,
-            MemberFunctionCall,
             Cast,
             BuiltinOperator,
             Assignment,
-            SuffixOperation,
-            PrefixOperation
-        > types_initial;
-
-typedef boost::mpl::push_back<boost::mpl::push_back<boost::mpl::push_back<boost::mpl::push_back<types_initial, 
-        Ternary>::type, 
-        MemberValue>::type,
-        New>::type,
-        NewArray>::type 
-    types;
-
-typedef boost::make_variant_over<types>::type Value;
+            PrefixOperation,
+            Ternary,
+            New,
+            NewArray
+        > Value;
 
 } //end of ast
 
 } //end of eddic
 
 #include "ast/Assignment.hpp"
-#include "ast/MemberValue.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
-#include "ast/ArrayValue.hpp"
-#include "ast/MemberFunctionCall.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
-#include "ast/Unary.hpp"
 #include "ast/Cast.hpp"
 #include "ast/New.hpp"
 #include "ast/NewArray.hpp"
-#include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
 #endif

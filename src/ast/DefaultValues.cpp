@@ -51,7 +51,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     declaration.Content->value = false_;
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Unhandled type");
+                    eddic_unreachable("Unhandled type");
                 }
             }
         }

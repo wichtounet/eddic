@@ -30,7 +30,7 @@ mtac::basic_block_iterator mtac::Function::end(){
     return basic_block_iterator(nullptr, exit);    
 }
 
-mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<BasicBlock> bb){
+mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
     if(bb){
         return basic_block_iterator(bb, bb->prev);
     } else {
@@ -57,7 +57,7 @@ mtac::basic_block_p mtac::Function::current_bb(){
 void mtac::Function::create_entry_bb(){
     ++count;
 
-    auto new_block = std::make_shared<mtac::BasicBlock>(-1);
+    auto new_block = std::make_shared<mtac::basic_block>(-1);
     new_block->context = context;
 
     entry = exit = new_block;
@@ -66,7 +66,7 @@ void mtac::Function::create_entry_bb(){
 void mtac::Function::create_exit_bb(){
     ++count;
 
-    auto new_block = std::make_shared<mtac::BasicBlock>(-2);
+    auto new_block = std::make_shared<mtac::basic_block>(-2);
     new_block->context = context;
     
     exit->next = new_block;
@@ -76,7 +76,7 @@ void mtac::Function::create_exit_bb(){
 }
 
 mtac::basic_block_p mtac::Function::new_bb(){
-    auto bb = std::make_shared<mtac::BasicBlock>(++index);
+    auto bb = std::make_shared<mtac::basic_block>(++index);
     bb->context = context;
     return bb;
 }
@@ -96,8 +96,8 @@ mtac::basic_block_p mtac::Function::append_bb(){
 mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, mtac::basic_block_p block){
     auto bb = *it;
 
-    ASSERT(block, "Cannot add null block"); 
-    ASSERT(it != begin(), "Cannot add before entry");
+    eddic_assert(block, "Cannot add null block"); 
+    eddic_assert(it != begin(), "Cannot add before entry");
 
     block->context = context;
     
@@ -112,8 +112,8 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
 }
 
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
-    ASSERT(block, "Cannot remove null block"); 
-    ASSERT(block != exit, "Cannot remove exit"); 
+    eddic_assert(block, "Cannot remove null block"); 
+    eddic_assert(block != exit, "Cannot remove exit"); 
 
     log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
 
@@ -170,10 +170,10 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
     return remove(*it);
 }
 
-mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<BasicBlock> block){
+mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<basic_block> block){
     auto source = *it; 
 
-    ASSERT(source->next == block || source->prev == block, "Can only merge sibling blocks");
+    eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
 
     log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
 
@@ -227,6 +227,22 @@ void mtac::Function::use(ltac::Register reg){
 
 void mtac::Function::use(ltac::FloatRegister reg){
     _use_float_registers.insert(reg);
+}
+
+const std::set<ltac::Register>& mtac::Function::variable_registers() const {
+    return _variable_registers;
+}
+
+const std::set<ltac::FloatRegister>& mtac::Function::variable_float_registers() const {
+    return _variable_float_registers;
+}
+
+void mtac::Function::variable_use(ltac::Register reg){
+    _variable_registers.insert(reg);
+}
+
+void mtac::Function::variable_use(ltac::FloatRegister reg){
+    _variable_float_registers.insert(reg);
 }
 
 std::size_t mtac::Function::pseudo_registers(){

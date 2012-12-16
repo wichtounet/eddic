@@ -13,13 +13,12 @@
 #include "ast/Deferred.hpp"
 #include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
-#include "ast/MemberFunctionCall.hpp"
+#include "ast/Expression.hpp"
 #include "ast/Return.hpp"
 #include "ast/Delete.hpp"
 #include "ast/VariableDeclaration.hpp"
 #include "ast/StructDeclaration.hpp"
 #include "ast/ArrayDeclaration.hpp"
-#include "ast/SuffixOperation.hpp"
 #include "ast/PrefixOperation.hpp"
 
 namespace eddic {
@@ -51,8 +50,8 @@ struct ASTDelete;
 typedef Deferred<ASTDelete> Delete;
 
 typedef boost::variant<
-            MemberFunctionCall,
             FunctionCall, 
+            Expression,
             Swap, 
             VariableDeclaration,
             StructDeclaration,
@@ -64,7 +63,6 @@ typedef boost::variant<
             DoWhile, 
             Foreach,
             ForeachIn, 
-            SuffixOperation,
             PrefixOperation,
             Delete,
             Switch,

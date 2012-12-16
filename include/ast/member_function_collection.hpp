@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef FUNCTIONS_ANNOTATOR_H
-#define FUNCTIONS_ANNOTATOR_H
+#ifndef AST_MEMBER_FUNCTION_COLLECTION_PASS_H
+#define AST_MEMBER_FUNCTION_COLLECTION_PASS_H
 
 #include "ast/ContextAwarePass.hpp"
 
@@ -21,22 +21,6 @@ struct MemberFunctionCollectionPass : Pass {
     void apply_struct_destructor(ast::Destructor& destructor) override;
 
     ast::Struct current_struct;
-};
-
-struct FunctionCollectionPass : ContextAwarePass {
-    void apply_function(ast::FunctionDeclaration& function) override;
-    void apply_struct_function(ast::FunctionDeclaration& function) override;
-    void apply_struct_constructor(ast::Constructor& constructor) override;
-    void apply_struct_destructor(ast::Destructor& destructor) override;
-};
-
-struct FunctionCheckPass : ContextAwarePass {
-    void apply_function(ast::FunctionDeclaration& function) override;
-    void apply_struct_function(ast::FunctionDeclaration& function) override;
-    void apply_struct_constructor(ast::Constructor& constructor) override;
-    void apply_struct_destructor(ast::Destructor& destructor) override;
-        
-    std::shared_ptr<Function> currentFunction;
 };
 
 } //end of ast

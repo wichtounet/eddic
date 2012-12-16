@@ -76,10 +76,10 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
-    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };
 };
 
 //Liveness analysis on Pseudo Registers
@@ -90,10 +90,10 @@ struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowT
    
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
-    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { ASSERT_PATH_NOT_TAKEN("Not MTAC"); };
+    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };
 };
 
 template<typename Reg, typename FloatReg>

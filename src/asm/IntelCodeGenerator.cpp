@@ -22,7 +22,7 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
 
-void as::IntelCodeGenerator::generate(std::shared_ptr<mtac::Program> program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
@@ -34,19 +34,12 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<mtac::Program> program, st
     addStandardFunctions();
 
     addGlobalVariables(pool, float_pool);
-
-    auto size = writer.size();
-
-    //Little hack in order for nasm to work with little files
-    for(int i = size; i < 1050; ++i){
-        writer.stream() << " " << std::endl;
-    }
 }
 
 void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
      
-    for(auto it : context->getVariables()){
+    for(auto& it : context->getVariables()){
         auto type = it.second->type();
         
         //The const variables are not stored
@@ -89,21 +82,19 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
     std::string name = "functions/" + function + ".s";
     std::ifstream stream(name.c_str());
 
-    ASSERT(stream, "One file in the functions folder does not exist");
+    eddic_assert(stream, "One file in the functions folder does not exist");
 
-    std::string str;
-
-    while(!stream.eof()){
-        std::getline(stream, str);
-
-        if(!str.empty()){
-            if(str[0] != ';'){
-                writer.stream() << str << std::endl;
-            }
+    std::string line;
+    while (getline(stream, line))
+    {
+        if (!line.empty() &&
+            (line[0] != ';'))
+        {
+            writer.stream() << line << '\n';
         }
     }
-
-    writer.stream() << std::endl;
+    
+    writer.stream() << '\n';
 }
 
 

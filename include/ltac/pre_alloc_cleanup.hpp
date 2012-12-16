@@ -8,15 +8,13 @@
 #ifndef LTAC_PRE_ALLOC_CLEANUP_H
 #define LTAC_PRE_ALLOC_CLEANUP_H
 
-#include <memory>
-
 #include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace ltac {
 
-void pre_alloc_cleanup(std::shared_ptr<mtac::Program> program);
+void pre_alloc_cleanup(mtac::program_p program);
 
 } //end of ltac
 

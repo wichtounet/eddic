@@ -27,7 +27,7 @@ using namespace eddic;
 void check_for_main(std::shared_ptr<GlobalContext> context);
 void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> configuration, Platform platform, std::shared_ptr<StringPool> pool);
 
-std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
+mtac::program_p EDDIFrontEnd::compile(const std::string& file, Platform platform){
     //The program to build
     ast::SourceFile program;
 
@@ -41,6 +41,12 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         //Read dependencies
         resolveDependencies(program, parser);
+        
+        //If the user asked for it, print the Abstract Syntax Tree coming from the parser
+        if(configuration->option_defined("ast-raw")){
+            ast::Printer printer;
+            printer.print(program);
+        }
         
         //AST Passes
         generate_program(program, configuration, platform, pool);
@@ -56,7 +62,7 @@ std::shared_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             return nullptr;
         }
 
-        std::shared_ptr<mtac::Program> mtacProgram = std::make_shared<mtac::Program>();
+        mtac::program_p mtacProgram = std::make_shared<mtac::Program>();
 
         //Generate Three-Address-Code language
         mtac::Compiler compiler;
@@ -81,8 +87,6 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 
     //Check that there is a main in the program
     check_for_main(program.Content->context);
-
-    program.Content->context->release_references();
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){

@@ -15,14 +15,17 @@
 
 #include "variant.hpp"
 #include "Position.hpp"
+#include "assert.hpp"
 
 #include "ast/Position.hpp"
 
 namespace eddic {
 
-typedef boost::variant<int, double, std::pair<std::string, int>> Val;
-
 class Type;
+class Variable;
+
+typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
 
 /*!
  * \class Variable
@@ -30,6 +33,8 @@ class Type;
  */
 class Variable {
     private:
+        std::size_t m_references = 0;
+
         const std::string m_name;
         std::shared_ptr<const Type> m_type;
 
@@ -37,9 +42,17 @@ class Variable {
         ast::Position m_source_position;
         Val v_value;
 
+        //For temporary references
+        std::shared_ptr<Variable> m_reference = nullptr;
+        Offset m_offset;
+
     public:
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
         Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
+        Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
+
+        std::size_t references() const;
+        void add_reference();
 
         std::string name() const ;
         std::shared_ptr<const Type> type() const ;
@@ -51,7 +64,14 @@ class Variable {
         void set_source_position(const ast::Position& position);
 
         void setPosition(Position position);
+
+        bool is_reference() const;
+        std::shared_ptr<Variable> reference() const;
+        Offset reference_offset() const;
 };
+
+std::ostream& operator<<(std::ostream& stream, Variable& variable);
+std::ostream& operator<<(std::ostream& stream, std::shared_ptr<Variable>& variable);
 
 } //end of eddic
 

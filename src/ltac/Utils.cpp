@@ -10,10 +10,11 @@
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 
+#include "mtac/Utils.hpp"
+
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
-
-#include "mtac/Utils.hpp"
+#include "ltac/Instruction.hpp"
 
 using namespace eddic;
 
@@ -94,19 +95,33 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
 
     ltac::Argument operator()(std::shared_ptr<Variable> variable) const {
         if(ltac::is_float_var(variable)){
+            ltac::PseudoFloatRegister reg;
+
             if(variable->position().is_temporary()){
-                return manager.get_pseudo_float_reg_no_move(variable);
+                reg = manager.get_pseudo_float_reg_no_move(variable);
             } else {
-                return manager.get_pseudo_float_reg(variable);
+                reg = manager.get_pseudo_float_reg(variable);
             }
+
+            if(manager.is_escaped(variable)){
+                manager.remove_from_pseudo_float_reg(variable);
+            }
+
+            return reg;
         } else {
-            return to_register(variable, manager);
+            auto reg = to_register(variable, manager);
+
+            if(manager.is_escaped(variable)){
+                manager.remove_from_pseudo_reg(variable);
+            }
+
+            return reg;
         }
     }
 
     template<typename T>
     ltac::Argument operator()(T&) const {
-        ASSERT_PATH_NOT_TAKEN("Unhandled arg type");
+        eddic_unreachable("Unhandled arg type");
     }
 };
 

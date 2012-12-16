@@ -29,8 +29,8 @@ namespace ast {
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::CharLiteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
-    typedef boost::mpl::vector<ast::ArrayValue, ast::FunctionCall, ast::MemberFunctionCall, ast::SuffixOperation, ast::PrefixOperation,
-        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::MemberValue, ast::DereferenceValue, ast::New, ast::NewArray> non_constant_types;
+    typedef boost::mpl::vector<ast::FunctionCall,
+        ast::BuiltinOperator, ast::Assignment, ast::Ternary, ast::New, ast::NewArray> non_constant_types;
 
     template<typename T>
     typename std::enable_if<boost::mpl::contains<constant_types, T>::value, bool>::type operator()(T&) const {
@@ -42,8 +42,16 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
         return false;
     }
 
-    bool operator()(ast::Unary& value) const {
-        return visit(*this, value.Content->value);
+    bool operator()(ast::PrefixOperation& value) const {
+        auto op = value.Content->op;
+
+        if(
+                    op == ast::Operator::STAR || op == ast::Operator::ADDRESS || op == ast::Operator::CALL 
+                ||  op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
+            return false;
+        }
+
+        return visit(*this, value.Content->left_value);
     }
 
     bool operator()(ast::Cast& cast) const {
@@ -57,8 +65,18 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::Expression& value) const {
         if(visit(*this, value.Content->first)){
             for(auto& op : value.Content->operations){
-                if(!visit(*this, op.get<1>())){
-                    return false;
+                if(op.get<1>()){
+                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                        if(!visit(*this, *ptr)){
+                            return false;
+                        }
+                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                        for(auto& v : ptr->values){
+                            if(!visit(*this, v)){
+                                return false;
+                            }
+                        }
+                    }
                 }
             }
 

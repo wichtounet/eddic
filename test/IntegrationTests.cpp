@@ -160,6 +160,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(SpecificSuite)
 
+BOOST_AUTO_TEST_CASE( addressof ){
+    assert_output("addressof.eddi", "44|44|55|55|");
+}
+
 BOOST_AUTO_TEST_CASE( array_foreach_local ){
     assert_output("array_foreach_local.eddi", "43210");
 }
@@ -180,6 +184,10 @@ BOOST_AUTO_TEST_CASE( array_foreach_param_param ){
     assert_output("array_foreach_param_param.eddi", "43210");
 }
 
+BOOST_AUTO_TEST_CASE( arrays_in_struct ){
+    assert_output("arrays_in_struct.eddi", "5|55|66|77|66|166|177|66|166|177|5|");
+}
+
 BOOST_AUTO_TEST_CASE( char_type ){
     assert_output("char_type.eddi", "a|0|z|e|e|u|u|");
 }
@@ -194,6 +202,10 @@ BOOST_AUTO_TEST_CASE( ctor_dtor_heap ){
 
 BOOST_AUTO_TEST_CASE( ctor_dtor_stack ){
     assert_output("ctor_dtor_stack.eddi", "CA|0|CAI|55|DA|CAII|3300|CAS|666|0|DA|DA|DA|");
+}
+
+BOOST_AUTO_TEST_CASE( copy_constructors ){
+    assert_output("copy_constructors.eddi", "9|5|99|55|9|5|99|55|");
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
@@ -260,6 +272,10 @@ BOOST_AUTO_TEST_CASE( struct_pointers ){
 
 BOOST_AUTO_TEST_CASE( member_pointers ){
     assert_output("member_pointers.eddi", "44|44|55|55|66|66|66|44|44|55|55|66|66|66|");
+}
+
+BOOST_AUTO_TEST_CASE( member_function_calls ){
+    assert_output("member_function_calls.eddi", "0|5|5|10|10|0|5|10|15|0|5|15|20|0|5|20|25|");
 }
 
 BOOST_AUTO_TEST_CASE( member_functions ){
@@ -329,6 +345,10 @@ BOOST_AUTO_TEST_CASE( return_string ){
     assert_output("return_string.eddi", "abcdef");
 }
 
+BOOST_AUTO_TEST_CASE( return_by_value ){
+    assert_output("return_by_value.eddi", "99|66|11|88|");
+}
+
 BOOST_AUTO_TEST_CASE( return_int ){
     assert_output("return_int.eddi", "484|");
 }
@@ -343,6 +363,11 @@ BOOST_AUTO_TEST_CASE( pointer_arrays ){
 
 BOOST_AUTO_TEST_CASE( recursive_functions ){
     assert_output("recursive.eddi", "362880");
+}
+
+BOOST_AUTO_TEST_CASE( single_inheritance ){
+    assert_output_32("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.2999|55|B|55|66|57.3999|55|58.4999|55|55|66|77|");
+    assert_output_64("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.3000|55|B|55|66|57.4000|55|58.5000|55|55|66|77|");
 }
 
 BOOST_AUTO_TEST_CASE( math ){
@@ -385,6 +410,10 @@ BOOST_AUTO_TEST_CASE( struct_array ){
 
 BOOST_AUTO_TEST_CASE( switch_ ){
     assert_output("switch.eddi", "5|5|3|6|default|4|");
+}
+
+BOOST_AUTO_TEST_CASE( switch_string ){
+    assert_output("switch_string.eddi", "5|5|3|6|default|4|");
 }
 
 BOOST_AUTO_TEST_CASE( nested ){
@@ -452,6 +481,11 @@ BOOST_AUTO_TEST_CASE( params_assign ){
 BOOST_AUTO_TEST_CASE( wrong_print ){
     assert_compilation_error("wrong_print.eddi", "--32", "--O2", "wrong_print.out");
     assert_compilation_error("wrong_print.eddi", "--64", "--O2", "wrong_print.out");
+}
+
+BOOST_AUTO_TEST_CASE( invalid_inheritance ){
+    assert_compilation_error("invalid_inheritance.eddi", "--32", "--O2", "invalid_inheritance.out");
+    assert_compilation_error("invalid_inheritance.eddi", "--64", "--O2", "invalid_inheritance.out");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

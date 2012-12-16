@@ -8,16 +8,11 @@
 #ifndef LTAC_ARGUMENT_H
 #define LTAC_ARGUMENT_H
 
-#include <memory>
 #include <string>
 
 #include "variant.hpp"
 
-#include "ltac/Register.hpp"
-#include "ltac/FloatRegister.hpp"
-#include "ltac/PseudoRegister.hpp"
-#include "ltac/PseudoFloatRegister.hpp"
-#include "ltac/Address.hpp"
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

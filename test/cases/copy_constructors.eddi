@@ -1,0 +1,71 @@
+//Struct with a copy constructor
+struct With {
+    int a;
+    int b;
+
+    this(){}
+
+    this(With* rhs){
+        a = rhs.a;
+        b = rhs.b;
+    }
+}
+
+//Struct without a copy constructor
+struct Without {
+    int a;
+    int b;
+}
+
+void main(){
+    with();
+    without();
+}
+
+void with(){
+    With a;
+    a.a = 9;
+    a.b = 5;
+
+    With b = a;
+
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+
+    a.a = 99;
+    a.b = 55;
+
+    With c;
+    c = a;
+    
+    print(c.a);
+    print("|");
+    print(c.b);
+    print("|");
+}
+
+void without(){
+    Without a;
+    a.a = 9;
+    a.b = 5;
+
+    Without b = a;
+
+    print(b.a);
+    print("|");
+    print(b.b);
+    print("|");
+
+    a.a = 99;
+    a.b = 55;
+
+    Without c;
+    c = a;
+    
+    print(c.a);
+    print("|");
+    print(c.b);
+    print("|");
+}

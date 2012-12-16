@@ -10,12 +10,7 @@
 
 #include <string>
 
-#include "ltac/Argument.hpp"
-#include "ltac/Address.hpp"
-#include "ltac/Register.hpp"
-#include "ltac/FloatRegister.hpp"
-#include "ltac/PseudoRegister.hpp"
-#include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/forward.hpp"
 
 namespace eddic {
 

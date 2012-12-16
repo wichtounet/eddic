@@ -20,17 +20,9 @@ AssemblyFileWriter::AssemblyFileWriter(const std::string& path) {
 }
 
 AssemblyFileWriter::~AssemblyFileWriter() {
-    m_stream.close();
 }
 
-std::stringstream& AssemblyFileWriter::stream() {
-    return buffer;
+std::ostream& AssemblyFileWriter::stream() {
+    return m_stream;
 }
 
-unsigned int AssemblyFileWriter::size() {
-    return buffer.str().size();
-}
-
-void AssemblyFileWriter::write(){
-    m_stream.write(buffer.str().c_str(), buffer.str().length());
-}

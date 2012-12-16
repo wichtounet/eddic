@@ -34,11 +34,11 @@ struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const IntegerSuffix& literal) const;
     Val operator()(const Float& literal) const;
     Val operator()(const VariableValue& variable) const;
-    Val operator()(const Unary& unary) const;
+    Val operator()(const PrefixOperation& unary) const;
 
     template<typename T>
     Val operator()(const T&) const {
-        ASSERT_PATH_NOT_TAKEN("Is not constant");
+        eddic_unreachable("Is not constant");
     }
 };
 

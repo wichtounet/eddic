@@ -10,8 +10,14 @@
 
 using namespace eddic;
 
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position) : m_name(name), m_type(type), m_position(position) {}
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value) : m_name(name), m_type(type), m_position(position), v_value(value) {}
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position) 
+    : m_name(name), m_type(type), m_position(position) {}
+
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value) 
+    : m_name(name), m_type(type), m_position(position), v_value(value) {}
+
+Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset) 
+    : m_name(name), m_type(type), m_position(PositionType::TEMPORARY), m_reference(reference), m_offset(offset) {}
 
 std::string Variable::name() const  {
     return m_name;
@@ -39,4 +45,36 @@ const ast::Position& Variable::source_position() const {
 
 void Variable::set_source_position(const ast::Position& position){
     m_source_position = position;
+}
+        
+bool Variable::is_reference() const {
+    return m_reference != nullptr;
+}
+
+std::shared_ptr<Variable> Variable::reference() const {
+    return m_reference;
+}
+
+Offset Variable::reference_offset() const {
+    return m_offset;
+}
+
+std::ostream& eddic::operator<<(std::ostream& stream, Variable& variable){
+    return stream << variable.name();
+}
+
+std::size_t eddic::Variable::references() const {
+    return m_references;
+}
+
+void eddic::Variable::add_reference(){
+    ++m_references;
+}
+
+std::ostream& eddic::operator<<(std::ostream& stream, std::shared_ptr<Variable>& variable){
+    if(variable){
+        return stream << *variable;
+    } else {
+        return stream << "null_variable";
+    }
 }

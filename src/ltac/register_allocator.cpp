@@ -248,7 +248,7 @@ void find_reg(Opt& arg, std::unordered_set<Pseudo>& registers){
 template<typename Stmt, typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, void>::type 
 get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_registers){
-    for(auto reg : instruction->uses){
+    for(auto& reg : instruction->uses){
         local_pseudo_registers.insert(reg);
     }
 }
@@ -256,7 +256,7 @@ get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_reg
 template<typename Stmt, typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type 
 get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_registers){
-    for(auto reg : instruction->float_uses){
+    for(auto& reg : instruction->float_uses){
         local_pseudo_registers.insert(reg);
     }
 }
@@ -698,6 +698,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<std::size_t
 template<typename Pseudo, typename Hard>
 void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
     std::unordered_map<std::size_t, std::size_t> allocation;
+    std::set<std::size_t> variable_allocated;
     
     auto colors = hard_registers<Pseudo>(platform);
 
@@ -720,19 +721,11 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
         std::size_t reg = order.back();
         order.pop_back();
         
-        //Handle bound registers
-        /*if(graph.convert(reg).bound){
-            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
-            allocation[reg] = graph.convert(reg).binding;
-
-            continue;
-        }*/
-
         for(auto color : colors){
             bool found = false;
 
             for(auto neighbor : graph.neighbors(reg)){
-                if((allocation.count(neighbor) && allocation[neighbor] == color)/* || (graph.convert(neighbor).bound && graph.convert(neighbor).binding == color)*/){
+                if((allocation.count(neighbor) && allocation[neighbor] == color)){
                     found = true;
                     break;
                 }
@@ -741,6 +734,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
             if(!found){
                 log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << graph.convert(reg) << log::endl;
                 allocation[reg] = color;
+                variable_allocated.insert(color);
                 break;
             }
         }
@@ -757,11 +751,15 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
             }
         }
 
-        ASSERT(allocation.count(reg), "The register must have been allocated a color");
+        eddic_assert(allocation.count(reg), "The register must have been allocated a color");
     }
 
     for(auto& alloc : allocation){
         function->use(Hard(alloc.second));
+    }
+
+    for(auto& alloc : variable_allocated){
+        function->variable_use(Hard(alloc));
     }
 
     replace_registers<Pseudo, Hard>(function, allocation, graph);
@@ -893,7 +891,7 @@ void register_allocation(mtac::function_p function, Platform platform){
 
 } //end of anonymous namespace
 
-void ltac::register_allocation(std::shared_ptr<mtac::Program> program, Platform platform){
+void ltac::register_allocation(mtac::program_p program, Platform platform){
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program->functions){

@@ -20,6 +20,10 @@
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
+#include "ltac/PseudoRegister.hpp"
+#include "ltac/PseudoFloatRegister.hpp"
 
 using namespace eddic;
 
@@ -55,7 +59,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
             } else {
                 auto reg = manager.get_pseudo_reg(var);
@@ -65,7 +69,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
             }
         }
@@ -137,7 +141,12 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
         } else if(position.isParameter()){
             auto reg = manager.get_free_pseudo_reg();
 
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+            //The case of array is special because only the address is passed, not the complete array
+            if(var->type()->is_array()){
+                ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+            } else {
+                ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
+            }
 
             return ltac::Address(reg, offsetReg);
         } else if(position.isGlobal()){
@@ -246,7 +255,7 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
     }
 }
 
-void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple){
+void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple, bool floats){
     auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
 
     //The default value is 0
@@ -257,9 +266,44 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, std::shared_ptr<mtac
         auto cmp_reg = manager.get_free_pseudo_reg();
 
         ltac::add_instruction(bb, ltac::Operator::MOV, cmp_reg, *ptr); 
-        ltac::add_instruction(bb, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple->arg2)); 
+        
+        if(floats){
+            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple->arg2)); 
+        } else {
+            ltac::add_instruction(bb, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple->arg2)); 
+        }
+    } 
+    //For ucomisd, neither the first nor the second argument can be a double
+    else if(auto* ptr = boost::get<double>(&*quadruple->arg1)){
+        auto cmp_reg = manager.get_free_pseudo_float_reg();
+
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(bb, ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
+        
+        if(floats){
+            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple->arg2)); 
+        } else {
+            ltac::add_instruction(bb, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple->arg2)); 
+        }
+    }
+    //For ucomisd, neither the first nor the second argument can be a double
+    else if(auto* ptr = boost::get<double>(&*quadruple->arg2)){
+        auto cmp_reg = manager.get_free_pseudo_float_reg();
+
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(bb, ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
+        
+        if(floats){
+            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, to_arg(*quadruple->arg1), cmp_reg); 
+        } else {
+            ltac::add_instruction(bb, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), cmp_reg); 
+        }
     } else {
-        ltac::add_instruction(bb, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
+        if(floats){
+            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
+        } else {
+            ltac::add_instruction(bb, ltac::Operator::CMP_INT, to_arg(*quadruple->arg1), to_arg(*quadruple->arg2)); 
+        }
     }
 
     //Conditionally move 1 in the register
@@ -312,7 +356,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         } else {
@@ -338,7 +382,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         }
@@ -383,7 +427,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         } else {
@@ -409,7 +453,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
                     bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
                     break;
                 default:
-                    ASSERT_PATH_NOT_TAKEN("This operation is not a float operator");
+                    eddic_unreachable("This operation is not a float operator");
                     break;
             }
         }
@@ -689,7 +733,7 @@ void ltac::StatementCompiler::compile_ASSIGN(std::shared_ptr<mtac::Quadruple> qu
         } else if(position.isGlobal()){
             ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid position");
+            eddic_unreachable("Invalid position");
         }
         
         manager.remove_from_pseudo_reg(quadruple->result); 
@@ -715,7 +759,7 @@ void ltac::StatementCompiler::compile_PASSIGN(std::shared_ptr<mtac::Quadruple> q
                 } else if(position.isGlobal()){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
                 } else {
-                    ASSERT_PATH_NOT_TAKEN("Invalid position");
+                    eddic_unreachable("Invalid position");
                 }
 
                 manager.remove_from_pseudo_reg(quadruple->result); 
@@ -740,7 +784,7 @@ void ltac::StatementCompiler::compile_FASSIGN(std::shared_ptr<mtac::Quadruple> q
         } else if(position.isGlobal()){
             ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
         } else {
-            ASSERT_PATH_NOT_TAKEN("Invalid position");
+            eddic_unreachable("Invalid position");
         }
         
         manager.remove_from_pseudo_float_reg(quadruple->result); 
@@ -1053,51 +1097,51 @@ void ltac::StatementCompiler::compile_FDIV(std::shared_ptr<mtac::Quadruple> quad
 }
 
 void ltac::StatementCompiler::compile_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVE, quadruple);
+    set_if_cc(ltac::Operator::CMOVE, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_NOT_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVNE, quadruple);
+    set_if_cc(ltac::Operator::CMOVNE, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_GREATER(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVG, quadruple);
+    set_if_cc(ltac::Operator::CMOVG, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_GREATER_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVGE, quadruple);
+    set_if_cc(ltac::Operator::CMOVGE, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_LESS(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVL, quadruple);
+    set_if_cc(ltac::Operator::CMOVL, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_LESS_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVLE, quadruple);
+    set_if_cc(ltac::Operator::CMOVLE, quadruple, false);
 }
 
 void ltac::StatementCompiler::compile_FE(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVE, quadruple);
+    set_if_cc(ltac::Operator::CMOVE, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_FNE(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVNE, quadruple);
+    set_if_cc(ltac::Operator::CMOVNE, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_FG(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVA, quadruple);
+    set_if_cc(ltac::Operator::CMOVA, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_FGE(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVAE, quadruple);
+    set_if_cc(ltac::Operator::CMOVAE, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_FLE(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVBE, quadruple);
+    set_if_cc(ltac::Operator::CMOVBE, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_FL(std::shared_ptr<mtac::Quadruple> quadruple){
-    set_if_cc(ltac::Operator::CMOVB, quadruple);
+    set_if_cc(ltac::Operator::CMOVB, quadruple, true);
 }
 
 void ltac::StatementCompiler::compile_MINUS(std::shared_ptr<mtac::Quadruple> quadruple){
@@ -1265,7 +1309,7 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadrupl
     } else if(mtac::is<int>(*quadruple->arg2)){
         ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple->result, *quadruple->arg1), boost::get<int>(*quadruple->arg2)); 
     } else {
-        ASSERT_PATH_NOT_TAKEN("Unsupported rhs type in DOT_PASSIGN");
+        eddic_unreachable("Unsupported rhs type in DOT_PASSIGN");
     }
 }
 

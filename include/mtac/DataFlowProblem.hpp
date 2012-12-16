@@ -75,7 +75,7 @@ auto DataFlowProblem<Type, DomainValues>::Init(mtac::function_p/* function*/) ->
 
 template<typename ProblemDomain>
 ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
-    //ASSERT(!in.top() || !out.top(), "At least one lattice should not be a top element");
+    //eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top() && out.top()){
         typename ProblemDomain::Values values;

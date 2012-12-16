@@ -47,10 +47,14 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
             }
         } else if(variable->type()->is_array()){
             type = "a";
-        } else if(variable->type()->is_template()){
+        } else if(variable->type()->is_template_type()){
             type = "t";
         } else {
             type = "u";
+        }
+
+        if(variable->is_reference()){
+            return variable->name() + "(ref," + type + ")";
         }
 
         switch(variable->position().type()){
@@ -71,7 +75,7 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
             case PositionType::PARAM_REGISTER:
                 return variable->name() + "(pr," + type + ")";
             default:
-                ASSERT_PATH_NOT_TAKEN("Unhandled position type");
+                eddic_unreachable("Unhandled position type");
         }
    }
 
@@ -105,7 +109,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     DebugVisitor() : stream(std::cout) {}
     DebugVisitor(std::ostream& os) : stream(os) {}
 
-    void operator()(std::shared_ptr<mtac::Program> program){
+    void operator()(mtac::program_p program){
         stream << "TAC Program " << endl << endl; 
 
         visit_each_non_variant(*this, program->functions);
@@ -123,34 +127,10 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << endl;
     }
 
-    void pretty_print(std::vector<mtac::basic_block_p> blocks){
-        if(blocks.empty()){
-            stream << "{}";
-        } else {
-            stream << "{" << blocks[0];
-
-            for(std::size_t i = 1; i < blocks.size(); ++i){
-                stream << ", " << blocks[i];
-            }
-
-            stream << "}";
-        }
-    }
-
     void operator()(mtac::basic_block_p block){
-        std::string sep(25, '-');
-
-        stream << sep << std::endl;
-        stream << block;
-
-        stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
-        stream << "successors "; pretty_print(block->successors); std::cout << std::endl;;
-        stream << "predecessors "; pretty_print(block->predecessors); std::cout << std::endl;;
-        
-        stream << sep << std::endl;
+        pretty_print(block, stream);
         
         visit_each(*this, block->statements);     
-        
     }
 
     void operator()(mtac::Statement& statement){
@@ -338,7 +318,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void mtac::Printer::print(std::shared_ptr<mtac::Program> program) const {
+void mtac::Printer::print(mtac::program_p program) const {
    DebugVisitor visitor;
    visitor(program); 
 }
@@ -367,7 +347,7 @@ void mtac::Printer::printArgument(mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
 }
 
-void mtac::print(std::shared_ptr<mtac::Program> program){
+void mtac::print(mtac::program_p program){
     mtac::Printer printer;
     printer.print(program);
 }

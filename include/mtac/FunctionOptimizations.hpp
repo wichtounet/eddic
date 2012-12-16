@@ -8,18 +8,15 @@
 #ifndef MTAC_FUNCTION_OPTIMIZATIONS_H
 #define MTAC_FUNCTION_OPTIMIZATIONS_H
 
-#include <memory>
-
 #include "mtac/pass_traits.hpp"
+#include "mtac/forward.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-struct Program;
-
 struct remove_unused_functions {
-    bool operator()(std::shared_ptr<mtac::Program> program);
+    bool operator()(mtac::program_p program);
 };
 
 template<>
@@ -31,7 +28,7 @@ struct pass_traits<remove_unused_functions> {
 };
 
 struct remove_empty_functions {
-    bool operator()(std::shared_ptr<mtac::Program> program);
+    bool operator()(mtac::program_p program);
 };
 
 template<>

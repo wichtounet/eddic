@@ -10,14 +10,14 @@
 
 #include <memory>
 
+#include "mtac/forward.hpp"
+
 namespace eddic {
 
 namespace mtac {
 
-struct Program;
-
 struct BasicBlockExtractor {
-    void extract(std::shared_ptr<mtac::Program> program) const ;
+    void extract(mtac::program_p program) const ;
 };
 
 } //end of ast

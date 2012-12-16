@@ -6,6 +6,8 @@
 //=======================================================================
 
 #include "logging.hpp"
+#include "Options.hpp"
+#include "SemanticalException.hpp"
 
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
@@ -16,11 +18,16 @@
 #include "ast/TransformerEngine.hpp"
 #include "ast/TemplateCollectionPass.hpp"
 #include "ast/ContextAnnotator.hpp"
-#include "ast/StructuresAnnotator.hpp"
+#include "ast/structure_check.hpp"
+#include "ast/structure_collection.hpp"
+#include "ast/structure_inheritance.hpp"
+#include "ast/structure_member_collection.hpp"
 #include "ast/DefaultValues.hpp"
-#include "ast/FunctionsAnnotator.hpp"
+#include "ast/member_function_collection.hpp"
+#include "ast/function_collection.hpp"
+#include "ast/function_generation.hpp"
+#include "ast/function_check.hpp"
 #include "ast/VariablesAnnotator.hpp"
-#include "ast/FunctionsAnnotator.hpp"
 #include "ast/StringChecker.hpp"
 #include "ast/TypeChecker.hpp"
 #include "ast/WarningsEngine.hpp"
@@ -32,16 +39,14 @@ namespace {
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     pass->apply_struct(struct_, false);
 
-    for(auto& function : struct_.Content->functions){
-        pass->apply_struct_function(function);
-    }
-
-    for(auto& function : struct_.Content->destructors){
-        pass->apply_struct_destructor(function);
-    }
-
-    for(auto& function : struct_.Content->constructors){
-        pass->apply_struct_constructor(function);
+    for(auto& block : struct_.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            pass->apply_struct_function(*ptr);
+        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+            pass->apply_struct_destructor(*ptr);
+        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+            pass->apply_struct_constructor(*ptr);
+        }
     }
 }
     
@@ -52,7 +57,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
 
-        std::vector<ast::FirstLevelBlock> blocks = program.Content->blocks;
+        std::vector<ast::SourceFileBlock> blocks = program.Content->blocks;
         for(auto& block : blocks){
             if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                 pass->apply_function(*ptr);
@@ -93,27 +98,33 @@ void ast::PassManager::init_passes(){
     
     //Structures collection pass
     passes.push_back(make_pass<ast::StructureCollectionPass>("structures collection", template_engine, platform, configuration, pool));
+    
+    //Structures inheritance pass
+    passes.push_back(make_pass<ast::StructureInheritancePass>("structures inheritance", template_engine, platform, configuration, pool));
 
     //Template Collection pass
     passes.push_back(make_pass<ast::TemplateCollectionPass>("templates collection", template_engine, platform, configuration, pool));
     
     //Structures member collection pass
     passes.push_back(make_pass<ast::StructureMemberCollectionPass>("structures member collection", template_engine, platform, configuration, pool));
+
+    //Function Generation Pass
+    passes.push_back(make_pass<ast::FunctionGenerationPass>("function generation", template_engine, platform, configuration, pool));
     
     //Structures check pass
     passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration, pool));
     
-    //Structures check pass
+    //Add default values to declarations
     passes.push_back(make_pass<ast::DefaultValuesPass>("default values", template_engine, platform, configuration, pool));
     
     //Member function collection pass
     passes.push_back(make_pass<ast::MemberFunctionCollectionPass>("member function collection", template_engine, platform, configuration, pool));
-
-    //Variables annotation pass
-    passes.push_back(make_pass<ast::VariableAnnotationPass>("variable annotation", template_engine, platform, configuration, pool));
     
     //Function collection pass
     passes.push_back(make_pass<ast::FunctionCollectionPass>("function collection", template_engine, platform, configuration, pool));
+    
+    //Function check pass
+    passes.push_back(make_pass<ast::VariableAnnotationPass>("variables annotation", template_engine, platform, configuration, pool));
     
     //Function check pass
     passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration, pool));
@@ -166,6 +177,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     log::emit<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
 
+    inc_depth();
+
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
@@ -175,15 +188,30 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
             apply_pass(pass, struct_);
         }
     }
+
+    dec_depth();
     
     log::emit<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
     
     class_instantiated.push_back(struct_);
 }
 
+void ast::PassManager::inc_depth(){
+    ++template_depth;
+
+    if(template_depth > static_cast<unsigned int>(configuration->option_int_value("template-depth"))){
+        throw SemanticalException("Recursive template-instantiation depth limit reached");
+    }
+}
+
+void ast::PassManager::dec_depth(){
+    --template_depth;
+}
+
 void ast::PassManager::run_passes(){
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
+        //They won't be applied on later instantiated function templates and class templates
         if(pass->is_simple()){
             log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
 
@@ -217,7 +245,7 @@ void ast::PassManager::run_passes(){
                     for(auto& block : program.Content->blocks){
                         if(auto* struct_type = boost::get<ast::Struct>(&block)){
                             if(struct_type->Content->struct_type->mangle() == context){
-                                struct_type->Content->functions.push_back(function);
+                                struct_type->Content->blocks.push_back(function);
                                 break;
                             }
                         }

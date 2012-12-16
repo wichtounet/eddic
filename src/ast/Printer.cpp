@@ -7,12 +7,13 @@
 
 #include <iostream>
 
-#include "ast/Printer.hpp"
-
 #include "variant.hpp"
 #include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
+
+#include "ast/Printer.hpp"
+#include "ast/Operator.hpp"
 
 using namespace eddic;
 
@@ -127,7 +128,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
-        for(auto param : declaration.Content->parameters){
+        for(auto& param : declaration.Content->parameters){
             std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl; 
         }
         level--;
@@ -141,7 +142,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         
         std::cout << indent() << "Parameters:" << std::endl; 
         level++;
-        for(auto param : declaration.Content->parameters){
+        for(auto& param : declaration.Content->parameters){
             std::cout << indent() << param.parameterName << std::endl; 
         }
         level--;
@@ -163,11 +164,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         
         level++;
         
-        print_each_sub_non_variant(struct_.Content->members, "Members");
-        print_each_sub_non_variant(struct_.Content->constructors, "Constructors");
-        print_each_sub_non_variant(struct_.Content->destructors, "Destructors");
-        print_each_sub_non_variant(struct_.Content->functions, "Functions");
-        print_each_sub_non_variant(struct_.Content->template_functions, "Template Functions");
+        print_each_sub(struct_.Content->blocks, "Blocks");
         
         level--;
 
@@ -288,14 +285,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub(call.Content->values);
     }
 
-    void operator()(ast::MemberFunctionCall& call) const {
-        std::cout << indent() << "Member FunctionCall " << call.Content->function_name;
-        print_template_list(call.Content->template_types);
-        std::cout << std::endl;
-        print_sub(call.Content->object, "Object");
-        print_each_sub(call.Content->values, "Values");
-    }
-
     void operator()(ast::BuiltinOperator& builtin) const {
         std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl; 
         print_each_sub(builtin.Content->values);
@@ -319,20 +308,14 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Array declaration" << std::endl; 
     }
 
-    void operator()(ast::SuffixOperation& op) const {
-        std::cout << indent() << "(suffix)" << (int)op.Content->op << std::endl; 
-        
-        print_sub(op.Content->left_value, "Left Value");
-    }
-
     void operator()(ast::PrefixOperation& op) const {
-        std::cout << indent() << (int)op.Content->op << "(prefix)" << std::endl; 
+        std::cout << indent() << ast::toString(op.Content->op) << "(prefix)" << std::endl; 
         
         print_sub(op.Content->left_value, "Left Value");
     }
 
     void operator()(ast::Assignment& assign) const {
-        std::cout << indent() << "Assignment [operator = " << static_cast<int>(assign.Content->op) << " ] " << std::endl;
+        std::cout << indent() << "Assignment [" << ast::toString(assign.Content->op) << "] " << std::endl;
 
         print_sub(assign.Content->left_value, "Left Value");
         print_sub(assign.Content->value, "Right Value");
@@ -386,43 +369,31 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Variable " << value.Content->variableName << std::endl;
     }
     
-    void operator()(ast::MemberValue& value) const {
-        std::cout << indent() << "Member Value ";
-
-        for(auto& member : value.Content->memberNames){
-            std::cout << "." << member; 
-        }
-
-        std::cout << std::endl;
-
-        print_sub(value.Content->location, "Location");
-    }
-
-    void operator()(ast::DereferenceValue& value) const {
-        std::cout << indent() << "Dereference Variable Value" << std::endl;;
-
-        print_sub(value.Content->ref, "Left Value");
-    }
-
-    void operator()(ast::ArrayValue& value) const {
-        std::cout << indent() << "Array value [" << value.Content->arrayName << "]" << std::endl; 
-        print_sub(value.Content->indexValue);
-    }
-
     void operator()(ast::Expression& value) const {
         std::cout << indent() << "Expression [" << value.Content->operations.size() << "]" << std::endl; 
         ++level;
+        
         visit(*this, value.Content->first);
-        for(auto& operation : value.Content->operations){
-            std::cout << indent() << (int) operation.get<0>() << std::endl;
-            visit(*this, operation.get<1>());
-        }
-        --level;
-    }
 
-    void operator()(ast::Unary& value) const {
-        std::cout << indent() << "Unary " << static_cast<int>(value.Content->op) << std::endl; 
-        print_sub(value.Content->value);
+        for(auto& operation : value.Content->operations){
+            std::cout << indent() << ast::toString(operation.get<0>()) << std::endl;
+
+            if(operation.get<1>()){
+                if(auto* ptr = boost::get<ast::Value>(&*operation.get<1>())){
+                    visit(*this, *ptr);
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*operation.get<1>())){
+                    std::cout << indent() << ptr->function_name << std::endl;
+                    if(!ptr->template_types.empty()){
+                        print_template_list(ptr->template_types);
+                    }
+                    print_each_sub(ptr->values, "Values");
+                } else if(auto* ptr = boost::get<std::string>(&*operation.get<1>())){
+                    std::cout << indent() << *ptr << std::endl;
+                }
+            }
+        }
+
+        --level;
     }
 
     void operator()(ast::Cast& cast) const {

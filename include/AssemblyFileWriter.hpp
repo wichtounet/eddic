@@ -8,7 +8,6 @@
 #ifndef ASSEMBLY_FILE_WRITER_H
 #define ASSEMBLY_FILE_WRITER_H
 
-#include <sstream>
 #include <fstream>
 
 namespace eddic {
@@ -22,7 +21,6 @@ namespace eddic {
 class AssemblyFileWriter {
     private:
         std::ofstream m_stream;
-        std::stringstream buffer;
 	
     public:
     	/*!
@@ -41,14 +39,7 @@ class AssemblyFileWriter {
          * This method should be used to output assembly instruction to the file. 
          * \return A reference to the enclosing stream. 
          */
-        std::stringstream& stream();
-        
-        /*!
-         * Output the buffer to the file. 
-         */
-        void write();
-
-        unsigned int size();
+        std::ostream& stream();
 };
 
 } //end of eddic

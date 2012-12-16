@@ -12,12 +12,17 @@
 #include <string>
 #include <memory>
 
+//Must be done before any other boost include
+#include "variant.hpp"
+
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/optional.hpp>
 
 #include "Type.hpp"
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
+#include "ast/ArrayDeclaration.hpp"
 #include "ast/MemberDeclaration.hpp"
 #include "ast/Constructor.hpp"
 #include "ast/Destructor.hpp"
@@ -27,6 +32,19 @@
 namespace eddic {
 
 namespace ast {
+
+/*!
+ * \typedef StructBlock
+ * \brief A block inside a structure. 
+ */
+typedef boost::variant<
+            MemberDeclaration,
+            ArrayDeclaration,
+            Constructor, 
+            Destructor,
+            FunctionDeclaration,
+            TemplateFunctionDeclaration
+        > StructBlock;
 
 /*!
  * \class ASTStruct
@@ -39,11 +57,8 @@ struct ASTStruct {
 
     Position position;
     std::string name;
-    std::vector<MemberDeclaration> members;
-    std::vector<Constructor> constructors;
-    std::vector<Destructor> destructors;
-    std::vector<FunctionDeclaration> functions;
-    std::vector<TemplateFunctionDeclaration> template_functions;
+    boost::optional<Type> parent_type;
+    std::vector<StructBlock> blocks;
 
     mutable long references = 0;
 };
@@ -63,11 +78,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Struct,
     (eddic::ast::Position, Content->position)
     (std::string, Content->name)
-    (std::vector<eddic::ast::MemberDeclaration>, Content->members)
-    (std::vector<eddic::ast::Constructor>, Content->constructors)
-    (std::vector<eddic::ast::Destructor>, Content->destructors)
-    (std::vector<eddic::ast::FunctionDeclaration>, Content->functions)
-    (std::vector<eddic::ast::TemplateFunctionDeclaration>, Content->template_functions)
+    (boost::optional<eddic::ast::Type>, Content->parent_type)
+    (std::vector<eddic::ast::StructBlock>, Content->blocks)
 )
 
 #endif

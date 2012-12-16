@@ -4,8 +4,8 @@ project("EDDI Compiler")
 
 #Set the version number
 set(VERSION_MAJOR 1)
-set(VERSION_MINOR 1)
-set(VERSION_PATCH 4)
+set(VERSION_MINOR 2)
+set(VERSION_PATCH 0)
 
 #Boost is necessary
 FIND_PACKAGE(Boost REQUIRED) 
@@ -17,6 +17,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
     set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    
+    set(CMAKE_CXX_FLAGS_COVERAGE        "${CMAKE_CXX_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(COMMON_CXX_FLAGS          "-std=c++11 -Qunused-arguments")
     set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
@@ -138,17 +141,20 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_identifiers
     SamplesSuite/samples_registers
     SamplesSuite/samples_structures
+    SpecificSuite/addressof
     SpecificSuite/array_foreach_local
     SpecificSuite/array_foreach_global
     SpecificSuite/array_foreach_param_local
     SpecificSuite/array_foreach_param_global
     SpecificSuite/array_foreach_param_param
+    SpecificSuite/arrays_in_struct
     SpecificSuite/char_type
     SpecificSuite/char_at
     SpecificSuite/ctor_dtor_heap
     SpecificSuite/ctor_dtor_stack
     SpecificSuite/casts
     SpecificSuite/compound
+    SpecificSuite/copy_constructors
     SpecificSuite/if_
     SpecificSuite/includes
     SpecificSuite/int_arrays
@@ -163,6 +169,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/float_pointers
     SpecificSuite/struct_pointers
     SpecificSuite/member_pointers
+    SpecificSuite/member_function_calls
     SpecificSuite/member_functions
     SpecificSuite/member_functions_param_stack
     SpecificSuite/memory
@@ -178,6 +185,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/inc
     SpecificSuite/void_
     SpecificSuite/return_string
+    SpecificSuite/return_by_value
     SpecificSuite/return_int
     SpecificSuite/return_pointers
     SpecificSuite/pointer_arrays
@@ -188,10 +196,12 @@ add_boost_test(eddic_boost_test
     SpecificSuite/concat
     SpecificSuite/println
     SpecificSuite/prints
+    SpecificSuite/single_inheritance
     SpecificSuite/structures
     SpecificSuite/struct_member_pointers
     SpecificSuite/struct_array
     SpecificSuite/switch_
+    SpecificSuite/switch_string
     SpecificSuite/nested
     SpecificSuite/args
     TemplateSuite/class_templates
@@ -199,6 +209,7 @@ add_boost_test(eddic_boost_test
     TemplateSuite/member_function_templates
     CompilationErrorsSuite/params_assign
     CompilationErrorsSuite/wrong_print
+    CompilationErrorsSuite/invalid_inheritance
     StandardLibSuite/std_lib_arrays_sum
     StandardLibSuite/std_lib_math_min
     StandardLibSuite/std_lib_math_max

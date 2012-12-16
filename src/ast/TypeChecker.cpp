@@ -17,6 +17,7 @@
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
+#include "mangling.hpp"
 
 #include "ast/TypeChecker.hpp"
 #include "ast/SourceFile.hpp"
@@ -38,14 +39,12 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_SIMPLE_LOOPS()
         AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_UNARY_VALUES()
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_STRUCT_DECLARATION()
-        AUTO_RECURSE_MEMBER_VALUE()
             
+        AUTO_IGNORE_MEMBER_DECLARATION()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_ARRAY_DECLARATION()
@@ -60,7 +59,6 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_VARIABLE_VALUE()
-        AUTO_IGNORE_DEREFERENCE_VALUE()
         
         void operator()(ast::GlobalVariableDeclaration& declaration){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
@@ -99,8 +97,8 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
 
-            if(value_type != INT){
-                throw SemanticalException("Switch can only work on int type", switch_.Content->position);
+            if(value_type != INT && value_type != STRING){
+                throw SemanticalException("Switch can only work on int and string types", switch_.Content->position);
             }
             
             visit_each_non_variant(*this, switch_.Content->cases);
@@ -112,8 +110,8 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
-            if(value_type != INT){
-                throw SemanticalException("Switch can only work on int type", switch_.position);
+            if(value_type != INT && value_type != STRING){
+                throw SemanticalException("Switch can only work on int and string types", switch_.position);
             }
 
             visit_each(*this, switch_.instructions);
@@ -154,7 +152,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 }
             }
 
-            //Special rules for assignments of variales
+            //Special rules for assignments of variables
             if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
                 auto var = (*ptr).variable();
 
@@ -168,25 +166,18 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        template<typename Operation>
-        void checkSuffixOrPrefixOperation(Operation& operation){
-            auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
-            
-            if(type != INT && type != FLOAT){
-                throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
-            }
-
-            if(type->is_const()){
-                throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
-            }
-        }
-
-        void operator()(ast::SuffixOperation& operation){
-            checkSuffixOrPrefixOperation(operation);
-        }
-
         void operator()(ast::PrefixOperation& operation){
-            checkSuffixOrPrefixOperation(operation);
+            if(operation.Content->op == ast::Operator::INC || operation.Content->op == ast::Operator::DEC){
+                auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+
+                if(type != INT && type != FLOAT){
+                    throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
+                }
+
+                if(type->is_const()){
+                    throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
+                }
+            }
         }
 
         void operator()(ast::Return& return_){
@@ -217,23 +208,8 @@ class CheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::ArrayValue& array){
-            visit(*this, array.Content->indexValue);
-
-            auto var_type = array.Content->var->type();
-
-            if(!var_type->is_array() && var_type != STRING){
-                throw SemanticalException(array.Content->arrayName + " is not an array, neither a string", array.Content->position);
-            }
-
-            auto index_type = visit(ast::GetTypeVisitor(), array.Content->indexValue);
-            if (index_type != INT || index_type->is_array()) {
-                throw SemanticalException("Invalid index for the array " + array.Content->arrayName, array.Content->position);
-            }
-        }
-        
         void operator()(ast::Cast& cast){
-            auto dst_type = visit(ast::TypeTransformer(context), cast.Content->type);
+            auto dst_type = visit_non_variant(ast::GetTypeVisitor(), cast);
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
             //Cast with no effects are always valid
@@ -259,59 +235,88 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& value){
-            visit(*this, value.Content->first);
-            
-            for_each(value.Content->operations, [&](ast::Operation& operation){ visit(*this, operation.get<1>()); });
+            VISIT_COMPOSED_VALUE(value);
 
             ast::GetTypeVisitor visitor;
             auto type = visit(visitor, value.Content->first);
+    
+            auto global_context = value.Content->context->global();
 
             for(auto& operation : value.Content->operations){
-                auto operationType = visit(visitor, operation.get<1>());
-
-                if(type->is_pointer()){
-                    if(!operationType->is_pointer()){
-                        throw SemanticalException("Incompatible type", value.Content->position);
-                    }
-                } else if(type != operationType){
-                    throw SemanticalException("Incompatible type", value.Content->position);
-                }
-                    
                 auto op = operation.get<0>();
 
-                if(type->is_pointer()){
-                    if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers");
+                //1. Verify that the left type is OK for the current operation
+                if(op == ast::Operator::BRACKET){
+                    if(!type->is_array() && type != STRING){
+                        throw SemanticalException("The left value is not an array, neither a string", value.Content->position);
                     }
-                }
-                
-                if(type == INT){
-                    if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
-                        op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
-                            op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int");
+
+                    auto index_type = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
+                    if (index_type != INT || index_type->is_array()) {
+                        throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.Content->position);
+                    }
+                } else if(op == ast::Operator::INC || op == ast::Operator::DEC){
+                    if(type != INT && type != FLOAT){
+                        throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", value.Content->position);
+                    }
+
+                    if(type->is_const()){
+                        throw SemanticalException("The value is const, cannot edit it", value.Content->position);
+                    }
+                } else if(op == ast::Operator::DOT){
+                    //Checked by structure and variables annotators
+                } else if(op == ast::Operator::CALL){
+                    //Checked by the function checkers
+                } else {
+                    auto operationType = visit(visitor, boost::get<ast::Value>(*operation.get<1>()));
+
+                    if(type->is_pointer()){
+                        if(!operationType->is_pointer()){
+                            throw SemanticalException("Incompatible type", value.Content->position);
+                        }
+                    } else if(type != operationType){
+                        throw SemanticalException("Incompatible type", value.Content->position);
+                    }
+
+                    auto op = operation.get<0>();
+
+                    if(type->is_pointer()){
+                        if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers", value.Content->position);
+                        }
+                    }
+
+                    if(type == INT){
+                        if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
+                                op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
+                                op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int", value.Content->position);
+                        }
+                    }
+
+                    if(type == FLOAT){
+                        if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
+                                op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
+                                op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float", value.Content->position);
+                        }
+                    }
+
+                    if(type == STRING){
+                        if(op != ast::Operator::ADD){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
+                        }
+                    }
+
+                    if(type == BOOL){
+                        if(op != ast::Operator::AND && op != ast::Operator::OR){
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.Content->position);
+                        }
                     }
                 }
 
-                if(type == FLOAT){
-                    if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
-                        op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
-                            op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float");
-                    }
-                }
-                
-                if(type == STRING){
-                    if(op != ast::Operator::ADD){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string");
-                    }
-                }
-                
-                if(type == BOOL){
-                    if(op != ast::Operator::AND && op != ast::Operator::OR){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool");
-                    }
-                }
+                //2. Compute the next type
+                type = ast::operation_type(type, value.Content->context, operation);
             }
         }
 
@@ -352,7 +357,7 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto type = visit(ast::TypeTransformer(context), new_.Content->type);
 
-            if(!(type->is_standard_type() || type->is_custom_type() || type->is_template())){
+            if(!(type->is_standard_type() || type->is_custom_type() || type->is_template_type())){
                 throw SemanticalException("Only standard types and struct types can be dynamically allocated", new_.Content->position);
             }
         }

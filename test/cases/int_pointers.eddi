@@ -1,6 +1,6 @@
 void main(){
     int a = 44;
-    test(a);
+    test(&a);
 
     print(a);
     print("|");

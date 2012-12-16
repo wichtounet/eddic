@@ -4,6 +4,7 @@ struct Complex {
     float d;
     bool b;
     string s;
+    int i[5];
 }
 
 void main(){
@@ -15,24 +16,32 @@ void main(){
     c.d = 3.23;
     c.b = false;
     c.s = "asdf";
+    c.i[3] = 99;
+    c.i[1] = 88;
 
     println(c.imag);
     println(c.real);
     println(c.d);
     println(c.b);
     println(c.s);
+    println(c.i[3]);
+    println(c.i[1]);
 
     c.imag += 111;
     c.real += 222;
     c.d += 1.1;
     c.b = true;
     c.s = "ertz";
+    c.i[3] += 100;
+    c.i[1] += 100;
 
     println(c.imag);
     println(c.real);
     println(c.d);
     println(c.b);
     println(c.s);
+    println(c.i[3]);
+    println(c.i[1]);
 
     test(c);
 
@@ -49,4 +58,6 @@ void test(Complex a){
     println(a.d);
     println(a.b);
     println(a.s);
+    println(a.i[3]);
+    println(a.i[1]);
 }

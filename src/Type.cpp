@@ -43,6 +43,10 @@ bool Type::is_dynamic_array() const {
     return is_array() && !has_elements();
 }
 
+bool Type::is_structure() const {
+    return is_custom_type() || is_template_type();
+}
+
 bool Type::is_pointer() const {
     return false;
 }
@@ -59,36 +63,36 @@ bool Type::is_const() const {
     return false;
 }
 
-bool Type::is_template() const {
+bool Type::is_template_type() const {
     return false;
 }
 
 unsigned int Type::size(Platform) const {
-    ASSERT_PATH_NOT_TAKEN("Not specialized type");
+    eddic_unreachable("Not specialized type");
 }
 
 unsigned int Type::elements() const {
-    ASSERT_PATH_NOT_TAKEN("Not an array type");
+    eddic_unreachable("Not an array type");
 }
 
 bool Type::has_elements() const {
-    ASSERT_PATH_NOT_TAKEN("Not an array type");
+    eddic_unreachable("Not an array type");
 }
 
 std::string Type::type() const {
-    ASSERT_PATH_NOT_TAKEN("Not a custom type");
+    eddic_unreachable("Not a custom type");
 }
 
 std::shared_ptr<const Type> Type::data_type() const {
-    ASSERT_PATH_NOT_TAKEN("No data type");
+    eddic_unreachable("No data type");
 }
         
 std::vector<std::shared_ptr<const Type>> Type::template_types() const {
-    ASSERT_PATH_NOT_TAKEN("No template types");
+    eddic_unreachable("No template types");
 }
 
 BaseType Type::base() const {
-    ASSERT_PATH_NOT_TAKEN("Not a standard type");
+    eddic_unreachable("Not a standard type");
 }
 
 std::string Type::mangle() const {
@@ -112,8 +116,8 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
         return rhs->is_standard_type() && lhs->base() == rhs->base();
     }
 
-    if(lhs->is_template()){
-        if(rhs->is_template() && lhs->type() == rhs->type()){
+    if(lhs->is_template_type()){
+        if(rhs->is_template_type() && lhs->type() == rhs->type()){
             return lhs->template_types() == rhs->template_types();
         }
     }
@@ -160,7 +164,7 @@ bool CustomType::is_custom_type() const {
 }
 
 unsigned int CustomType::size(Platform) const {
-    return context->size_of_struct(mangle());
+    return context->total_size_of_struct(context->get_struct(shared_from_this()));
 }
         
 /* Implementation of ArrayType  */
@@ -223,12 +227,12 @@ std::vector<std::shared_ptr<const Type>> TemplateType::template_types() const {
     return sub_types;
 }
 
-bool TemplateType::is_template() const {
+bool TemplateType::is_template_type() const {
     return true;
 }
 
 unsigned int TemplateType::size(Platform) const {
-    return context->size_of_struct(mangle());
+    return context->total_size_of_struct(context->get_struct(shared_from_this()));
 }
 
 /* Implementation of factories  */

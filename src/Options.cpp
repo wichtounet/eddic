@@ -55,16 +55,21 @@ void init_descriptions(){
        
         ("debug,g", "Add debugging symbols")
         
+        ("template-depth", po::value<int>()->default_value(100), "Define the maximum template depth")
+        
         ("32", "Force the compilation for 32 bits platform")
         ("64", "Force the compilation for 64 bits platform")
 
         ("warning-all", "Enable all the warning messages")
         ("warning-unused", "Warn about unused variables, parameters and functions")
-        ("warning-cast", "Warn about useless casts");
+        ("warning-cast", "Warn about useless casts")
+        ("warning-effects", "Warn about statements without effect")
+        ;
     
     po::options_description display("Display options");
     display.add_options()
         ("ast", "Print the Abstract Syntax Tree representation of the source")
+        ("ast-raw", "Print the Abstract Syntax Tree representation of the source coming directly from the parser before any pass is run on the AST. ")
         ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
 
         ("mtac", "Print the medium-level Three Address Code representation of the source")
@@ -74,7 +79,8 @@ void init_descriptions(){
         ("ltac-pre", "Print the low-level Three Address Code representation of the source before allocation of registers")
         ("ltac-alloc", "Print the low-level Three Address Code representation of the source before optimization")
         ("ltac", "Print the final low-level Three Address Code representation of the source")
-        ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)");
+        ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
+        ;
 
     po::options_description optimization("Optimization options");
     optimization.add_options()
@@ -88,7 +94,8 @@ void init_descriptions(){
         ("fpeephole-optimization", "Enable peephole optimizer")
         ("fomit-frame-pointer", "Omit frame pointer from functions")
         ("finline-functions", "Enable inlining")
-        ("fno-inline-functions", "Disable inlining");
+        ("fno-inline-functions", "Disable inlining")
+        ;
     
     po::options_description backend("Backend options");
     backend.add_options()
@@ -96,12 +103,14 @@ void init_descriptions(){
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
         ("single-threaded", "Disable the multi-threaded optimization")
-        ("input", po::value<std::string>(), "Input file");
+        ("timing", "Activate timing system")
+        ("input", po::value<std::string>(), "Input file")
+        ;
 
     all.add(general).add(display).add(optimization).add(backend);
     visible.add(general).add(display).add(optimization);
 
-    add_trigger("warning-all", {"warning-unused", "warning-cast"});
+    add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects"});
     
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
@@ -225,5 +234,5 @@ void eddic::print_help(){
 }
 
 void eddic::print_version(){
-    std::cout << "eddic version 1.1.4" << std::endl;
+    std::cout << "eddic version 1.2.0" << std::endl;
 }

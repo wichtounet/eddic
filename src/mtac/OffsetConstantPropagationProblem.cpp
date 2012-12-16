@@ -10,6 +10,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
 #include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
@@ -55,12 +56,27 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p 
                     out[offset] = 0;
                 }
             }
-        } else if(variable->type()->is_custom_type() || variable->type()->is_template()){
+        } else if(variable->type()->is_custom_type() || variable->type()->is_template_type()){
             auto struct_size = variable->type()->size(platform);
 
+            //All the values are set to zero
             for(std::size_t i = 0; i < struct_size; i += INT->size(platform)){
                 mtac::Offset offset(variable, i);
                 out[offset] = 0;
+            }
+            
+            //Except the length of arrays that are set
+            auto struct_type = function->context->global()->get_struct(variable->type()->mangle());
+
+            while(struct_type){
+                for(auto& member : struct_type->members){
+                    if(member->type->is_array()){
+                        mtac::Offset offset(variable, function->context->global()->member_offset(struct_type, member->name));
+                        out[offset] = static_cast<int>(member->type->elements());
+                    }
+                }
+
+                struct_type = function->context->global()->get_struct(struct_type->parent_type);
             }
         }
     }

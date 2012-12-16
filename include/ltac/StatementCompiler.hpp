@@ -15,11 +15,9 @@
 #include "FloatPool.hpp"
 #include "Options.hpp"
 
-#include "mtac/Program.hpp"
+#include "mtac/forward.hpp"
 
 #include "ltac/RegisterManager.hpp"
-#include "ltac/Argument.hpp"
-#include "ltac/Operator.hpp"
 
 namespace eddic {
 
@@ -64,7 +62,7 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
-        std::shared_ptr<mtac::Program> program;
+        mtac::program_p program;
    
     private:
         //The function being compiled
@@ -85,7 +83,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compare_float_binary(mtac::Argument& arg1, mtac::Argument& arg2);
         void compare_unary(mtac::Argument arg1);
 
-        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple);
+        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple, bool floats);
         
         ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         

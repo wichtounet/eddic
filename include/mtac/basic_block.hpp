@@ -24,11 +24,11 @@ class Context;
 namespace mtac {
 
 /*!
- * \class BasicBlock
+ * \class basic_block
  * \brief A basic block in the MTAC representation. 
  * The basic blocks of a function are maintained in a doubly linked list. 
  */
-class BasicBlock {
+class basic_block {
     public:
         typedef std::vector<mtac::Statement>::iterator iterator;
 
@@ -36,7 +36,7 @@ class BasicBlock {
          * Create a new basic block with the given index. 
          * \param The index of the basic block
          */
-        BasicBlock(int index);
+        basic_block(int index);
         
         /*!
          * Return an iterator to the first statement. 
@@ -67,25 +67,27 @@ class BasicBlock {
 
         /* Doubly-linked list  */
 
-        std::shared_ptr<BasicBlock> next = nullptr;     /*!< The next basic block in the doubly-linked list. */
-        std::shared_ptr<BasicBlock> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
+        std::shared_ptr<basic_block> next = nullptr;     /*!< The next basic block in the doubly-linked list. */
+        std::shared_ptr<basic_block> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
 
         /* Control Flow Graph */
-        std::vector<std::shared_ptr<BasicBlock>> successors;
-        std::vector<std::shared_ptr<BasicBlock>> predecessors;
+        std::vector<std::shared_ptr<basic_block>> successors;
+        std::vector<std::shared_ptr<basic_block>> predecessors;
 
         /* Dominance tree */
         
-        std::shared_ptr<BasicBlock> dominator = nullptr;     /*!< The immediate dominator of this basic block. */
+        std::shared_ptr<basic_block> dominator = nullptr;     /*!< The immediate dominator of this basic block. */
 };
 
-typedef std::shared_ptr<BasicBlock> basic_block_p;
+typedef std::shared_ptr<basic_block> basic_block_p;
 
-std::ostream& operator<<(std::ostream& stream, BasicBlock& basic_block);
+std::ostream& operator<<(std::ostream& stream, basic_block& basic_block);
 std::ostream& operator<<(std::ostream& stream, basic_block_p& basic_block);
 
-mtac::BasicBlock::iterator begin(mtac::basic_block_p function);
-mtac::BasicBlock::iterator end(mtac::basic_block_p function);
+mtac::basic_block::iterator begin(mtac::basic_block_p function);
+mtac::basic_block::iterator end(mtac::basic_block_p function);
+
+void pretty_print(mtac::basic_block_p block, std::ostream& stream);
 
 } //end of mtac
 

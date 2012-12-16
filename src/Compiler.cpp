@@ -27,6 +27,7 @@
 #include "mtac/Optimizer.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/RegisterAllocation.hpp"
+#include "mtac/reference_resolver.hpp"
 
 using namespace eddic;
 
@@ -81,33 +82,35 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
     int code = 0; 
 
     try {
-        auto mtacProgram = front_end->compile(file, platform);
+        auto mtac_program = front_end->compile(file, platform);
 
         //If program is null, it means that the user didn't wanted it
-        if(mtacProgram){
+        if(mtac_program){
+            mtac::resolve_references(mtac_program);
+
             //Separate into basic blocks
             mtac::BasicBlockExtractor extractor;
-            extractor.extract(mtacProgram);
+            extractor.extract(mtac_program);
 
             //If asked by the user, print the Three Address code representation before optimization
             if(configuration->option_defined("mtac-opt")){
                 mtac::Printer printer;
-                printer.print(mtacProgram);
+                printer.print(mtac_program);
             }
 
             //Optimize MTAC
             mtac::Optimizer optimizer;
-            optimizer.optimize(mtacProgram, front_end->get_string_pool(), platform, configuration);
+            optimizer.optimize(mtac_program, front_end->get_string_pool(), platform, configuration);
 
             //Allocate parameters into registers
             if(configuration->option_defined("fparameter-allocation")){
-                mtac::register_param_allocation(mtacProgram, platform);
+                mtac::register_param_allocation(mtac_program, platform);
             }
 
             //If asked by the user, print the Three Address code representation
             if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
                 mtac::Printer printer;
-                printer.print(mtacProgram);
+                printer.print(mtac_program);
             }
 
             if(!configuration->option_defined("mtac-only")){
@@ -116,7 +119,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
                 back_end->set_string_pool(front_end->get_string_pool());
                 back_end->set_configuration(configuration);
 
-                back_end->generate(mtacProgram, platform);
+                back_end->generate(mtac_program, platform);
             }
         }
     } catch (const SemanticalException& e) {

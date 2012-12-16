@@ -19,6 +19,7 @@
 namespace eddic {
 
 class Context;
+class Type;
 
 namespace ast {
 
@@ -29,6 +30,7 @@ namespace ast {
  */
 struct ASTCast {
     std::shared_ptr<Context> context;
+    std::shared_ptr<const eddic::Type> resolved_type;
 
     Position position;
     Type type;

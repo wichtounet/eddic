@@ -24,9 +24,14 @@
 #include "mtac/Statement.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
+#include "ltac/Statement.hpp"
+#include "ltac/Register.hpp"
+#include "ltac/FloatRegister.hpp"
 #include "ltac/Printer.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
+#include "ltac/Instruction.hpp"
+#include "ltac/Jump.hpp"
 
 using namespace eddic;
 
@@ -605,7 +610,7 @@ void add_escaped_registers(RegisterUsage& usage, mtac::function_p function, Plat
 
     add_param_registers(usage, platform);
 
-    for(auto var : function->context->stored_variables()){
+    for(auto& var : function->context->stored_variables()){
         if(var->position().is_register() && mtac::is_single_int_register(var->type())){
             usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }
@@ -740,7 +745,7 @@ ltac::Operator get_cmov_op(ltac::JumpType op){
         case ltac::JumpType::AE:
             return ltac::Operator::CMOVAE;
         default:
-            ASSERT_PATH_NOT_TAKEN("No cmov equivalent");
+            eddic_unreachable("No cmov equivalent");
     }
 }
 
@@ -927,7 +932,7 @@ bool debug(const std::string& name, bool b, mtac::function_p function){
 
 } //end of anonymous namespace
 
-void eddic::ltac::optimize(std::shared_ptr<mtac::Program> program, Platform platform){
+void eddic::ltac::optimize(mtac::program_p program, Platform platform){
     PerfsTimer timer("Peephole optimizations");
 
     for(auto& function : program->functions){

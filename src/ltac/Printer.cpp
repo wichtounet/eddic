@@ -13,6 +13,8 @@
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
 
+#include "mtac/Program.hpp"
+
 #include "ltac/Printer.hpp"
 #include "ltac/Statement.hpp"
 
@@ -110,7 +112,7 @@ std::string to_string(ltac::Operator op){
         case ltac::Operator::NOP:
             return "NOP"; 
         default:
-            ASSERT_PATH_NOT_TAKEN("The instruction operator is not supported");
+            eddic_unreachable("The instruction operator is not supported");
     }
 }
 
@@ -147,7 +149,7 @@ std::string to_string(ltac::JumpType type){
         case ltac::JumpType::NZ:
             return "nz";
         default:
-            ASSERT_PATH_NOT_TAKEN("The jump type is not supported");
+            eddic_unreachable("The jump type is not supported");
     }
 }
 
@@ -156,7 +158,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     DebugVisitor(std::ostream& out) : out(out) {}
 
-    void operator()(std::shared_ptr<mtac::Program> program){
+    void operator()(mtac::program_p program){
         out << "LTAC Program " << std::endl << std::endl; 
 
         visit_each_non_variant(*this, program->functions);
@@ -173,7 +175,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(mtac::basic_block_p bb){
-        out << bb << ":" << std::endl;
+        pretty_print(bb, out);
 
         visit_each(*this, bb->l_statements);
     }
@@ -216,7 +218,7 @@ void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    visit(visitor, statement); 
 }
 
-void ltac::Printer::print(std::shared_ptr<mtac::Program> program) const {
+void ltac::Printer::print(mtac::program_p program) const {
    DebugVisitor visitor(std::cout);
    visitor(program); 
 }

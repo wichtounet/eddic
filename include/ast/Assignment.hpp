@@ -16,7 +16,6 @@
 
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
-#include "ast/LValue.hpp"
 #include "ast/Operator.hpp"
 
 namespace eddic {
@@ -31,8 +30,10 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Assignment).
  */
 struct ASTAssignment {
+    std::shared_ptr<Context> context;
+
     Position position;
-    LValue left_value;
+    Value left_value;
     Value value;
     ast::Operator op = ast::Operator::ASSIGN; //If not specified, it is not a compound operator
 
@@ -53,7 +54,7 @@ typedef Deferred<ASTAssignment> Assignment;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Assignment, 
     (eddic::ast::Position, Content->position)
-    (eddic::ast::LValue, Content->left_value)
+    (eddic::ast::Value, Content->left_value)
     (eddic::ast::Operator, Content->op)
     (eddic::ast::Value, Content->value)
 )

@@ -10,12 +10,25 @@
 
 #include <memory>
 #include <set>
+#include <map>
 
 #include "mtac/forward.hpp"
 
 namespace eddic {
 
+class Variable;
+
 namespace mtac {
+
+struct LinearEquation {
+    std::shared_ptr<mtac::Quadruple> def;
+    std::shared_ptr<Variable> i;
+    int e;
+    int d;
+    bool generated;
+};
+
+typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
 
 class Loop {
     public:
@@ -28,13 +41,21 @@ class Loop {
         
         std::set<mtac::basic_block_p>& blocks();
 
-        int estimate();
-        void set_estimate(int estimate);
+        bool has_estimate();
+        long& estimate();
+        long& initial_value();
+
+        InductionVariables& basic_induction_variables();
+        InductionVariables& dependent_induction_variables();
 
     private:
+        InductionVariables biv;
+        InductionVariables div;
+
         std::set<mtac::basic_block_p> m_blocks;
 
-        int m_estimate = -1;
+        long m_estimate = -1;
+        long m_initial;
 };
 
 Loop::iterator begin(std::shared_ptr<mtac::Loop> loop);

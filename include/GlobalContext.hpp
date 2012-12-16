@@ -27,12 +27,11 @@ namespace eddic {
 struct GlobalContext final : public Context {
     public: 
         typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
+        typedef std::unordered_map<std::string, std::shared_ptr<const Function>> ConstFunctionMap;
         typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
     
     public:
         GlobalContext(Platform platform);
-
-        void release_references();
         
         Variables getVariables();
         
@@ -52,14 +51,14 @@ struct GlobalContext final : public Context {
          * \param function The function to search for. 
          * \return A pointer to the function with the given name. 
          */
-        std::shared_ptr<Function> getFunction(const std::string& function);
+        std::shared_ptr<Function> getFunction(const std::string& function) const;
         
         /*!
          * Indicates if a function with the given name exists. 
          * \param function The function to search for. 
          * \return true if a function with the given name exists, otherwise false. 
          */
-        bool exists(const std::string& function);
+        bool exists(const std::string& function) const;
 
         /*!
          * Add the given structure to the symbol table. 
@@ -72,22 +71,37 @@ struct GlobalContext final : public Context {
          * \param struct_ The structure to search for. 
          * \return A pointer to the structure with the given name. 
          */
-        std::shared_ptr<Struct> get_struct(const std::string& struct_);
+        std::shared_ptr<Struct> get_struct(const std::string& struct_) const;
+        
+        /*!
+         * Returns the structure of the given type. 
+         * \param type The structure type to search for. 
+         * \return A pointer to the structure of the given type. 
+         */
+        std::shared_ptr<Struct> get_struct(std::shared_ptr<const Type> type) const;
         
         /*!
          * Indicates if a structure with the given name exists. 
          * \param struct_ The structure to search for. 
          * \return true if a structure with the given name exists, otherwise false. 
          */
-        bool struct_exists(const std::string& struct_);
+        bool struct_exists(const std::string& struct_) const ;
         
-        std::shared_ptr<const Type> member_type(std::shared_ptr<Struct> struct_, int offset);
-        int member_offset(std::shared_ptr<Struct> struct_, const std::string& member);
-        int size_of_struct(const std::string& struct_);
+        /*!
+         * Indicates if a structure for the given type exists. 
+         * \param struct_ The structure type to search for. 
+         * \return true if a structure for the given type exists, otherwise false. 
+         */
+        bool struct_exists(std::shared_ptr<const Type> type) const ;
         
-        bool is_recursively_nested(const std::string& struct_);
+        std::shared_ptr<const Type> member_type(std::shared_ptr<const Struct> struct_, int offset) const;
+        int member_offset(std::shared_ptr<const Struct> struct_, const std::string& member) const;
 
-        FunctionMap functions();
+        int self_size_of_struct(std::shared_ptr<const Struct> struct_) const;
+        int total_size_of_struct(std::shared_ptr<const Struct> struct_) const;
+        bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
+
+        const FunctionMap& functions() const;
 
         /*!
          * Add a reference to the function with the given name. 
@@ -108,22 +122,17 @@ struct GlobalContext final : public Context {
          */
         int referenceCount(const std::string& function);
 
-        void add_reference(std::shared_ptr<Variable> variable) override;
-        unsigned int reference_count(std::shared_ptr<Variable> variable) override;
-
-        Platform target_platform();
+        Platform target_platform() const;
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
         Platform platform;
 
-        std::shared_ptr<std::map<std::shared_ptr<Variable>, unsigned int>> references;
-
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
         
-        bool is_recursively_nested(const std::string& struct_, unsigned int left);
+        bool is_recursively_nested(std::shared_ptr<const Struct> struct_, unsigned int left) const;
 };
 
 } //end of eddic

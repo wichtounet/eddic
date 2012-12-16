@@ -25,7 +25,33 @@ class Variable;
 namespace mtac {
 
 typedef boost::variant<std::string, double, int, std::shared_ptr<Variable>> ConstantValue;
-typedef std::unordered_map<std::shared_ptr<Variable>, ConstantValue> ConstantPropagationValues;
+
+class ConstantPropagationLattice {
+    public:
+        ConstantPropagationLattice(){}; //NAC
+        ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
+
+        ConstantValue value(){
+            return *m_value;
+        }
+
+        bool constant(){
+            return m_value;
+        }
+
+        bool nac(){
+            return !constant();
+        }
+
+        void set_nac(){
+            m_value = boost::none;
+        }
+
+    private:
+        boost::optional<ConstantValue> m_value;
+};
+
+typedef std::unordered_map<std::shared_ptr<Variable>, ConstantPropagationLattice> ConstantPropagationValues;
 
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
     mtac::EscapedVariables pointer_escaped;
@@ -33,10 +59,10 @@ struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { ASSERT_PATH_NOT_TAKEN("Not LTAC"); };
+    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
 };
 
 template<>
@@ -46,6 +72,8 @@ struct pass_traits<ConstantPropagationProblem> {
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
+
+std::ostream& operator<<(std::ostream& stream, ConstantPropagationLattice& lattice);
 
 } //end of mtac
 

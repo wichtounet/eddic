@@ -26,13 +26,13 @@ using namespace eddic;
 
 ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {}
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::program_p source, std::shared_ptr<FloatPool> float_pool){
     for(auto& function : source->functions){
         compile(source, function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::program_p source, mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -41,7 +41,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
     resetNumbering();
 
     //First we computes a label for each basic block
-    for(auto block : function){
+    for(auto& block : function){
         block->label = newLabel();
     }
     
@@ -56,7 +56,7 @@ void ltac::Compiler::compile(std::shared_ptr<mtac::Program> source, mtac::functi
     compiler.collect_parameters(function->definition);
 
     //Then we compile each of them
-    for(auto block : function){
+    for(auto& block : function){
         compiler.ended = false;
         compiler.bb = block;
         compiler.manager.bb = block;

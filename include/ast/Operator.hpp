@@ -14,8 +14,13 @@ namespace eddic {
 
 namespace ast {
 
+/*! 
+ * \enum Operator
+ * \brief Define an operator in the AST for generic node. 
+ */
 enum class Operator : unsigned int {
     ASSIGN,
+
     ADD,
     SUB,
     DIV,
@@ -34,7 +39,18 @@ enum class Operator : unsigned int {
     LESS,
     LESS_EQUALS,
     GREATER,
-    GREATER_EQUALS
+    GREATER_EQUALS,
+
+    //Prefix operators
+
+    STAR,               /**< Star operator, to dereference pointers. */ 
+    ADDRESS,            /**< Address operator, get address of variable. */
+
+    //Postfix operators
+
+    BRACKET,            /**< Bracket operator, to access array index. */ 
+    DOT,                /**< Dot operator, to access to members */ 
+    CALL                /**< Call operator, to call member functions */ 
 };
 
 std::string toString(Operator op);

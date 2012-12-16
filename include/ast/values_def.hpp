@@ -25,12 +25,6 @@ struct Null;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
-struct ASTMemberFunctionCall;
-typedef Deferred<ASTMemberFunctionCall> MemberFunctionCall;
-
-struct ASTMemberValue;
-typedef Deferred<ASTMemberValue> MemberValue;
-
 struct ASTCast;
 typedef Deferred<ASTCast> Cast;
 
@@ -45,26 +39,14 @@ typedef Deferred<ASTTernary> Ternary;
 
 struct VariableValue;
 
-struct ASTDereferenceValue;
-typedef Deferred<ASTDereferenceValue> DereferenceValue;
-
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
-
-struct ASTUnary;
-typedef Deferred<ASTUnary> Unary;
 
 struct ASTNew;
 typedef Deferred<ASTNew> New;
 
 struct ASTNewArray;
 typedef Deferred<ASTNewArray> NewArray;
-
-struct ASTArrayValue;
-typedef Deferred<ASTArrayValue> ArrayValue;
-
-struct ASTSuffixOperation;
-typedef Deferred<ASTSuffixOperation> SuffixOperation;
 
 struct ASTPrefixOperation;
 typedef Deferred<ASTPrefixOperation> PrefixOperation;

@@ -63,7 +63,10 @@ struct Collector : public boost::static_visitor<> {
         }
         
         void operator()(ast::ArrayDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            //If this is null, it means that this an array inside a structure
+            if(declaration.Content->context){
+                positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            }
         }
         
         void operator()(ast::VariableDeclaration& declaration){
@@ -96,20 +99,13 @@ struct Inspector : public boost::static_visitor<> {
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
         AUTO_RECURSE_FUNCTION_CALLS()
-        AUTO_RECURSE_MEMBER_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
-        AUTO_RECURSE_SIMPLE_LOOPS()
-        AUTO_RECURSE_FOREACH()
-        AUTO_RECURSE_BRANCHES()
-        AUTO_RECURSE_COMPOSED_VALUES()
         AUTO_RECURSE_RETURN_VALUES()
-        AUTO_RECURSE_ARRAY_VALUES()
         AUTO_RECURSE_VARIABLE_OPERATIONS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_SWITCH()
-        AUTO_RECURSE_SWITCH_CASE()
-        AUTO_RECURSE_DEFAULT_CASE()
-
+        AUTO_RECURSE_COMPOSED_VALUES()
+        
         void check(std::shared_ptr<Context> context){
             if(configuration->option_defined("warning-unused")){
                 auto iter = context->begin();
@@ -118,7 +114,7 @@ struct Inspector : public boost::static_visitor<> {
                 for(; iter != end; iter++){
                     auto var = iter->second;
 
-                    if(context->reference_count(var) == 0){
+                    if(var->references() == 0){
                         if(var->position().isStack()){
                             warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
                         } else if(var->position().isGlobal()){
@@ -144,7 +140,7 @@ struct Inspector : public boost::static_visitor<> {
                 if(struct_->get_references() == 0){
                     warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
                 } else {
-                    for(auto member : struct_->members){
+                    for(auto& member : struct_->members){
                         if(member->get_references() == 0){
                             warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
                         }
@@ -152,7 +148,7 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
         }
-        
+
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
@@ -164,7 +160,7 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
         
-            visit_each(*this, declaration.Content->instructions);
+            check_each(declaration.Content->instructions);
         }
     
         void operator()(ast::Cast& cast){
@@ -175,6 +171,78 @@ struct Inspector : public boost::static_visitor<> {
                 if(src_type == dest_type){
                     warn(cast.Content->position, "useless cast");
                 }
+            }
+        }
+        
+        void operator()(ast::If& if_){
+            visit(*this, if_.Content->condition);
+            check_each(if_.Content->instructions);
+            visit_each_non_variant(*this, if_.Content->elseIfs);
+            visit_optional_non_variant(*this, if_.Content->else_);
+        }
+        
+        void operator()(ast::ElseIf& elseIf){
+            visit(*this, elseIf.condition);
+            check_each(elseIf.instructions);
+        }
+
+        void operator()(ast::For& for_){
+            visit_optional(*this, for_.Content->start);
+            visit_optional(*this, for_.Content->condition);
+            visit_optional(*this, for_.Content->repeat);
+            check_each(for_.Content->instructions);
+        }
+        
+        void operator()(ast::While& while_){
+            visit(*this, while_.Content->condition);
+            check_each(while_.Content->instructions);
+        }
+
+        void operator()(ast::DoWhile& while_){
+            visit(*this, while_.Content->condition);
+            check_each(while_.Content->instructions);
+        }
+        
+        void operator()(ast::Else& else_){
+            check_each(else_.instructions);
+        }
+
+        void operator()(ast::Foreach& foreach_){
+            check_each(foreach_.Content->instructions);
+        }
+        
+        void operator()(ast::ForeachIn& foreach_){
+            check_each(foreach_.Content->instructions);
+        }
+
+        void operator()(ast::SwitchCase& switch_case){
+            visit(*this, switch_case.value);
+            check_each(switch_case.instructions);
+        }
+
+        void operator()(ast::DefaultCase& default_case){
+            check_each(default_case.instructions);
+        }
+        
+        void check_each(std::vector<ast::Instruction>& instructions){
+            for(auto& instruction : instructions){
+                if(auto* ptr = boost::get<ast::Expression>(&instruction)){
+                    auto& value = *ptr;
+                    bool effects = false;
+
+                    for(auto& op : value.Content->operations){
+                        if(op.get<0>() == ast::Operator::INC || op.get<0>() == ast::Operator::DEC || op.get<0>() == ast::Operator::CALL){
+                            effects = true;
+                            break;
+                        }
+                    }
+
+                    if(!effects){
+                        warn(value.Content->position, "Statement without any effect");
+                    }
+                }
+
+                visit(*this, instruction);
             }
         }
         
