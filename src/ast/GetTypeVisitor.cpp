@@ -48,7 +48,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& 
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-   return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
+    if(cast.Content->resolved_type){
+        return cast.Content->resolved_type;
+    } else {
+        return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
+    }
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {

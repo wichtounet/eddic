@@ -100,6 +100,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
         }
 
+        ast::VariableValue this_variable(std::shared_ptr<Context> context, ast::Position position){
+            ast::VariableValue variable_value;
+
+            variable_value.Content->context = context;
+            variable_value.Content->position = position;
+            variable_value.Content->variableName = "this";
+            variable_value.Content->var = context->getVariable("this");
+            
+            return variable_value;
+        }
+
         template<typename V>
         void check_value(V& value){
             if(auto* ptr = boost::get<ast::FunctionCall>(&value)){
@@ -127,35 +138,37 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     if(local_context && local_context->struct_type && context->struct_exists(local_context->struct_type->mangle())){
                         auto struct_type = local_context->struct_type;
 
-                        mangled = mangle(name, types, struct_type);
+                        do {
+                            mangled = mangle(name, types, struct_type);
 
-                        if(context->exists(mangled)){
-                            context->addReference(mangled);
+                            if(context->exists(mangled)){
+                                context->addReference(mangled);
 
-                            ast::VariableValue variable_value;
-                            variable_value.Content->context = functionCall.Content->context;
-                            variable_value.Content->position = functionCall.Content->position;
-                            variable_value.Content->variableName = "this";
-                            variable_value.Content->var = functionCall.Content->context->getVariable("this");
+                                ast::Cast cast_value;
+                                cast_value.Content->resolved_type = new_pointer_type(struct_type);
+                                cast_value.Content->value = this_variable(functionCall.Content->context, functionCall.Content->position);
 
-                            ast::CallOperationValue function_call_operation;
-                            function_call_operation.get<0>() = functionCall.Content->function_name; 
-                            function_call_operation.get<1>() = functionCall.Content->template_types; 
-                            function_call_operation.get<2>() = functionCall.Content->values;
-                            function_call_operation.get<4>() = context->getFunction(mangled);
+                                ast::CallOperationValue function_call_operation;
+                                function_call_operation.get<0>() = functionCall.Content->function_name; 
+                                function_call_operation.get<1>() = functionCall.Content->template_types; 
+                                function_call_operation.get<2>() = functionCall.Content->values;
+                                function_call_operation.get<4>() = context->getFunction(mangled);
 
-                            ast::Expression member_function_call;
-                            member_function_call.Content->context = functionCall.Content->context;
-                            member_function_call.Content->position = functionCall.Content->position;
-                            member_function_call.Content->first = variable_value;
-                            member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
+                                ast::Expression member_function_call;
+                                member_function_call.Content->context = functionCall.Content->context;
+                                member_function_call.Content->position = functionCall.Content->position;
+                                member_function_call.Content->first = cast_value;
+                                member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
-                            value = member_function_call;
+                                value = member_function_call;
 
-                            check_value(value);
+                                check_value(value);
 
-                            return;
-                        }
+                                return;
+                            }
+
+                            struct_type = context->get_struct(struct_type)->parent_type;
+                        } while(struct_type);
                     }
 
                     throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.Content->position);
@@ -170,16 +183,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         auto struct_type = global_context->get_struct(context->struct_type->mangle());
 
                         if(struct_type->member_exists(variable.Content->variableName)){
-                            ast::VariableValue this_variable;
-                            this_variable.Content->context = variable.Content->context;
-                            this_variable.Content->var = variable.Content->context->getVariable("this");
-                            this_variable.Content->variableName = "this";
-                            this_variable.Content->position = variable.Content->position;
-
                             ast::Expression member_value;
                             member_value.Content->context = variable.Content->context;
                             member_value.Content->position = variable.Content->position;
-                            member_value.Content->first = this_variable;
+                            member_value.Content->first = this_variable(variable.Content->context, variable.Content->position);
                             member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
 
                             value = member_value;

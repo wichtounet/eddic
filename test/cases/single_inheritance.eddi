@@ -22,10 +22,9 @@ struct C extends B {
     void test(){
         print(a);
 
-        //test_b();
+        test_b();
     }
 }
-
 
 void main(){
     C c;
