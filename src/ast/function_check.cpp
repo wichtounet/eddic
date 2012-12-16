@@ -477,14 +477,25 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     auto types = get_types(call_value.get<2>());
 
-                    std::string mangled = mangle(name, types, struct_type);
+                    bool found = false;
+                    std::string mangled;
+                    
+                    do {
+                        mangled = mangle(name, types, struct_type);
 
-                    if(context->exists(mangled)){
-                        context->addReference(mangled);
+                        if(context->exists(mangled)){
+                            context->addReference(mangled);
 
-                        call_value.get<3>() = mangled;
-                        call_value.get<4>() = context->getFunction(mangled);
-                    } else {
+                            call_value.get<3>() = mangled;
+                            call_value.get<4>() = context->getFunction(mangled);
+                            found = true;
+                            break;
+                        }
+
+                        struct_type = context->get_struct(struct_type)->parent_type;
+                    } while(struct_type);
+
+                    if(!found){
                         throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.Content->position);
                     }
                 }

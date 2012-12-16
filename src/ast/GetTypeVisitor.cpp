@@ -91,6 +91,11 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
         }
 
         auto operation_value = boost::get<ast::CallOperationValue>(*operation.get<1>());
+
+        if(operation_value.get<4>()){
+            return (*operation_value.get<4>())->returnType;
+        }
+
         auto function_name = mangle(operation_value.get<0>(), operation_value.get<2>(), type);
 
         return global_context->getFunction(function_name)->returnType;
