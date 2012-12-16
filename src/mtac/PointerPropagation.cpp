@@ -124,7 +124,6 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
             if(!(*ptr)->type()->is_pointer()){
                 aliases[quadruple->result] = *ptr;
-                std::cout << quadruple->result->name() << " is an alias of " << (*ptr)->name() << std::endl;
             } else if((*ptr)->type()->is_pointer()){
                 if(aliases.count(*ptr)){
                     auto alias = aliases[*ptr];
