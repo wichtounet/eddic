@@ -41,10 +41,9 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
     } else if(out.top()){
         //in does not change
     } else {
-        auto it = in.values().begin();
-        auto end = in.values().end();
+        auto it = iterate(in.values());
 
-        while(it != end){
+        while(it.has_next()){
             auto& in_value = *it;
             bool found = false;
 
@@ -56,7 +55,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
             }
 
             if(!found){
-                it = in.values().erase(it);
+                it.erase();
                 continue;
             }
 

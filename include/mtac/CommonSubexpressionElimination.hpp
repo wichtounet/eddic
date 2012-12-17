@@ -29,7 +29,7 @@ struct Expression {
 
 std::ostream& operator<<(std::ostream& stream, Expression& expression);
 
-typedef std::list<Expression> Expressions;
+typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     std::unordered_set<std::shared_ptr<mtac::Quadruple>> optimized;
