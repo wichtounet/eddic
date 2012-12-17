@@ -937,7 +937,7 @@ void eddic::ltac::optimize(mtac::program_p program, Platform platform){
 
     for(auto& function : program->functions){
         if(log::enabled<Debug>()){
-            LOG<Debug>("Peephole") << "Start optimizations on " << function->getName() << log::endl;
+            LOG<Debug>("Peephole") << "Start optimizations on " << function->get_name() << log::endl;
 
             //Print the function
             ltac::Printer printer;

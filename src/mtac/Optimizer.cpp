@@ -266,7 +266,7 @@ struct pass_runner {
             this->function = function;
     
             if(log::enabled<Debug>()){
-                LOG<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
+                LOG<Debug>("Optimizer") << "Start optimizations on " << function->get_name() << log::endl;
 
                 print(function);
             }

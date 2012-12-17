@@ -35,13 +35,11 @@ class Function : public std::enable_shared_from_this<Function> {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
 
-        std::shared_ptr<eddic::Function> definition;
-        std::shared_ptr<FunctionContext> context;
-
-        std::string getName() const;
+        std::string get_name() const;
 
         void add(Statement statement);
         std::vector<Statement>& getStatements();
+        void release_statements();
 
         void create_entry_bb();
         void create_exit_bb();
@@ -92,6 +90,9 @@ class Function : public std::enable_shared_from_this<Function> {
         void variable_use(ltac::FloatRegister reg);
 
         bool is_main() const;
+
+        std::shared_ptr<eddic::Function> definition;
+        std::shared_ptr<FunctionContext> context;
 
     private:
         //Before being partitioned, the function has only statement

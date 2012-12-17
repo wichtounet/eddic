@@ -209,12 +209,17 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
     return at(block);
 }
 
-std::string mtac::Function::getName() const {
+std::string mtac::Function::get_name() const {
     return name;
 }
 
 std::vector<mtac::Statement>& mtac::Function::getStatements(){
     return statements;
+}
+
+void mtac::Function::release_statements(){
+    statements.clear();
+    statements.shrink_to_fit();
 }
 
 std::size_t mtac::Function::bb_count() const {

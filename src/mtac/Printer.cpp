@@ -116,7 +116,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(mtac::function_p function){
-        stream << "Function " << function->getName() << endl;
+        stream << "Function " << function->get_name() << endl;
 
         visit_each(*this, function->getStatements());
 

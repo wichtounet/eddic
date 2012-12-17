@@ -78,6 +78,6 @@ void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
 
         function->create_exit_bb();
 
-        function->getStatements().clear();
+        function->release_statements();
     }
 }

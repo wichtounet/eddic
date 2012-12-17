@@ -59,7 +59,7 @@ struct BBReplace : public boost::static_visitor<> {
 };
 
 BBClones clone(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
-    LOG<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
+    LOG<Trace>("Inlining") << "Clone " << source_function->get_name() << " into " << dest_function->get_name() << log::endl;
 
     BBClones bb_clones;
 
@@ -333,7 +333,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
 
 bool can_be_inlined(mtac::function_p function){
     //The main function cannot be inlined
-    if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
+    if(function->get_name() == "_F4main" || function->get_name() == "_F4mainAS"){
         return false;
     }
 
@@ -378,7 +378,7 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
         }
 
         //function called once
-        if(target_function->context->global()->referenceCount(target_function->getName()) == 1){
+        if(target_function->context->global()->referenceCount(target_function->get_name()) == 1){
             return source_size < 300 && target_size < 100;
         } 
 
@@ -428,7 +428,7 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program)
                 auto dest_definition = dest_function->definition;
 
                 if(will_inline(dest_function, source_function, call, basic_block)){
-                    LOG<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
+                    LOG<Trace>("Inlining") << "Inline " << source_function->get_name() << " into " << dest_function->get_name() << log::endl;
 
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
@@ -481,7 +481,7 @@ bool mtac::inline_functions::operator()(mtac::program_p program){
 
         for(auto& function : program->functions){
             //If the function is never called, no need to optimize it
-            if(global_context->referenceCount(function->getName()) <= 0){
+            if(global_context->referenceCount(function->get_name()) <= 0){
                 continue; 
             }
 
