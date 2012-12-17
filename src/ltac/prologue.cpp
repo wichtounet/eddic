@@ -23,17 +23,17 @@ using namespace eddic;
 
 namespace {
 
-std::set<ltac::Register> parameter_registers(std::shared_ptr<eddic::Function> function, Platform platform, std::shared_ptr<Configuration> configuration){
+std::set<ltac::Register> parameter_registers(eddic::Function& function, Platform platform, std::shared_ptr<Configuration> configuration){
     std::set<ltac::Register> overriden_registers;
 
     auto descriptor = getPlatformDescriptor(platform);
 
-    if(function->standard || configuration->option_defined("fparameter-allocation")){
+    if(function.standard || configuration->option_defined("fparameter-allocation")){
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
 
-        for(auto& parameter : function->parameters){
-            auto type = function->getParameterType(parameter.name);
-            unsigned int position = function->getParameterPositionByType(parameter.name);
+        for(auto& parameter : function.parameters){
+            auto type = function.getParameterType(parameter.name);
+            unsigned int position = function.getParameterPositionByType(parameter.name);
 
             if(mtac::is_single_int_register(type) && position <= maxInt){
                 overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
@@ -44,17 +44,17 @@ std::set<ltac::Register> parameter_registers(std::shared_ptr<eddic::Function> fu
     return overriden_registers;
 }
 
-std::set<ltac::FloatRegister> float_parameter_registers(std::shared_ptr<eddic::Function> function, Platform platform, std::shared_ptr<Configuration> configuration){
+std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& function, Platform platform, std::shared_ptr<Configuration> configuration){
     std::set<ltac::FloatRegister> overriden_float_registers;
     
     auto descriptor = getPlatformDescriptor(platform);
 
-    if(function->standard || configuration->option_defined("fparameter-allocation")){
+    if(function.standard || configuration->option_defined("fparameter-allocation")){
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-        for(auto& parameter : function->parameters){
-            auto type = function->getParameterType(parameter.name);
-            unsigned int position = function->getParameterPositionByType(parameter.name);
+        for(auto& parameter : function.parameters){
+            auto type = function.getParameterType(parameter.name);
+            unsigned int position = function.getParameterPositionByType(parameter.name);
 
             if(mtac::is_single_float_register(type) && position <= maxFloat){
                 overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
@@ -65,8 +65,8 @@ std::set<ltac::FloatRegister> float_parameter_registers(std::shared_ptr<eddic::F
     return overriden_float_registers;
 }
 
-bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition->returnType;
+bool callee_save(Function& definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto return_type = definition.returnType;
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return registers
@@ -88,8 +88,8 @@ bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::Register reg
     return true;
 }
 
-bool callee_save(std::shared_ptr<eddic::Function> definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition->returnType;
+bool callee_save(eddic::Function& definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
+    auto return_type = definition.returnType;
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return register
@@ -172,7 +172,7 @@ bool contains(const std::unordered_set<T>& set, const T& value){
     return set.find(value) != set.end();
 }
 
-bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> target_definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
+bool caller_save(mtac::function_p source, eddic::Function& target_definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
     auto source_parameters = parameter_registers(source->definition, platform, configuration);
     auto target_parameters = parameter_registers(target_definition, platform, configuration);
     auto variable_registers = source->variable_registers();
@@ -185,7 +185,7 @@ bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> targe
     return false;
 }
 
-bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> target_definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
+bool caller_save(mtac::function_p source, eddic::Function& target_definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
     auto source_parameters = float_parameter_registers(source->definition, platform, configuration);
     auto target_parameters = float_parameter_registers(target_definition, platform, configuration);
     auto variable_registers = source->variable_float_registers();
@@ -199,7 +199,7 @@ bool caller_save(mtac::function_p source, std::shared_ptr<eddic::Function> targe
 }
 
 template<typename It>
-void caller_save_registers(mtac::function_p function, std::shared_ptr<eddic::Function> target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
+void caller_save_registers(mtac::function_p function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
     auto pre_it = it.it;
 
     auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
@@ -251,7 +251,7 @@ void find(It& it, const Type& value){
 }
 
 template<typename It>
-void caller_cleanup(mtac::function_p function, std::shared_ptr<eddic::Function> target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
+void caller_cleanup(mtac::function_p function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
     auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
 
     caller_save_registers(function, target_function, bb, it, platform, configuration);
@@ -409,7 +409,7 @@ void ltac::generate_prologue_epilogue(mtac::program_p ltac_program, std::shared_
 
                 if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
                     if((*ptr)->type == ltac::JumpType::CALL){
-                        caller_cleanup(function, (*ptr)->target_function, bb, it, platform, configuration);
+                        caller_cleanup(function, *(*ptr)->target_function, bb, it, platform, configuration);
 
                         //The iterator is invalidated by the cleanup, necessary to find the call again
                         it.restart();

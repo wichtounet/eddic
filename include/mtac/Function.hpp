@@ -33,7 +33,7 @@ class Loop;
 
 class Function : public std::enable_shared_from_this<Function> {
     public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name, std::shared_ptr<eddic::Function> definition);
+        Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
 
         std::string get_name() const;
 
@@ -91,7 +91,7 @@ class Function : public std::enable_shared_from_this<Function> {
 
         bool is_main() const;
 
-        std::shared_ptr<eddic::Function> definition;
+        eddic::Function& definition;
         std::shared_ptr<FunctionContext> context;
 
     private:

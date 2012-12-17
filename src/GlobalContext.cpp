@@ -58,11 +58,13 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
     return variables[variable] = std::make_shared<Variable>(variable, type, position, val);
 }
 
-void GlobalContext::addFunction(std::shared_ptr<Function> function){
-    m_functions[function->mangledName] = function;
+Function& GlobalContext::add_function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name){
+    m_functions.emplace(std::piecewise_construct, std::forward_as_tuple(mangled_name), std::forward_as_tuple(ret, name, mangled_name));
+
+    return m_functions.at(mangled_name);
 }
 
-std::shared_ptr<Function> GlobalContext::getFunction(const std::string& function) const {
+Function& GlobalContext::getFunction(const std::string& function){
     eddic_assert(exists(function), "The function must exists");
 
     return m_functions.at(function);
@@ -193,34 +195,30 @@ bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_)
 void GlobalContext::addReference(const std::string& function){
     eddic_assert(exists(function), "The function must exists");
     
-    ++(m_functions[function]->references);
+    ++(m_functions.at(function).references);
 }
 
 void GlobalContext::removeReference(const std::string& function){
     eddic_assert(exists(function), "The function must exists");
     
-    --(m_functions[function]->references);
+    --(m_functions.at(function).references);
 }
 
 int GlobalContext::referenceCount(const std::string& function){
     eddic_assert(exists(function), "The function must exists");
     
-    return m_functions[function]->references;
+    return m_functions.at(function).references;
 }
 
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
-    auto printFunction = std::make_shared<Function>(VOID, "print");
-    printFunction->standard = true;
-    printFunction->mangledName = function;
-    printFunction->parameters.emplace_back("a", parameterType);
-    addFunction(printFunction);
+    auto& printFunction = add_function(VOID, "print", function);
+    printFunction.standard = true;
+    printFunction.parameters.emplace_back("a", parameterType);
 }
 
 void GlobalContext::defineStandardFunctions(){
-    auto printLineFunction = std::make_shared<Function>(VOID, "print");
-    printLineFunction->standard = true;
-    printLineFunction->mangledName = "_F7println";
-    addFunction(printLineFunction);
+    auto& printLineFunction = add_function(VOID, "print", "_F7println");
+    printLineFunction.standard = true;
 
     //print string
     addPrintFunction("_F5printS", STRING);
@@ -242,47 +240,35 @@ void GlobalContext::defineStandardFunctions(){
     addPrintFunction("_F5printF", FLOAT);
     addPrintFunction("_F7printlnF", FLOAT);
 
-    auto read_char_function = std::make_shared<Function>(CHAR, "read_char");
-    read_char_function->standard = true;
-    read_char_function->mangledName = "_F9read_char";
-    addFunction(read_char_function);
+    auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
+    read_char_function.standard = true;
     
     //concat function
-    auto concatFunction = std::make_shared<Function>(STRING, "concat");
-    concatFunction->standard = true;
-    concatFunction->mangledName = "_F6concatSS";
-    concatFunction->parameters.emplace_back("a", STRING);
-    concatFunction->parameters.emplace_back("b", STRING);
-    addFunction(concatFunction);
+    auto& concatFunction = add_function(STRING, "concat", "_F6concatSS");
+    concatFunction.standard = true;
+    concatFunction.parameters.emplace_back("a", STRING);
+    concatFunction.parameters.emplace_back("b", STRING);
     
     //alloc function
-    auto allocFunction = std::make_shared<Function>(new_pointer_type(INT), "alloc");
-    allocFunction->standard = true;
-    allocFunction->mangledName = "_F5allocI";
-    allocFunction->parameters.emplace_back("a", INT);
-    addFunction(allocFunction);
+    auto& allocFunction = add_function(new_pointer_type(INT), "alloc", "_F5allocI");
+    allocFunction.standard = true;
+    allocFunction.parameters.emplace_back("a", INT);
     
     //free function
-    auto freeFunction = std::make_shared<Function>(VOID, "free");
-    freeFunction->standard = true;
-    freeFunction->mangledName = "_F4freePI";
-    freeFunction->parameters.emplace_back("a", INT);
-    addFunction(freeFunction);
+    auto& freeFunction = add_function(VOID, "free", "_F4freePI");
+    freeFunction.standard = true;
+    freeFunction.parameters.emplace_back("a", INT);
     
     //time function
-    auto timeFunction = std::make_shared<Function>(VOID, "time");
-    timeFunction->standard = true;
-    timeFunction->mangledName = "_F4timeAI";
-    timeFunction->parameters.emplace_back("a", new_array_type(INT));
-    addFunction(timeFunction);
+    auto& timeFunction = add_function(VOID, "time", "_F4timeAI");
+    timeFunction.standard = true;
+    timeFunction.parameters.emplace_back("a", new_array_type(INT));
     
     //duration function
-    auto durationFunction = std::make_shared<Function>(VOID, "duration");
-    durationFunction->standard = true;
-    durationFunction->mangledName = "_F8durationAIAI";
-    durationFunction->parameters.emplace_back("a", new_array_type(INT));
-    durationFunction->parameters.emplace_back("b", new_array_type(INT));
-    addFunction(durationFunction);
+    auto& durationFunction = add_function(VOID, "duration", "_F8durationAIAI");
+    durationFunction.standard = true;
+    durationFunction.parameters.emplace_back("a", new_array_type(INT));
+    durationFunction.parameters.emplace_back("b", new_array_type(INT));
 }
 
 const GlobalContext::FunctionMap& GlobalContext::functions() const {

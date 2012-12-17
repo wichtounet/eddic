@@ -34,7 +34,10 @@ struct ParameterType {
  */
 class Function {
     public:
-        Function(std::shared_ptr<const Type> ret, const std::string& n);
+        Function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
+
+        Function(const Function& rhs) = delete;
+        Function& operator=(const Function& rhs) = delete;
 
         std::shared_ptr<const Type> getParameterType(const std::string& name) const;
         unsigned int getParameterPositionByType(const std::string& name) const;

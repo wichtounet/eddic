@@ -78,7 +78,7 @@ class RegisterManager {
 
         bool is_escaped(std::shared_ptr<Variable> variable);
 
-        void collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
+        void collect_parameters(eddic::Function& definition, const PlatformDescriptor* descriptor);
 
         int last_pseudo_reg();
         int last_float_pseudo_reg();

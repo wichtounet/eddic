@@ -24,24 +24,24 @@ void mtac::register_param_allocation(mtac::program_p program, Platform platform)
     auto maxFloat = descriptor->numberOfFloatParamRegisters();
 
     for(auto& function_info : program->context->functions()){
-        auto function = function_info.second;
+        auto& function = function_info.second;
 
         //Only custom functions have a context
-        if(function->context){
-            for(unsigned int i = 0; i < function->parameters.size(); ++i){
-                auto& parameter = function->parameters[i];
+        if(function.context){
+            for(unsigned int i = 0; i < function.parameters.size(); ++i){
+                auto& parameter = function.parameters[i];
                 auto type = parameter.paramType;
-                unsigned int position = function->getParameterPositionByType(parameter.name);
-                auto param = function->context->getVariable(parameter.name);
+                unsigned int position = function.getParameterPositionByType(parameter.name);
+                auto param = function.context->getVariable(parameter.name);
 
                 if((mtac::is_single_int_register(type) && position <= maxInt) || (mtac::is_single_float_register(type) && position <= maxFloat)){
                     Position oldPosition = param->position();
 
-                    function->context->allocate_in_param_register(param, position);
+                    function.context->allocate_in_param_register(param, position);
                     
                     //We have to change the position of the all the following parameters
-                    for(unsigned int j = i + 1; j < function->parameters.size(); ++j){
-                        auto p = function->context->getVariable(function->parameters[j].name);
+                    for(unsigned int j = i + 1; j < function.parameters.size(); ++j){
+                        auto p = function.context->getVariable(function.parameters[j].name);
                         Position paramPosition = p->position();
                         p->setPosition(oldPosition); 
                         oldPosition = paramPosition;

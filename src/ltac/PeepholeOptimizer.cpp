@@ -601,10 +601,10 @@ void add_param_registers(RegisterUsage& usage, Platform platform){
 void add_escaped_registers(RegisterUsage& usage, mtac::function_p function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
-    if(function->definition->returnType == STRING){
+    if(function->definition.returnType == STRING){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
         usage.insert(ltac::Register(descriptor->int_return_register2()));
-    } else if(function->definition->returnType != VOID){
+    } else if(function->definition.returnType != VOID){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
     }
 

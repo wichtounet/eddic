@@ -24,35 +24,38 @@ using namespace eddic;
         
 void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& declaration){
     auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
-    auto signature = std::make_shared<Function>(return_type, declaration.Content->functionName);
 
     if(return_type->is_array()){
         throw SemanticalException("Cannot return array from function", declaration.Content->position);
     }
 
+    std::vector<ParameterType> parameters;
     for(auto& param : declaration.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.emplace_back(param.parameterName, paramType);
+        parameters.emplace_back(param.parameterName, paramType);
+    }
+    
+    auto mangled_name = mangle(declaration.Content->functionName, parameters, declaration.Content->struct_type);
+
+    if(context->exists(mangled_name)){
+        throw SemanticalException("The function " + mangled_name + " has already been defined", declaration.Content->position);
     }
 
-    signature->struct_ = declaration.Content->struct_name;
-    signature->struct_type = declaration.Content->struct_type;
-    signature->context = declaration.Content->context;
+    auto& signature = context->add_function(return_type, declaration.Content->functionName, mangled_name);
+    
+    LOG<Info>("Functions") << "Register function " << mangled_name << log::endl;
 
-    declaration.Content->mangledName = signature->mangledName = mangle(signature);
+    signature.struct_ = declaration.Content->struct_name;
+    signature.struct_type = declaration.Content->struct_type;
+    signature.context = declaration.Content->context;
+    signature.parameters = std::move(parameters);
+
+    declaration.Content->mangledName = mangled_name;
 
     //Return by value needs a new parameter on stack
     if(return_type->is_custom_type() || return_type->is_template_type()){
-        signature->parameters.emplace_back("__ret", new_pointer_type(return_type));
+        signature.parameters.emplace_back("__ret", new_pointer_type(return_type));
     }
-
-    if(context->exists(signature->mangledName)){
-        throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
-    }
-    
-    LOG<Info>("Functions") << "Register function " << signature->mangledName << log::endl;
-
-    context->addFunction(signature);
 }
 
 void ast::FunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
@@ -60,43 +63,40 @@ void ast::FunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration
 }
 
 void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
-    auto signature = std::make_shared<Function>(VOID, "ctor");
-
+    std::vector<ParameterType> parameters;
     for(auto& param : constructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.emplace_back(param.parameterName, paramType);
+        parameters.emplace_back(param.parameterName, paramType);
     }
+    
+    auto mangled_name = mangle_ctor(parameters, constructor.Content->struct_type);
 
-    signature->struct_ = constructor.Content->struct_name;
-    signature->struct_type = constructor.Content->struct_type;
-
-    constructor.Content->mangledName = signature->mangledName = mangle_ctor(signature);
-
-    if(context->exists(signature->mangledName)){
-        throw SemanticalException("The constructor " + signature->name + " has already been defined", constructor.Content->position);
+    if(context->exists(mangled_name)){
+        throw SemanticalException("The constructor " + mangled_name + " has already been defined", constructor.Content->position);
     }
+    
+    auto& signature = context->add_function(VOID, "ctor", mangled_name);
 
-    context->addFunction(signature);
-    context->getFunction(signature->mangledName)->context = constructor.Content->context;
+    signature.struct_ = constructor.Content->struct_name;
+    signature.struct_type = constructor.Content->struct_type;
+    signature.context = constructor.Content->context;
+    signature.parameters = std::move(parameters);
+
+    constructor.Content->mangledName = mangled_name;
 }
 
 void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
-    auto signature = std::make_shared<Function>(VOID, "dtor");
+    auto mangled_name = mangle_dtor(destructor.Content->struct_type);
 
-    for(auto& param : destructor.Content->parameters){
-        auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
-        signature->parameters.emplace_back(param.parameterName, paramType);
-    }
-
-    signature->struct_ = destructor.Content->struct_name;
-    signature->struct_type = destructor.Content->struct_type;
-
-    destructor.Content->mangledName = signature->mangledName = mangle_dtor(signature);
-
-    if(context->exists(signature->mangledName)){
+    if(context->exists(mangled_name)){
         throw SemanticalException("Only one destructor per struct is allowed", destructor.Content->position);
     }
 
-    context->addFunction(signature);
-    context->getFunction(signature->mangledName)->context = destructor.Content->context;
+    auto& signature = context->add_function(VOID, "dtor", mangled_name);
+
+    signature.struct_ = destructor.Content->struct_name;
+    signature.struct_type = destructor.Content->struct_type;
+    signature.context = destructor.Content->context;
+
+    destructor.Content->mangledName = mangled_name;
 }

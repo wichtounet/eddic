@@ -209,9 +209,9 @@ bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
     return false;
 }
     
-void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
-    for(auto& parameter : definition->parameters){
-        auto param = definition->context->getVariable(parameter.name);
+void ltac::RegisterManager::collect_parameters(eddic::Function& definition, const PlatformDescriptor* descriptor){
+    for(auto& parameter : definition.parameters){
+        auto param = definition.context->getVariable(parameter.name);
 
         if(param->position().isParamRegister()){
             if(mtac::is_single_int_register(param->type())){

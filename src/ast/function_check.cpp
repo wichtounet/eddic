@@ -30,10 +30,10 @@ namespace {
 class FunctionCheckerVisitor : public boost::static_visitor<> {
     public:
         std::shared_ptr<GlobalContext> context;
-        std::shared_ptr<Function> currentFunction;
         std::shared_ptr<ast::TemplateEngine> template_engine;
+        std::string mangled_name;
 
-        FunctionCheckerVisitor(std::shared_ptr<ast::TemplateEngine> template_engine) : template_engine(template_engine) {}
+        FunctionCheckerVisitor(std::shared_ptr<ast::TemplateEngine> template_engine, const std::string& mangled_name) : template_engine(template_engine), mangled_name(mangled_name) {}
 
         void operator()(ast::DefaultCase& default_case){
             check_each(default_case.instructions);
@@ -131,7 +131,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     context->addReference(mangled);
 
                     functionCall.Content->mangled_name = mangled;
-                    functionCall.Content->function = context->getFunction(mangled);
                 } else {
                     auto local_context = functionCall.Content->context->function();
 
@@ -152,7 +151,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                                 function_call_operation.function_name = functionCall.Content->function_name; 
                                 function_call_operation.template_types = functionCall.Content->template_types; 
                                 function_call_operation.values = functionCall.Content->values;
-                                function_call_operation.function = context->getFunction(mangled);
+                                function_call_operation.mangled_name = mangled;
 
                                 ast::Expression member_function_call;
                                 member_function_call.Content->context = functionCall.Content->context;
@@ -416,7 +415,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            return_.Content->function = currentFunction;
+            return_.Content->mangled_name = mangled_name;
 
             check_value(return_.Content->value);
         }
@@ -503,7 +502,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             context->addReference(mangled);
 
                             call_value.mangled_name = mangled;
-                            call_value.function = context->getFunction(mangled);
 
                             if(parent){
                                 call_value.left_type = struct_type;
@@ -636,9 +634,8 @@ void ast::FunctionCheckPass::apply_struct(ast::Struct& struct_, bool indicator){
 }
     
 void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
-    FunctionCheckerVisitor visitor(template_engine);
+    FunctionCheckerVisitor visitor(template_engine, declaration.Content->mangledName);
     visitor.context = context;
-    visitor.currentFunction = context->getFunction(declaration.Content->mangledName);
     visitor.visit_function(declaration);
 
     auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
@@ -652,13 +649,13 @@ void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& dec
 }
 
 void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){
-    FunctionCheckerVisitor visitor(template_engine);
+    FunctionCheckerVisitor visitor(template_engine, constructor.Content->mangledName);
     visitor.context = context;
     visitor.visit_function(constructor);
 }
 
 void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor){
-    FunctionCheckerVisitor visitor(template_engine);
+    FunctionCheckerVisitor visitor(template_engine, destructor.Content->mangledName);
     visitor.context = context;
     visitor.visit_function(destructor);
 }
@@ -667,7 +664,7 @@ void ast::FunctionCheckPass::apply_program(ast::SourceFile& program, bool indica
     context = program.Content->context;
 
     if(!indicator){
-        FunctionCheckerVisitor visitor(template_engine);
+        FunctionCheckerVisitor visitor(template_engine, "");
         visitor.context = context;
 
         for(auto& block : program.Content->blocks){
