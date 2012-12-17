@@ -895,10 +895,10 @@ void ltac::register_allocation(mtac::program_p program, Platform platform){
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program->functions){
-        LOG<Trace>("registers") << "Allocate integer registers for function " << function->getName() << log::endl;
+        LOG<Trace>("registers") << "Allocate integer registers for function " << function->get_name() << log::endl;
         ::register_allocation<ltac::PseudoRegister, ltac::Register>(function, platform);
         
-        LOG<Trace>("registers") << "Allocate float registers for function " << function->getName() << log::endl;
+        LOG<Trace>("registers") << "Allocate float registers for function " << function->get_name() << log::endl;
         ::register_allocation<ltac::PseudoFloatRegister, ltac::FloatRegister>(function, platform);
     }
 }

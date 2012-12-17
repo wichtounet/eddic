@@ -37,14 +37,14 @@ bool mtac::remove_unused_functions::operator()(mtac::program_p program){
     while(it.has_next()){
         auto function = *it;
 
-        if(program->context->referenceCount(function->getName()) == 0){
+        if(program->context->referenceCount(function->get_name()) == 0){
             remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused function " << function->get_name() << log::endl;
             it.erase();
             continue;
-        } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
+        } else if(program->context->referenceCount(function->get_name()) == 1 && mtac::is_recursive(function)){
             remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->get_name() << log::endl;
             it.erase();
             continue;
         } 
@@ -64,7 +64,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
     while(it.has_next()){
         auto function = *it;
 
-        if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
+        if(function->get_name() == "_F4main" || function->get_name() == "_F4mainAS"){
             ++it;
             continue;
         }
@@ -72,7 +72,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
         unsigned int statements = function->size();
 
         if(statements == 0){
-            removed_functions.push_back(function->getName());
+            removed_functions.push_back(function->get_name());
             it.erase();
         } else {
             ++it;

@@ -338,7 +338,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void as::IntelX86_64CodeGenerator::compile(mtac::function_p function){
-    writer.stream() << '\n' << function->getName() << ":" << '\n';
+    writer.stream() << '\n' << function->get_name() << ":" << '\n';
 
     X86_64StatementCompiler compiler(writer);
     

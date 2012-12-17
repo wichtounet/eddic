@@ -165,7 +165,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(mtac::function_p function){
-        out << "Function " << function->getName() << std::endl;
+        out << "Function " << function->get_name() << std::endl;
 
         for(auto& bb : function){
             visit_non_variant(*this, bb);

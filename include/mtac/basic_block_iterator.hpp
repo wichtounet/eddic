@@ -16,24 +16,25 @@ namespace eddic {
 
 namespace mtac {
 
-class basic_block_iterator : public std::iterator<std::bidirectional_iterator_tag, basic_block_p> {
+template<typename BB>
+class basic_block_base_iterator : public std::iterator<std::bidirectional_iterator_tag, BB> {
     public:
-        basic_block_iterator(basic_block_p current, basic_block_p prev) : current(current), prev(prev) {}
-        basic_block_iterator(const basic_block_iterator& it) : current(it.current), prev(it.prev) {}
+        basic_block_base_iterator(BB current, BB prev) : current(current), prev(prev) {}
+        basic_block_base_iterator(const basic_block_base_iterator<BB>& it) : current(it.current), prev(it.prev) {}
 
-        basic_block_iterator& operator++() {
+        basic_block_base_iterator<BB>& operator++() {
             prev = current;
             current = current->next;
             return *this;
         }
 
-        basic_block_iterator operator++(int) {
-            basic_block_iterator tmp(*this); 
+        basic_block_base_iterator<BB> operator++(int) {
+            basic_block_base_iterator<BB> tmp(*this); 
             operator++(); 
             return tmp;
         }
         
-        basic_block_iterator& operator--() {
+        basic_block_base_iterator<BB>& operator--() {
             current = prev;
             if(current){
                 prev = current->prev;
@@ -41,28 +42,31 @@ class basic_block_iterator : public std::iterator<std::bidirectional_iterator_ta
             return *this;
         }
 
-        basic_block_iterator operator--(int) {
-            basic_block_iterator tmp(*this); 
+        basic_block_base_iterator<BB> operator--(int) {
+            basic_block_base_iterator tmp(*this); 
             operator--(); 
             return tmp;
         }
 
-        bool operator==(const basic_block_iterator& rhs) const {
+        bool operator==(const basic_block_base_iterator<BB>& rhs) const {
             return current == rhs.current;
         }
 
-        bool operator!=(const basic_block_iterator& rhs) const {
+        bool operator!=(const basic_block_base_iterator<BB>& rhs) const {
             return current != rhs.current;
         }
 
-        basic_block_p& operator*() {
+        BB& operator*() {
             return current;
         }
             
     private:
-        basic_block_p current;
-        basic_block_p prev;
+        BB current;
+        BB prev;
 };
+
+typedef basic_block_base_iterator<mtac::basic_block_p> basic_block_iterator;
+typedef basic_block_base_iterator<mtac::basic_block_cp> basic_block_const_iterator;
 
 } //end of mtac
 
