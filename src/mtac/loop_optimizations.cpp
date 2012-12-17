@@ -415,7 +415,7 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
                     //If j = tj generated in strength reduction phase
                     if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){
                         if(!usage.read.count(j)){
-                            log::emit<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
+                            LOG<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
 
                             //There is one less read of tj
                             --usage.read[tj];
@@ -447,7 +447,7 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
 
             removed_variables.push_back(var.first);
 
-            log::emit<Trace>("Loops") << "Remove DIV " << var.first->name() << log::endl;
+            LOG<Trace>("Loops") << "Remove DIV " << var.first->name() << log::endl;
         }
     }
 
@@ -518,7 +518,7 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
             return;
         }
 
-        log::emit<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
+        LOG<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
        
         auto div_equation = dependent_induction_variables[div];
         auto new_end = div_equation.e * end + div_equation.d;
@@ -568,11 +568,11 @@ bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mta
     }
     
     for(auto& biv : loop->basic_induction_variables()){
-        log::emit<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
     }
     
     for(auto& biv : loop->dependent_induction_variables()){
-        log::emit<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
+        LOG<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
     }
 
     //2. Removal of dependent induction variables
@@ -749,7 +749,7 @@ bool mtac::loop_unrolling::operator()(mtac::function_p function){
                         continue;
                     }
 
-                    log::emit<Trace>("Loops") << "Unroll the loop with a factor " << factor << log::endl;
+                    LOG<Trace>("Loops") << "Unroll the loop with a factor " << factor << log::endl;
 
                     optimized = true;
 

@@ -74,7 +74,8 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain Init(mtac::function_p function) override;
    
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
@@ -88,7 +89,8 @@ struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowT
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain Init(mtac::function_p function) override;
    
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     

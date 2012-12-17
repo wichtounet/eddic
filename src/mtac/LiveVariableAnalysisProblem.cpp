@@ -44,25 +44,18 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::function_p /*functio
     return value;
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, ProblemDomain& in){
+void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDomain& in){
     if(out.top()){
-        return in;
+        out = in;
+        return;
     } else if(in.top()){
-        return out;
+        //out does not change
+        return;
     }
-
-    typename ProblemDomain::Values values;
-    ProblemDomain result(values);
 
     for(auto& value : in.values()){
-        result.values().insert(value);
+        out.values().insert(value);
     }
-    
-    for(auto& value : out.values()){
-        result.values().insert(value);
-    }
-
-    return result;
 }
 
 namespace {

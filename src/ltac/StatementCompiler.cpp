@@ -323,7 +323,7 @@ void ltac::StatementCompiler::pop(ltac::Argument arg){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
-    log::emit<Trace>("Registers") << "Current statement " << if_false << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << if_false << log::endl;
 
     if(if_false->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -394,7 +394,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
-    log::emit<Trace>("Registers") << "Current statement " << if_ << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << if_ << log::endl;
 
     if(if_->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -466,7 +466,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
-    log::emit<Trace>("Registers") << "Current statement " << goto_ << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << goto_ << log::endl;
 
     end_bb();
 
@@ -491,7 +491,7 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
-    log::emit<Trace>("Registers") << "Current statement " << param << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << param << log::endl;
 
     if(first_param){
         ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
@@ -631,7 +631,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
-    log::emit<Trace>("Registers") << "Current statement " << call << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
 
     //Means that there are no params
     if(first_param){
@@ -1364,7 +1364,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-    log::emit<Trace>("Registers") << "Current statement " << quadruple << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << quadruple << log::endl;
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:

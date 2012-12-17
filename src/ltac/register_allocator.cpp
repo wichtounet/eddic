@@ -387,7 +387,7 @@ void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph<Pseu
         }
     }
 
-    log::emit<Trace>("registers") << "Found " << graph.size() << " pseudo registers" << log::endl;
+    LOG<Trace>("registers") << "Found " << graph.size() << " pseudo registers" << log::endl;
 }
 
 template<typename Pseudo, typename Results>
@@ -490,7 +490,7 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function
                         && !graph.connected(graph.convert(reg1), graph.convert(reg2))
                         && !prune.count(reg1) && !prune.count(reg2))
                 {
-                    log::emit<Debug>("registers") << "Coalesce " << reg1 << " and " << reg2 << log::endl;
+                    LOG<Debug>("registers") << "Coalesce " << reg1 << " and " << reg2 << log::endl;
 
                     replaces[reg1] = reg2;
                     prune.insert(reg1);
@@ -640,14 +640,14 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
     }
 
     auto K = number_of_registers<Pseudo>(platform);
-    log::emit<Trace>("registers") << "Attempt a " << K << "-coloring of the graph" << log::endl;
+    LOG<Trace>("registers") << "Attempt a " << K << "-coloring of the graph" << log::endl;
 
     while(!n.empty()){
         std::size_t node;
         bool found = false;
 
         for(auto candidate : n){
-            log::emit<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << degree(graph, candidate, order) << log::endl;
+            LOG<Dev>("registers") << "Degree(" << graph.convert(candidate) << ") = " << degree(graph, candidate, order) << log::endl;
             if(degree(graph, candidate, order) < K){
                 node = candidate;        
                 found = true;
@@ -666,11 +666,11 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
                 }
             }
 
-            log::emit<Trace>("registers") << "Mark pseudo " << node << "(" << graph.convert(node) << ") to be spilled" << log::endl;
+            LOG<Trace>("registers") << "Mark pseudo " << node << "(" << graph.convert(node) << ") to be spilled" << log::endl;
 
             spilled.push_back(node);
         } else {
-            log::emit<Trace>("registers") << "Put pseudo " << graph.convert(node) << " on the stack" << log::endl;
+            LOG<Trace>("registers") << "Put pseudo " << graph.convert(node) << " on the stack" << log::endl;
 
             order.push_back(node);
         }
@@ -679,7 +679,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
         graph.remove_node(node);
     }
 
-    log::emit<Trace>("registers") << "Graph simplified" << log::endl;
+    LOG<Trace>("registers") << "Graph simplified" << log::endl;
 }
 
 //6. Select
@@ -709,7 +709,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
 
         //Handle bound registers
         if(graph.convert(reg).bound){
-            log::emit<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
+            LOG<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
             allocation[reg] = graph.convert(reg).binding;
             it.erase();
         } else {
@@ -732,7 +732,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
             }
 
             if(!found){
-                log::emit<Trace>("registers") << "Alloc " << color << " to pseudo " << graph.convert(reg) << log::endl;
+                LOG<Trace>("registers") << "Alloc " << color << " to pseudo " << graph.convert(reg) << log::endl;
                 allocation[reg] = color;
                 variable_allocated.insert(color);
                 break;
@@ -895,10 +895,10 @@ void ltac::register_allocation(mtac::program_p program, Platform platform){
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program->functions){
-        log::emit<Trace>("registers") << "Allocate integer registers for function " << function->getName() << log::endl;
+        LOG<Trace>("registers") << "Allocate integer registers for function " << function->getName() << log::endl;
         ::register_allocation<ltac::PseudoRegister, ltac::Register>(function, platform);
         
-        log::emit<Trace>("registers") << "Allocate float registers for function " << function->getName() << log::endl;
+        LOG<Trace>("registers") << "Allocate float registers for function " << function->getName() << log::endl;
         ::register_allocation<ltac::PseudoFloatRegister, ltac::FloatRegister>(function, platform);
     }
 }

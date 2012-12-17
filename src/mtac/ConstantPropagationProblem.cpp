@@ -28,16 +28,15 @@ ProblemDomain mtac::ConstantPropagationProblem::Boundary(mtac::function_p functi
     return default_element();
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
+void mtac::ConstantPropagationProblem::meet(ProblemDomain& in, const ProblemDomain& out){
     if(in.top() && out.top()){
         typename ProblemDomain::Values values;
         ProblemDomain result(values);
-
-        return result;
+        in = result;
     } else if(in.top()){
-        return out;
+        in = out;
     } else if(out.top()){
-        return in;
+        //in doesn't change
     } else {
         typename ProblemDomain::Values values;
         ProblemDomain result(values);
@@ -51,8 +50,9 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
             } else {
                 auto c1 = v1.value();
 
-                if(out.find(var) != out.end()){
-                    auto v2 = out[var];
+                auto it = out.find(var);
+                if(it != out.end()){
+                    auto v2 = it->second;
 
                     if(v2.nac()){
                         result[var] = {}; //NAC
@@ -89,7 +89,7 @@ ProblemDomain mtac::ConstantPropagationProblem::meet(ProblemDomain& in, ProblemD
             }
         }
 
-        return result;
+        in = std::move(result);
     }
 }
 

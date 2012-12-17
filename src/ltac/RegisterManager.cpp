@@ -134,7 +134,7 @@ bool is_local(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     move(var, reg);
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -147,7 +147,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
     
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -159,7 +159,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     move(var, reg);
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -172,7 +172,7 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
     
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -199,12 +199,12 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_free_pseudo_float_reg(){
 
 bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
     if(pointer_escaped->count(variable)){
-        log::emit<Trace>("Registers") << variable->name() << " is escaped " << log::endl;
+        LOG<Trace>("Registers") << variable->name() << " is escaped " << log::endl;
 
         return true;
     }
 
-    log::emit<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
+    LOG<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
 
     return false;
 }

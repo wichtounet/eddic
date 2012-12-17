@@ -48,7 +48,7 @@ void FunctionContext::set_stack_position(int current){
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter);
     
-    log::emit<Info>("Variables") << "New parameter " << variable << " at position " << currentParameter << log::endl;
+    LOG<Info>("Variables") << "New parameter " << variable << " at position " << currentParameter << log::endl;
 
     currentParameter += type->size(platform);
 
@@ -143,7 +143,7 @@ void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
     
     storage.erase(iter_var);
     
-    log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
+    LOG<Info>("Variables") << "Remove " << variable->name() << log::endl;
 }
 
 std::shared_ptr<FunctionContext> FunctionContext::function(){

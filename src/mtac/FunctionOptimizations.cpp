@@ -39,12 +39,12 @@ bool mtac::remove_unused_functions::operator()(mtac::program_p program){
 
         if(program->context->referenceCount(function->getName()) == 0){
             remove_references(program, function);
-            log::emit<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
             it.erase();
             continue;
         } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
             remove_references(program, function);
-            log::emit<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
             it.erase();
             continue;
         } 

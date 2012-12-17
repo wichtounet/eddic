@@ -33,26 +33,34 @@ inline bool are_equivalent(std::shared_ptr<mtac::Quadruple> first, std::shared_p
     return first->op == second->op && *first->arg1 == *second->arg1 && *first->arg2 == *second->arg2;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, ProblemDomain& out){
+void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const ProblemDomain& out){
     eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
-        return out;
+        in = out;
     } else if(out.top()){
-        return in;
+        //in does not change
     } else {
-        typename ProblemDomain::Values values;
+        auto it = iterate(in.values());
 
-        for(auto& in_value : in.values()){
+        while(it.has_next()){
+            auto& in_value = *it;
+            bool found = false;
+
             for(auto& out_value : out.values()){
                 if(are_equivalent(in_value.expression, out_value.expression)){
-                    values.push_back(in_value);
+                    found = true;
+                    break;
                 }
             }
-        }
 
-        ProblemDomain result(values);
-        return result;
+            if(!found){
+                it.erase();
+                continue;
+            }
+
+            ++it;
+        }
     }
 }
 

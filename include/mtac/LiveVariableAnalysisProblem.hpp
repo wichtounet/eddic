@@ -35,19 +35,19 @@ struct LiveVariableValues {
         values.erase(var);
     }
 
-    Values::iterator find(std::shared_ptr<Variable> var){
+    Values::const_iterator find(std::shared_ptr<Variable> var) const {
         return values.find(var);
     }
     
-    Values::iterator begin(){
+    Values::const_iterator begin() const {
         return values.begin();
     }
     
-    Values::iterator end(){
+    Values::const_iterator end() const {
         return values.end();
     }
 
-    std::size_t size(){
+    std::size_t size() const {
         return values.size();
     }
 };
@@ -60,7 +60,8 @@ struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backwa
     ProblemDomain Boundary(mtac::function_p function) override;
     ProblemDomain Init(mtac::function_p function) override;
    
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     

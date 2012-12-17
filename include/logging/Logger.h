@@ -148,7 +148,7 @@ namespace logging {
      */
     template<typename T>
     static inline ::logging::NullOutput&
-    operator << (::logging::NullOutput& no, T) {
+    operator << (::logging::NullOutput& no, const T&) {
         return no;
     }
 

@@ -512,8 +512,8 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
         natural_loop.insert(d);
         natural_loop.insert(n);
 
-        log::emit<Trace>("Control-Flow") << "Back edge n = B" << n->index << log::endl;
-        log::emit<Trace>("Control-Flow") << "Back edge d = B" << d->index << log::endl;
+        LOG<Trace>("Control-Flow") << "Back edge n = B" << n->index << log::endl;
+        LOG<Trace>("Control-Flow") << "Back edge d = B" << d->index << log::endl;
 
         if(n != d){
             std::stack<mtac::basic_block_p> vertices;
@@ -532,13 +532,13 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
             }
         }
 
-        log::emit<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
+        LOG<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
 
         auto loop = std::make_shared<mtac::Loop>(natural_loop);
         function->loops().push_back(loop);
     }
 
-    log::emit<Trace>("Control-Flow") << "Found " << function->loops().size() << " natural loops" << log::endl;
+    LOG<Trace>("Control-Flow") << "Found " << function->loops().size() << " natural loops" << log::endl;
 
     //Find BIV and DIV of the loops
     for(auto& loop : function->loops()){

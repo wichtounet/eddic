@@ -18,9 +18,9 @@ PerfsTimer::PerfsTimer(const std::string& n, bool precise) : name(n), precise(pr
 PerfsTimer::~PerfsTimer(){
     if(log::enabled<Trace>()){
         if(precise){
-            log::emit<Trace>("Perfs") << name << " took " << timer.micro_elapsed() << "us" << log::endl;
+            LOG<Trace>("Perfs") << name << " took " << timer.micro_elapsed() << "us" << log::endl;
         } else {
-            log::emit<Trace>("Perfs") << name << " took " << timer.elapsed() << "ms" << log::endl;
+            LOG<Trace>("Perfs") << name << " took " << timer.elapsed() << "ms" << log::endl;
         }
     }
 }

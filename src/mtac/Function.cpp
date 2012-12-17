@@ -115,7 +115,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     eddic_assert(block, "Cannot remove null block"); 
     eddic_assert(block != exit, "Cannot remove exit"); 
 
-    log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
+    LOG<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
 
     auto& next = block->next;
 
@@ -175,7 +175,7 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
     eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
 
-    log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
+    LOG<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
 
     if(!source->statements.empty()){
         //B can have some new successors

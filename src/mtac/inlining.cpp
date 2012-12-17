@@ -59,7 +59,7 @@ struct BBReplace : public boost::static_visitor<> {
 };
 
 BBClones clone(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
-    log::emit<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
+    LOG<Trace>("Inlining") << "Clone " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
     BBClones bb_clones;
 
@@ -428,7 +428,7 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program)
                 auto dest_definition = dest_function->definition;
 
                 if(will_inline(dest_function, source_function, call, basic_block)){
-                    log::emit<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
+                    LOG<Trace>("Inlining") << "Inline " << source_function->getName() << " into " << dest_function->getName() << log::endl;
 
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);

@@ -813,7 +813,7 @@ void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Typ
 }
 
 void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
-    log::emit<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
+    LOG<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
 
     auto it_pair = function_templates[context].equal_range(name);
 
@@ -827,7 +827,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
 
         if(source_types.size() == template_types.size()){
             if(!is_instantiated(name, context, template_types)){
-                log::emit<Info>("Template") << "Instantiate function template " << name << log::endl;
+                LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
 
                 //Instantiate the function 
                 ast::FunctionDeclaration declaration;
@@ -879,7 +879,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
             if(source_types.size() == template_types.size()){
                 if(!is_class_instantiated(name, template_types)){
-                    log::emit<Info>("Template") << "Instantiate class template " << name << log::endl;
+                    LOG<Info>("Template") << "Instantiate class template " << name << log::endl;
 
                     //Instantiate the struct
                     ast::Struct declaration;
@@ -919,13 +919,13 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 }
         
 void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration){
-    log::emit<Trace>("Template") << "Collected class template " << struct_ << log::endl;
+    LOG<Trace>("Template") << "Collected class template " << struct_ << log::endl;
 
     class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration)); 
 }
 
 void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){
-    log::emit<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
+    LOG<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
 
     function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, declaration));
 }

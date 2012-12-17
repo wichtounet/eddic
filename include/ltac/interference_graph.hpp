@@ -76,7 +76,7 @@ Pseudo ltac::interference_graph<Pseudo>::convert(const ltac::reg& reg){
 template<typename Pseudo>
 void ltac::interference_graph<Pseudo>::gather(const Pseudo& reg){
     if(!pseudo_to_index.count(reg)){
-        log::emit<Dev>("registers") << "Gather " << reg << log::endl;
+        LOG<Dev>("registers") << "Gather " << reg << log::endl;
 
         pseudo_to_index[reg] = index_to_pseudo.size();
         index_to_pseudo.push_back(reg);

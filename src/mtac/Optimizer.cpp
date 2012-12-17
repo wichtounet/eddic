@@ -266,7 +266,7 @@ struct pass_runner {
             this->function = function;
     
             if(log::enabled<Debug>()){
-                log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
+                LOG<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
 
                 print(function);
             }
@@ -352,7 +352,7 @@ struct pass_runner {
     template<typename Pass>
     inline typename std::enable_if<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type 
     debug_local(bool local){
-        log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
+        LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
     }
 
     template<typename Pass>
@@ -360,12 +360,12 @@ struct pass_runner {
     debug_local(bool local){
         if(log::enabled<Debug>()){
             if(local){
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
+                LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
 
                 //Print the function
                 print(function);
             } else {
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
+                LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
             }
         }
     }
