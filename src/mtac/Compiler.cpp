@@ -1390,8 +1390,7 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         template<typename Function>
         inline void issue_function(Function& f){
-            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName);
-            function->definition = program->context->getFunction(f.Content->mangledName);
+            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName, program->context->getFunction(f.Content->mangledName));
 
             visit_each(*this, f.Content->instructions);
 
