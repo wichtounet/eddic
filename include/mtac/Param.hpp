@@ -33,8 +33,6 @@ struct Param {
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;
 
-    Param();
-    Param(mtac::Argument arg1);
     Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<eddic::Function> function);
     Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<eddic::Function> function);
 };

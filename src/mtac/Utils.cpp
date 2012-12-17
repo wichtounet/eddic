@@ -220,15 +220,19 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
     
     mtac::Statement operator()(std::shared_ptr<mtac::Param> param){
-        auto copy = std::make_shared<mtac::Param>();
+        if(param->param){
+            auto copy = std::make_shared<mtac::Param>(param->arg, param->param, param->function);
 
-        copy->arg = param->arg;
-        copy->param = param->param;
-        copy->std_param = param->std_param;
-        copy->function = param->function;
-        copy->address = param->address;
+            copy->address = param->address;
+        
+            return copy;
+        } else {
+            auto copy = std::make_shared<mtac::Param>(param->arg, param->std_param, param->function);
 
-        return copy;
+            copy->address = param->address;
+        
+            return copy;
+        }
     }
 
     mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){

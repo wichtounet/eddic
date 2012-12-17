@@ -9,7 +9,6 @@
 
 using namespace eddic;
 
-mtac::Call::Call(){}
 mtac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition) : 
     function(f), functionDefinition(functionDefinition) {}
 mtac::Call::Call(const std::string& f, std::shared_ptr<Function> functionDefinition, std::shared_ptr<Variable> r) :

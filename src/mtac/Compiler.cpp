@@ -270,21 +270,23 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
             {
                 if(type == STRING){
                     eddic_assert(op == ast::Operator::ADD, "Only ADD can be applied to string");
+
+                    auto definition = function->context->global()->getFunction("_F6concatSS");
                     
                     for(auto& arg : left){
-                        function->add(std::make_shared<mtac::Param>(arg));   
+                        function->add(std::make_shared<mtac::Param>(arg, "a", definition));
                     }
                     
                     auto right = move_to_arguments(boost::get<ast::Value>(*operation.get<1>()), function);
                     for(auto& arg : right){
-                        function->add(std::make_shared<mtac::Param>(arg));   
+                        function->add(std::make_shared<mtac::Param>(arg, "b", definition));
                     }
                 
                     auto t1 = function->context->new_temporary(INT);
                     auto t2 = function->context->new_temporary(INT);
                     
                     function->context->global()->addReference("_F6concatSS");
-                    function->add(std::make_shared<mtac::Call>("_F6concatSS", function->context->global()->getFunction("_F6concatSS"), t1, t2)); 
+                    function->add(std::make_shared<mtac::Call>("_F6concatSS", definition, t1, t2)); 
 
                     left = {t1, t2};
                 } else if(type == INT || type == FLOAT){
@@ -682,10 +684,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(function->context->global()), new_.Content->type);
     
-        auto param = std::make_shared<mtac::Param>(type->size(function->context->global()->target_platform()));
-        param->std_param = "a";
-        param->function = function->context->global()->getFunction("_F5allocI");
-        function->add(param);
+        function->add(std::make_shared<mtac::Param>(type->size(function->context->global()->target_platform()), "a", function->context->global()->getFunction("_F5allocI")));
 
         auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
@@ -711,10 +710,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         function->add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
         function->add(std::make_shared<mtac::Quadruple>(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform))));
     
-        auto param = std::make_shared<mtac::Param>(size);
-        param->std_param = "a";
-        param->function = function->context->global()->getFunction("_F5allocI");
-        function->add(param);
+        function->add(std::make_shared<mtac::Param>(type->size(function->context->global()->target_platform()), "a", function->context->global()->getFunction("_F5allocI")));
 
         auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
@@ -1587,9 +1583,7 @@ class CompilerVisitor : public boost::static_visitor<> {
             auto free_name = "_F4freePI";
             auto free_function = program->context->getFunction(free_name);
 
-            auto param = std::make_shared<mtac::Param>(delete_.Content->variable);
-            param->std_param = "a";
-            param->function = free_function;
+            auto param = std::make_shared<mtac::Param>(delete_.Content->variable, "a", free_function);
             function->add(param);
 
             program->context->addReference(free_name);
