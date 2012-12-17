@@ -193,21 +193,15 @@ bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_)
 }
 
 void GlobalContext::addReference(const std::string& function){
-    eddic_assert(exists(function), "The function must exists");
-    
-    ++(m_functions.at(function).references);
+    ++(getFunction(function).references);
 }
 
 void GlobalContext::removeReference(const std::string& function){
-    eddic_assert(exists(function), "The function must exists");
-    
-    --(m_functions.at(function).references);
+    --(getFunction(function).references);
 }
 
 int GlobalContext::referenceCount(const std::string& function){
-    eddic_assert(exists(function), "The function must exists");
-    
-    return m_functions.at(function).references;
+    return getFunction(function).references;
 }
 
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
