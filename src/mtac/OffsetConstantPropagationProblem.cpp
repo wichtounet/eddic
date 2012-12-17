@@ -124,8 +124,8 @@ struct ConstantCollector : public boost::static_visitor<> {
 ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Statement& statement, ProblemDomain& in){
     auto out = in;
 
-    if(boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
+    if(auto* quadruple_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        auto& quadruple = *quadruple_ptr;
 
         //Store the value assigned to result+arg1
         if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
@@ -162,7 +162,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
     }
     //Passing a variable by pointer erases its value
     else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        auto param = *ptr;
+        auto& param = *ptr;
 
         if(param->address){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
