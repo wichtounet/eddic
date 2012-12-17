@@ -36,7 +36,6 @@ class Function : public std::enable_shared_from_this<Function> {
         Function(std::shared_ptr<FunctionContext> context, const std::string& name);
 
         std::shared_ptr<eddic::Function> definition;
-        
         std::shared_ptr<FunctionContext> context;
 
         std::string getName() const;
@@ -56,6 +55,10 @@ class Function : public std::enable_shared_from_this<Function> {
 
         basic_block_iterator begin();
         basic_block_iterator end();
+        
+        basic_block_const_iterator begin() const ;
+        basic_block_const_iterator end() const ;
+        
         basic_block_iterator at(basic_block_p bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, basic_block_p block);
@@ -67,8 +70,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::vector<std::shared_ptr<Loop>>& loops();
 
-        std::size_t bb_count();
-        std::size_t size();
+        std::size_t bb_count() const;
+        std::size_t size() const;
         
         std::size_t pseudo_registers();
         void set_pseudo_registers(std::size_t pseudo_registers);
@@ -88,7 +91,7 @@ class Function : public std::enable_shared_from_this<Function> {
         void variable_use(ltac::Register reg);
         void variable_use(ltac::FloatRegister reg);
 
-        bool is_main();
+        bool is_main() const;
 
     private:
         //Before being partitioned, the function has only statement

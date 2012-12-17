@@ -18,7 +18,7 @@ mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& 
     //Nothing to do   
 }
 
-bool mtac::Function::is_main(){
+bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
 }
 
@@ -28,6 +28,14 @@ mtac::basic_block_iterator mtac::Function::begin(){
 
 mtac::basic_block_iterator mtac::Function::end(){
     return basic_block_iterator(nullptr, exit);    
+}
+
+mtac::basic_block_const_iterator mtac::Function::begin() const {
+    return basic_block_const_iterator(entry, nullptr);
+}
+
+mtac::basic_block_const_iterator mtac::Function::end() const {
+    return basic_block_const_iterator(nullptr, exit);
 }
 
 mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
@@ -209,7 +217,7 @@ std::vector<mtac::Statement>& mtac::Function::getStatements(){
     return statements;
 }
 
-std::size_t mtac::Function::bb_count(){
+std::size_t mtac::Function::bb_count() const {
     return count;
 }
 
@@ -261,7 +269,7 @@ void mtac::Function::set_pseudo_float_registers(std::size_t pseudo_registers){
     this->last_float_pseudo_registers = pseudo_registers;
 }
 
-std::size_t mtac::Function::size(){
+std::size_t mtac::Function::size() const {
     std::size_t size = 0;
 
     for(auto& block : *this){
