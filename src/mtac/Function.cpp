@@ -213,7 +213,7 @@ std::string mtac::Function::get_name() const {
     return name;
 }
 
-std::vector<mtac::Statement>& mtac::Function::getStatements(){
+std::vector<mtac::Statement>& mtac::Function::get_statements(){
     return statements;
 }
 

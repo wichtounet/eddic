@@ -41,7 +41,7 @@ void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
         function->create_entry_bb();
 
         //First separate the statements into basic blocks
-        for(auto& statement : function->getStatements()){
+        for(auto& statement : function->get_statements()){
             if(auto* ptr = boost::get<std::string>(&statement)){
                 function->append_bb();
 

@@ -38,7 +38,7 @@ class Function : public std::enable_shared_from_this<Function> {
         std::string get_name() const;
 
         void add(Statement statement);
-        std::vector<Statement>& getStatements();
+        std::vector<Statement>& get_statements();
         void release_statements();
 
         void create_entry_bb();
