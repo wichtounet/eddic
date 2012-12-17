@@ -34,7 +34,8 @@ typedef std::list<Expression> Expressions;
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     std::unordered_set<std::shared_ptr<mtac::Quadruple>> optimized;
 
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     

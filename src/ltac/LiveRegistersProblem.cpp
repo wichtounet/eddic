@@ -142,33 +142,20 @@ struct LivenessCollector : public boost::static_visitor<> {
 };
 
 template<typename Domain>
-Domain meet(Domain& in, Domain& out){
+inline void meet(Domain& in, const Domain& out){
     if(out.top()){
-        return in;
+        //in does not change
     } else if(in.top()){
-        return out;
-    }
+        in = out;
+    } else {
+        for(auto& value : out.values().registers){
+            in.values().insert(value);
+        }
 
-    typename Domain::Values values;
-    Domain result(values);
-
-    for(auto& value : in.values().registers){
-        result.values().insert(value);
+        for(auto& value : out.values().float_registers){
+            in.values().insert(value);
+        }
     }
-    
-    for(auto& value : in.values().float_registers){
-        result.values().insert(value);
-    }
-    
-    for(auto& value : out.values().registers){
-        result.values().insert(value);
-    }
-    
-    for(auto& value : out.values().float_registers){
-        result.values().insert(value);
-    }
-
-    return result;
 }
 
 } //End of anonymous namespace
@@ -193,12 +180,12 @@ PseudoProblemDomain ltac::LivePseudoRegistersProblem::Init(mtac::function_p /*fu
     return value;
 }
 
-ProblemDomain ltac::LiveRegistersProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    return ::meet(in, out);
+void ltac::LiveRegistersProblem::meet(ProblemDomain& in, const ProblemDomain& out){
+    ::meet(in, out);
 }
 
-PseudoProblemDomain ltac::LivePseudoRegistersProblem::meet(PseudoProblemDomain& in, PseudoProblemDomain& out){
-    return ::meet(in, out);
+void ltac::LivePseudoRegistersProblem::meet(PseudoProblemDomain& in, const PseudoProblemDomain& out){
+    ::meet(in, out);
 }
 
 ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Statement& statement, ProblemDomain& in){

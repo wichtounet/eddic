@@ -39,7 +39,7 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
 
         ProblemDomain Boundary(mtac::function_p function) override;
 
-        ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+        void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
         ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
         ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };

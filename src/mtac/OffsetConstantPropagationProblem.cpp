@@ -84,10 +84,8 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p 
     return out;
 }
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, ProblemDomain& out){
-    auto result = mtac::intersection_meet(in, out);
-
-    return result;
+void mtac::OffsetConstantPropagationProblem::meet(ProblemDomain& in, const ProblemDomain& out){
+    mtac::intersection_meet(in, out);
 }
 
 namespace {

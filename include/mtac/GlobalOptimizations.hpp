@@ -113,7 +113,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(m
                 log::emit<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
                 log::emit<Dev>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
 
-                IN[B] = problem.meet(IN[B], OUT[P]);
+                problem.meet(IN[B], OUT[P]);
                 
                 log::emit<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
@@ -212,7 +212,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
                 log::emit<Dev>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
                 log::emit<Dev>("Data-Flow") << "IN[S]  before " << IN[S] << log::endl;
 
-                OUT[B] = problem.meet(OUT[B], IN[S]);
+                problem.meet(OUT[B], IN[S]);
                 
                 log::emit<Dev>("Data-Flow") << "OUT[B]  after " << OUT[B] << log::endl;
 
