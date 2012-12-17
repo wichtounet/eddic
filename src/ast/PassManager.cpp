@@ -51,7 +51,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
 }
     
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
-    log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+    LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
 
     for(unsigned int i = 0; i < pass->passes(); ++i){
         pass->set_current_pass(i);
@@ -143,11 +143,11 @@ void ast::PassManager::init_passes(){
 }
         
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
-    log::emit<Info>("Passes") << "Apply passes to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
+    LOG<Info>("Passes") << "Apply passes to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
 
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
-            log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -169,19 +169,19 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
         }
     }
     
-    log::emit<Info>("Passes") << "Passes applied to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
+    LOG<Info>("Passes") << "Passes applied to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
         
     functions_instantiated.push_back(std::make_pair(context, function));
 }
 
 void ast::PassManager::struct_instantiated(ast::Struct& struct_){
-    log::emit<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
+    LOG<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
 
     inc_depth();
 
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
-            log::emit<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -191,7 +191,7 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
 
     dec_depth();
     
-    log::emit<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
+    LOG<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
     
     class_instantiated.push_back(struct_);
 }
@@ -213,7 +213,7 @@ void ast::PassManager::run_passes(){
         //A simple pass is only applied once to the whole program
         //They won't be applied on later instantiated function templates and class templates
         if(pass->is_simple()){
-            log::emit<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
+            LOG<Info>("Passes") << "Run simple pass \"" << pass->name() << "\"" << log::endl;
 
             for(unsigned int i = 0; i < pass->passes(); ++i){
                 pass->set_current_pass(i);

@@ -50,7 +50,7 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
         throw SemanticalException("The function " + signature->mangledName + " has already been defined", declaration.Content->position);
     }
     
-    log::emit<Info>("Functions") << "Register function " << signature->mangledName << log::endl;
+    LOG<Info>("Functions") << "Register function " << signature->mangledName << log::endl;
 
     context->addFunction(signature);
 }

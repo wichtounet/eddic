@@ -917,13 +917,13 @@ bool conditional_move(mtac::function_p function, Platform platform){
 bool debug(const std::string& name, bool b, mtac::function_p function){
     if(log::enabled<Debug>()){
         if(b){
-            log::emit<Debug>("Peephole") << name << " returned true" << log::endl;
+            LOG<Debug>("Peephole") << name << " returned true" << log::endl;
 
             //Print the function
             ltac::Printer printer;
             printer.print(function);
         } else {
-            log::emit<Debug>("Peephole") << name << " returned false" << log::endl;
+            LOG<Debug>("Peephole") << name << " returned false" << log::endl;
         }
     }
 
@@ -937,7 +937,7 @@ void eddic::ltac::optimize(mtac::program_p program, Platform platform){
 
     for(auto& function : program->functions){
         if(log::enabled<Debug>()){
-            log::emit<Debug>("Peephole") << "Start optimizations on " << function->getName() << log::endl;
+            LOG<Debug>("Peephole") << "Start optimizations on " << function->getName() << log::endl;
 
             //Print the function
             ltac::Printer printer;
