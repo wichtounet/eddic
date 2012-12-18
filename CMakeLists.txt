@@ -167,6 +167,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/int_pointers
     SpecificSuite/bool_pointers
     SpecificSuite/cmove
+    SpecificSuite/delete_any
     SpecificSuite/dynamic
     SpecificSuite/dynamic_struct
     SpecificSuite/float_pointers

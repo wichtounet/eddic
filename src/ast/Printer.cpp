@@ -194,7 +194,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::Delete& delete_) const {
-        std::cout << indent() << "Delete " << delete_.Content->variable_name << std::endl; 
+        std::cout << indent() << "Delete" << std::endl; 
+        print_sub(delete_.Content->value, "Value");
     }
 
     void operator()(ast::For& for_) const {

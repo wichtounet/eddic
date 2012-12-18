@@ -217,6 +217,10 @@ BOOST_AUTO_TEST_CASE( compound ){
     assert_output("compound.eddi", "6|9|6|18|6|0|");
 }
 
+BOOST_AUTO_TEST_CASE( delete_any ){
+    assert_output("delete_any.eddi", "99|");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "1|1|1|");
 }
