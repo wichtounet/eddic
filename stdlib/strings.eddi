@@ -1,12 +1,16 @@
 struct string {
-    char data[];
+    char[] data;
 
-    string(str raw){
+    this(str raw){
         data = new char[length(b)];
 
         for(int i = 0; i < length(b); ++i){
             data[i] = raw[i];
         }
+    }
+    
+    ~this(){
+        delete data;
     }
 
     int size(){
