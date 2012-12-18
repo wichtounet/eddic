@@ -1572,8 +1572,8 @@ class CompilerVisitor : public boost::static_visitor<> {
         void operator()(ast::Delete& delete_){
             auto arg = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), delete_.Content->value)[0];
             auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
-            if(type->is_structure()){
-                destruct(function, type, arg);
+            if(type->data_type()->is_structure()){
+                destruct(function, type->data_type(), arg);
             }
 
             auto free_name = "_F4freePI";
