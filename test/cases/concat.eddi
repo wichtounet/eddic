@@ -1,6 +1,6 @@
 void main(){
-	string a = "asdf";
-	string b = "1234";
+	str a = "asdf";
+	str b = "1234";
 
     test(a, b);
     test(b, a);
@@ -8,7 +8,7 @@ void main(){
     test(b, b);
 }
 
-void test(string a, string b){
+void test(str a, str b){
     print(a + b);
     print("|");
 }

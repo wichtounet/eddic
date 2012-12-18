@@ -25,10 +25,10 @@ int factorial(int n){
     return n * factorial(n - 1);
 }
 
-string hello(){
+str hello(){
     return "hello" + helloTwo();
 }
 
-string helloTwo(){
+str helloTwo(){
     return "asfd";
 }

@@ -1,11 +1,11 @@
 int globalArray[7];
-string globalArrayB[7];
+str globalArrayB[7];
 
 void main(){
     println("Test int");
     testInt();
 
-    println("Test string");
+    println("Test str");
     testString();
 }
 
@@ -67,12 +67,12 @@ void testString(){
     println(globalArrayB[3]);
     
     println("start_foreach global");
-    foreach(string a in globalArrayB){
+    foreach(str a in globalArrayB){
         println(a);
     }
     println("end_foreach global");
     
-    string array[7];
+    str array[7];
     
     array[0] = "a";
     println(array[0]);
@@ -83,7 +83,7 @@ void testString(){
     println(array[1]);
 
     println("start_foreach local");
-    foreach(string a in array){
+    foreach(str a in array){
         println(a);
     }
     println("end_foreach local");
@@ -93,7 +93,7 @@ void testString(){
     println(globalArrayB[1]);
     
     println("start_foreach global");
-    foreach(string a in globalArrayB){
+    foreach(str a in globalArrayB){
         println(a);
     }
     println("end_foreach global");
@@ -107,7 +107,7 @@ void testString(){
     println("end");
 }
 
-void testString(string[] parameterArray){
+void testString(str[] parameterArray){
     parameterArray[0] = "4";
     parameterArray[2] = "9";
     parameterArray[3] = parameterArray[2];
@@ -115,7 +115,7 @@ void testString(string[] parameterArray){
     println(parameterArray[3]);
    
     println("start_foreach parameter");
-    foreach(string test in parameterArray){
+    foreach(str test in parameterArray){
         println(test);
     }
     println("end_foreach parameter");

@@ -1,5 +1,5 @@
 void main(){
-    string word = "asymptotically";
+    str word = "asymptotically";
     char guessed[20];
     int state = 0;
     int count = -1;
@@ -38,7 +38,7 @@ char get_char(){
     return c;
 }
 
-bool complete(string word, char[] guessed){
+bool complete(str word, char[] guessed){
     for(int i = 0; i < length(word); ++i){
         if(!contains(guessed, word[i])){
             return false;
@@ -58,7 +58,7 @@ bool contains(char[] guessed, char c){
     return false;
 }
 
-void print_word(string word, char[] guessed){
+void print_word(str word, char[] guessed){
     for(int i = 0; i < length(word); ++i){
         if(contains(guessed, word[i])){
             print(word[i]);

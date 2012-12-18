@@ -1,4 +1,4 @@
-bool str_equals(string a, string b){
+bool str_equals(str a, str b){
     if(length(a) != length(b)){
         return false;
     }

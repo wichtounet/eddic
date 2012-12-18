@@ -1,4 +1,4 @@
-string globalArrayB[7];
+str globalArrayB[7];
 
 void main(){
     globalArrayB[0] = "5";
@@ -14,12 +14,12 @@ void main(){
     print(globalArrayB[3]);
     print("|");
     
-    foreach(string a in globalArrayB){
+    foreach(str a in globalArrayB){
         print(a);
         print("|");
     }
     
-    string array[7];
+    str array[7];
     
     array[0] = "a";
     print(array[0]);
@@ -32,7 +32,7 @@ void main(){
     print(array[1]);
     print("|");
 
-    foreach(string a in array){
+    foreach(str a in array){
         print(a);
         print("|");
     }
@@ -42,7 +42,7 @@ void main(){
     print(globalArrayB[1]);
     print("|");
     
-    foreach(string a in globalArrayB){
+    foreach(str a in globalArrayB){
         print(a);
         print("|");
     }
@@ -51,7 +51,7 @@ void main(){
     testString(globalArrayB);
 }
 
-void testString(string[] parameterArray){
+void testString(str[] parameterArray){
     parameterArray[0] = "4";
     parameterArray[2] = "9";
     parameterArray[3] = parameterArray[2];
@@ -60,7 +60,7 @@ void testString(string[] parameterArray){
     print(parameterArray[3]);
     print("|");
    
-    foreach(string test in parameterArray){
+    foreach(str test in parameterArray){
         print(test);
         print("|");
     }

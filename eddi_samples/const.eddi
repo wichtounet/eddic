@@ -1,12 +1,12 @@
 const int ga = 22;
-const string gb = "22";
+const str gb = "22";
 
 void main(){
     println(ga);
     println(gb);
 
     const int a = 33;
-    const string b = "33";
+    const str b = "33";
 
     println(a);
     println(b);

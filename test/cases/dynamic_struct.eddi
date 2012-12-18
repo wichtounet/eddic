@@ -1,6 +1,6 @@
 struct A {
     int a;
-    string b;
+    str b;
     int c;
 }
 

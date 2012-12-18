@@ -244,7 +244,7 @@ std::string extract_type(const std::string& mangled, unsigned int& o){
     } else if(current == 'C'){
         ss << "char";
     } else if(current == 'S'){
-        ss << "string";
+        ss << "str";
     } else if(current == 'B'){
         ss << "bool";
     } else if(current == 'F'){

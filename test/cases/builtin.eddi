@@ -1,7 +1,7 @@
 int globalArray[10];
-string globalArrayB[11];
+str globalArrayB[11];
 
-const string ccc = "asdfasdfiasdf";
+const str ccc = "asdfasdfiasdf";
 
 void main(){
     print(size(globalArray));
@@ -10,7 +10,7 @@ void main(){
     print("|");
     
     int array[12];
-    string arrayB[13];
+    str arrayB[13];
     
     print(size(array));
     print("|");
@@ -26,7 +26,7 @@ void main(){
     print(length("asdf"));
     print("|");
 
-    string value = "idididid";
+    str value = "idididid";
     print(length(value));
     print("|");
     
@@ -45,11 +45,11 @@ void test(int[] parameterArray){
     print("|");
 }
 
-void test(string[] parameterArray){
+void test(str[] parameterArray){
     print(size(parameterArray));
     print("|");
 }
 
-string test(){
+str test(){
     return "999";
 }
