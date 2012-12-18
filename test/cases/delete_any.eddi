@@ -1,0 +1,19 @@
+struct Complex {
+    int* a;
+
+    this(){
+        a = new int();
+    }
+
+    ~this(){
+        delete a;
+    }
+}
+
+void main(){
+    Complex c;
+    *c.a = 99;
+
+    print(*c.a);
+    print("|");
+}
