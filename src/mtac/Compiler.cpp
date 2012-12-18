@@ -121,7 +121,7 @@ void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type,
     function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
 }
 
-void destruct(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> this_arg){
+void destruct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
     auto global_context = function->context->global();
     auto dtor_name = mangle_dtor(type);
 
@@ -1570,15 +1570,16 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
-            auto type = delete_.Content->variable->type()->data_type();
-            if(type->is_custom_type() || type->is_template_type()){
-                destruct(function, type, delete_.Content->variable);
+            auto arg = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), delete_.Content->value)[0];
+            auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
+            if(type->is_structure()){
+                destruct(function, type, arg);
             }
 
             auto free_name = "_F4freePI";
             auto& free_function = program->context->getFunction(free_name);
 
-            auto param = std::make_shared<mtac::Param>(delete_.Content->variable, "a", free_function);
+            auto param = std::make_shared<mtac::Param>(arg, "a", free_function);
             function->add(param);
 
             program->context->addReference(free_name);
