@@ -1,0 +1,8 @@
+include <strings>
+
+void main(){
+    string a("adsf");
+
+    print(a.size());
+    print("|");
+}
