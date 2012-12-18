@@ -1,0 +1,66 @@
+struct Complex {
+    int a;
+    int[] b;
+
+    this(){
+        b = new int[5];
+    }
+
+    this(Complex* rhs){
+        a = rhs.a;
+        b = new int[5];
+
+        for(int i = 0; i < 5; ++i){
+            b[i] = rhs.b[i];
+        }
+    }
+
+    ~this(){
+        delete b;
+    }
+}
+
+void main(){
+    Complex c;
+    c.a = 55;
+    c.b[1] = 66;
+    c.b[3] = 77;
+    
+    //Test the builtin operator
+    print(size(c.b));
+    print("|");
+
+    print(c.a);
+    print("|");
+    print(c.b[1]);
+    print("|");
+    print(c.b[3]);
+    print("|");
+
+    c.a += 11;
+    c.b[3] += 100;
+    c.b[1] += 100;
+
+    print(c.a);
+    print("|");
+    print(c.b[1]);
+    print("|");
+    print(c.b[3]);
+    print("|");
+
+    test(c);
+}
+
+//To test passing the structure by value
+void test(Complex a){
+    print(a.a);
+    print("|");
+    print(a.b[1]);
+    print("|");
+    print(a.b[3]);
+    print("|");
+    
+    //Test the builtin operator
+    print(size(a.b));
+    print("|");
+}
