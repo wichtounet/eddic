@@ -31,7 +31,7 @@ std::set<ltac::Register> parameter_registers(eddic::Function& function, Platform
     if(function.standard || configuration->option_defined("fparameter-allocation")){
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
 
-        for(auto& parameter : function.parameters){
+        for(auto& parameter : function.parameters()){
             auto type = function.getParameterType(parameter.name);
             unsigned int position = function.getParameterPositionByType(parameter.name);
 
@@ -52,7 +52,7 @@ std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& functio
     if(function.standard || configuration->option_defined("fparameter-allocation")){
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
-        for(auto& parameter : function.parameters){
+        for(auto& parameter : function.parameters()){
             auto type = function.getParameterType(parameter.name);
             unsigned int position = function.getParameterPositionByType(parameter.name);
 

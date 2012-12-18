@@ -85,7 +85,7 @@ void construct(mtac::function_p function, std::shared_ptr<const Type> type, std:
     pass_arguments(function, ctor_function, values);
 
     //Pass "this" parameter
-    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context->getVariable(ctor_function.parameters[0].name), ctor_function);
+    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
     ctor_param->address = true;
     function->add(ctor_param);
 
@@ -113,7 +113,7 @@ void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type,
 
     auto ctor_param = std::make_shared<mtac::Param>(
             this_arg, 
-            ctor_function.context->getVariable(ctor_function.parameters[0].name), ctor_function);
+            ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
     ctor_param->address = true;
     function->add(ctor_param);
 
@@ -121,7 +121,7 @@ void copy_construct(mtac::function_p function, std::shared_ptr<const Type> type,
     function->add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
 }
 
-void destruct(mtac::function_p function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
+void destruct(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> this_arg){
     auto global_context = function->context->global();
     auto dtor_name = mangle_dtor(type);
 
@@ -129,7 +129,7 @@ void destruct(mtac::function_p function, std::shared_ptr<const Type> type, mtac:
 
     auto& dtor_function = global_context->getFunction(dtor_name);
 
-    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context->getVariable(dtor_function.parameters[0].name), dtor_function);
+    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context->getVariable(dtor_function.parameter(0).name), dtor_function);
     dtor_param->address = true;
     function->add(dtor_param);
 
@@ -477,8 +477,6 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
                 auto& definition = global_context->getFunction(call_operation_value.mangled_name);
 
-                eddic_assert(definition, "All the member functions should be in the function table");
-
                 auto left_value = left[0];
 
                 if(call_operation_value.left_type){
@@ -531,7 +529,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                     pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameters[0].name), definition);
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
                     mtac_param->address = true;
                     function->add(mtac_param);   
 
@@ -564,7 +562,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
-                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameters[0].name), definition);
+                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
                 mtac_param->address = true;
                 function->add(mtac_param);   
 
@@ -762,8 +760,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::FunctionCall& call) const {
         auto& definition = call.Content->context->global()->getFunction(call.Content->mangled_name);
         auto type = definition.returnType;
-
-        eddic_assert(definition, "All the functions should be in the function table");
 
         if(type == VOID){
             pass_arguments(function, definition, call.Content->values);
@@ -1381,7 +1377,7 @@ class CompilerVisitor : public boost::static_visitor<> {
                 if(var->position().isStack() || var->position().is_variable()){
                     auto type = var->type();
 
-                    if(type->is_custom_type() || type->is_template_type()){
+                    if(type->is_structure()){
                         destruct(function, type, var);
                     }
                 }
@@ -1694,11 +1690,10 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
     //If it's a standard function, there are no context
     if(!context){
-        auto parameters = definition.parameters;
-        int i = parameters.size()-1;
+        int i = definition.parameters().size()-1;
 
         for(auto& first : boost::adaptors::reverse(values)){
-            auto param = parameters[i--].name; 
+            auto param = definition.parameter(i--).name; 
             
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
@@ -1706,19 +1701,18 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
             }
         }
     } else {
-        auto parameters = definition.parameters;
-        int i = parameters.size()-1;
+        int i = definition.parameters().size()-1;
 
-        if(values.size() != parameters.size()){
+        if(values.size() != definition.parameters().size()){
             i = values.size() - 1;
         }
 
-        if(parameters[0].name == "this"){
+        if(definition.parameter(0).name == "this"){
             i++;
         }
 
         for(auto& first : boost::adaptors::reverse(values)){
-            std::shared_ptr<Variable> param = context->getVariable(parameters[i--].name);
+            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name);
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();

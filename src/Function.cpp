@@ -16,9 +16,21 @@ using namespace eddic;
 ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t) : name(n), paramType(t) {}
 
 Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name), references(0) {}
+        
+const ParameterType& Function::parameter(std::size_t i) const {
+    return m_parameters.at(i);
+}
+
+std::vector<ParameterType>& Function::parameters(){
+    return m_parameters;
+}
+
+const std::vector<ParameterType>& Function::parameters() const {
+    return m_parameters;
+}
 
 std::shared_ptr<const Type> Function::getParameterType(const std::string& name) const {
-    for(auto& p : parameters){
+    for(auto& p : m_parameters){
         if(p.name == name){
             return p.paramType;
         }
@@ -33,7 +45,7 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     if(mtac::is_single_int_register(type)){
         unsigned int position = 0;
         
-        for(auto& p : parameters){
+        for(auto& p : m_parameters){
             if(mtac::is_single_int_register(p.paramType)){
                 ++position; 
             }
@@ -47,7 +59,7 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     } else if(mtac::is_single_float_register(type)){
         unsigned int position = 0;
         
-        for(auto& p : parameters){
+        for(auto& p : m_parameters){
             if(mtac::is_single_float_register(p.paramType)){
                 ++position; 
             }

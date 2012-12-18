@@ -48,13 +48,13 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     signature.struct_ = declaration.Content->struct_name;
     signature.struct_type = declaration.Content->struct_type;
     signature.context = declaration.Content->context;
-    signature.parameters = std::move(parameters);
+    signature.parameters() = std::move(parameters);
 
     declaration.Content->mangledName = mangled_name;
 
     //Return by value needs a new parameter on stack
     if(return_type->is_custom_type() || return_type->is_template_type()){
-        signature.parameters.emplace_back("__ret", new_pointer_type(return_type));
+        signature.parameters().emplace_back("__ret", new_pointer_type(return_type));
     }
 }
 
@@ -80,12 +80,19 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
     signature.struct_ = constructor.Content->struct_name;
     signature.struct_type = constructor.Content->struct_type;
     signature.context = constructor.Content->context;
-    signature.parameters = std::move(parameters);
+    signature.parameters() = std::move(parameters);
 
     constructor.Content->mangledName = mangled_name;
 }
 
 void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
+    //This is necessary to collect the "this" parameter
+    std::vector<ParameterType> parameters;
+    for(auto& param : destructor.Content->parameters){
+        auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
+        parameters.emplace_back(param.parameterName, paramType);
+    }
+    
     auto mangled_name = mangle_dtor(destructor.Content->struct_type);
 
     if(context->exists(mangled_name)){
@@ -97,6 +104,7 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
     signature.struct_ = destructor.Content->struct_name;
     signature.struct_type = destructor.Content->struct_type;
     signature.context = destructor.Content->context;
+    signature.parameters() = std::move(parameters);
 
     destructor.Content->mangledName = mangled_name;
 }

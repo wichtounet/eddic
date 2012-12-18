@@ -659,7 +659,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
         maxFloat = 0;
     }
 
-    for(auto& param : call->functionDefinition.parameters){
+    for(auto& param : call->functionDefinition.parameters()){
         auto type = param.paramType; 
 
         if(type->is_array()){

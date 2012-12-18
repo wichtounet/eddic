@@ -207,7 +207,7 @@ int GlobalContext::referenceCount(const std::string& function){
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
     auto& printFunction = add_function(VOID, "print", function);
     printFunction.standard = true;
-    printFunction.parameters.emplace_back("a", parameterType);
+    printFunction.parameters().emplace_back("a", parameterType);
 }
 
 void GlobalContext::defineStandardFunctions(){
@@ -240,29 +240,29 @@ void GlobalContext::defineStandardFunctions(){
     //concat function
     auto& concatFunction = add_function(STRING, "concat", "_F6concatSS");
     concatFunction.standard = true;
-    concatFunction.parameters.emplace_back("a", STRING);
-    concatFunction.parameters.emplace_back("b", STRING);
+    concatFunction.parameters().emplace_back("a", STRING);
+    concatFunction.parameters().emplace_back("b", STRING);
     
     //alloc function
     auto& allocFunction = add_function(new_pointer_type(INT), "alloc", "_F5allocI");
     allocFunction.standard = true;
-    allocFunction.parameters.emplace_back("a", INT);
+    allocFunction.parameters().emplace_back("a", INT);
     
     //free function
     auto& freeFunction = add_function(VOID, "free", "_F4freePI");
     freeFunction.standard = true;
-    freeFunction.parameters.emplace_back("a", INT);
+    freeFunction.parameters().emplace_back("a", INT);
     
     //time function
     auto& timeFunction = add_function(VOID, "time", "_F4timeAI");
     timeFunction.standard = true;
-    timeFunction.parameters.emplace_back("a", new_array_type(INT));
+    timeFunction.parameters().emplace_back("a", new_array_type(INT));
     
     //duration function
     auto& durationFunction = add_function(VOID, "duration", "_F8durationAIAI");
     durationFunction.standard = true;
-    durationFunction.parameters.emplace_back("a", new_array_type(INT));
-    durationFunction.parameters.emplace_back("b", new_array_type(INT));
+    durationFunction.parameters().emplace_back("a", new_array_type(INT));
+    durationFunction.parameters().emplace_back("b", new_array_type(INT));
 }
 
 const GlobalContext::FunctionMap& GlobalContext::functions() const {

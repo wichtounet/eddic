@@ -126,7 +126,7 @@ mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::fun
 
     unsigned int parameters = 0;
 
-    for(auto& param : source_definition.parameters){
+    for(auto& param : source_definition.parameters()){
         if(param.paramType == STRING){
             parameters += 2;
         } else {
@@ -134,7 +134,7 @@ mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::fun
         }
     }
 
-    if(source_definition.parameters.size() > 0){
+    if(source_definition.parameters().size() > 0){
         auto param_bb = bb->prev;
 
         auto pit = param_bb->statements.end() - 1;
@@ -222,18 +222,17 @@ mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::fun
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb){
+unsigned int count_constant_parameters(mtac::function_p source_function, mtac::function_p /*dest_function*/, mtac::basic_block_p bb){
     unsigned int constant = 0;
 
     auto& source_definition = source_function->definition;
-    auto& dest_definition = dest_function->definition;
 
-    if(source_definition.parameters.size() > 0){
+    if(source_definition.parameters().size() > 0){
         auto param_bb = bb->prev;
 
         auto pit = param_bb->statements.end() - 1;
 
-        for(int i = source_definition.parameters.size() - 1; i >= 0;){
+        for(int i = source_definition.parameters().size() - 1; i >= 0;){
             auto statement = *pit;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
@@ -337,7 +336,7 @@ bool can_be_inlined(mtac::function_p function){
         return false;
     }
 
-    for(auto& param : function->definition.parameters){
+    for(auto& param : function->definition.parameters()){
         if(!param.paramType->is_standard_type() && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
@@ -363,7 +362,7 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
         auto constant_parameters = count_constant_parameters(target_function, source_function, bb);
 
         //If all parameters are constant, there are high chances of further optimizations
-        if(target_function->definition.parameters.size() == constant_parameters){
+        if(target_function->definition.parameters().size() == constant_parameters){
             return target_size < 250;
         }
 

@@ -28,8 +28,8 @@ void mtac::register_param_allocation(mtac::program_p program, Platform platform)
 
         //Only custom functions have a context
         if(function.context){
-            for(unsigned int i = 0; i < function.parameters.size(); ++i){
-                auto& parameter = function.parameters[i];
+            for(unsigned int i = 0; i < function.parameters().size(); ++i){
+                auto& parameter = function.parameter(i);
                 auto type = parameter.paramType;
                 unsigned int position = function.getParameterPositionByType(parameter.name);
                 auto param = function.context->getVariable(parameter.name);
@@ -40,8 +40,8 @@ void mtac::register_param_allocation(mtac::program_p program, Platform platform)
                     function.context->allocate_in_param_register(param, position);
                     
                     //We have to change the position of the all the following parameters
-                    for(unsigned int j = i + 1; j < function.parameters.size(); ++j){
-                        auto p = function.context->getVariable(function.parameters[j].name);
+                    for(unsigned int j = i + 1; j < function.parameters().size(); ++j){
+                        auto p = function.context->getVariable(function.parameter(j).name);
                         Position paramPosition = p->position();
                         p->setPosition(oldPosition); 
                         oldPosition = paramPosition;
