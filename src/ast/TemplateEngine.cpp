@@ -503,10 +503,8 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Delete& source) const {
         ast::Delete copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->variable = source.Content->variable;
         copy.Content->position = source.Content->position;
-        copy.Content->variable_name = source.Content->variable_name;
+        copy.Content->value = visit(ValueCopier(), source.Content->value);
 
         return copy;
     }
@@ -518,6 +516,7 @@ struct Adaptor : public boost::static_visitor<> {
     Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
     AUTO_RECURSE_STRUCT()
+    AUTO_RECURSE_DELETE()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
