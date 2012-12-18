@@ -25,7 +25,7 @@ struct Param {
 
     std::shared_ptr<Variable> param;
     std::string std_param;
-    std::shared_ptr<eddic::Function> function;
+    eddic::Function& function;
     unsigned int depth;
     
     bool address = false;
@@ -33,8 +33,8 @@ struct Param {
     Param(const Param& rhs) = delete;
     Param& operator=(const Param& rhs) = delete;
 
-    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, std::shared_ptr<eddic::Function> function);
-    Param(mtac::Argument arg1, const std::string& param, std::shared_ptr<eddic::Function> function);
+    Param(mtac::Argument arg1, std::shared_ptr<Variable> param, eddic::Function& function);
+    Param(mtac::Argument arg1, const std::string& param, eddic::Function& function);
 };
 
 } //end of mtac

@@ -11,6 +11,8 @@
 #include <vector>
 #include <memory>
 
+#include <boost/optional.hpp>
+
 #include "ltac/forward.hpp"
 
 namespace eddic {
@@ -48,7 +50,7 @@ enum struct JumpType : unsigned int {
 struct Jump {
     std::string label;
     JumpType type;
-    std::shared_ptr<eddic::Function> target_function; //Only if a call
+    boost::optional<eddic::Function&> target_function; //Only if a call
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;

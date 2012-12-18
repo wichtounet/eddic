@@ -91,7 +91,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
                         auto function = (*ptr)->function;
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                            int parameters = (*ptr)->functionDefinition->parameters.size();
+                            int parameters = (*ptr)->functionDefinition.parameters().size();
 
                             if(parameters > 0){
                                 //The parameters are in the previous block

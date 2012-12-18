@@ -96,7 +96,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
                     value_copy.function_name = ptr->function_name;
                     value_copy.template_types = ptr->template_types;
                     value_copy.mangled_name = ptr->mangled_name;
-                    value_copy.function = ptr->function;
                     value_copy.left_type = ptr->left_type;
 
                     std::vector<ast::Value> values;
@@ -138,7 +137,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->function_name = source.Content->function_name;
@@ -243,7 +241,6 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->template_types = source.Content->template_types;
@@ -326,7 +323,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Return& source) const {
         ast::Return copy;
 
-        copy.Content->function = source.Content->function;
+        copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->context = source.Content->context;
         copy.Content->position = source.Content->position;
         copy.Content->value = visit(ValueCopier(), source.Content->value);

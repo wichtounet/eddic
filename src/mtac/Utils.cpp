@@ -28,7 +28,7 @@ bool mtac::is_recursive(mtac::function_p function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition == function->definition){
+                if((*ptr)->functionDefinition.mangledName == function->definition.mangledName){
                     return true;
                 }
             }

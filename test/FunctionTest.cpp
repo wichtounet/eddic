@@ -17,7 +17,7 @@
 using namespace eddic;
 
 BOOST_AUTO_TEST_CASE( bb_entry_exit_count ){
-    auto definition = std::make_shared<eddic::Function>(nullptr, "test_function");
+    Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
 
     function->create_entry_bb();
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE( bb_entry_exit_count ){
 }
 
 BOOST_AUTO_TEST_CASE( bb_iterators ){
-    auto definition = std::make_shared<eddic::Function>(nullptr, "test_function");
+    Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
 
     function->create_entry_bb();
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( bb_iterators ){
 }
 
 BOOST_AUTO_TEST_CASE( bb_new_bb ){
-    auto definition = std::make_shared<eddic::Function>(nullptr, "test_function");
+    Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
     
     BOOST_CHECK_EQUAL(function->bb_count(), 0u);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( bb_new_bb ){
 }
 
 BOOST_AUTO_TEST_CASE( bb_remove_bb ){
-    auto definition = std::make_shared<eddic::Function>(nullptr, "test_function");
+    Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
 
     function->create_entry_bb();
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( bb_remove_bb ){
 }
 
 BOOST_AUTO_TEST_CASE( bb_at ){
-    auto definition = std::make_shared<eddic::Function>(nullptr, "test_function");
+    Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
     
     function->create_entry_bb();

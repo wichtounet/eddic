@@ -26,8 +26,7 @@ namespace eddic {
  */
 struct GlobalContext final : public Context {
     public: 
-        typedef std::unordered_map<std::string, std::shared_ptr<Function>> FunctionMap;
-        typedef std::unordered_map<std::string, std::shared_ptr<const Function>> ConstFunctionMap;
+        typedef std::unordered_map<std::string, Function> FunctionMap;
         typedef std::unordered_map<std::string, std::shared_ptr<Struct>> StructMap;
     
     public:
@@ -41,17 +40,20 @@ struct GlobalContext final : public Context {
         std::shared_ptr<Variable> generate_variable(const std::string& prefix, std::shared_ptr<const Type> type) override;
         
         /*!
-         * Add the given function to the symbol table. 
-         * \param function The function to add to the symbol table. 
+         * Add function to the symbol table. The function will be constructed in place. 
+         * \param ret The return type of the function. 
+         * \param name The name of the function
+         * \param mangled_name The mangled name of the function
+         * \return A reference to the newly created Function. 
          */
-        void addFunction(std::shared_ptr<Function> function);
+        Function& add_function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
         
         /*!
          * Returns the function with the given name. 
          * \param function The function to search for. 
          * \return A pointer to the function with the given name. 
          */
-        std::shared_ptr<Function> getFunction(const std::string& function) const;
+        Function& getFunction(const std::string& function);
         
         /*!
          * Indicates if a function with the given name exists. 

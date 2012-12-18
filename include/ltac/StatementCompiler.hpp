@@ -41,7 +41,7 @@ class StatementCompiler : public boost::static_visitor<> {
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
-        void collect_parameters(std::shared_ptr<eddic::Function> definition);
+        void collect_parameters(eddic::Function& definition);
         
         void end_bb();
 

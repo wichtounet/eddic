@@ -22,8 +22,8 @@ class Type;
  * \brief A parameter for a function.  
  */
 struct ParameterType {
-    std::string name;
-    std::shared_ptr<const Type> paramType;
+    const std::string name;
+    const std::shared_ptr<const Type> paramType;
 
     ParameterType(const std::string& n, std::shared_ptr<const Type> t);
 };
@@ -34,22 +34,32 @@ struct ParameterType {
  */
 class Function {
     public:
-        Function(std::shared_ptr<const Type> ret, const std::string& n);
+        Function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
+
+        Function(const Function& rhs) = delete;
+        Function& operator=(const Function& rhs) = delete;
 
         std::shared_ptr<const Type> getParameterType(const std::string& name) const;
         unsigned int getParameterPositionByType(const std::string& name) const;
+
+        const ParameterType& parameter(std::size_t i) const;
+        std::vector<ParameterType>& parameters();
+        const std::vector<ParameterType>& parameters() const;
         
-        std::shared_ptr<const Type> returnType;
-        std::string name;
-        std::string mangledName;
+        const std::shared_ptr<const Type> returnType;
+        const std::string name;
+        const std::string mangledName;
+        
         std::string struct_;
-        std::vector<ParameterType> parameters;
         std::shared_ptr<FunctionContext> context;
 
         std::shared_ptr<const Type> struct_type = nullptr;
 
         int references;
         bool standard = false;
+    
+    private:
+        std::vector<ParameterType> m_parameters;
 };
 
 } //end of eddic
