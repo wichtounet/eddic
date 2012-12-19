@@ -22,7 +22,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     delete_ %=
             qi::position(position_begin)
         >>  lexer.delete_
-        >>  lexer.identifier;
+        >>  value;
     
     default_case %=
             qi::eps

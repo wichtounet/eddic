@@ -42,11 +42,6 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
             names.push_back(member.Content->name);
 
             auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
-
-            if(member_type->is_array()){
-                throw SemanticalException("Arrays inside structures are not supported", member.Content->position);
-            }
-
             signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
         } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
             auto& member = *ptr;

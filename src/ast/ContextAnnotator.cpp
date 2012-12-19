@@ -34,6 +34,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
+        AUTO_RECURSE_DELETE()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -178,10 +179,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
 
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
-        }
-        
-        void operator()(ast::Delete& delete_){
-            delete_.Content->context = currentContext;
         }
         
         void operator()(ast::Swap& swap){

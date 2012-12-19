@@ -338,15 +338,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 check_value(*declaration.Content->value);
             }
         }
-
-        void operator()(ast::Delete& delete_){
-            if (!delete_.Content->context->exists(delete_.Content->variable_name)) {
-                throw SemanticalException("Variable " + delete_.Content->variable_name + " has not been declared", delete_.Content->position);
-            }
-
-            delete_.Content->variable = delete_.Content->context->getVariable(delete_.Content->variable_name);
-            delete_.Content->variable->add_reference();
-        }
     
         void operator()(ast::StructDeclaration& declaration){
             template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
@@ -526,6 +517,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::New& new_){
             check_each(new_.Content->values);
+        }
+        
+        void operator()(ast::Delete& delete_){
+            check_value(delete_.Content->value);
         }
     
         void operator()(ast::Swap& swap){

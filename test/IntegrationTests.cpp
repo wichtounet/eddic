@@ -217,6 +217,10 @@ BOOST_AUTO_TEST_CASE( compound ){
     assert_output("compound.eddi", "6|9|6|18|6|0|");
 }
 
+BOOST_AUTO_TEST_CASE( delete_any ){
+    assert_output("delete_any.eddi", "99|");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "1|1|1|");
 }
@@ -255,6 +259,10 @@ BOOST_AUTO_TEST_CASE( cmove ){
 
 BOOST_AUTO_TEST_CASE( dynamic ){
     assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|0|1|2|3|4|");
+}
+
+BOOST_AUTO_TEST_CASE( dynamic_arrays_in_struct ){
+    assert_output("dynamic_arrays_in_struct.eddi", "5|55|66|77|66|166|177|66|166|177|5|");
 }
 
 BOOST_AUTO_TEST_CASE( dynamic_struct ){

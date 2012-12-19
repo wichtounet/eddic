@@ -372,7 +372,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Delete& delete_){
-            auto type = delete_.Content->variable->type();
+            auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
 
             if(!type->is_pointer() && !type->is_dynamic_array()){
                 throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
