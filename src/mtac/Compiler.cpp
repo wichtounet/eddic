@@ -176,7 +176,7 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
         function->add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(platform)));
 
         return {t1, t2};
-    } else if(member_type->is_array()){
+    } else if(member_type->is_array() && !member_type->is_dynamic_array()){
         //Get a reference to the array
         if(T == ArgumentType::REFERENCE){
             return {function->context->new_reference(member_type, var, offset)};
@@ -244,7 +244,7 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         if(member_type == FLOAT){
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
-        } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer()){
+        } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer() || member_type->is_dynamic_array()){
             function->add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member

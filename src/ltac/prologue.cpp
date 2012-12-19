@@ -342,7 +342,7 @@ void ltac::generate_prologue_epilogue(mtac::program_p ltac_program, std::shared_
 
                     while(struct_type){
                         for(auto& member : struct_type->members){
-                            if(member->type->is_array()){
+                            if(member->type->is_array() && !member->type->is_dynamic_array()){
                                 ltac::add_instruction(bb, ltac::Operator::MOV, 
                                         ltac::Address(ltac::BP, position + offset + function->context->global()->member_offset(struct_type, member->name)),
                                         static_cast<int>(member->type->elements()));
