@@ -53,8 +53,7 @@ void mtac::resolve_references(mtac::program_p program){
                             
                             quadruple->arg1 = ptr_temp;
                             
-                            it.insert(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
-                            ++it;
+                            it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                         } else {
                             auto index = *quadruple->arg2;
                             auto temp = function->context->new_temporary(INT);
@@ -65,8 +64,7 @@ void mtac::resolve_references(mtac::program_p program){
                             //The new offset is the sum of the old ones
                             quadruple->arg2 = temp;
 
-                            it.insert(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
-                            ++it;
+                            it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                         }
 
                         continue;
@@ -81,8 +79,7 @@ void mtac::resolve_references(mtac::program_p program){
 
                         quadruple->result = ptr_temp;
 
-                        it.insert(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
-                        ++it;
+                        it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                     } else {
                         auto temp = function->context->new_temporary(INT);
                         auto index = *quadruple->arg1;
@@ -93,8 +90,7 @@ void mtac::resolve_references(mtac::program_p program){
                         //The new offset is the sum of the old ones
                         quadruple->arg1 = temp;
                         
-                        it.insert(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
-                        ++it;
+                        it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                     }
                     
                     continue;
