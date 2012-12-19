@@ -724,8 +724,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         switch(builtin.Content->type){
             case ast::BuiltinType::SIZE:
                 {
-                    //Get a reference to the array
-                    auto right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values[0]);
+                    auto right_type = visit(ast::GetTypeVisitor(), builtin.Content->values[0]);
+
+                    arguments right;
+                    if(right_type->is_dynamic_array()){
+                        right = visit(ToArgumentsVisitor<>(function), builtin.Content->values[0]);
+                    } else {
+                        //Get a reference to the array
+                        right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values[0]);
+                    }
+
                     eddic_assert(mtac::isVariable(right[0]), "The visitor should return a variable");
 
                     auto variable = boost::get<std::shared_ptr<Variable>>(right[0]);
@@ -734,7 +742,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                         return {variable->type()->elements()};
                     } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
                         return {variable->type()->elements()};
-                    } else if(variable->is_reference() || variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
+                    } else if(variable->type()->is_dynamic_array() || variable->is_reference() || variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
                         auto t1 = function->context->new_temporary(INT);
 
                         //The size of the array is at the address pointed by the variable
