@@ -518,6 +518,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::New& new_){
             check_each(new_.Content->values);
         }
+
+        void operator()(ast::NewArray& new_){
+            check_value(new_.Content->size);
+        }
         
         void operator()(ast::Delete& delete_){
             check_value(delete_.Content->value);
