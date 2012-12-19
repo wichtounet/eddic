@@ -108,6 +108,11 @@ void mtac::resolve_references(mtac::program_p program){
                         //The first times a variable is encountered, it is its initialization
                         if(variables.find(result) == variables.end()){
                             variables.insert(result);
+
+                            if(result->type()->is_dynamic_array()){
+                                it.erase();
+                                continue;
+                            }
                         } else {
                             if(result->type() == FLOAT){
                                 it.insert_after(std::make_shared<mtac::Quadruple>(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_FASSIGN, result));
