@@ -586,7 +586,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg1, reg2);
                 push(reg1);
             } else {
-                if((*ptr)->type()->is_array()){
+                if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
                     auto position = (*ptr)->position();
 
                     if(position.isGlobal()){
