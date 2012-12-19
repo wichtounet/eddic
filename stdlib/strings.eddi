@@ -2,9 +2,9 @@ struct string {
     char[] data;
 
     this(str raw){
-        data = new char[length(b)];
+        data = new char[length(raw)];
 
-        for(int i = 0; i < length(b); ++i){
+        for(int i = 0; i < length(raw); ++i){
             data[i] = raw[i];
         }
     }
@@ -14,7 +14,7 @@ struct string {
     }
 
     int size(){
-        return length(data);
+        return size(data);
     }
 }
 
