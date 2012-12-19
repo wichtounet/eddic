@@ -5,4 +5,7 @@ void main(){
 
     print(a.size());
     print("|");
+
+    print(a);
+    print("|");
 }

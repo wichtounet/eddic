@@ -18,6 +18,12 @@ struct string {
     }
 }
 
+void print(string s){
+    for(int i = 0; i < s.size(); ++i){
+        print(s.data[i]);
+    }
+}
+
 bool str_equals(str a, str b){
     if(length(a) != length(b)){
         return false;
