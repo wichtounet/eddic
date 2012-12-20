@@ -1,11 +1,28 @@
 include <strings>
 
-void main(){
-    string a("adsf");
-
+void debug(string a){
     print(a.size());
     print("|");
 
     print(a);
     print("|");
+}
+
+void debug_ptr(string* a){
+    print(a.size());
+    print("|");
+
+    print(*a);
+    print("|");
+}
+
+void main(){
+    string a("adsf");
+    string b("dddddddd");
+    string c("adsf");
+
+    debug(a);
+    debug_ptr(&b);
+    debug_ptr(&c);
+    debug(c);
 }
