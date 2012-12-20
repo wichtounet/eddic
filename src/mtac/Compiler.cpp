@@ -158,12 +158,7 @@ void jump_if_false(mtac::function_p function, const std::string& l, ast::Value v
     function->add(std::make_shared<mtac::IfFalse>(argument, l));
 }
 
-arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset){
-    arguments result;
-
-
-    return result;
-}
+arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset);
 
 enum class ArgumentType : unsigned int {
     NORMAL,
@@ -242,7 +237,13 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
             return result;
         }
     } else if(member_type->is_structure()){
-        return struct_to_arguments(function, member_type, var, offset);
+        if(T == ArgumentType::REFERENCE){
+            return {function->context->new_reference(member_type, var, offset)};
+        } else if(T == ArgumentType::NORMAL){
+            return struct_to_arguments(function, member_type, var, offset);      
+        }
+
+        eddic_unreachable("Unhandled ArgumentType");
     } else {
         std::shared_ptr<Variable> temp;
         if(T == ArgumentType::REFERENCE){
@@ -263,6 +264,23 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         return {temp};
     }
+}
+
+arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset){
+    arguments result;
+
+    auto struct_type = function->context->global()->get_struct(type);
+
+    for(auto& member : struct_type->members){
+        std::shared_ptr<const Type> member_type;
+        unsigned int member_offset = 0;
+        boost::tie(member_offset, member_type) = mtac::compute_member(function->context->global(), type, member->name);
+
+        auto new_args = get_member<>(function, member_offset + offset, member_type, base_var);
+        std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
+    }
+
+    return result;
 }
 
 template<ArgumentType T = ArgumentType::NORMAL>
