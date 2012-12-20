@@ -158,6 +158,13 @@ void jump_if_false(mtac::function_p function, const std::string& l, ast::Value v
     function->add(std::make_shared<mtac::IfFalse>(argument, l));
 }
 
+arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset){
+    arguments result;
+
+
+    return result;
+}
+
 enum class ArgumentType : unsigned int {
     NORMAL,
     ADDRESS,
@@ -234,6 +241,8 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
             return result;
         }
+    } else if(member_type->is_structure()){
+        return struct_to_arguments(function, member_type, var, offset);
     } else {
         std::shared_ptr<Variable> temp;
         if(T == ArgumentType::REFERENCE){
