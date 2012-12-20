@@ -877,18 +877,16 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             eddic_unreachable("void is not a type");
         } else if(type->is_array() || type->is_pointer()){
             return {value.Content->var};
-        } else {
-            if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
-                return {value.Content->var};
-            } else if(type == STRING){
-                auto temp = value.Content->context->new_temporary(INT);
-                function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
+        } else  if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
+            return {value.Content->var};
+        } else if(type == STRING){
+            auto temp = value.Content->context->new_temporary(INT);
+            function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
-                return {value.Content->var, temp};
-            } else if(type->is_structure()) {
-                return struct_to_arguments(function, type, value.Content->var, 0);
-            } 
-        }
+            return {value.Content->var, temp};
+        } else if(type->is_structure()) {
+            return struct_to_arguments(function, type, value.Content->var, 0);
+        } 
     
         eddic_unreachable("Unhandled type");
     }
@@ -914,7 +912,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             function->add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
             return {t1, t2};
-        } 
+        } else if(type->is_structure()){
+            return struct_to_arguments(function, type, variable, 0);         
+        }
 
         eddic_unreachable("Unhandled type");
     }
