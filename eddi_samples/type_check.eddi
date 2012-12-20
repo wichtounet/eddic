@@ -11,10 +11,10 @@ int sum(int a){
     //Nothing
 }
 
-int sum(string b){
+int sum(str b){
     //Nothing
 }
 
-int sum(int a, int b, string c, string d, int e){
+int sum(int a, int b, str c, str d, int e){
     //Nothing
 }

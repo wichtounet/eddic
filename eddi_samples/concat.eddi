@@ -1,9 +1,9 @@
 void main(){
-	string a = "asdf";
-	string b = "jklé";
-	string c = a + b;
-    string d = c + b;
-    string e = c + d;
+	str a = "asdf";
+	str b = "jklé";
+	str c = a + b;
+    str d = c + b;
+    str e = c + d;
 
 	println(c);
 	println(d);

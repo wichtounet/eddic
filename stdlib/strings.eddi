@@ -1,4 +1,44 @@
-bool str_equals(string a, string b){
+struct string {
+    char[] data;
+
+    this(str raw){
+        data = new char[length(raw)];
+
+        for(int i = 0; i < length(raw); ++i){
+            data[i] = raw[i];
+        }
+    }
+    
+    ~this(){
+        delete data;
+    }
+
+    int size(){
+        return size(data);
+    }
+
+    bool equals(string other){
+        if(this.size() != other.size()){
+            return false;
+        }
+
+        for(int i = 0; i < this.size(); ++i){
+            if(data[i] != other.data[i]){
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+void print(string s){
+    for(int i = 0; i < s.size(); ++i){
+        print(s.data[i]);
+    }
+}
+
+bool str_equals(str a, str b){
     if(length(a) != length(b)){
         return false;
     }

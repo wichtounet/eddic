@@ -1,5 +1,5 @@
-void main(string[] args){
-    foreach(string arg in args){
+void main(str[] args){
+    foreach(str arg in args){
         println(arg);
     }
 }

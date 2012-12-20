@@ -477,6 +477,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 if(op.get<0>() == ast::Operator::CALL){
                     auto struct_type = type->is_pointer() ? type->data_type() : type;
 
+                    if(!struct_type->is_structure()){
+                        throw SemanticalException("Member functions can only be used with structures", value.Content->position);
+                    }
+
                     auto& call_value = boost::get<ast::CallOperationValue>(*op.get<1>());
                     std::string name = call_value.function_name;
 
@@ -517,6 +521,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::New& new_){
             check_each(new_.Content->values);
+        }
+
+        void operator()(ast::NewArray& new_){
+            check_value(new_.Content->size);
         }
         
         void operator()(ast::Delete& delete_){

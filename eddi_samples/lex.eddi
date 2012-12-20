@@ -1,6 +1,6 @@
 //Global variables
 int a = 1;
-string c = "asdf";
+str c = "asdf";
 void b(int y, int x){}
 void b(int y, int x){
     a <=> b;
@@ -17,6 +17,6 @@ void b(int y, int x){
     int a = 5 + 4;
 }
 
-void c(string b){
+void c(str b){
     a <=> c;
 }

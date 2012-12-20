@@ -2,6 +2,6 @@ void main(){
     print(first("abc"));
 }
 
-string first(string a){
+str first(str a){
     return a + "def";
 }

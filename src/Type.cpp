@@ -249,7 +249,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
                 return CBOOL;
             } else if (type == "float"){
                 return CFLOAT;
-            } else if (type == "string"){
+            } else if (type == "str"){
                 return CSTRING;
             } else {
                 return CVOID;
@@ -263,7 +263,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
                 return BOOL;
             } else if (type == "float"){
                 return FLOAT;
-            } else if (type == "string"){
+            } else if (type == "str"){
                 return STRING;
             } else {
                 return VOID;
@@ -292,5 +292,5 @@ std::shared_ptr<const Type> eddic::new_template_type(std::shared_ptr<GlobalConte
 }
 
 bool eddic::is_standard_type(const std::string& type){
-    return type == "int" || type == "char" || type == "void" || type == "string" || type == "bool" || type == "float";
+    return type == "int" || type == "char" || type == "void" || type == "str" || type == "bool" || type == "float";
 }

@@ -530,6 +530,10 @@ BOOST_AUTO_TEST_CASE( std_lib_str_equals ){
     assert_output("stdlib_str_equals.eddi", "1|0|0|0|1|1|");
 }
 
+BOOST_AUTO_TEST_CASE( std_lib_string ){
+    assert_output("stdlib_string.eddi", "adsf|4|adsf|8|dddddddd|4|adsf|4|adsf|1|0|1|0|1|0|1|0|1|");
+}
+
 BOOST_AUTO_TEST_CASE( std_linked_list ){
     assert_output("stdlib_linked_list.eddi", "0||1|55|55|2|55|11|3|33|11|4|99|11|{99|33|55|11|}{11|33|99|}4|99|11|3|33|11|2|33|88|1|88|88|");
 }

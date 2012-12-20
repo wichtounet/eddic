@@ -6,7 +6,7 @@ void main(){
     print(5 > 12 ? 44 : 66);
     print("|");
     
-    string b = 5 > 2 ? "44" : "66";
+    str b = 5 > 2 ? "44" : "66";
     print(b);
     print("|");
     

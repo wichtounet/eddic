@@ -10,7 +10,7 @@ struct A {
         print("|");
     }
 
-    this(string a){
+    this(str a){
         print("CAS");
         print("|");
         
