@@ -1,14 +1,21 @@
 void main(){
-	str a = "asdf";
-	str b = "1234";
+	string a("asdf");
+	string b("1234");
+    string c("you");
 
-    test(a, b);
-    test(b, a);
-    test(a, a);
-    test(b, b);
-}
+    a.append(b);
 
-void test(str a, str b){
-    print(a + b);
-    print("|");
+    print(a);
+    print(b);
+
+    b.append(a);
+
+    print(a);
+    print(b);
+
+    c.append(b);
+    
+    print(a);
+    print(b);
+    print(c);
 }
