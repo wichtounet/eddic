@@ -885,9 +885,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
                 return {value.Content->var, temp};
-            } else if(type->is_custom_type() || type->is_template_type()) {
-                //If we are here, it means that we want to pass it by reference
-                return {value.Content->var};
+            } else if(type->is_structure()) {
+                return struct_to_arguments(function, type, value.Content->var, 0);
             } 
         }
     
@@ -1139,16 +1138,19 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
         auto variable = variable_value.Content->var;
         auto type = visit(ast::GetTypeVisitor(), right_value); 
-        auto values = visit(ToArgumentsVisitor<>(function), right_value);
 
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::PASSIGN));
         } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
         } else if(type == STRING){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
         } else if(type == FLOAT){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
         } else if(type->is_custom_type() || type->is_template_type()){
             copy_construct(function, variable->type(), variable, right_value);
@@ -1646,17 +1648,6 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function){
     return move_to_arguments(value, function)[0];
 }
 
-void push_struct(mtac::function_p function, std::shared_ptr<Variable> param, Function& definition, ast::VariableValue& value){
-    auto var = value.Content->var;
-    auto context = value.Content->context;
-
-    arguments args = struct_to_arguments(function, var->type(), var, 0);
-
-    for(auto& member : boost::adaptors::reverse(args)){
-        function->add(std::make_shared<mtac::Param>(member, param, definition));
-    }
-}
-
 void pass_arguments(mtac::function_p function, eddic::Function& definition, std::vector<ast::Value>& values){
     //Fail quickly if no values to pass
     if(values.empty()){
@@ -1691,14 +1682,6 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
         for(auto& first : boost::adaptors::reverse(values)){
             std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name);
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&first)){
-                auto type = (*ptr).Content->var->type();
-                if(type->is_structure() && !param->type()->is_pointer()){
-                    push_struct(function, param, definition, *ptr);
-                    continue;
-                }
-            } 
-
             arguments args;
             if(param->type()->is_pointer()){
                 args = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), first);
@@ -1709,7 +1692,6 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
             for(auto& arg : boost::adaptors::reverse(args)){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
-
                 function->add(mtac_param);
             }
         }
