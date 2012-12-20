@@ -735,7 +735,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         function->add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
         function->add(std::make_shared<mtac::Quadruple>(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform))));
     
-        function->add(std::make_shared<mtac::Param>(type->size(function->context->global()->target_platform()), "a", function->context->global()->getFunction("_F5allocI")));
+        function->add(std::make_shared<mtac::Param>(size, "a", function->context->global()->getFunction("_F5allocI")));
 
         auto t1 = function->context->new_temporary(new_pointer_type(INT));
 
