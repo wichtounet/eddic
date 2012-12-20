@@ -52,7 +52,7 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
 arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
-mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
+mtac::Argument index_of_array(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
     auto temp = function->context->new_temporary(INT);
@@ -410,7 +410,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 } else {
                     assert(left.size() == 1);
 
-                    auto index = computeIndexOfArray(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
+                    auto index = index_of_array(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
                     auto data_type = type->data_type();
                     
                     if(T == ArgumentType::ADDRESS){
@@ -1184,7 +1184,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto array_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
             auto& index_value = boost::get<ast::Value>(*last_operation.get<1>());
-            auto index = computeIndexOfArray(array_variable, index_value, function); 
+            auto index = index_of_array(array_variable, index_value, function); 
         
             auto left_type = array_variable->type()->data_type();
             auto right_type = visit(ast::GetTypeVisitor(), right_value); 
