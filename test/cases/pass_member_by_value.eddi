@@ -1,0 +1,36 @@
+
+struct A {
+    int x;
+}
+
+struct B {
+    float z;
+    A a;
+}
+
+struct C {
+    B b;
+    A a;
+}
+
+void main(){
+    C a;
+    test(a.b);
+    test(a.a);
+    test(a.b.a);
+}
+
+void test(B b){
+    print(b.z);
+    print("|");
+
+    print(b.a.x);
+    print("|");
+
+    test(b.a);
+}
+
+void test(A a){
+    print(a.x);
+    print("|");
+}
