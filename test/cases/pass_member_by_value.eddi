@@ -15,6 +15,11 @@ struct C {
 
 void main(){
     C a;
+    
+    a.b.z = 77.77;
+    a.b.a.x = 66;
+    a.a.x = 55;
+
     test(a.b);
     test(a.a);
     test(a.b.a);
