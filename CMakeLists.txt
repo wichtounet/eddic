@@ -178,6 +178,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/member_functions
     SpecificSuite/member_functions_param_stack
     SpecificSuite/memory
+    SpecificSuite/pass_member_by_value
     SpecificSuite/ternary
     SpecificSuite/while_
     SpecificSuite/do_while_

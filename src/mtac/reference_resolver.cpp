@@ -42,9 +42,10 @@ void mtac::resolve_references(mtac::program_p program){
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto& quadruple = *ptr;
+                auto op = quadruple->op;
 
                 //x = (r)z => x = (ref(r))(z+offset(r))
-                if(quadruple->op == mtac::Operator::DOT && mtac::optional_is<std::shared_ptr<Variable>>(quadruple->arg1)){
+                if((op == mtac::Operator::DOT || op == mtac::Operator::FDOT) && mtac::optional_is<std::shared_ptr<Variable>>(quadruple->arg1)){
                     auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
                     if(var->is_reference()){
@@ -71,7 +72,7 @@ void mtac::resolve_references(mtac::program_p program){
                     }
                 } 
                 //(r)z = x => (ref(r))(z+offset(r)) = x
-                else if(quadruple->op == mtac::Operator::DOT_ASSIGN && quadruple->result->is_reference()){
+                else if((op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN)&& quadruple->result->is_reference()){
                     auto var = quadruple->result;
 
                     if(var->type()->is_dynamic_array()){

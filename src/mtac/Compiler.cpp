@@ -52,7 +52,7 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
 arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary);
 
-mtac::Argument computeIndexOfArray(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
+mtac::Argument index_of_array(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::function_p function){
     mtac::Argument index = moveToArgument(indexValue, function);
     
     auto temp = function->context->new_temporary(INT);
@@ -158,6 +158,8 @@ void jump_if_false(mtac::function_p function, const std::string& l, ast::Value v
     function->add(std::make_shared<mtac::IfFalse>(argument, l));
 }
 
+arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset);
+
 enum class ArgumentType : unsigned int {
     NORMAL,
     ADDRESS,
@@ -234,6 +236,14 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
             return result;
         }
+    } else if(member_type->is_structure()){
+        if(T == ArgumentType::REFERENCE){
+            return {function->context->new_reference(member_type, var, offset)};
+        } else if(T == ArgumentType::NORMAL){
+            return struct_to_arguments(function, member_type, var, offset);      
+        }
+
+        eddic_unreachable("Unhandled ArgumentType");
     } else {
         std::shared_ptr<Variable> temp;
         if(T == ArgumentType::REFERENCE){
@@ -254,6 +264,23 @@ arguments get_member(mtac::function_p function, unsigned int offset, std::shared
 
         return {temp};
     }
+}
+
+arguments struct_to_arguments(mtac::function_p function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset){
+    arguments result;
+
+    auto struct_type = function->context->global()->get_struct(type);
+
+    for(auto& member : struct_type->members){
+        std::shared_ptr<const Type> member_type;
+        unsigned int member_offset = 0;
+        boost::tie(member_offset, member_type) = mtac::compute_member(function->context->global(), type, member->name);
+
+        auto new_args = get_member<>(function, member_offset + offset, member_type, base_var);
+        std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
+    }
+
+    return result;
 }
 
 template<ArgumentType T = ArgumentType::NORMAL>
@@ -401,7 +428,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 } else {
                     assert(left.size() == 1);
 
-                    auto index = computeIndexOfArray(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
+                    auto index = index_of_array(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
                     auto data_type = type->data_type();
                     
                     if(T == ArgumentType::ADDRESS){
@@ -858,9 +885,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 function->add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function->context->global()->target_platform())));
 
                 return {value.Content->var, temp};
-            } else if(type->is_custom_type() || type->is_template_type()) {
-                //If we are here, it means that we want to pass it by reference
-                return {value.Content->var};
+            } else if(type->is_structure()) {
+                return struct_to_arguments(function, type, value.Content->var, 0);
             } 
         }
     
@@ -1112,16 +1138,19 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
         auto variable = variable_value.Content->var;
         auto type = visit(ast::GetTypeVisitor(), right_value); 
-        auto values = visit(ToArgumentsVisitor<>(function), right_value);
 
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::PASSIGN));
         } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
         } else if(type == STRING){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
             function->add(std::make_shared<mtac::Quadruple>(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
         } else if(type == FLOAT){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function->add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
         } else if(type->is_custom_type() || type->is_template_type()){
             copy_construct(function, variable->type(), variable, right_value);
@@ -1175,7 +1204,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto array_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
             auto& index_value = boost::get<ast::Value>(*last_operation.get<1>());
-            auto index = computeIndexOfArray(array_variable, index_value, function); 
+            auto index = index_of_array(array_variable, index_value, function); 
         
             auto left_type = array_variable->type()->data_type();
             auto right_type = visit(ast::GetTypeVisitor(), right_value); 
@@ -1619,69 +1648,6 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function){
     return move_to_arguments(value, function)[0];
 }
 
-typedef boost::variant<std::shared_ptr<Variable>, std::string> call_param;
-
-void push_struct_member(ast::Expression& member_value, std::shared_ptr<const Type> type, mtac::function_p function, call_param param, Function& definition){
-    auto struct_type = function->context->global()->get_struct(type);
-
-    for(auto& member : boost::adaptors::reverse(struct_type->members)){
-        auto member_type = member->type;
-
-        member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
-
-        if(member_type->is_custom_type() || member_type->is_template_type()){
-            push_struct_member(member_value, member_type, function, param, definition);
-        } else {
-            auto member_values = visit_non_variant(ToArgumentsVisitor<>(function), member_value);
-
-            for(auto& v : boost::adaptors::reverse(member_values)){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                } else if(auto* ptr = boost::get<std::string>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                }
-            }
-        }
-
-        member_value.Content->operations.pop_back();
-    }
-}
-
-void push_struct(mtac::function_p function, call_param param, Function& definition, ast::VariableValue& value){
-    auto var = value.Content->var;
-    auto context = value.Content->context;
-
-    auto struct_type = function->context->global()->get_struct(var->type());
-
-    for(auto& member : boost::adaptors::reverse(struct_type->members)){
-        auto type = member->type;
-
-        ast::VariableValue variable_value;
-        variable_value.Content->context = context;
-        variable_value.Content->variableName = var->name();
-        variable_value.Content->var = var;
-
-        ast::Expression member_value;
-        member_value.Content->context = context;
-        member_value.Content->first = variable_value;
-        member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
-        
-        if(type->is_custom_type() || type->is_template_type()){
-            push_struct_member(member_value, type, function, param, definition);
-        } else {
-            auto member_values = ToArgumentsVisitor<>(function)(member_value);
-
-            for(auto& v : boost::adaptors::reverse(member_values)){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                } else if(auto* ptr = boost::get<std::string>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                }
-            }
-        }
-    }
-}
-
 void pass_arguments(mtac::function_p function, eddic::Function& definition, std::vector<ast::Value>& values){
     //Fail quickly if no values to pass
     if(values.empty()){
@@ -1716,14 +1682,6 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
         for(auto& first : boost::adaptors::reverse(values)){
             std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name);
 
-            if(auto* ptr = boost::get<ast::VariableValue>(&first)){
-                auto type = (*ptr).Content->var->type();
-                if((type->is_custom_type() || type->is_template_type()) && !param->type()->is_pointer()){
-                    push_struct(function, param, definition, *ptr);
-                    continue;
-                }
-            } 
-
             arguments args;
             if(param->type()->is_pointer()){
                 args = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), first);
@@ -1734,7 +1692,6 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
             for(auto& arg : boost::adaptors::reverse(args)){
                 auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
-
                 function->add(mtac_param);
             }
         }
