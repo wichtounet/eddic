@@ -1646,66 +1646,14 @@ mtac::Argument moveToArgument(ast::Value value, mtac::function_p function){
     return move_to_arguments(value, function)[0];
 }
 
-typedef boost::variant<std::shared_ptr<Variable>, std::string> call_param;
-
-void push_struct_member(ast::Expression& member_value, std::shared_ptr<const Type> type, mtac::function_p function, call_param param, Function& definition){
-    auto struct_type = function->context->global()->get_struct(type);
-
-    for(auto& member : boost::adaptors::reverse(struct_type->members)){
-        auto member_type = member->type;
-
-        member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
-
-        if(member_type->is_custom_type() || member_type->is_template_type()){
-            push_struct_member(member_value, member_type, function, param, definition);
-        } else {
-            auto member_values = visit_non_variant(ToArgumentsVisitor<>(function), member_value);
-
-            for(auto& v : boost::adaptors::reverse(member_values)){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                } else if(auto* ptr = boost::get<std::string>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                }
-            }
-        }
-
-        member_value.Content->operations.pop_back();
-    }
-}
-
-void push_struct(mtac::function_p function, call_param param, Function& definition, ast::VariableValue& value){
+void push_struct(mtac::function_p function, std::shared_ptr<Variable> param, Function& definition, ast::VariableValue& value){
     auto var = value.Content->var;
     auto context = value.Content->context;
 
-    auto struct_type = function->context->global()->get_struct(var->type());
+    arguments args = struct_to_arguments(function, var->type(), var, 0);
 
-    for(auto& member : boost::adaptors::reverse(struct_type->members)){
-        auto type = member->type;
-
-        ast::VariableValue variable_value;
-        variable_value.Content->context = context;
-        variable_value.Content->variableName = var->name();
-        variable_value.Content->var = var;
-
-        ast::Expression member_value;
-        member_value.Content->context = context;
-        member_value.Content->first = variable_value;
-        member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, member->name));
-        
-        if(type->is_custom_type() || type->is_template_type()){
-            push_struct_member(member_value, type, function, param, definition);
-        } else {
-            auto member_values = ToArgumentsVisitor<>(function)(member_value);
-
-            for(auto& v : boost::adaptors::reverse(member_values)){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                } else if(auto* ptr = boost::get<std::string>(&param)){
-                    function->add(std::make_shared<mtac::Param>(v, *ptr, definition));
-                }
-            }
-        }
+    for(auto& member : boost::adaptors::reverse(args)){
+        function->add(std::make_shared<mtac::Param>(member, param, definition));
     }
 }
 
@@ -1745,7 +1693,7 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
             if(auto* ptr = boost::get<ast::VariableValue>(&first)){
                 auto type = (*ptr).Content->var->type();
-                if((type->is_custom_type() || type->is_template_type()) && !param->type()->is_pointer()){
+                if(type->is_structure() && !param->type()->is_pointer()){
                     push_struct(function, param, definition, *ptr);
                     continue;
                 }
