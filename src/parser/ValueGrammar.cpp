@@ -291,7 +291,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
-        >>  -( value >> *( lexer.comma > value))
+        >>  value >> *( lexer.comma > value)
         >>  lexer.right_parenth;
 
     //Configure debugging and rule naming
