@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     if(3 > 2 && 3 < 2){
         println("One");

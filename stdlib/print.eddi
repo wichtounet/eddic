@@ -1,0 +1,14 @@
+include <strings>
+
+void print(bool a){
+    if(a){
+        print(1);
+    } else {
+        print(0);
+    }
+}
+
+void println(bool a){
+    print(a);
+    println();
+}

@@ -100,8 +100,6 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
 
 bool as::IntelCodeGenerator::is_enabled_printI(){
     return context->referenceCount("_F5printI") || 
-            context->referenceCount("_F5printB") || 
-            context->referenceCount("_F7printlnB") || 
             context->referenceCount("_F5printF") || 
             context->referenceCount("_F7printlnF") ||
             context->referenceCount("_F8durationAIAI");
@@ -111,7 +109,6 @@ bool as::IntelCodeGenerator::is_enabled_println(){
     return context->referenceCount("_F7println") || 
             context->referenceCount("_F7printlnS") || 
             context->referenceCount("_F7printlnI") || 
-            context->referenceCount("_F7printlnB") || 
             context->referenceCount("_F7printlnC") || 
             context->referenceCount("_F7printlnF");
 }

@@ -1,3 +1,5 @@
+include <print>
+
 struct A {
     int a;
 

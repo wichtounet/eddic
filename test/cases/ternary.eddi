@@ -1,3 +1,5 @@
+include <print>
+
 void main(){
     int a = 5 > 2 ? 44 : 66;
     print(a);
