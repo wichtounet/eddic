@@ -752,7 +752,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             case ast::BuiltinType::SIZE:
                 {
                     //Get a reference to the array
-                    arguments right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values[0]);
+                    arguments right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values.at(0));
 
                     eddic_assert(mtac::isVariable(right[0]), "The visitor should return a variable");
 
