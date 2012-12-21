@@ -349,7 +349,7 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -486,12 +486,8 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
         output_function("x86_32_printlnS");
     }
     
-    if(context->referenceCount("_F6concatSS")){
-        output_function("x86_32_concat");
-    }
-    
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
