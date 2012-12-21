@@ -394,10 +394,6 @@ BOOST_AUTO_TEST_CASE( assign_value ){
     assert_output("assign_value.eddi", "66779921");
 }
 
-BOOST_AUTO_TEST_CASE( concat ){
-    assert_output("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
-}
-
 BOOST_AUTO_TEST_CASE( println ){
     assert_output("println.eddi", "\n");
 }
@@ -532,6 +528,10 @@ BOOST_AUTO_TEST_CASE( std_lib_str_equals ){
 
 BOOST_AUTO_TEST_CASE( std_lib_string ){
     assert_output("stdlib_string.eddi", "adsf|4|adsf|8|dddddddd|4|adsf|4|adsf|1|0|1|0|1|0|1|0|1|");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_string_concat ){
+    assert_output("stdlib_string_concat.eddi", "asdf1234|1234|asdf1234|1234asdf1234|asdf1234|1234asdf1234|you1234asdf1234|");
 }
 
 BOOST_AUTO_TEST_CASE( std_linked_list ){
