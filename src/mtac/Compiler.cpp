@@ -295,28 +295,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
         case ast::Operator::MOD:
         case ast::Operator::DIV:
             {
-                if(type == STRING){
-                    eddic_assert(op == ast::Operator::ADD, "Only ADD can be applied to string");
-
-                    auto& definition = function->context->global()->getFunction("_F6concatSS");
-                    
-                    for(auto& arg : left){
-                        function->add(std::make_shared<mtac::Param>(arg, "a", definition));
-                    }
-                    
-                    auto right = move_to_arguments(boost::get<ast::Value>(*operation.get<1>()), function);
-                    for(auto& arg : right){
-                        function->add(std::make_shared<mtac::Param>(arg, "b", definition));
-                    }
-                
-                    auto t1 = function->context->new_temporary(INT);
-                    auto t2 = function->context->new_temporary(INT);
-                    
-                    function->context->global()->addReference("_F6concatSS");
-                    function->add(std::make_shared<mtac::Call>("_F6concatSS", definition, t1, t2)); 
-
-                    left = {t1, t2};
-                } else if(type == INT || type == FLOAT){
+                if(type == INT || type == FLOAT){
                     auto right_value = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
                     auto temp = function->context->new_temporary(type);
 
