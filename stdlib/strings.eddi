@@ -30,6 +30,21 @@ struct string {
 
         return true;
     }
+
+    void append(string other){
+        char[] new_data = new char[size() + other.size()];
+
+        for(int i = 0; i < this.size(); ++i){
+            new_data[i] = data[i];
+        }
+        
+        for(int i = this.size(); i < this.size() + other.size(); ++i){
+            new_data[i] = other.data[i - this.size()];
+        }
+
+        delete data;
+        data = new_data;
+    }
 }
 
 void print(string s){

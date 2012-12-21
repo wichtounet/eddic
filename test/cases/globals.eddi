@@ -6,8 +6,6 @@ void main(){
     print(b);
 
     a = a + 1000;
-    b = b + "a";
 
     print(a);
-    print(b);
 }

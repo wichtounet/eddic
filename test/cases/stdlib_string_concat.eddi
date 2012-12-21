@@ -1,0 +1,30 @@
+include<strings>
+
+void main(){
+	string a("asdf");
+	string b("1234");
+    string c("you");
+
+    a.append(b);
+
+    print(a);
+    print("|");
+    print(b);
+    print("|");
+
+    b.append(a);
+
+    print(a);
+    print("|");
+    print(b);
+    print("|");
+
+    c.append(b);
+    
+    print(a);
+    print("|");
+    print(b);
+    print("|");
+    print(c);
+    print("|");
+}

@@ -237,12 +237,6 @@ void GlobalContext::defineStandardFunctions(){
     auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
     read_char_function.standard = true;
     
-    //concat function
-    auto& concatFunction = add_function(STRING, "concat", "_F6concatSS");
-    concatFunction.standard = true;
-    concatFunction.parameters().emplace_back("a", STRING);
-    concatFunction.parameters().emplace_back("b", STRING);
-    
     //alloc function
     auto& allocFunction = add_function(new_pointer_type(INT), "alloc", "_F5allocI");
     allocFunction.standard = true;

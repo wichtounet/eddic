@@ -32,8 +32,6 @@ void main(){
     
     print(length(ccc));
     print("|");
-    print(length("asdf" + "1111"));
-    print("|");
     print(length(arrayB[0]));
     print("|");
     print(length(test()));

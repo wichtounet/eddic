@@ -304,9 +304,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                     }
 
                     if(type == STRING){
-                        if(op != ast::Operator::ADD){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
-                        }
+                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
                     }
 
                     if(type == BOOL){

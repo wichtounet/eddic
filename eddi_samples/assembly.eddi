@@ -18,9 +18,6 @@ void main(){
 
     int localUnused = 8989;
 
-    str x = "ED" + "DI";
-    println(x);
-
     print("Should print '0' : ");
     println(defaultA);
 
@@ -76,11 +73,6 @@ void main(){
     print("Should print 'Variable f' : ");
     println(e);
     
-    str z = e + f;
-
-    print("Should print 'Variable fVariable e' : ");
-    println(z);
-
     int zaz = 111;
     int zbz = 222;
 

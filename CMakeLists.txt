@@ -199,7 +199,6 @@ add_boost_test(eddic_boost_test
     SpecificSuite/math
     SpecificSuite/builtin
     SpecificSuite/assign_value
-    SpecificSuite/concat
     SpecificSuite/println
     SpecificSuite/prints
     SpecificSuite/single_inheritance
@@ -223,6 +222,7 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_lib_math_pow
     StandardLibSuite/std_lib_str_equals
     StandardLibSuite/std_lib_string
+    StandardLibSuite/std_lib_string_concat
     StandardLibSuite/std_linked_list
     BugFixesSuite/while_bug
     #Unit tests
