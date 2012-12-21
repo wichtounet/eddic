@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     print(111);
     print("|");
