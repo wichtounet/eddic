@@ -8,16 +8,23 @@ void main(){
     a.append(b);
 
     print(a);
+    print("|");
     print(b);
+    print("|");
 
     b.append(a);
 
     print(a);
+    print("|");
     print(b);
+    print("|");
 
     c.append(b);
     
     print(a);
+    print("|");
     print(b);
+    print("|");
     print(c);
+    print("|");
 }
