@@ -3,5 +3,5 @@ void main(){
 }
 
 str first(str a){
-    return a + "def";
+    return "abcdef";
 }

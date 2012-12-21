@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE( foreach_ ){
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
-    assert_output("globals.eddi", "1000a2000aa");
+    assert_output("globals.eddi", "1000a2000");
 }
 
 BOOST_AUTO_TEST_CASE( inc ){
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE( math ){
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
-    assert_output("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|");
+    assert_output("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|0|3|");
 }
 
 BOOST_AUTO_TEST_CASE( assign_value ){

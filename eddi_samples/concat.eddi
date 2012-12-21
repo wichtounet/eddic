@@ -1,8 +1,10 @@
+include<strings>
+
 void main(){
 	string a("asdf");
 	string b("jklé");
 
     a.append(b);
 
-	println(a);
+	print(a);
 }
