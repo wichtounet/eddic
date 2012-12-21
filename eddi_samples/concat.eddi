@@ -1,11 +1,8 @@
 void main(){
-	str a = "asdf";
-	str b = "jklé";
-	str c = a + b;
-    str d = c + b;
-    str e = c + d;
+	string a("asdf");
+	string b("jklé");
 
-	println(c);
-	println(d);
-    println(e);
+    a.append(b);
+
+	println(a);
 }
