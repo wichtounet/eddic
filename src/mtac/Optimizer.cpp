@@ -39,7 +39,6 @@
 #include "mtac/DeadCodeElimination.hpp"
 #include "mtac/BasicBlockOptimizations.hpp"
 #include "mtac/BranchOptimizations.hpp"
-#include "mtac/ConcatReduction.hpp"
 #include "mtac/inlining.hpp"
 #include "mtac/loop_analysis.hpp"
 #include "mtac/loop_optimizations.hpp"
@@ -97,7 +96,6 @@ typedef boost::mpl::vector<
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,
-        mtac::optimize_concat*,
         mtac::remove_dead_basic_blocks*,
         mtac::merge_basic_blocks*,
         mtac::dead_code_elimination*,
