@@ -226,10 +226,6 @@ void GlobalContext::defineStandardFunctions(){
     addPrintFunction("_F5printC", CHAR);
     addPrintFunction("_F7printlnC", CHAR);
 
-    //print bool
-    addPrintFunction("_F5printB", BOOL);
-    addPrintFunction("_F7printlnB", BOOL);
-
     //print float
     addPrintFunction("_F5printF", FLOAT);
     addPrintFunction("_F7printlnF", FLOAT);
