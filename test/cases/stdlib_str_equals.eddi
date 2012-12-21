@@ -1,4 +1,4 @@
-include <strings>
+include <print>
 
 void main(){
     str a = "asdf";

@@ -1,4 +1,4 @@
-include <strings>
+include<print>
 
 void debug(string a){
     print(a.size());
