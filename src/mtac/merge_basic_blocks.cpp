@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 #include "likely.hpp"
 
-#include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/merge_basic_blocks.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Statement.hpp"
@@ -107,29 +107,4 @@ bool mtac::merge_basic_blocks::operator()(mtac::function_p function){
     }
    
     return optimized; 
-}
-
-bool mtac::remove_dead_basic_blocks::operator()(mtac::function_p function){
-    unsigned int before = function->bb_count();
-
-    if(before <= 2){
-        return false;
-    }
-
-    auto it = iterate(function);
-
-    //ENTRY is always accessed
-    ++it;
-
-    while(it.has_next()){
-        auto& block = *it;
-
-        if(block->predecessors.empty()){
-            it.erase();
-        } else {
-            ++it;
-        }
-    }
-
-    return function->bb_count() < before;
 }

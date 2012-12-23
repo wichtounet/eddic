@@ -12,7 +12,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 
-#include "mtac/VariableOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/Printer.hpp"
@@ -299,24 +299,4 @@ bool mtac::remove_aliases::operator()(mtac::function_p function){
     }
 
     return optimized;
-}
-
-bool mtac::clean_variables::operator()(mtac::function_p function){
-    auto variable_usage = mtac::compute_variable_usage(function);
-    
-    std::vector<std::shared_ptr<Variable>> unused;
-    for(auto& variable : function->context->stored_variables()){
-        //Temporary and parameters are not interesting, because they dot not take any space
-        if(!variable->position().isParameter() && !variable->position().isParamRegister()){
-            if(variable_usage[variable] == 0){
-                unused.push_back(variable);
-            }
-        }
-    }
-
-    for(auto& variable : unused){
-        function->context->removeVariable(variable);
-    }
-
-    return false;
 }

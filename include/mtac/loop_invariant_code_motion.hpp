@@ -5,10 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_VARIABLE_OPTIMIZATIONS_H
-#define MTAC_VARIABLE_OPTIMIZATIONS_H
-
-#include <memory>
+#ifndef MTAC_LOOP_INVARIANT_CODE_MOTION_H
+#define MTAC_LOOP_INVARIANT_CODE_MOTION_H
 
 #include "mtac/pass_traits.hpp"
 #include "mtac/forward.hpp"
@@ -17,26 +15,14 @@ namespace eddic {
 
 namespace mtac {
 
-struct remove_aliases {
+struct loop_invariant_code_motion {
     bool operator()(mtac::function_p function);
 };
 
 template<>
-struct pass_traits<remove_aliases> {
+struct pass_traits<loop_invariant_code_motion> {
+    STATIC_STRING(name, "loop_invariant_motion");
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
-    STATIC_STRING(name, "remove_aliases");
-    STATIC_CONSTANT(unsigned int, property_flags, 0);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
-};
-
-struct clean_variables {
-    bool operator()(mtac::function_p function);
-};
-
-template<>
-struct pass_traits<clean_variables> {
-    STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
-    STATIC_STRING(name, "clean_variables");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };

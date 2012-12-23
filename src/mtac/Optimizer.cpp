@@ -35,14 +35,21 @@
 
 //The custom optimizations
 #include "mtac/conditional_propagation.hpp"
-#include "mtac/VariableOptimizations.hpp"
-#include "mtac/FunctionOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
+#include "mtac/clean_variables.hpp"
+#include "mtac/remove_unused_functions.hpp"
+#include "mtac/remove_empty_functions.hpp"
 #include "mtac/DeadCodeElimination.hpp"
-#include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/merge_basic_blocks.hpp"
+#include "mtac/remove_dead_basic_blocks.hpp"
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/inlining.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/loop_optimizations.hpp"
+#include "mtac/induction_variable_optimizations.hpp"
+#include "mtac/loop_unrolling.hpp"
+#include "mtac/complete_loop_peeling.hpp"
+#include "mtac/remove_empty_loops.hpp"
+#include "mtac/loop_invariant_code_motion.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -56,8 +63,6 @@
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
-
-
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
