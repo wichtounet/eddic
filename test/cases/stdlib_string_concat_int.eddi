@@ -1,0 +1,27 @@
+include <strings>
+
+void main(){
+    string a("test");
+
+    a.append(987);
+
+    print(a);
+    print("|");
+
+    a.append(-561);
+
+    print(a);
+    print("|");
+
+    string b("asdf");
+
+    b.append(98655);
+
+    print(b);
+    print("|");
+    
+    b.append(1);
+
+    print(b);
+    print("|");
+}
