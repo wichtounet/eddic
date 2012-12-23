@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_VARIABLE_OPTIMIZATIONS_H
-#define MTAC_VARIABLE_OPTIMIZATIONS_H
+#ifndef MTAC_REMOVE_ALIASES_H
+#define MTAC_REMOVE_ALIASES_H
 
 #include <memory>
 
