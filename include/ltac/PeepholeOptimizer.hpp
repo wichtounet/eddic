@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace ltac {
 
-void optimize(mtac::program_p program, Platform platform);
+void optimize(mtac::Program& program, Platform platform);
 
 } //end of ltac
 

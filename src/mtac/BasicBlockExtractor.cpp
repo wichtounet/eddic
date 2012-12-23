@@ -31,8 +31,8 @@ bool isReturn(T statement){
 
 } //end of anonymous namespace
 
-void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
-    for(auto& function : program->functions){
+void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
+    for(auto& function : program.functions){
         std::unordered_map<std::string, std::shared_ptr<basic_block>> labels;
        
         //The first is always a leader 

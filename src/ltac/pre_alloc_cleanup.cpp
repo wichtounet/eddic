@@ -23,8 +23,8 @@ bool is_float_pseudo_reg(Variant& var){
     return boost::get<ltac::PseudoFloatRegister>(&*var);
 }
 
-void ltac::pre_alloc_cleanup(mtac::program_p program){
-    for(auto& function : program->functions){
+void ltac::pre_alloc_cleanup(mtac::Program& program){
+    for(auto& function : program.functions){
         for(auto& bb : function){
             auto it = iterate(bb->l_statements);
 

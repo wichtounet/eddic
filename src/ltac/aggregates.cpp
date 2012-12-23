@@ -19,11 +19,11 @@
 
 using namespace eddic;
 
-void ltac::allocate_aggregates(mtac::program_p program){
-    auto global_context = program->context;
+void ltac::allocate_aggregates(mtac::Program& program){
+    auto global_context = program.context;
     auto platform = global_context->target_platform();
 
-    for(auto& function : program->functions){
+    for(auto& function : program.functions){
         auto& function_context = function->context;
 
         //Consider only user functions

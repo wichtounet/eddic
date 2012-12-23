@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace ltac {
 
-void register_allocation(mtac::program_p program, Platform platform);
+void register_allocation(mtac::Program& program, Platform platform);
 
 } //end of mtac
 

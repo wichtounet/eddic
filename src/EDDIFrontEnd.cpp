@@ -27,7 +27,7 @@ using namespace eddic;
 void check_for_main(std::shared_ptr<GlobalContext> context);
 void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> configuration, Platform platform, std::shared_ptr<StringPool> pool);
 
-mtac::program_p EDDIFrontEnd::compile(const std::string& file, Platform platform){
+std::unique_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
     //The program to build
     ast::SourceFile program;
 
@@ -62,13 +62,13 @@ mtac::program_p EDDIFrontEnd::compile(const std::string& file, Platform platform
             return nullptr;
         }
 
-        mtac::program_p mtacProgram = std::make_shared<mtac::Program>();
+        std::unique_ptr<mtac::Program> mtac_program(new mtac::Program());
 
         //Generate Three-Address-Code language
         mtac::Compiler compiler;
-        compiler.compile(program, pool, mtacProgram);
+        compiler.compile(program, pool, *mtac_program);
 
-        return mtacProgram;
+        return mtac_program;
     }
 
     //If the parsing fails, the error is already printed to the console

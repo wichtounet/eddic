@@ -19,7 +19,7 @@ namespace ltac {
  * LTAC compiler. 
  * \param program The MTAC Program
  */
-void allocate_aggregates(mtac::program_p program);
+void allocate_aggregates(mtac::Program& program);
 
 } //end of ltac
 

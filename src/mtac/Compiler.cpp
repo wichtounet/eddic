@@ -1349,11 +1349,11 @@ arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
 class CompilerVisitor : public boost::static_visitor<> {
     private:
         std::shared_ptr<StringPool> pool;
-        mtac::program_p program;
+        mtac::Program& program;
         mtac::function_p function;
     
     public:
-        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::program_p mtacProgram) : pool(p), program(mtacProgram) {}
+        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::Program& mtacProgram) : pool(p), program(mtacProgram) {}
 
         AUTO_RECURSE_STRUCT()
 
@@ -1374,7 +1374,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::SourceFile& p){
-            program->context = p.Content->context;
+            program.context = p.Content->context;
 
             visit_each(*this, p.Content->blocks);
         }
@@ -1395,17 +1395,17 @@ class CompilerVisitor : public boost::static_visitor<> {
 
         template<typename Function>
         inline void issue_function(Function& f){
-            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName, program->context->getFunction(f.Content->mangledName));
+            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName, program.context->getFunction(f.Content->mangledName));
 
             visit_each(*this, f.Content->instructions);
 
             issue_destructors(f.Content->context);
 
-            program->functions.push_back(function);
+            program.functions.push_back(function);
         }
 
         void operator()(ast::FunctionDeclaration& f){
-            if(f.Content->functionName == "main" || program->context->referenceCount(f.Content->mangledName) > 0){
+            if(f.Content->functionName == "main" || program.context->referenceCount(f.Content->mangledName) > 0){
                 issue_function(f);
             }
         }
@@ -1586,12 +1586,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             }
 
             auto free_name = "_F4freePI";
-            auto& free_function = program->context->getFunction(free_name);
+            auto& free_function = program.context->getFunction(free_name);
 
             auto param = std::make_shared<mtac::Param>(arg, "a", free_function);
             function->add(param);
 
-            program->context->addReference(free_name);
+            program.context->addReference(free_name);
             function->add(std::make_shared<mtac::Call>(free_name, free_function)); 
         }
 
@@ -1679,7 +1679,7 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, mtac::program_p mtacProgram) const {
+void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, mtac::Program& mtacProgram) const {
     PerfsTimer timer("MTAC Compilation");
 
     CompilerVisitor visitor(pool, mtacProgram);
