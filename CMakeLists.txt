@@ -223,6 +223,7 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_lib_str_equals
     StandardLibSuite/std_lib_string
     StandardLibSuite/std_lib_string_concat
+    StandardLibSuite/std_lib_string_concat_int
     StandardLibSuite/std_linked_list
     BugFixesSuite/while_bug
     #Unit tests

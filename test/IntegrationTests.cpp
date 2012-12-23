@@ -534,6 +534,10 @@ BOOST_AUTO_TEST_CASE( std_lib_string_concat ){
     assert_output("stdlib_string_concat.eddi", "asdf1234|1234|asdf1234|1234asdf1234|asdf1234|1234asdf1234|you1234asdf1234|");
 }
 
+BOOST_AUTO_TEST_CASE( std_lib_string_concat_int ){
+    assert_output("stdlib_string_concat_int.eddi", "test987|test987-561|asdf98655|asdf986551|");
+}
+
 BOOST_AUTO_TEST_CASE( std_linked_list ){
     assert_output("stdlib_linked_list.eddi", "0||1|55|55|2|55|11|3|33|11|4|99|11|{99|33|55|11|}{11|33|99|}4|99|11|3|33|11|2|33|88|1|88|88|");
 }
