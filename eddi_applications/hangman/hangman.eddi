@@ -14,7 +14,7 @@ void main(){
 
     while(state == 0){
         print("Guess a char: ");
-        guessed.push_back(get_char);
+        guessed.push_back(get_char());
         println();
 
         print_word(&guessed);
