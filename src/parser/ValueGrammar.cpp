@@ -308,7 +308,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(integer);
     DEBUG_RULE(integer_suffix);
     DEBUG_RULE(float_);
-    DEBUG_RULE(builtin_operator);
     DEBUG_RULE(function_call);
     DEBUG_RULE(true_);
     DEBUG_RULE(false_);
