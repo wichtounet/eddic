@@ -14,7 +14,7 @@ namespace eddic {
 
 namespace ltac {
 
-void pre_alloc_cleanup(mtac::program_p program);
+void pre_alloc_cleanup(mtac::Program& program);
 
 } //end of ltac
 

@@ -22,7 +22,7 @@ struct inline_functions {
 
     void set_configuration(std::shared_ptr<Configuration> configuration);
 
-    bool operator()(mtac::program_p program);
+    bool operator()(mtac::Program& program);
 };
 
 template<>

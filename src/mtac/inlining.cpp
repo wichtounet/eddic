@@ -388,10 +388,10 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
     return false;
 }
 
-mtac::function_p get_target(std::shared_ptr<mtac::Call> call, mtac::program_p program){
+mtac::function_p get_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
     auto& target_definition = call->functionDefinition;
 
-    for(auto& function : program->functions){
+    for(auto& function : program.functions){
         if(function->definition.mangledName == target_definition.mangledName){
             return function;
         }
@@ -400,7 +400,7 @@ mtac::function_p get_target(std::shared_ptr<mtac::Call> call, mtac::program_p pr
     return nullptr;
 }
 
-bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program){
+bool call_site_inlining(mtac::function_p dest_function, mtac::Program& program){
     bool optimized = false;
 
     auto bit = dest_function->begin();
@@ -438,7 +438,7 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program)
                     }
 
                     //Clone all the source basic blocks in the dest function
-                    auto bb_clones = clone(source_function, dest_function, basic_block, program->context);
+                    auto bb_clones = clone(source_function, dest_function, basic_block, program.context);
 
                     //Fix all the instructions (clones and return)
                     adapt_instructions(variable_clones, bb_clones, call, basic_block);
@@ -447,7 +447,7 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::program_p program)
                     it.erase();
 
                     //The target function is called one less time
-                    program->context->removeReference(source_definition.mangledName);
+                    program.context->removeReference(source_definition.mangledName);
                     optimized = true;
 
                     continue;
@@ -469,16 +469,16 @@ void mtac::inline_functions::set_configuration(std::shared_ptr<Configuration> co
     this->configuration = configuration;
 }
 
-bool mtac::inline_functions::operator()(mtac::program_p program){
+bool mtac::inline_functions::operator()(mtac::Program& program){
     if(configuration->option_defined("fno-inline-functions")){
         return false;
     }
 
     if(configuration->option_defined("finline-functions")){
         bool optimized = false;
-        auto global_context = program->context;
+        auto global_context = program.context;
 
-        for(auto& function : program->functions){
+        for(auto& function : program.functions){
             //If the function is never called, no need to optimize it
             if(global_context->referenceCount(function->get_name()) <= 0){
                 continue; 

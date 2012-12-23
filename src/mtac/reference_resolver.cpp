@@ -28,8 +28,8 @@ mtac::Argument variant_cast(Offset source){
     }
 }
 
-void mtac::resolve_references(mtac::program_p program){
-    for(auto& function : program->functions){
+void mtac::resolve_references(mtac::Program& program){
+    for(auto& function : program.functions){
         //This pass is run before basic blocks are extracted
         auto& statements = function->get_statements();
 

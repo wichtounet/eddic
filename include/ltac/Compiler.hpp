@@ -35,10 +35,10 @@ class Compiler {
          * \param target The target LTAC Program. 
          * \param float_pool The float pool to use. 
          */
-        void compile(mtac::program_p source, std::shared_ptr<FloatPool> float_pool);
+        void compile(mtac::Program& source, std::shared_ptr<FloatPool> float_pool);
     
     private:
-        void compile(mtac::program_p source, mtac::function_p src_function, std::shared_ptr<FloatPool> float_pool);
+        void compile(mtac::function_p src_function, std::shared_ptr<FloatPool> float_pool);
 
         std::unordered_set<mtac::basic_block_p> block_usage;
         Platform platform;

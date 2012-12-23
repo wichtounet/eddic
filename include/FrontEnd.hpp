@@ -31,7 +31,7 @@ class FrontEnd {
          * \param file The file that has to be compiled. 
          * \return The MTAC Program representing the source program. 
          */
-        virtual mtac::program_p compile(const std::string& file, Platform platform) = 0;   
+        virtual std::unique_ptr<mtac::Program> compile(const std::string& file, Platform platform) = 0;   
 
         /*!
          * Set the string pool. 

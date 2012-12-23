@@ -167,7 +167,7 @@ struct disable_if<true,T> {
 struct pass_runner {
     bool optimized = false;
 
-    mtac::program_p program;
+    mtac::Program& program;
     mtac::function_p function;
 
     std::shared_ptr<StringPool> pool;
@@ -175,7 +175,7 @@ struct pass_runner {
     Platform platform;
     timing_system& system;
 
-    pass_runner(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
+    pass_runner(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
             program(program), pool(pool), configuration(configuration), platform(platform), system(system) {};
 
     template<typename Pass>
@@ -259,7 +259,7 @@ struct pass_runner {
     
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(){
-        auto& functions = program->functions;
+        auto& functions = program.functions;
         for(auto& function : functions){
             this->function = function;
     
@@ -390,12 +390,12 @@ struct pass_runner {
 
 } //end of anonymous namespace
 
-void mtac::Optimizer::optimize(mtac::program_p program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
+void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     timing_system timing_system(configuration);    
     PerfsTimer timer("Whole optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
-    for(auto& function : program->functions){
+    for(auto& function : program.functions){
         mtac::build_control_flow_graph(function);
     }
 
