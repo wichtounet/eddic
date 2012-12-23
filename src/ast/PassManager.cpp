@@ -213,6 +213,8 @@ void ast::PassManager::dec_depth(){
 }
 
 void ast::PassManager::run_passes(){
+    program.Content->context = std::make_shared<GlobalContext>(platform);
+    
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
         //They won't be applied on later instantiated function templates and class templates

@@ -234,7 +234,7 @@ void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool in
     if(indicator){
         currentContext = globalContext = program.Content->context;
     } else {
-        currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>(platform);
+        currentContext = globalContext = program.Content->context;
 
         for(auto& block : program.Content->blocks){
             if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
