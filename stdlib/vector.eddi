@@ -1,0 +1,60 @@
+
+template<type T>
+struct vector {
+    T[] data;
+    int size;
+
+    this(){
+        size = 0;
+        data = (T[]) null;
+    }
+
+    ~this(){
+        delete data;
+    }
+
+    bool empty(){
+        return size == 0;
+    }
+
+    int size(){
+        return size;
+    }
+
+    int capacity(){
+        if(data == (T[]) null){
+            return 0;
+        } else {
+            return size(data);
+        }
+    }
+
+    T front(){
+        return data[0];
+    }
+
+    T back(){
+        return data[size - 1];
+    }
+
+    void push_back(T value){
+        if(size == capacity()){
+           int c = capacity() * 2;
+           T[] new_data = new T[c == 0 ? 1 : c];
+
+           for(int i = 0; i < size; ++i){
+               new_data[i] = data[i];
+           }
+
+           delete data;
+           data = new_data;
+        }
+        
+        data[size] = value;
+        ++size;
+    }
+
+    void pop_back(){
+        --size;
+    }
+}

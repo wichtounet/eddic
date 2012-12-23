@@ -1,0 +1,33 @@
+include <vector>
+
+template<type T>
+void debug(vector<T>* v){
+    print(v.size());
+    print("|");
+    print(v.capacity());
+    print("|");
+
+    if(v.empty()){
+        print("|");
+    } else {
+        print(v.front());
+        print("|");
+
+        print(v.back());
+        print("|");
+    }
+}
+
+void main(){
+    vector<int> v;
+    debug<int>(&v);
+
+    v.push_back(55);
+    debug<int>(&v);
+    
+    v.push_back(11);
+    debug<int>(&v);
+    
+    v.push_back(33);
+    debug<int>(&v);
+}
