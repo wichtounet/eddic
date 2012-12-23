@@ -542,6 +542,10 @@ BOOST_AUTO_TEST_CASE( std_linked_list ){
     assert_output("stdlib_linked_list.eddi", "0||1|55|55|2|55|11|3|33|11|4|99|11|{99|33|55|11|}{11|33|99|}4|99|11|3|33|11|2|33|88|1|88|88|");
 }
 
+BOOST_AUTO_TEST_CASE( std_vector ){
+    assert_output("stdlib_vector.eddi", "0|0||1|1|55|55|2|2|55|66|3|4|55|77|66|2|4|55|66|5|8|55|111|{55|66|88|99|111|}");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
     
 /* Unit test for bug fixes regression */

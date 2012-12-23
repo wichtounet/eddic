@@ -225,6 +225,7 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_lib_string_concat
     StandardLibSuite/std_lib_string_concat_int
     StandardLibSuite/std_linked_list
+    StandardLibSuite/std_vector
     BugFixesSuite/while_bug
     #Unit tests
     toString
