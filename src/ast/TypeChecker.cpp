@@ -214,7 +214,11 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
             //Cast with no effects are always valid
-            if(dst_type == src_type || (dst_type->is_pointer() && src_type->is_pointer())){
+            if(
+                        dst_type == src_type 
+                    ||  (dst_type->is_pointer() && src_type->is_pointer())
+                    ||  (dst_type->is_dynamic_array() && src_type->is_pointer())
+                    ||  (dst_type->is_dynamic_array() && src_type->is_dynamic_array())){
                 return;
             }
 

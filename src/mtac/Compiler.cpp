@@ -323,7 +323,7 @@ arguments compute_expression_operation(mtac::function_p function, std::shared_pt
                 auto t1 = function->context->new_temporary(INT);
                 auto right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
 
-                if(type == INT || type == CHAR || type->is_pointer()){
+                if(type == INT || type == CHAR || type->is_pointer() || type->is_dynamic_array()){
                     function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toRelationalOperator(op), right));
                 } else if(type == FLOAT){
                     function->add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toFloatRelationalOperator(op), right));
