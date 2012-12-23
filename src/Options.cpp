@@ -103,7 +103,7 @@ void init_descriptions(){
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
         ("single-threaded", "Disable the multi-threaded optimization")
-        ("timing", "Activate timing system")
+        ("time", "Activate timing system")
         ("input", po::value<std::string>(), "Input file")
         ;
 
