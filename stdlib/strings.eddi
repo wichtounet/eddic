@@ -105,3 +105,55 @@ bool str_equals(str a, str b){
 
     return true;
 }
+
+string digit_to_string(int a){
+    switch(a){
+        case 0:
+            return "0";
+        case 1:
+            return "1";
+        case 2:
+            return "2";
+        case 3:
+            return "3";
+        case 4:
+            return "4";
+        case 5:
+            return "5";
+        case 6:
+            return "6";
+        case 7:
+            return "7";
+        case 8:
+            return "8";
+        case 9:
+            return "9";
+    }
+}
+
+string to_string(int number){
+    if(number == 0){
+        return "0";
+    }
+
+    string temp;
+    string return_value;
+
+    int a = number;
+
+    if(a < 0){
+        return_value = "-";
+        a = -a;
+    }
+
+    while (a > 0){
+        temp += digit_to_string(a % 10);
+        a /= 10;
+    }
+    
+    for (int i=0; i < length(temp); ++i){
+        return_value += to_string(temp[length(temp) - i - 1]);
+    }
+
+    return return_value;
+}
