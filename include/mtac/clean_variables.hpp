@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_VARIABLE_OPTIMIZATIONS_H
-#define MTAC_VARIABLE_OPTIMIZATIONS_H
+#ifndef MTAC_CLEAN_VARIABLES_H
+#define MTAC_CLEAN_VARIABLES_H
 
 #include <memory>
 
@@ -17,14 +17,14 @@ namespace eddic {
 
 namespace mtac {
 
-struct remove_aliases {
+struct clean_variables {
     bool operator()(mtac::function_p function);
 };
 
 template<>
-struct pass_traits<remove_aliases> {
+struct pass_traits<clean_variables> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
-    STATIC_STRING(name, "remove_aliases");
+    STATIC_STRING(name, "clean_variables");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
