@@ -12,7 +12,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 
-#include "mtac/VariableOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/Printer.hpp"

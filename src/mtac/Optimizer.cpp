@@ -35,7 +35,7 @@
 
 //The custom optimizations
 #include "mtac/conditional_propagation.hpp"
-#include "mtac/VariableOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
 #include "mtac/clean_variables.hpp"
 #include "mtac/FunctionOptimizations.hpp"
 #include "mtac/DeadCodeElimination.hpp"
