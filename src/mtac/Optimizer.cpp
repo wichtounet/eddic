@@ -45,7 +45,11 @@
 #include "mtac/BranchOptimizations.hpp"
 #include "mtac/inlining.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/loop_optimizations.hpp"
+#include "mtac/induction_variable_optimizations.hpp"
+#include "mtac/loop_unrolling.hpp"
+#include "mtac/complete_loop_peeling.hpp"
+#include "mtac/remove_empty_loops.hpp"
+#include "mtac/loop_invariant_code_motion.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -59,8 +63,6 @@
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
-
-
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
