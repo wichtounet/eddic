@@ -30,4 +30,10 @@ void main(){
     
     v.push_back(33);
     debug<int>(&v);
+
+    print(v.at(1));
+    print("|");
+    
+    v.pop_back();
+    debug<int>(&v);
 }

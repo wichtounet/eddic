@@ -37,6 +37,10 @@ struct vector {
         return data[size - 1];
     }
 
+    T at(int index){
+        return data[index];
+    }
+
     void push_back(T value){
         if(capacity() == 0){
             data = new T[1];
