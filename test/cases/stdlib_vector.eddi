@@ -25,10 +25,10 @@ void main(){
     v.push_back(55);
     debug<int>(&v);
     
-    v.push_back(11);
+    v.push_back(66);
     debug<int>(&v);
     
-    v.push_back(33);
+    v.push_back(77);
     debug<int>(&v);
 
     print(v.at(1));
@@ -36,4 +36,24 @@ void main(){
     
     v.pop_back();
     debug<int>(&v);
+    
+    v.push_back(88);
+    v.push_back(99);
+    v.push_back(111);
+    debug<int>(&v);
+    
+    print("{");
+
+    vector_iterator<int>* it = v.begin();
+    
+    while(it.not_over()){
+        print(it.get());
+        print("|");
+
+        it.next();
+    }
+
+    delete it;
+    
+    print("}");
 }

@@ -1,4 +1,3 @@
-
 template<type T>
 struct vector {
     T[] data;
@@ -61,5 +60,48 @@ struct vector {
 
     void pop_back(){
         --size;
+    }
+
+    vector_iterator<T>* begin(){
+        return new vector_iterator<T>(this, 0);
+    }
+    
+    vector_iterator<T>* end(){
+        return new vector_iterator<T>(this, size);
+    }
+}
+
+template<type T>
+struct vector_iterator {
+    vector<T>* container;
+    int current;
+
+    this(vector<T>* container, int current){
+        this.container = container;
+        this.current = current;
+    }
+
+    void next(){
+        ++current;
+    }
+    
+    void previous(){
+        --current;
+    }
+
+    bool not_over(){
+        return current < container.size();
+    }
+
+    bool has_next(){
+        return current < container.size() - 1;
+    }
+
+    bool has_previous(){
+        return current > 0;
+    }
+
+    T get(){
+        return container.at(current);
     }
 }
