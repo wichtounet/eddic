@@ -8,6 +8,7 @@
 #include "logging.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
@@ -52,6 +53,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
     LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+    program.Content->context->stats().inc_counter("passes");
 
     for(unsigned int i = 0; i < pass->passes(); ++i){
         pass->set_current_pass(i);
@@ -148,6 +150,7 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            program.Content->context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -182,6 +185,7 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            program.Content->context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
