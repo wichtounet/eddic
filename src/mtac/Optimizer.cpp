@@ -20,6 +20,7 @@
 #include "likely.hpp"
 #include "logging.hpp"
 #include "timing.hpp"
+#include "GlobalContext.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -379,6 +380,7 @@ struct pass_runner {
         }
 
         if(local){
+            program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
             apply_todo<Pass>();
         }
 

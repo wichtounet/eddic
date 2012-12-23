@@ -262,3 +262,7 @@ const GlobalContext::FunctionMap& GlobalContext::functions() const {
 Platform GlobalContext::target_platform() const {
     return platform;
 }
+
+statistics& GlobalContext::stats(){
+    return m_statistics;
+}
