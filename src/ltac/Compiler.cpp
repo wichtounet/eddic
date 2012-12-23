@@ -26,13 +26,13 @@ using namespace eddic;
 
 ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {}
 
-void ltac::Compiler::compile(mtac::program_p source, std::shared_ptr<FloatPool> float_pool){
-    for(auto& function : source->functions){
-        compile(source, function, float_pool);
+void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> float_pool){
+    for(auto& function : source.functions){
+        compile(function, float_pool);
     }
 }
 
-void ltac::Compiler::compile(mtac::program_p source, mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -46,7 +46,6 @@ void ltac::Compiler::compile(mtac::program_p source, mtac::function_p function, 
     }
     
     StatementCompiler compiler(function, float_pool);
-    compiler.program = source;
     compiler.descriptor = getPlatformDescriptor(platform);
     compiler.platform = platform;
     compiler.configuration = configuration;

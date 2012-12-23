@@ -22,7 +22,7 @@ struct StringPool;
 namespace mtac {
 
 struct Optimizer {
-    void optimize(mtac::program_p program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
+    void optimize(mtac::Program& program, std::shared_ptr<StringPool> pool, Platform platform, std::shared_ptr<Configuration> configuration) const ;
 };
 
 } //end of mtac

@@ -62,7 +62,6 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
-        mtac::program_p program;
    
     private:
         //The function being compiled

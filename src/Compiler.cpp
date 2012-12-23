@@ -82,35 +82,35 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
     int code = 0; 
 
     try {
-        auto mtac_program = front_end->compile(file, platform);
+        auto program = front_end->compile(file, platform);
 
         //If program is null, it means that the user didn't wanted it
-        if(mtac_program){
-            mtac::resolve_references(mtac_program);
+        if(program){
+            mtac::resolve_references(*program);
 
             //Separate into basic blocks
             mtac::BasicBlockExtractor extractor;
-            extractor.extract(mtac_program);
+            extractor.extract(*program);
 
             //If asked by the user, print the Three Address code representation before optimization
             if(configuration->option_defined("mtac-opt")){
                 mtac::Printer printer;
-                printer.print(mtac_program);
+                printer.print(*program);
             }
 
             //Optimize MTAC
             mtac::Optimizer optimizer;
-            optimizer.optimize(mtac_program, front_end->get_string_pool(), platform, configuration);
+            optimizer.optimize(*program, front_end->get_string_pool(), platform, configuration);
 
             //Allocate parameters into registers
             if(configuration->option_defined("fparameter-allocation")){
-                mtac::register_param_allocation(mtac_program, platform);
+                mtac::register_param_allocation(*program, platform);
             }
 
             //If asked by the user, print the Three Address code representation
             if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
                 mtac::Printer printer;
-                printer.print(mtac_program);
+                printer.print(*program);
             }
 
             if(!configuration->option_defined("mtac-only")){
@@ -119,7 +119,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
                 back_end->set_string_pool(front_end->get_string_pool());
                 back_end->set_configuration(configuration);
 
-                back_end->generate(mtac_program, platform);
+                back_end->generate(*program, platform);
             }
         }
     } catch (const SemanticalException& e) {

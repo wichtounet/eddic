@@ -461,8 +461,8 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
 } //end of anonymous namespace
 
-void mtac::full_loop_analysis(mtac::program_p program){
-    for(auto& function : program->functions){
+void mtac::full_loop_analysis(mtac::Program& program){
+    for(auto& function : program.functions){
         full_loop_analysis(function);
     }
 }

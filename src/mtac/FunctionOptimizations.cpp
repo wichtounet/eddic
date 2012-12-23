@@ -19,11 +19,11 @@ using namespace eddic;
 
 namespace {
 
-void remove_references(mtac::program_p program, mtac::function_p function){
+void remove_references(mtac::Program& program, mtac::function_p function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                program->context->removeReference((*ptr)->function); 
+                program.context->removeReference((*ptr)->function); 
             }
         }
     }
@@ -31,18 +31,18 @@ void remove_references(mtac::program_p program, mtac::function_p function){
 
 } //end of anonymous namespace
 
-bool mtac::remove_unused_functions::operator()(mtac::program_p program){
-    auto it = iterate(program->functions);
+bool mtac::remove_unused_functions::operator()(mtac::Program& program){
+    auto it = iterate(program.functions);
 
     while(it.has_next()){
         auto function = *it;
 
-        if(program->context->referenceCount(function->get_name()) == 0){
+        if(program.context->referenceCount(function->get_name()) == 0){
             remove_references(program, function);
             LOG<Debug>("Optimizer") << "Remove unused function " << function->get_name() << log::endl;
             it.erase();
             continue;
-        } else if(program->context->referenceCount(function->get_name()) == 1 && mtac::is_recursive(function)){
+        } else if(program.context->referenceCount(function->get_name()) == 1 && mtac::is_recursive(function)){
             remove_references(program, function);
             LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->get_name() << log::endl;
             it.erase();
@@ -56,10 +56,10 @@ bool mtac::remove_unused_functions::operator()(mtac::program_p program){
     return false;
 }
 
-bool mtac::remove_empty_functions::operator()(mtac::program_p program){
+bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
 
-    auto it = iterate(program->functions);
+    auto it = iterate(program.functions);
 
     while(it.has_next()){
         auto function = *it;
@@ -80,7 +80,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
     }
 
     if(!removed_functions.empty()){
-        for(auto& function : program->functions){
+        for(auto& function : program.functions){
             for(auto& block : function){
                 auto fit = block->statements.begin();
 

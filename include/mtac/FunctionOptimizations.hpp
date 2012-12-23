@@ -16,7 +16,7 @@ namespace eddic {
 namespace mtac {
 
 struct remove_unused_functions {
-    bool operator()(mtac::program_p program);
+    bool operator()(mtac::Program& program);
 };
 
 template<>
@@ -28,7 +28,7 @@ struct pass_traits<remove_unused_functions> {
 };
 
 struct remove_empty_functions {
-    bool operator()(mtac::program_p program);
+    bool operator()(mtac::Program& program);
 };
 
 template<>

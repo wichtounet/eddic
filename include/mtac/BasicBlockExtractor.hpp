@@ -17,7 +17,7 @@ namespace eddic {
 namespace mtac {
 
 struct BasicBlockExtractor {
-    void extract(mtac::program_p program) const ;
+    void extract(mtac::Program& program) const ;
 };
 
 } //end of ast
