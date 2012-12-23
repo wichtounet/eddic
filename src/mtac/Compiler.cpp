@@ -1353,7 +1353,7 @@ class CompilerVisitor : public boost::static_visitor<> {
         mtac::function_p function;
     
     public:
-        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::Program& mtacProgram) : pool(p), program(mtacProgram) {}
+        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::Program& program) : pool(p), program(program) {}
 
         AUTO_RECURSE_STRUCT()
 
@@ -1679,9 +1679,9 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& program, std::shared_ptr<StringPool> pool, mtac::Program& mtacProgram) const {
+void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool> pool, mtac::Program& program) const {
     PerfsTimer timer("MTAC Compilation");
 
-    CompilerVisitor visitor(pool, mtacProgram);
-    visitor(program);
+    CompilerVisitor visitor(pool, program);
+    visitor(source);
 }

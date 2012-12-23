@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace ltac {
 
-void fix_stack_offsets(mtac::Program& mtac_program, Platform platform);
+void fix_stack_offsets(mtac::Program& program, Platform platform);
 
 } //end of ltac
 
