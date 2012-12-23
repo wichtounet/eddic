@@ -14,6 +14,7 @@
 #include "Function.hpp"
 #include "Struct.hpp"
 #include "Platform.hpp"
+#include "statistics.hpp"
 
 namespace eddic {
 
@@ -125,10 +126,13 @@ struct GlobalContext final : public Context {
         int referenceCount(const std::string& function);
 
         Platform target_platform() const;
+
+        statistics& stats();
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
+        statistics m_statistics;
         Platform platform;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
