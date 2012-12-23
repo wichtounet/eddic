@@ -20,6 +20,7 @@
 #include "likely.hpp"
 #include "logging.hpp"
 #include "timing.hpp"
+#include "GlobalContext.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -359,6 +360,8 @@ struct pass_runner {
         if(log::enabled<Debug>()){
             if(local){
                 LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
+
+                program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
 
                 //Print the function
                 print(function);
