@@ -229,7 +229,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "neg " << *instruction->arg1 << '\n';
                 break;
             case ltac::Operator::NOT:
-                writer.stream() << "not " << *instruction->arg1 << '\n';
+                writer.stream() << "btc " << *instruction->arg1 << ", 0" << '\n';
                 break;
             case ltac::Operator::AND:
                 writer.stream() << "and " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
