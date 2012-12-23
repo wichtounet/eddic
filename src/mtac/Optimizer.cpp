@@ -357,11 +357,11 @@ struct pass_runner {
     template<typename Pass>
     inline typename std::enable_if<boost::type_traits::ice_and<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type 
     debug_local(bool local){
+        program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
+
         if(log::enabled<Debug>()){
             if(local){
                 LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
-
-                program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
 
                 //Print the function
                 print(function);
