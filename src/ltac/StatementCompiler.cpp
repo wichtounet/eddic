@@ -1148,7 +1148,15 @@ void ltac::StatementCompiler::compile_MINUS(std::shared_ptr<mtac::Quadruple> qua
     //Constants should have been replaced by the optimizer
     assert(isVariable(*quadruple->arg1));
 
-    ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+    auto var = ltac::get_variable(*quadruple->arg1);
+
+    if(quadruple->result == var){
+        ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+    } else {
+        auto reg = manager.get_pseudo_reg(quadruple->result);
+        ltac::add_instruction(bb, ltac::Operator::MOV, reg, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+        ltac::add_instruction(bb, ltac::Operator::NEG, reg);
+    }
 
     manager.set_written(quadruple->result);
 }
