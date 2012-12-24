@@ -14,6 +14,7 @@
 #include "Utils.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
 #include "GlobalContext.hpp"
 
 #include "FrontEnd.hpp"
@@ -130,6 +131,8 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             output_exception(e);
         }
 
+        code = 1;
+    } catch (const TerminationException&) {
         code = 1;
     }
 
