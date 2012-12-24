@@ -52,7 +52,7 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
     compiler.manager.pointer_escaped = mtac::escape_analysis(function);;
     
     //Handle parameters and register-allocated variables
-    compiler.collect_parameters(function.definition);
+    compiler.collect_parameters(function.definition());
 
     //Then we compile each of them
     for(auto& block : function){

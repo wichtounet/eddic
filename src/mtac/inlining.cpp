@@ -119,8 +119,8 @@ BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, m
 mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     mtac::VariableClones variable_clones;
 
-    auto& source_definition = source_function.definition;
-    auto& dest_definition = dest_function.definition;
+    auto& source_definition = source_function.definition();
+    auto& dest_definition = dest_function.definition();
 
     std::unordered_map<std::shared_ptr<Variable>, bool> string_states;
 
@@ -225,7 +225,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
 unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb){
     unsigned int constant = 0;
 
-    auto& source_definition = source_function.definition;
+    auto& source_definition = source_function.definition();
 
     if(source_definition.parameters().size() > 0){
         auto param_bb = bb->prev;
@@ -336,7 +336,7 @@ bool can_be_inlined(mtac::Function& function){
         return false;
     }
 
-    for(auto& param : function.definition.parameters()){
+    for(auto& param : function.definition().parameters()){
         if(!param.paramType->is_standard_type() && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
@@ -362,7 +362,7 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
         auto constant_parameters = count_constant_parameters(target_function, source_function, bb);
 
         //If all parameters are constant, there are high chances of further optimizations
-        if(target_function.definition.parameters().size() == constant_parameters){
+        if(target_function.definition().parameters().size() == constant_parameters){
             return target_size < 250;
         }
 
@@ -392,7 +392,7 @@ bool non_standard_target(std::shared_ptr<mtac::Call> call, mtac::Program& progra
     auto& target_definition = call->functionDefinition;
 
     for(auto& function : program.functions){
-        if(function.definition.mangledName == target_definition.mangledName){
+        if(function.definition().mangledName == target_definition.mangledName){
             return false;
         }
     }
@@ -404,7 +404,7 @@ mtac::Function& get_target(std::shared_ptr<mtac::Call> call, mtac::Program& prog
     auto& target_definition = call->functionDefinition;
 
     for(auto& function : program.functions){
-        if(function.definition.mangledName == target_definition.mangledName){
+        if(function.definition().mangledName == target_definition.mangledName){
             return function;
         }
     }
@@ -434,8 +434,8 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
 
                 auto& source_function = get_target(call, program);
 
-                auto& source_definition = source_function.definition;
-                auto& dest_definition = dest_function.definition;
+                auto& source_definition = source_function.definition();
+                auto& dest_definition = dest_function.definition();
 
                 if(will_inline(dest_function, source_function, call, basic_block)){
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;

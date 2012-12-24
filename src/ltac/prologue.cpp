@@ -111,13 +111,13 @@ void callee_save_registers(mtac::Function& function, mtac::basic_block_p bb, Pla
     //Save registers for all other functions than main
     if(!function.is_main()){
         for(auto& reg : function.use_registers()){
-            if(callee_save(function.definition, reg, platform, configuration)){
+            if(callee_save(function.definition(), reg, platform, configuration)){
                 ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
-            if(callee_save(function.definition, float_reg, platform, configuration)){
+            if(callee_save(function.definition(), float_reg, platform, configuration)){
                 ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
                 ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
             }
@@ -129,14 +129,14 @@ void callee_restore_registers(mtac::Function& function, mtac::basic_block_p bb, 
     //Save registers for all other functions than main
     if(!function.is_main()){
         for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
-            if(callee_save(function.definition, float_reg, platform, configuration)){
+            if(callee_save(function.definition(), float_reg, platform, configuration)){
                 ltac::add_instruction(bb, ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
                 ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
             }
         }
 
         for(auto& reg : boost::adaptors::reverse(function.use_registers())){
-            if(callee_save(function.definition, reg, platform, configuration)){
+            if(callee_save(function.definition(), reg, platform, configuration)){
                 ltac::add_instruction(bb, ltac::Operator::POP, reg);
             }
         }
@@ -148,13 +148,13 @@ void callee_restore_registers(mtac::Function& function, It& it, Platform platfor
     //Save registers for all other functions than main
     if(!function.is_main()){
         for(auto& reg : function.use_registers()){
-            if(callee_save(function.definition, reg, platform, configuration)){
+            if(callee_save(function.definition(), reg, platform, configuration)){
                 it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
-            if(callee_save(function.definition, float_reg, platform, configuration)){
+            if(callee_save(function.definition(), float_reg, platform, configuration)){
                 it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                 it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
             }
@@ -173,7 +173,7 @@ bool contains(const std::unordered_set<T>& set, const T& value){
 }
 
 bool caller_save(mtac::Function& source, eddic::Function& target_definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto source_parameters = parameter_registers(source.definition, platform, configuration);
+    auto source_parameters = parameter_registers(source.definition(), platform, configuration);
     auto target_parameters = parameter_registers(target_definition, platform, configuration);
     auto variable_registers = source.variable_registers();
 
@@ -186,7 +186,7 @@ bool caller_save(mtac::Function& source, eddic::Function& target_definition, lta
 }
 
 bool caller_save(mtac::Function& source, eddic::Function& target_definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto source_parameters = float_parameter_registers(source.definition, platform, configuration);
+    auto source_parameters = float_parameter_registers(source.definition(), platform, configuration);
     auto target_parameters = float_parameter_registers(target_definition, platform, configuration);
     auto variable_registers = source.variable_float_registers();
 
