@@ -49,6 +49,12 @@ class DependencyVisitor : public boost::static_visitor<> {
                 resolveDependencies(dependency, parser); 
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
+                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                        ptr->Content->standard = true;
+                    } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                        ptr->Content->standard = true;
+                    }
+
                     blocks.push_back(block);
                 }
             } else {
