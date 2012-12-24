@@ -1346,38 +1346,17 @@ arguments compile_ternary(mtac::function_p function, ast::Ternary& ternary){
 
 //Visitor used to compile each source instructions
 
-class CompilerVisitor : public boost::static_visitor<> {
+class FunctionCompiler : public boost::static_visitor<> {
     private:
-        std::shared_ptr<StringPool> pool;
         mtac::Program& program;
         mtac::function_p function;
     
     public:
-        CompilerVisitor(std::shared_ptr<StringPool> p, mtac::Program& program) : pool(p), program(program) {}
-
-        AUTO_RECURSE_STRUCT()
+        FunctionCompiler(mtac::Program& program, mtac::function_p function) : program(program), function(function)  {}
 
         //No code is generated for these nodes
-        AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
-        AUTO_IGNORE_TEMPLATE_STRUCT()
-        AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
-        AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
-        AUTO_IGNORE_IMPORT()
-        AUTO_IGNORE_STANDARD_IMPORT()
         AUTO_IGNORE_MEMBER_DECLARATION();
-       
-        void operator()(ast::Assignment& assignment){
-            eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
-
-            assign(function, assignment.Content->left_value, assignment.Content->value);
-        }
-        
-        void operator()(ast::SourceFile& p){
-            program.context = p.Content->context;
-
-            visit_each(*this, p.Content->blocks);
-        }
 
         void issue_destructors(std::shared_ptr<Context> context){
             for(auto& pair : *context){
@@ -1391,31 +1370,6 @@ class CompilerVisitor : public boost::static_visitor<> {
                     }
                 }
             }
-        }
-
-        template<typename Function>
-        inline void issue_function(Function& f){
-            function = std::make_shared<mtac::Function>(f.Content->context, f.Content->mangledName, program.context->getFunction(f.Content->mangledName));
-
-            visit_each(*this, f.Content->instructions);
-
-            issue_destructors(f.Content->context);
-
-            program.functions.push_back(function);
-        }
-
-        void operator()(ast::FunctionDeclaration& f){
-            if(f.Content->functionName == "main" || program.context->referenceCount(f.Content->mangledName) > 0){
-                issue_function(f);
-            }
-        }
-
-        void operator()(ast::Constructor& f){
-            issue_function(f);
-        }
-
-        void operator()(ast::Destructor& f){
-            issue_function(f);
         }
 
         void operator()(ast::If& if_){
@@ -1594,6 +1548,12 @@ class CompilerVisitor : public boost::static_visitor<> {
             program.context->addReference(free_name);
             function->add(std::make_shared<mtac::Call>(free_name, free_function)); 
         }
+       
+        void operator()(ast::Assignment& assignment){
+            eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+
+            assign(function, assignment.Content->left_value, assignment.Content->value);
+        }
 
         //For statements that are also values, it is enough to transform them to arguments
         //If they have side effects, it will be handled and the eventually useless generated
@@ -1679,9 +1639,41 @@ void pass_arguments(mtac::function_p function, eddic::Function& definition, std:
 
 } //end of anonymous namespace
 
-void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool> pool, mtac::Program& program) const {
+void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool>, mtac::Program& program) const {
     PerfsTimer timer("MTAC Compilation");
+        
+    program.context = source.Content->context;
 
-    CompilerVisitor visitor(pool, program);
-    visitor(source);
+    for(auto& block : source.Content->blocks){
+        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+            if(ptr->Content->functionName == "main" || program.context->referenceCount(ptr->Content->mangledName) > 0){
+                auto function = std::make_shared<mtac::Function>(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+
+                FunctionCompiler compiler(program, function);
+
+                visit_each(compiler, ptr->Content->instructions);
+                compiler.issue_destructors(ptr->Content->context);
+
+                program.functions.push_back(function);
+            }
+        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+            auto function = std::make_shared<mtac::Function>(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+
+            FunctionCompiler compiler(program, function);
+
+            visit_each(compiler, ptr->Content->instructions);
+            compiler.issue_destructors(ptr->Content->context);
+
+            program.functions.push_back(function);
+        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+            auto function = std::make_shared<mtac::Function>(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+
+            FunctionCompiler compiler(program, function);
+
+            visit_each(compiler, ptr->Content->instructions);
+            compiler.issue_destructors(ptr->Content->context);
+
+            program.functions.push_back(function);
+        }
+    }
 }
