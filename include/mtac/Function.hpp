@@ -35,6 +35,10 @@ class Function : public std::enable_shared_from_this<Function> {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
 
+        //Function cannot be copied
+        Function(const Function& rhs) = delete;
+        Function& operator=(const Function& rhs) = delete;
+
         std::string get_name() const;
 
         void add(Statement statement);
