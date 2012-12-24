@@ -1641,7 +1641,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
 
 void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool>, mtac::Program& program) const {
     PerfsTimer timer("MTAC Compilation");
-        
+
     program.context = source.Content->context;
 
     for(auto& block : source.Content->blocks){
@@ -1655,22 +1655,36 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
                 visit_each(compiler, ptr->Content->instructions);
                 compiler.issue_destructors(ptr->Content->context);
             }
-        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
-            program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-            auto& function = program.functions.back();
+        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+            for(auto& struct_block : ptr->Content->blocks){
+                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
+                    if(program.context->referenceCount(ptr->Content->mangledName) > 0){
+                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        auto& function = program.functions.back();
 
-            FunctionCompiler compiler(program, function);
+                        FunctionCompiler compiler(program, function);
 
-            visit_each(compiler, ptr->Content->instructions);
-            compiler.issue_destructors(ptr->Content->context);
-        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
-            program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-            auto& function = program.functions.back();
+                        visit_each(compiler, ptr->Content->instructions);
+                        compiler.issue_destructors(ptr->Content->context);
+                    }
+                } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
+                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                    auto& function = program.functions.back();
 
-            FunctionCompiler compiler(program, function);
+                    FunctionCompiler compiler(program, function);
 
-            visit_each(compiler, ptr->Content->instructions);
-            compiler.issue_destructors(ptr->Content->context);
+                    visit_each(compiler, ptr->Content->instructions);
+                    compiler.issue_destructors(ptr->Content->context);
+                } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
+                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                    auto& function = program.functions.back();
+
+                    FunctionCompiler compiler(program, function);
+
+                    visit_each(compiler, ptr->Content->instructions);
+                    compiler.issue_destructors(ptr->Content->context);
+                }
+            }
         }
     }
 }
