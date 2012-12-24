@@ -135,7 +135,7 @@ struct Inspector : public boost::static_visitor<> {
         
         void operator()(ast::Struct& declaration){
             if(configuration->option_defined("warning-unused")){
-                auto struct_ = context->get_struct(declaration.Content->name);
+                auto struct_ = context->get_struct(declaration.Content->struct_type->mangle());
 
                 if(struct_->get_references() == 0){
                     warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
