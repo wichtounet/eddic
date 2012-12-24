@@ -1,0 +1,11 @@
+void main(){
+    int a = 'a';
+}
+
+void test(){
+    Z asdf;
+}
+
+void asdf(){
+    polo asdf;
+}
