@@ -127,13 +127,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
-            if(e.position()){
-                auto& position = *e.position();
-
-                std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-            } else {
-                std::cout << e.what() << std::endl;
-            }
+            output_exception(e);
         }
 
         code = 1;
