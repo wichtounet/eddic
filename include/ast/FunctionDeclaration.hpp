@@ -32,6 +32,7 @@ struct ASTFunctionDeclaration {
     std::string mangledName;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
     bool standard = false;
+    std::string header = "";
 
     Position position;
     Type returnType;
