@@ -156,7 +156,9 @@ struct Inspector : public boost::static_visitor<> {
                 int references = context->referenceCount(declaration.Content->mangledName);
 
                 if(references == 0){
-                    warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                    if(declaration.Content->functionName != "main"){
+                        warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                    }
                 }
             }
         
