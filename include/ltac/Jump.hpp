@@ -50,7 +50,7 @@ enum struct JumpType : unsigned int {
 struct Jump {
     std::string label;
     JumpType type;
-    boost::optional<eddic::Function&> target_function; //Only if a call
+    eddic::Function* target_function; //Only if a call
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;

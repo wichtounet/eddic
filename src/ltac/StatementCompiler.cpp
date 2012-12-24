@@ -641,7 +641,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     first_param = true;
 
     auto call_instruction = std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL);
-    call_instruction->target_function = call->functionDefinition;
+    call_instruction->target_function = &call->functionDefinition;
     call_instruction->uses = uses;
     call_instruction->float_uses = float_uses;
     bb->l_statements.push_back(call_instruction);
