@@ -174,7 +174,7 @@ struct pass_runner {
     bool optimized = false;
 
     mtac::Program& program;
-    mtac::function_p function;
+    mtac::function_p function; //TODO will be necessary to use a raw pointer here
 
     std::shared_ptr<StringPool> pool;
     std::shared_ptr<Configuration> configuration;
