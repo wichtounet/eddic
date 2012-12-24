@@ -3,9 +3,9 @@ void main(){
 }
 
 void test(){
-    Z asdf;
+    int z = 77.7;
 }
 
 void asdf(){
-    polo asdf;
+    int b = "asdf";
 }
