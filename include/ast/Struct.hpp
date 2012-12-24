@@ -55,6 +55,7 @@ struct ASTStruct {
     std::vector<ast::Type> template_types;  /*!< Indicates with which types this class template has been instantiated */
     std::shared_ptr<const eddic::Type> struct_type;
     bool standard = false;
+    std::string header = "";
 
     Position position;
     std::string name;

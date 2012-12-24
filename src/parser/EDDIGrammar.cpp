@@ -330,13 +330,15 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace;
 
     standardImport %= 
-            lexer.include
-        >>  lexer.less
+            qi::position(position_begin)
+        >>  lexer.include
+        >>  qi::omit[lexer.less]
         >>  lexer.identifier
-        >>  lexer.greater;
+        >>  qi::omit[lexer.greater];
 
     import %=
-            lexer.include
+            qi::position(position_begin)
+        >>  lexer.include
         >>  lexer.string_literal;
 
     program %=
