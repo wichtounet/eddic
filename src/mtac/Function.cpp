@@ -14,12 +14,12 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), definition(definition) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), _definition(&definition) {
     //Nothing to do   
 }
         
 mtac::Function::Function(mtac::Function&& rhs) : 
-            definition(rhs.definition), 
+            _definition(rhs._definition), 
             context(std::move(rhs.context)), statements(std::move(rhs.statements)), 
             count(std::move(rhs.count)), index(std::move(rhs.index)),
             entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
@@ -35,8 +35,8 @@ mtac::Function::Function(mtac::Function&& rhs) :
     rhs.last_float_pseudo_registers = 0;
 }
 
-/*mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
-    definition = rhs.definition;
+mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
+    _definition = rhs._definition;
     context = std::move(rhs.context); 
     statements = std::move(rhs.statements); 
     count = std::move(rhs.count); 
@@ -59,7 +59,7 @@ mtac::Function::Function(mtac::Function&& rhs) :
     rhs.last_float_pseudo_registers = 0;
     
     return *this;
-}*/
+}
 
 bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
@@ -254,6 +254,10 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
 std::string mtac::Function::get_name() const {
     return name;
+}
+      
+eddic::Function& mtac::Function::definition(){
+    return *_definition;
 }
 
 std::vector<mtac::Statement>& mtac::Function::get_statements(){

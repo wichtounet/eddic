@@ -41,7 +41,7 @@ class Function : public std::enable_shared_from_this<Function> {
 
         //Function can be moved
         Function(Function&& rhs);
-//        Function& operator=(Function&& rhs);
+        Function& operator=(Function&& rhs);
 
         std::string get_name() const;
 
@@ -99,10 +99,13 @@ class Function : public std::enable_shared_from_this<Function> {
 
         bool is_main() const;
 
-        eddic::Function& definition;
+        eddic::Function& definition();
+
         std::shared_ptr<FunctionContext> context;
 
     private:
+        eddic::Function* _definition;
+
         //Before being partitioned, the function has only statement
         std::vector<Statement> statements;
         
