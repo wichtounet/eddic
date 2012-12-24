@@ -9,9 +9,6 @@
 #define LTAC_JUMP_H
 
 #include <vector>
-#include <memory>
-
-#include <boost/optional.hpp>
 
 #include "ltac/forward.hpp"
 
