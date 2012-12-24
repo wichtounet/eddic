@@ -50,7 +50,6 @@ class Function {
         const std::string name;
         const std::string mangledName;
         
-        std::string struct_;
         std::shared_ptr<FunctionContext> context;
 
         std::shared_ptr<const Type> struct_type = nullptr;

@@ -55,7 +55,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
         ast::Constructor c;
         c.Content->context = std::make_shared<FunctionContext>(context, context, platform, configuration);
         c.Content->struct_type = struct_.Content->struct_type;
-        c.Content->struct_name = struct_.Content->name;
 
         std::vector<std::shared_ptr<const eddic::Type>> types;
         c.Content->mangledName = mangle_ctor(types, c.Content->struct_type);
@@ -68,7 +67,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
         ast::Destructor d;
         d.Content->context = std::make_shared<FunctionContext>(context, context, platform, configuration);
         d.Content->struct_type = struct_.Content->struct_type;
-        d.Content->struct_name = struct_.Content->name;
         d.Content->mangledName = mangle_dtor(d.Content->struct_type);
                 
         struct_.Content->blocks.push_back(d);
@@ -96,7 +94,6 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
             ast::Constructor c;
             c.Content->context = function_context;
             c.Content->struct_type = type;
-            c.Content->struct_name = struct_.Content->name;
 
             std::vector<std::shared_ptr<const eddic::Type>> types;
             types.push_back(new_pointer_type(type));

@@ -92,6 +92,8 @@ struct Inspector : public boost::static_visitor<> {
         std::shared_ptr<GlobalContext> context;
         std::shared_ptr<Configuration> configuration;
 
+        bool standard = false;
+
     public:
         Inspector(Collector& collector, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) : 
                 collector(collector), context(context), configuration(configuration) {}
@@ -134,15 +136,21 @@ struct Inspector : public boost::static_visitor<> {
         }
         
         void operator()(ast::Struct& declaration){
-            if(configuration->option_defined("warning-unused")){
-                auto struct_ = context->get_struct(declaration.Content->name);
+            standard = declaration.Content->standard;
+            visit_each(*this, declaration.Content->blocks);
+            standard = false;
 
-                if(struct_->get_references() == 0){
-                    warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
-                } else {
-                    for(auto& member : struct_->members){
-                        if(member->get_references() == 0){
-                            warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+            if(!declaration.Content->standard){
+                if(configuration->option_defined("warning-unused")){
+                    auto struct_ = context->get_struct(declaration.Content->struct_type->mangle());
+
+                    if(struct_->get_references() == 0){
+                        warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
+                    } else {
+                        for(auto& member : struct_->members){
+                            if(member->get_references() == 0){
+                                warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+                            }
                         }
                     }
                 }
@@ -152,15 +160,19 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
-            if(configuration->option_defined("warning-unused")){
-                int references = context->referenceCount(declaration.Content->mangledName);
+            if(!declaration.Content->standard && !standard){
+                if(configuration->option_defined("warning-unused")){
+                    int references = context->referenceCount(declaration.Content->mangledName);
 
-                if(references == 0){
-                    warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                    if(references == 0){
+                        if(declaration.Content->functionName != "main"){
+                            warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                        }
+                    }
                 }
+
+                check_each(declaration.Content->instructions);
             }
-        
-            check_each(declaration.Content->instructions);
         }
     
         void operator()(ast::Cast& cast){
