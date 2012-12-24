@@ -45,7 +45,6 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     
     LOG<Info>("Functions") << "Register function " << mangled_name << log::endl;
 
-    signature.struct_ = declaration.Content->struct_name;
     signature.struct_type = declaration.Content->struct_type;
     signature.context = declaration.Content->context;
     signature.parameters() = std::move(parameters);
@@ -77,7 +76,6 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
     
     auto& signature = context->add_function(VOID, "ctor", mangled_name);
 
-    signature.struct_ = constructor.Content->struct_name;
     signature.struct_type = constructor.Content->struct_type;
     signature.context = constructor.Content->context;
     signature.parameters() = std::move(parameters);
@@ -101,7 +99,6 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
 
     auto& signature = context->add_function(VOID, "dtor", mangled_name);
 
-    signature.struct_ = destructor.Content->struct_name;
     signature.struct_type = destructor.Content->struct_type;
     signature.context = destructor.Content->context;
     signature.parameters() = std::move(parameters);

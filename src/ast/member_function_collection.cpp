@@ -27,7 +27,6 @@ namespace {
 
 template<typename T>
 void annotate(T& declaration, ast::Struct& current_struct){
-    declaration.Content->struct_name = current_struct.Content->name;
     declaration.Content->struct_type = current_struct.Content->struct_type;
 
     ast::PointerType paramType;

@@ -684,7 +684,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             ast::FunctionDeclaration f;
             f.Content->context = function.Content->context;
             f.Content->position = function.Content->position;
-            f.Content->struct_name = function.Content->struct_name;
             f.Content->returnType = function.Content->returnType;
             f.Content->functionName = function.Content->functionName;
             f.Content->instructions = copy(function.Content->instructions);
@@ -696,7 +695,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Destructor d;
             d.Content->context = destructor.Content->context;
-            d.Content->struct_name = destructor.Content->struct_name;
             d.Content->position = destructor.Content->position;
             d.Content->parameters = destructor.Content->parameters;
             d.Content->instructions = copy(destructor.Content->instructions);
@@ -707,7 +705,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Constructor c;
             c.Content->context = constructor.Content->context;
-            c.Content->struct_name = constructor.Content->struct_name;
             c.Content->position = constructor.Content->position;
             c.Content->parameters = constructor.Content->parameters;
             c.Content->instructions = copy(constructor.Content->instructions);
