@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct optimize_branches {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

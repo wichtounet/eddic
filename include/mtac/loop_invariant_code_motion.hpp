@@ -16,7 +16,7 @@ namespace eddic {
 namespace mtac {
 
 struct loop_invariant_code_motion {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

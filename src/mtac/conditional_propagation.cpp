@@ -92,7 +92,7 @@ bool optimize_branch(std::shared_ptr<Branch> branch, mtac::basic_block_p basic_b
 
 } //end of anonymous namespace
 
-bool mtac::conditional_propagation::operator()(mtac::function_p function){
+bool mtac::conditional_propagation::operator()(mtac::Function& function){
     bool optimized = false;
 
     auto variable_usage = mtac::compute_variable_usage(function);

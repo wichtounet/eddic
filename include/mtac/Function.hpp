@@ -39,6 +39,10 @@ class Function : public std::enable_shared_from_this<Function> {
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
 
+        //Function can be moved
+        Function(Function&& rhs);
+//        Function& operator=(Function&& rhs);
+
         std::string get_name() const;
 
         void add(Statement statement);
@@ -122,21 +126,16 @@ class Function : public std::enable_shared_from_this<Function> {
         std::string name;
 };
 
-typedef std::shared_ptr<mtac::Function> function_p;
-
-basic_block_iterator begin(mtac::function_p function);
-basic_block_iterator end(mtac::function_p function);
-
 } //end of mtac
 
 template<>
-struct Iterators<mtac::function_p> {
-    mtac::function_p container;
+struct Iterators<mtac::Function> {
+    mtac::Function& container;
 
     mtac::basic_block_iterator it;
     mtac::basic_block_iterator end;
 
-    Iterators(mtac::function_p container) : container(container), it(container->begin()), end(container->end()) {}
+    Iterators(mtac::Function& container) : container(container), it(container.begin()), end(container.end()) {}
 
     mtac::basic_block_p& operator*(){
         return *it;
@@ -151,13 +150,13 @@ struct Iterators<mtac::function_p> {
     }
 
     void insert(mtac::basic_block_p bb){
-        it = container->insert_before(it, bb);
-        end = container->end();
+        it = container.insert_before(it, bb);
+        end = container.end();
     }
 
     void erase(){
-        it = container->remove(it);
-        end = container->end();
+        it = container.remove(it);
+        end = container.end();
     }
 
     /*!
@@ -166,8 +165,8 @@ struct Iterators<mtac::function_p> {
      * \return an iterator to the merged block 
      */
     void merge_to(mtac::basic_block_p bb){
-        it = container->merge_basic_blocks(it, bb);
-        end = container->end();
+        it = container.merge_basic_blocks(it, bb);
+        end = container.end();
     }
     
     /*!
@@ -176,8 +175,8 @@ struct Iterators<mtac::function_p> {
      * \return an iterator to the merged block 
      */
     void merge_in(mtac::basic_block_p bb){
-        it = container->merge_basic_blocks(container->at(bb), *it);
-        end = container->end();
+        it = container.merge_basic_blocks(container.at(bb), *it);
+        end = container.end();
     }
 
     bool has_next(){

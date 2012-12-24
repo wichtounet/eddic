@@ -38,7 +38,7 @@ class Compiler {
         void compile(mtac::Program& source, std::shared_ptr<FloatPool> float_pool);
     
     private:
-        void compile(mtac::function_p src_function, std::shared_ptr<FloatPool> float_pool);
+        void compile(mtac::Function& src_function, std::shared_ptr<FloatPool> float_pool);
 
         std::unordered_set<mtac::basic_block_p> block_usage;
         Platform platform;

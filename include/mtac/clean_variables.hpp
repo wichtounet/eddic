@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct clean_variables {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

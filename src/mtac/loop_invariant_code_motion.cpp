@@ -63,15 +63,15 @@ bool is_invariant(mtac::Statement& statement, mtac::Usage& usage){
     return false;
 }
 
-mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
     auto first_bb = *loop->blocks().begin();
 
     //Remove the fall through edge
     mtac::remove_edge(first_bb->prev, first_bb);
     
-    auto pre_header = function->new_bb();
+    auto pre_header = function.new_bb();
     
-    function->insert_before(function->at(first_bb), pre_header);
+    function.insert_before(function.at(first_bb), pre_header);
 
     //Create the fall through edge
     mtac::make_edge(pre_header, pre_header->next);
@@ -127,7 +127,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Statement statement
     return true;
 }
 
-bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
     mtac::basic_block_p pre_header;
 
     bool optimized = false;
@@ -165,14 +165,14 @@ bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::function
 
 } //end of anonymous namespace
 
-bool mtac::loop_invariant_code_motion::operator()(mtac::function_p function){
-    if(function->loops().empty()){
+bool mtac::loop_invariant_code_motion::operator()(mtac::Function& function){
+    if(function.loops().empty()){
         return false;
     }
 
     bool optimized = false;
 
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         optimized |= ::loop_invariant_code_motion(loop, function);
     }
     

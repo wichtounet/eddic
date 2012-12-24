@@ -24,11 +24,11 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
     return type == FLOAT;
 }
 
-bool mtac::is_recursive(mtac::function_p function){
+bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition.mangledName == function->definition.mangledName){
+                if((*ptr)->functionDefinition.mangledName == function.definition.mangledName){
                     return true;
                 }
             }
@@ -124,11 +124,11 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-mtac::VariableUsage mtac::compute_variable_usage(mtac::function_p function){
+mtac::VariableUsage mtac::compute_variable_usage(mtac::Function& function){
     return compute_variable_usage_with_depth(function, 1);
 }
 
-mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::function_p function, int factor){
+mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& function, int factor){
     mtac::VariableUsage usage;
 
     VariableUsageCollector collector(usage, factor);
@@ -138,7 +138,7 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::function_p fun
     return usage;
 }
 
-void eddic::mtac::computeBlockUsage(mtac::function_p function, std::unordered_set<mtac::basic_block_p>& usage){
+void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);
 
     visit_all_statements(collector, function);

@@ -38,19 +38,19 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
         //The first is always a leader 
         bool nextIsLeader = true;
 
-        function->create_entry_bb();
+        function.create_entry_bb();
 
         //First separate the statements into basic blocks
-        for(auto& statement : function->get_statements()){
+        for(auto& statement : function.get_statements()){
             if(auto* ptr = boost::get<std::string>(&statement)){
-                function->append_bb();
+                function.append_bb();
 
-                labels[*ptr] = function->current_bb();
+                labels[*ptr] = function.current_bb();
 
                 nextIsLeader = false;
             } else {
                 if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
-                    function->append_bb();
+                    function.append_bb();
                     nextIsLeader = false;
                 }
 
@@ -59,7 +59,7 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                     nextIsLeader = true;
                 } 
 
-                function->current_bb()->add(statement);
+                function.current_bb()->add(statement);
             }
         }
 
@@ -76,8 +76,8 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
             }
         }
 
-        function->create_exit_bb();
+        function.create_exit_bb();
 
-        function->release_statements();
+        function.release_statements();
     }
 }

@@ -26,15 +26,15 @@ using namespace eddic;
 
 namespace {
 
-mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
     auto first_bb = *loop->blocks().begin();
 
     //Remove the fall through edge
     mtac::remove_edge(first_bb->prev, first_bb);
     
-    auto pre_header = function->new_bb();
+    auto pre_header = function.new_bb();
     
-    function->insert_before(function->at(first_bb), pre_header);
+    function.insert_before(function.at(first_bb), pre_header);
 
     //Create the fall through edge
     mtac::make_edge(pre_header, pre_header->next);
@@ -43,7 +43,7 @@ mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::fu
     return pre_header;
 }
 
-bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& basic_equation, mtac::function_p function){
+bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
     auto& dependent_induction_variables = loop->dependent_induction_variables();
 
     mtac::basic_block_p pre_header = nullptr;
@@ -58,7 +58,7 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
         if(equation.i == i){
             auto j = dependent.first;
 
-            auto tj = function->context->new_temporary(INT);
+            auto tj = function.context->new_temporary(INT);
             auto db = equation.e * basic_equation.d;
 
             mtac::VariableClones variable_clones;
@@ -288,7 +288,7 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     }
 }
 
-bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
     bool optimized = false;
 
     //1. Strength reduction on each dependent induction variables
@@ -315,14 +315,14 @@ bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mta
 
 } //end of anonymous namespace
 
-bool mtac::loop_induction_variables_optimization::operator()(mtac::function_p function){
-    if(function->loops().empty()){
+bool mtac::loop_induction_variables_optimization::operator()(mtac::Function& function){
+    if(function.loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         optimized |= ::loop_induction_variables_optimization(loop, function);
     }
 

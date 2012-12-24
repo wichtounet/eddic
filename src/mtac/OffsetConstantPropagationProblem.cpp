@@ -32,13 +32,13 @@ void mtac::OffsetConstantPropagationProblem::set_platform(Platform platform){
     this->platform = platform;
 }
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p function){
+ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
     ProblemDomain::Values values;
     ProblemDomain out(values);
     
-    for(auto& variable : function->context->stored_variables()){
+    for(auto& variable : function.context->stored_variables()){
         if(variable->type()->is_array() && variable->type()->has_elements()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size(platform) + INT->size(platform);
                     
@@ -66,17 +66,17 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::function_p 
             }
             
             //Except the length of arrays that are set
-            auto struct_type = function->context->global()->get_struct(variable->type()->mangle());
+            auto struct_type = function.context->global()->get_struct(variable->type()->mangle());
 
             while(struct_type){
                 for(auto& member : struct_type->members){
                     if(member->type->is_array() && !member->type->is_dynamic_array()){
-                        mtac::Offset offset(variable, function->context->global()->member_offset(struct_type, member->name));
+                        mtac::Offset offset(variable, function.context->global()->member_offset(struct_type, member->name));
                         out[offset] = static_cast<int>(member->type->elements());
                     }
                 }
 
-                struct_type = function->context->global()->get_struct(struct_type->parent_type);
+                struct_type = function.context->global()->get_struct(struct_type->parent_type);
             }
         }
     }

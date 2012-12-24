@@ -17,14 +17,14 @@
 
 using namespace eddic;
 
-bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
-    if(function->loops().empty()){
+bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
+    if(function.loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    auto lit = iterate(function->loops());
+    auto lit = iterate(function.loops());
 
     while(lit.has_next()){
         auto loop = *lit;
@@ -45,7 +45,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::function_p function){
                 //Start at 1 because there is already the original body
                 for(int i = 1; i < it; ++i){
                     for(auto& statement : statements){
-                        bb->statements.push_back(mtac::copy(statement, function->context->global())); 
+                        bb->statements.push_back(mtac::copy(statement, function.context->global())); 
                     }
                 }
 

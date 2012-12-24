@@ -23,17 +23,17 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     auto it = iterate(program.functions);
 
     while(it.has_next()){
-        auto function = *it;
+        auto& function = *it;
 
-        if(function->get_name() == "_F4main" || function->get_name() == "_F4mainAS"){
+        if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
             ++it;
             continue;
         }
 
-        unsigned int statements = function->size();
+        unsigned int statements = function.size();
 
         if(statements == 0){
-            removed_functions.push_back(function->get_name());
+            removed_functions.push_back(function.get_name());
             it.erase();
         } else {
             ++it;

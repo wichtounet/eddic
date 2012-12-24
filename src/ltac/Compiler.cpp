@@ -32,7 +32,7 @@ void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> f
     }
 }
 
-void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
     
     //Compute the block usage (in order to know if we have to output the label)
@@ -52,7 +52,7 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
     compiler.manager.pointer_escaped = mtac::escape_analysis(function);;
     
     //Handle parameters and register-allocated variables
-    compiler.collect_parameters(function->definition);
+    compiler.collect_parameters(function.definition);
 
     //Then we compile each of them
     for(auto& block : function){
@@ -70,6 +70,6 @@ void ltac::Compiler::compile(mtac::function_p function, std::shared_ptr<FloatPoo
         compiler.end_bb();
     }
 
-    function->set_pseudo_registers(compiler.manager.last_pseudo_reg());
-    function->set_pseudo_float_registers(compiler.manager.last_float_pseudo_reg());
+    function.set_pseudo_registers(compiler.manager.last_pseudo_reg());
+    function.set_pseudo_float_registers(compiler.manager.last_float_pseudo_reg());
 }

@@ -79,7 +79,7 @@ inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, 
 }
 
 template<bool Low, DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(mtac::function_p function, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
@@ -87,8 +87,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(m
     auto& OUT = results->OUT;
     auto& IN = results->IN;
 
-    OUT[function->entry_bb()] = problem.Boundary(function);
-    LOG<Dev>("Data-Flow") << "OUT[" << *function->entry_bb() << "] set to " << OUT[function->entry_bb()] << log::endl;
+    OUT[function.entry_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "OUT[" << *function.entry_bb() << "] set to " << OUT[function.entry_bb()] << log::endl;
 
     for(auto& block : function){
         //Initialize all but ENTRY
@@ -178,7 +178,7 @@ inline typename std::enable_if<!Low, void>::type backward_statements(P& problem,
 }
 
 template<bool Low, DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(mtac::function_p function, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
     typedef mtac::Domain<DomainValues> Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
@@ -186,8 +186,8 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     auto& OUT = results->OUT;
     auto& IN = results->IN;
 
-    IN[function->exit_bb()] = problem.Boundary(function);
-    LOG<Dev>("Data-Flow") << "IN[" << *function->exit_bb() << "] set to " << IN[function->exit_bb()] << log::endl;
+    IN[function.exit_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "IN[" << *function.exit_bb() << "] set to " << IN[function.exit_bb()] << log::endl;
     
     for(auto& block : function){
         //Init all but EXIT
@@ -227,7 +227,7 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
 }
 
 template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(mtac::function_p function, DataFlowProblem<Type, DomainValues>& problem){
+std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
     if(Type == DataFlowType::Forward){
         return forward_data_flow<false>(function, problem);
     } else if(Type == DataFlowType::Backward){

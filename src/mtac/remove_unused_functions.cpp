@@ -17,7 +17,7 @@ using namespace eddic;
 
 namespace {
 
-void remove_references(mtac::Program& program, mtac::function_p function){
+void remove_references(mtac::Program& program, mtac::Function& function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
@@ -33,16 +33,16 @@ bool mtac::remove_unused_functions::operator()(mtac::Program& program){
     auto it = iterate(program.functions);
 
     while(it.has_next()){
-        auto function = *it;
+        auto& function = *it;
 
-        if(program.context->referenceCount(function->get_name()) == 0){
+        if(program.context->referenceCount(function.get_name()) == 0){
             remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused function " << function->get_name() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             it.erase();
             continue;
-        } else if(program.context->referenceCount(function->get_name()) == 1 && mtac::is_recursive(function)){
+        } else if(program.context->referenceCount(function.get_name()) == 1 && mtac::is_recursive(function)){
             remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->get_name() << log::endl;
+            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function.get_name() << log::endl;
             it.erase();
             continue;
         } 

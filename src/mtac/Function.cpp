@@ -17,6 +17,49 @@ using namespace eddic;
 mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), definition(definition) {
     //Nothing to do   
 }
+        
+mtac::Function::Function(mtac::Function&& rhs) : 
+            definition(rhs.definition), 
+            context(std::move(rhs.context)), statements(std::move(rhs.statements)), 
+            count(std::move(rhs.count)), index(std::move(rhs.index)),
+            entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
+            _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
+            _variable_registers(std::move(rhs._variable_registers)), _variable_float_registers(std::move(rhs._variable_float_registers)),
+            last_pseudo_registers(std::move(rhs.last_pseudo_registers)), last_float_pseudo_registers(std::move(rhs.last_float_pseudo_registers)),
+            m_loops(std::move(rhs.m_loops)), name(std::move(rhs.name))
+        {
+    //Reset rhs
+    rhs.count = 0;
+    rhs.index = 0;
+    rhs.last_pseudo_registers = 0;
+    rhs.last_float_pseudo_registers = 0;
+}
+
+/*mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
+    definition = rhs.definition;
+    context = std::move(rhs.context); 
+    statements = std::move(rhs.statements); 
+    count = std::move(rhs.count); 
+    index = std::move(rhs.index);
+    entry = std::move(rhs.entry); 
+    exit = std::move(rhs.exit); 
+    _use_registers = std::move(rhs._use_registers); 
+    _use_float_registers = std::move(rhs._use_float_registers);
+    _variable_registers = std::move(rhs._variable_registers); 
+    _variable_float_registers = std::move(rhs._variable_float_registers);
+    last_pseudo_registers = std::move(rhs.last_pseudo_registers); 
+    last_float_pseudo_registers = std::move(rhs.last_float_pseudo_registers);
+    m_loops = std::move(rhs.m_loops); 
+    name = std::move(rhs.name);
+
+    //Reset rhs
+    rhs.count = 0;
+    rhs.index = 0;
+    rhs.last_pseudo_registers = 0;
+    rhs.last_float_pseudo_registers = 0;
+    
+    return *this;
+}*/
 
 bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
@@ -290,12 +333,4 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
 
 std::vector<std::shared_ptr<mtac::Loop>>& mtac::Function::loops(){
     return m_loops;
-}
-
-mtac::basic_block_iterator mtac::begin(mtac::function_p function){
-    return function->begin();
-}
-
-mtac::basic_block_iterator mtac::end(mtac::function_p function){
-    return function->end();
 }

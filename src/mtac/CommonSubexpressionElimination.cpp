@@ -120,11 +120,11 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::function_p /*function*/){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& /*function*/){
     return default_element();
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::function_p function){
+ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& function){
     if(init){
         ProblemDomain result(*init);
         return result;

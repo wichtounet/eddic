@@ -37,7 +37,7 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
         void set_pool(std::shared_ptr<StringPool> string_pool);
         void set_platform(Platform platform);
 
-        ProblemDomain Boundary(mtac::function_p function) override;
+        ProblemDomain Boundary(mtac::Function& function) override;
 
         void meet(ProblemDomain& in, const ProblemDomain& out) override;
 

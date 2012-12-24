@@ -41,7 +41,7 @@ class IntelCodeGenerator : public CodeGenerator {
         
         virtual void writeRuntimeSupport() = 0;
         virtual void addStandardFunctions() = 0;
-        virtual void compile(mtac::function_p function) = 0;
+        virtual void compile(mtac::Function& function) = 0;
 
         virtual void defineDataSection() = 0;
 
