@@ -387,6 +387,9 @@ class CheckerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
+//TODO Rewrite the type checker so that it does not use apply_program
+//And remove the exception code from here
+
 void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
     CheckerVisitor visitor(program.Content->context);
 
