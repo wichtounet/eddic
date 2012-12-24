@@ -136,7 +136,7 @@ struct Inspector : public boost::static_visitor<> {
             visit_each(*this, program.Content->blocks);
         }
 
-        void check_header(const std::string& file){
+        void check_header(const std::string& file, const ast::Position& position){
             for(auto& block : program.Content->blocks){
                 if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                     if(ptr->Content->header == file){
@@ -157,18 +157,18 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
 
-            warn("Useless import: " + file);
+            warn(position, "Useless import: " + file);
         }
         
         void operator()(ast::StandardImport& import){
             if(configuration->option_defined("warning-includes")){
-                check_header(import.header);
+                check_header(import.header, import.position);
             }
         }
 
         void operator()(ast::Import& import){
             if(configuration->option_defined("warning-includes")){
-                check_header(import.file);
+                check_header(import.file, import.position);
             }
         }
         
