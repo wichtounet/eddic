@@ -19,14 +19,14 @@
 
 using namespace eddic;
 
-bool mtac::remove_empty_loops::operator()(mtac::function_p function){
-    if(function->loops().empty()){
+bool mtac::remove_empty_loops::operator()(mtac::Function& function){
+    if(function.loops().empty()){
         return false;
     }
 
     bool optimized = false;
     
-    auto lit = iterate(function->loops());
+    auto lit = iterate(function.loops());
 
     while(lit.has_next()){
         auto loop = *lit;

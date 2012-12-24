@@ -17,7 +17,7 @@
 
 using namespace eddic;
 
-bool mtac::merge_basic_blocks::operator()(mtac::function_p function){
+bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
     bool optimized = false;
 
     std::unordered_set<mtac::basic_block_p> usage;

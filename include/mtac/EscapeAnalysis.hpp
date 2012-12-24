@@ -21,7 +21,7 @@ namespace mtac {
 
 typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> EscapedVariables;
 
-EscapedVariables escape_analysis(mtac::function_p function);
+EscapedVariables escape_analysis(mtac::Function& function);
 
 } //end of eddic
 

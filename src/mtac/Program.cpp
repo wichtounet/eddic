@@ -5,21 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_DOMINATORS_H
-#define MTAC_DOMINATORS_H
+#include "mtac/Program.hpp"
 
-#include <memory>
+using namespace eddic;
 
-#include "mtac/forward.hpp"
-
-namespace eddic {
-
-namespace mtac {
-
-void compute_dominators(mtac::Function& function);
-
-} //end of mtac
-
-} //end of eddic
-
-#endif
+mtac::Program::Program(){
+    //Nothing to do
+}

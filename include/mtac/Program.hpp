@@ -25,13 +25,15 @@ enum class Mode : unsigned int {
 
 struct Program {
     std::shared_ptr<GlobalContext> context;
-
-    std::vector<std::shared_ptr<Function>> functions;
-
+    std::vector<Function> functions;
     Mode mode = Mode::MTAC;
-};
 
-typedef std::shared_ptr<mtac::Program> program_p;
+    Program();
+
+    //Program cannot be copied
+    Program(const Program& rhs) = delete;
+    Program& operator=(const Program& rhs) = delete;
+};
 
 } //end of mtac
 

@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct merge_basic_blocks {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

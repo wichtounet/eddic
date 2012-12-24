@@ -154,7 +154,7 @@ void find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
     clean_defaults(loop->basic_induction_variables());
 }
 
-void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::function_p function){
+void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
     loop->dependent_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -181,7 +181,7 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
                 auto source_equation = loop->dependent_induction_variables()[var];
 
                 if(source_equation.i && (mtac::equals(arg1, var) || (quadruple->arg2 && mtac::equals(*quadruple->arg2, var))) ){
-                    auto tj = function->context->new_temporary(INT);
+                    auto tj = function.context->new_temporary(INT);
 
                     source_equation.def->result = tj;
                     
@@ -467,7 +467,7 @@ void mtac::full_loop_analysis(mtac::Program& program){
     }
 }
 
-void mtac::full_loop_analysis(mtac::function_p function){
+void mtac::full_loop_analysis(mtac::Function& function){
     compute_dominators(function);
 
     for(auto& bb : function){
@@ -477,14 +477,14 @@ void mtac::full_loop_analysis(mtac::function_p function){
     //Run the analysis on the function
     mtac::loop_analysis()(function);
 
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         for(auto& bb : loop){
             increase_depth(bb);
         }
     }
 }
 
-bool mtac::loop_analysis::operator()(mtac::function_p function){
+bool mtac::loop_analysis::operator()(mtac::Function& function){
     std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
 
     for(auto& block : function){
@@ -500,7 +500,7 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
         }
     }
 
-    function->loops().clear();
+    function.loops().clear();
 
     //Get all edges n -> d
     for(auto& back_edge : back_edges){
@@ -535,19 +535,19 @@ bool mtac::loop_analysis::operator()(mtac::function_p function){
         LOG<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
 
         auto loop = std::make_shared<mtac::Loop>(natural_loop);
-        function->loops().push_back(loop);
+        function.loops().push_back(loop);
     }
 
-    LOG<Trace>("Control-Flow") << "Found " << function->loops().size() << " natural loops" << log::endl;
+    LOG<Trace>("Control-Flow") << "Found " << function.loops().size() << " natural loops" << log::endl;
 
     //Find BIV and DIV of the loops
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         find_basic_induction_variables(loop);
         find_dependent_induction_variables(loop, function);
     }
 
     //Basic computation of estimates
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         if(loop->blocks().size() == 1){
             auto& basic_induction_variables = loop->basic_induction_variables();
 

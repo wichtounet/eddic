@@ -58,15 +58,15 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
-BBClones clone(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
-    LOG<Trace>("Inlining") << "Clone " << source_function->get_name() << " into " << dest_function->get_name() << log::endl;
+BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
+    LOG<Trace>("Inlining") << "Clone " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
     BBClones bb_clones;
 
     std::vector<mtac::basic_block_p> cloned;
 
-    auto old_entry = source_function->entry_bb();
-    auto old_exit = source_function->exit_bb();
+    auto old_entry = source_function.entry_bb();
+    auto old_exit = source_function.exit_bb();
 
     auto entry = bb->prev;
     auto exit = bb;
@@ -74,7 +74,7 @@ BBClones clone(mtac::function_p source_function, mtac::function_p dest_function,
     for(auto& block : source_function){
         //Copy all basic blocks except ENTRY and EXIT
         if(block->index >= 0){
-            auto new_bb = dest_function->new_bb();
+            auto new_bb = dest_function.new_bb();
 
             //Copy the control flow graph properties, they will be corrected after
             new_bb->successors = block->successors;
@@ -87,7 +87,7 @@ BBClones clone(mtac::function_p source_function, mtac::function_p dest_function,
             bb_clones[block] = new_bb;
             cloned.push_back(new_bb);
 
-            dest_function->insert_before(dest_function->at(bb), new_bb);
+            dest_function.insert_before(dest_function.at(bb), new_bb);
         }
     }
 
@@ -116,11 +116,11 @@ BBClones clone(mtac::function_p source_function, mtac::function_p dest_function,
     return bb_clones;
 }
 
-mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::function_p dest_function, mtac::basic_block_p bb){
+mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     mtac::VariableClones variable_clones;
 
-    auto& source_definition = source_function->definition;
-    auto& dest_definition = dest_function->definition;
+    auto& source_definition = source_function.definition();
+    auto& dest_definition = dest_function.definition();
 
     std::unordered_map<std::shared_ptr<Variable>, bool> string_states;
 
@@ -222,10 +222,10 @@ mtac::VariableClones copy_parameters(mtac::function_p source_function, mtac::fun
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(mtac::function_p source_function, mtac::function_p /*dest_function*/, mtac::basic_block_p bb){
+unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb){
     unsigned int constant = 0;
 
-    auto& source_definition = source_function->definition;
+    auto& source_definition = source_function.definition();
 
     if(source_definition.parameters().size() > 0){
         auto param_bb = bb->prev;
@@ -330,13 +330,13 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
     }
 }
 
-bool can_be_inlined(mtac::function_p function){
+bool can_be_inlined(mtac::Function& function){
     //The main function cannot be inlined
-    if(function->get_name() == "_F4main" || function->get_name() == "_F4mainAS"){
+    if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
         return false;
     }
 
-    for(auto& param : function->definition.parameters()){
+    for(auto& param : function.definition().parameters()){
         if(!param.paramType->is_standard_type() && !param.paramType->is_pointer() && !param.paramType->is_array()){
             return false;
         }
@@ -349,20 +349,20 @@ bool can_be_inlined(mtac::function_p function){
     return true;
 }
 
-bool will_inline(mtac::function_p source_function, mtac::function_p target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
+bool will_inline(mtac::Function& source_function, mtac::Function& target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
     //Do not inline recursive calls
-    if(source_function == target_function){
+    if(source_function.get_name() == target_function.get_name()){
         return false;
     }
 
     if(can_be_inlined(target_function)){
-        auto source_size = source_function->size();
-        auto target_size = target_function->size();
+        auto source_size = source_function.size();
+        auto target_size = target_function.size();
 
         auto constant_parameters = count_constant_parameters(target_function, source_function, bb);
 
         //If all parameters are constant, there are high chances of further optimizations
-        if(target_function->definition.parameters().size() == constant_parameters){
+        if(target_function.definition().parameters().size() == constant_parameters){
             return target_size < 250;
         }
 
@@ -377,7 +377,7 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
         }
 
         //function called once
-        if(target_function->context->global()->referenceCount(target_function->get_name()) == 1){
+        if(target_function.context->global()->referenceCount(target_function.get_name()) == 1){
             return source_size < 300 && target_size < 100;
         } 
 
@@ -388,23 +388,35 @@ bool will_inline(mtac::function_p source_function, mtac::function_p target_funct
     return false;
 }
 
-mtac::function_p get_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
+bool non_standard_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
     auto& target_definition = call->functionDefinition;
 
     for(auto& function : program.functions){
-        if(function->definition.mangledName == target_definition.mangledName){
+        if(function.definition().mangledName == target_definition.mangledName){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+mtac::Function& get_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
+    auto& target_definition = call->functionDefinition;
+
+    for(auto& function : program.functions){
+        if(function.definition().mangledName == target_definition.mangledName){
             return function;
         }
     }
 
-    return nullptr;
+    eddic_unreachable("Should not happen");
 }
 
-bool call_site_inlining(mtac::function_p dest_function, mtac::Program& program){
+bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
     bool optimized = false;
 
-    auto bit = dest_function->begin();
-    auto bend = dest_function->end();
+    auto bit = dest_function.begin();
+    auto bend = dest_function.end();
         
     while(bit != bend){
         auto basic_block = *bit;
@@ -415,19 +427,18 @@ bool call_site_inlining(mtac::function_p dest_function, mtac::Program& program){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
                 auto call = *ptr;
 
-                auto source_function = get_target(call, program);
-
-                //If the function is not present in the program, it's a standard function, not inlinable
-                if(!source_function){
+                if(non_standard_target(call, program)){
                     ++it;
                     continue;
                 }
 
-                auto& source_definition = source_function->definition;
-                auto& dest_definition = dest_function->definition;
+                auto& source_function = get_target(call, program);
+
+                auto& source_definition = source_function.definition();
+                auto& dest_definition = dest_function.definition();
 
                 if(will_inline(dest_function, source_function, call, basic_block)){
-                    LOG<Trace>("Inlining") << "Inline " << source_function->get_name() << " into " << dest_function->get_name() << log::endl;
+                    LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
@@ -480,7 +491,7 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
 
         for(auto& function : program.functions){
             //If the function is never called, no need to optimize it
-            if(global_context->referenceCount(function->get_name()) <= 0){
+            if(global_context->referenceCount(function.get_name()) <= 0){
                 continue; 
             }
 

@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct remove_aliases {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

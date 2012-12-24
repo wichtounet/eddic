@@ -71,8 +71,8 @@ struct LiveRegisterValues {
 //Liveness analysis on Hard Registers
 
 struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::Register, ltac::FloatRegister>> {
-    ProblemDomain Boundary(mtac::function_p function) override;
-    ProblemDomain Init(mtac::function_p function) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
+    ProblemDomain Init(mtac::Function& function) override;
    
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
@@ -86,8 +86,8 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
 //Liveness analysis on Pseudo Registers
 
 struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> {
-    ProblemDomain Boundary(mtac::function_p function) override;
-    ProblemDomain Init(mtac::function_p function) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
+    ProblemDomain Init(mtac::Function& function) override;
    
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 

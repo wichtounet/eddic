@@ -40,23 +40,23 @@ using namespace eddic;
 namespace {
 
 template<typename Pseudo>
-typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, std::size_t>::type last_register(mtac::function_p function){
-    return function->pseudo_registers();
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, std::size_t>::type last_register(mtac::Function& function){
+    return function.pseudo_registers();
 }
 
 template<typename Pseudo>
-typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, std::size_t>::type last_register(mtac::function_p function){
-    return function->pseudo_float_registers();
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, std::size_t>::type last_register(mtac::Function& function){
+    return function.pseudo_float_registers();
 }
 
 template<typename Pseudo>
-typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, void>::type set_last_reg(mtac::function_p function, std::size_t reg){
-    function->set_pseudo_registers(reg);
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, void>::type set_last_reg(mtac::Function& function, std::size_t reg){
+    function.set_pseudo_registers(reg);
 }
 
 template<typename Pseudo>
-typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type set_last_reg(mtac::function_p function, std::size_t reg){
-    function->set_pseudo_float_registers(reg);
+typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, void>::type set_last_reg(mtac::Function& function, std::size_t reg){
+    function.set_pseudo_float_registers(reg);
 }
 
 template<typename Source, typename Target>
@@ -107,7 +107,7 @@ void update(Opt& arg, std::unordered_map<Source, Target>& register_allocation){
 }
 
 template<typename Source, typename Target>
-void replace_registers(mtac::function_p function, std::unordered_map<Source, Target>& register_allocation){
+void replace_registers(mtac::Function& function, std::unordered_map<Source, Target>& register_allocation){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -262,7 +262,7 @@ get_special_uses(Stmt& instruction, std::unordered_set<Pseudo>& local_pseudo_reg
 }
 
 template<typename Pseudo>
-void find_local_registers(mtac::function_p function, local_reg<Pseudo>& local_pseudo_registers){
+void find_local_registers(mtac::Function& function, local_reg<Pseudo>& local_pseudo_registers){
     local_reg<Pseudo> pseudo_registers;
 
     for(auto& bb : function){
@@ -312,7 +312,7 @@ std::size_t count_store_complete(mtac::basic_block_p bb, Pseudo& reg){
 }
 
 template<typename Pseudo>
-void renumber(mtac::function_p function){
+void renumber(mtac::Function& function){
     local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
 
@@ -376,7 +376,7 @@ void gather(Opt& arg, ltac::interference_graph<Pseudo>& graph){
 }
 
 template<typename Pseudo>
-void gather_pseudo_regs(mtac::function_p function, ltac::interference_graph<Pseudo>& graph){
+void gather_pseudo_regs(mtac::Function& function, ltac::interference_graph<Pseudo>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -401,7 +401,7 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, 
 }
 
 template<typename Pseudo>
-void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::function_p function){
+void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::Function& function){
     //Init the graph structure with the current size
     gather_pseudo_regs(function, graph);
     graph.build_graph();
@@ -466,7 +466,7 @@ typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, 
 }
 
 template<typename Pseudo>
-bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::function_p function){
+bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::Function& function){
     local_reg<Pseudo> local_pseudo_registers;
     find_local_registers(function, local_pseudo_registers);
     
@@ -546,7 +546,7 @@ void update_cost(Opt& arg, ltac::interference_graph<Pseudo>& graph, unsigned int
 }
 
 template<typename Pseudo>
-void estimate_spill_costs(mtac::function_p function, ltac::interference_graph<Pseudo>& graph){
+void estimate_spill_costs(mtac::Function& function, ltac::interference_graph<Pseudo>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
@@ -685,7 +685,7 @@ void simplify(ltac::interference_graph<Pseudo>& graph, Platform platform, std::v
 //6. Select
 
 template<typename Pseudo, typename Hard>
-void replace_registers(mtac::function_p function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph<Pseudo>& graph){
+void replace_registers(mtac::Function& function, std::unordered_map<std::size_t, std::size_t>& allocation, ltac::interference_graph<Pseudo>& graph){
     std::unordered_map<Pseudo, Hard> register_allocation;
 
     for(auto& pair : allocation){
@@ -696,7 +696,7 @@ void replace_registers(mtac::function_p function, std::unordered_map<std::size_t
 }
 
 template<typename Pseudo, typename Hard>
-void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, Platform platform, std::list<std::size_t>& order){
+void select(ltac::interference_graph<Pseudo>& graph, mtac::Function& function, Platform platform, std::list<std::size_t>& order){
     std::unordered_map<std::size_t, std::size_t> allocation;
     std::set<std::size_t> variable_allocated;
     
@@ -755,11 +755,11 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, 
     }
 
     for(auto& alloc : allocation){
-        function->use(Hard(alloc.second));
+        function.use(Hard(alloc.second));
     }
 
     for(auto& alloc : variable_allocated){
-        function->variable_use(Hard(alloc));
+        function.variable_use(Hard(alloc));
     }
 
     replace_registers<Pseudo, Hard>(function, allocation, graph);
@@ -788,16 +788,16 @@ void spill_store(ltac::PseudoFloatRegister& pseudo, unsigned int position, It& i
 }
 
 template<typename Pseudo>
-void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p function, std::vector<std::size_t>& spilled){
+void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::Function& function, std::vector<std::size_t>& spilled){
     auto current_reg = last_register<Pseudo>(function);
     
     for(auto reg : spilled){
         auto pseudo_reg = graph.convert(reg);
 
         //Allocate stack space for the pseudo reg
-        auto position = function->context->stack_position();
-        position -= INT->size(function->context->global()->target_platform());
-        function->context->set_stack_position(position);
+        auto position = function.context->stack_position();
+        position -= INT->size(function.context->global()->target_platform());
+        function.context->set_stack_position(position);
 
         for(auto& bb : function){
             auto it = iterate(bb->l_statements);
@@ -844,7 +844,7 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::function_p functi
 //Register allocation
 
 template<typename Pseudo, typename Hard>
-void register_allocation(mtac::function_p function, Platform platform){
+void register_allocation(mtac::Function& function, Platform platform){
     bool coalesced = false;
 
     while(true){
@@ -895,10 +895,10 @@ void ltac::register_allocation(mtac::Program& program, Platform platform){
     PerfsTimer timer("Register allocation");
 
     for(auto& function : program.functions){
-        LOG<Trace>("registers") << "Allocate integer registers for function " << function->get_name() << log::endl;
+        LOG<Trace>("registers") << "Allocate integer registers for function " << function.get_name() << log::endl;
         ::register_allocation<ltac::PseudoRegister, ltac::Register>(function, platform);
         
-        LOG<Trace>("registers") << "Allocate float registers for function " << function->get_name() << log::endl;
+        LOG<Trace>("registers") << "Allocate float registers for function " << function.get_name() << log::endl;
         ::register_allocation<ltac::PseudoFloatRegister, ltac::FloatRegister>(function, platform);
     }
 }

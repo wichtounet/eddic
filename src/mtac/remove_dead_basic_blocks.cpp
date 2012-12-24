@@ -10,8 +10,8 @@
 
 using namespace eddic;
 
-bool mtac::remove_dead_basic_blocks::operator()(mtac::function_p function){
-    unsigned int before = function->bb_count();
+bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
+    unsigned int before = function.bb_count();
 
     if(before <= 2){
         return false;
@@ -32,5 +32,5 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::function_p function){
         }
     }
 
-    return function->bb_count() < before;
+    return function.bb_count() < before;
 }

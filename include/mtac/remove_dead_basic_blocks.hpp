@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct remove_dead_basic_blocks {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>

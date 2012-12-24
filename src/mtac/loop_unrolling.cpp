@@ -16,14 +16,14 @@
 
 using namespace eddic;
 
-bool mtac::loop_unrolling::operator()(mtac::function_p function){
-    if(function->loops().empty()){
+bool mtac::loop_unrolling::operator()(mtac::Function& function){
+    if(function.loops().empty()){
         return false;
     }
 
     bool optimized = false;
 
-    for(auto& loop : function->loops()){
+    for(auto& loop : function.loops()){
         if(loop->has_estimate()){
             auto it = loop->estimate();
 
@@ -58,7 +58,7 @@ bool mtac::loop_unrolling::operator()(mtac::function_p function){
                     //Start at 1 because there is already the original body
                     for(unsigned int i = 1; i < factor; ++i){
                         for(auto& statement : statements){
-                            bb->statements.push_back(mtac::copy(statement, function->context->global())); 
+                            bb->statements.push_back(mtac::copy(statement, function.context->global())); 
                         }
                     }
 
