@@ -8,6 +8,7 @@
 #include "logging.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
 #include "GlobalContext.hpp"
 
 #include "ast/PassManager.hpp"
@@ -51,7 +52,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     }
 }
     
-void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
+void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::shared_ptr<Configuration> configuration){
     LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
     program.Content->context->stats().inc_counter("passes");
 
@@ -59,13 +60,27 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
 
+        bool valid = true;
+
         std::vector<ast::SourceFileBlock> blocks = program.Content->blocks;
         for(auto& block : blocks){
-            if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                pass->apply_function(*ptr);
-            } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-                apply_pass(pass, *ptr);
+            try {
+                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                    pass->apply_function(*ptr);
+                } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                    apply_pass(pass, *ptr);
+                }
+            } catch (const SemanticalException& e){
+                if(!configuration->option_defined("quiet")){
+                    output_exception(e);
+                }
+
+                valid = false;
             }
+        }
+
+        if(!valid){
+            throw TerminationException();
         }
     }
 }
@@ -233,7 +248,7 @@ void ast::PassManager::run_passes(){
             //The next passes will have to apply it again to fresh functions
             applied_passes.push_back(pass);
 
-            apply_pass(pass, program);
+            apply_pass(pass, program, configuration);
 
             //Add the instantiated class and function templates to the actual program
     

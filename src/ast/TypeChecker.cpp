@@ -9,6 +9,7 @@
 
 #include "variant.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
@@ -33,7 +34,6 @@ class CheckerVisitor : public boost::static_visitor<> {
     public:
         CheckerVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
 
-        AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_FUNCTION_DECLARATION()
         AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_CONSTRUCTOR()
@@ -387,9 +387,28 @@ class CheckerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
+//TODO Rewrite the type checker so that it does not use apply_program
+//And remove the exception code from here
+
 void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
     CheckerVisitor visitor(program.Content->context);
-    visit_non_variant(visitor, program);
+
+    bool valid = true;
+
+    for(auto& block : program.Content->blocks){
+        try {
+            visit(visitor, block);
+        } catch (const SemanticalException& e){
+            if(!configuration->option_defined("quiet")){
+                output_exception(e);
+            }
+            valid = false;
+        }
+    }
+
+    if(!valid){
+        throw TerminationException();
+    }
 }
 
 bool ast::TypeCheckingPass::is_simple(){
