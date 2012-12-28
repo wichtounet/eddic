@@ -50,6 +50,7 @@
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
+#include "mtac/parameter_propagation.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -142,7 +143,8 @@ typedef boost::mpl::vector<
         mtac::remove_unused_functions*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
-        mtac::inline_functions*
+        mtac::inline_functions*,
+        mtac::parameter_propagation*
     > ipa_passes;
 
 template<typename Pass>
