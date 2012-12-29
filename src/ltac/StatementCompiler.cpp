@@ -655,7 +655,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition.standard && !configuration->option_defined("fparameter-allocation")){
+    if(!call->functionDefinition.standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }

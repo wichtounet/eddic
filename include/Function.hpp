@@ -51,11 +51,17 @@ class Function {
 
         std::shared_ptr<const Type> struct_type = nullptr;
 
-        int references;
-        bool standard = false;
+        int references() const;
+        int& references();
+
+        bool standard() const;
+        bool& standard();
     
     private:
-        std::vector<Parameter> m_parameters;
+        int _references = 0;
+        bool _standard = false;
+
+        std::vector<Parameter> _parameters;
 };
 
 } //end of eddic

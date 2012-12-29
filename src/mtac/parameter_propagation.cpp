@@ -38,7 +38,7 @@ Arguments collect_arguments(mtac::Program& program){
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
                     auto& function = (*ptr)->functionDefinition;
 
-                    if(!function.standard && !function.parameters().empty()){
+                    if(!function.standard() && !function.parameters().empty()){
                         std::unordered_map<std::size_t, mtac::Argument> function_arguments;
 
                         auto parameters = function.parameters().size();
