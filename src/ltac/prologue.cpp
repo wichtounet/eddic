@@ -66,7 +66,7 @@ std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& functio
 }
 
 bool callee_save(Function& definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition.returnType;
+    auto return_type = definition.return_type();
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return registers
@@ -89,7 +89,7 @@ bool callee_save(Function& definition, ltac::Register reg, Platform platform, st
 }
 
 bool callee_save(eddic::Function& definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition.returnType;
+    auto return_type = definition.return_type();
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return register

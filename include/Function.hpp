@@ -42,14 +42,15 @@ class Function {
         const std::vector<Parameter>& parameters() const;
 
         bool operator==(const Function& rhs) const;
-        
-        const std::shared_ptr<const Type> returnType;
-        const std::string name;
-        const std::string mangledName;
-        
-        std::shared_ptr<FunctionContext> context;
 
-        std::shared_ptr<const Type> struct_type = nullptr;
+        const std::shared_ptr<const Type>& return_type() const;
+        const std::string& name();
+        const std::string& mangled_name();
+
+        std::shared_ptr<FunctionContext>& context();
+        const std::shared_ptr<FunctionContext>& context() const;
+
+        std::shared_ptr<const Type>& struct_type();
 
         int references() const;
         int& references();
@@ -58,6 +59,13 @@ class Function {
         bool& standard();
     
     private:
+        std::shared_ptr<FunctionContext> _context;
+        std::shared_ptr<const Type> _struct_type = nullptr;
+
+        std::shared_ptr<const Type> _return_type;
+        std::string _name;
+        std::string _mangled_name;
+
         int _references = 0;
         bool _standard = false;
 

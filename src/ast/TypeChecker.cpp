@@ -185,8 +185,8 @@ class CheckerVisitor : public boost::static_visitor<> {
            
             auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
             auto& function = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
-            if(return_type != function.returnType){
-                throw SemanticalException("The return value is not of the good type in the function " + function.name, return_.Content->position);
+            if(return_type != function.return_type()){
+                throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.Content->position);
             }
         }
         

@@ -13,7 +13,10 @@
 
 using namespace eddic;
 
-Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name) {}
+Function::Function(std::shared_ptr<const Type> return_type, const std::string& name, const std::string& mangled_name) 
+        : _return_type(return_type), _name(name), _mangled_name(mangled_name) {
+    //Nothing to do
+}
         
 const Parameter& Function::parameter(std::size_t i) const {
     return _parameters.at(i);
@@ -74,7 +77,19 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
 }
 
 bool Function::operator==(const Function& rhs) const {
-    return mangledName == rhs.mangledName;
+    return _mangled_name == rhs._mangled_name;
+}
+
+std::shared_ptr<FunctionContext>& Function::context(){
+    return _context;
+}
+
+const std::shared_ptr<FunctionContext>& Function::context() const {
+    return _context;
+}
+
+std::shared_ptr<const Type>& Function::struct_type(){
+    return _struct_type;
 }
 
 int Function::references() const {
@@ -91,4 +106,16 @@ bool Function::standard() const {
 
 bool& Function::standard(){
     return _standard;
+}
+
+const std::shared_ptr<const Type>& Function::return_type() const {
+    return _return_type;
+}
+
+const std::string& Function::name(){
+    return _name;
+}
+
+const std::string& Function::mangled_name(){
+    return _mangled_name;
 }
