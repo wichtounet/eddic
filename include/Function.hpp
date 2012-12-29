@@ -12,36 +12,14 @@
 #include <string>
 #include <vector>
 
+#include "Parameter.hpp"
+
 namespace eddic {
 
 class FunctionContext;
 class Type;
 
 //TODO Improve encapsulation and constness of these structures
-
-/*!
- * \struct Parameter
- * \brief A parameter for a function.  
- */
-class Parameter {
-    public:
-        Parameter(const std::string& name, std::shared_ptr<const Type> type);
-        
-        //Parameter cannot be copied
-        Parameter(const Parameter& rhs) = delete;
-        Parameter& operator=(const Parameter& rhs) = delete;
-        
-        //Parameter can be moved
-        Parameter(const Parameter&& rhs);
-        Parameter& operator=(const Parameter&& rhs);
-
-        const std::string& name() const;
-        const std::shared_ptr<const Type>& type() const;
-
-    private:
-        std::string _name;
-        std::shared_ptr<const Type> _type;
-};
 
 /*!
  * \class Function

@@ -13,29 +13,6 @@
 
 using namespace eddic;
 
-Parameter::Parameter(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type){
-    //Nothing to do
-}
-
-Parameter::Parameter(const Parameter&& rhs) : _name(std::move(rhs._name)), _type(std::move(rhs._type)) {
-    //Nothing to do 
-}
-
-Parameter& Parameter::operator=(const Parameter&& rhs){
-    _name = std::move(rhs._name);
-    _type = std::move(rhs._type);
-
-    return *this;
-}
-
-const std::string& Parameter::name() const {
-    return _name;
-}
-
-const std::shared_ptr<const Type>& Parameter::type() const {
-    return _type;
-}
-
 Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name), references(0) {}
         
 const Parameter& Function::parameter(std::size_t i) const {
