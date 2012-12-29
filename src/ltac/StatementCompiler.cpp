@@ -660,7 +660,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     }
 
     for(auto& param : call->functionDefinition.parameters()){
-        auto type = param.paramType; 
+        auto type = param.type(); 
 
         if(type->is_array()){
             //Passing an array is just passing an adress

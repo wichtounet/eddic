@@ -13,7 +13,15 @@
 
 using namespace eddic;
 
-ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t) : name(n), paramType(t) {}
+ParameterType::ParameterType(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type) {}
+
+const std::string& ParameterType::name() const {
+    return _name;
+}
+
+const std::shared_ptr<const Type>& ParameterType::type() const {
+    return _type;
+}
 
 Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name), references(0) {}
         
@@ -31,8 +39,8 @@ const std::vector<ParameterType>& Function::parameters() const {
 
 std::shared_ptr<const Type> Function::getParameterType(const std::string& name) const {
     for(auto& p : m_parameters){
-        if(p.name == name){
-            return p.paramType;
+        if(p.name() == name){
+            return p.type();
         }
     }
 
@@ -46,11 +54,11 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
         unsigned int position = 0;
         
         for(auto& p : m_parameters){
-            if(mtac::is_single_int_register(p.paramType)){
+            if(mtac::is_single_int_register(p.type())){
                 ++position; 
             }
 
-            if(p.name == name){
+            if(p.name() == name){
                 return position;
             }
         }
@@ -60,11 +68,11 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
         unsigned int position = 0;
         
         for(auto& p : m_parameters){
-            if(mtac::is_single_float_register(p.paramType)){
+            if(mtac::is_single_float_register(p.type())){
                 ++position; 
             }
 
-            if(p.name == name){
+            if(p.name() == name){
                 return position;
             }
         }
@@ -73,7 +81,6 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     } else {
         return 0;
     }
-
 }
 
 bool Function::operator==(const Function& rhs) const {

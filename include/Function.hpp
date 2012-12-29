@@ -23,11 +23,16 @@ class Type;
  * \struct ParameterType
  * \brief A parameter for a function.  
  */
-struct ParameterType {
-    std::string name;
-    std::shared_ptr<const Type> paramType;
+class ParameterType {
+    public:
+        ParameterType(const std::string& name, std::shared_ptr<const Type> type);
 
-    ParameterType(const std::string& n, std::shared_ptr<const Type> t);
+        const std::string& name() const;
+        const std::shared_ptr<const Type>& type() const;
+
+    private:
+        std::string _name;
+        std::shared_ptr<const Type> _type;
 };
 
 /*!

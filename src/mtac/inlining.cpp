@@ -127,7 +127,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     unsigned int parameters = 0;
 
     for(auto& param : source_definition.parameters()){
-        if(param.paramType == STRING){
+        if(param.type() == STRING){
             parameters += 2;
         } else {
             ++parameters;
@@ -335,7 +335,7 @@ bool can_be_inlined(mtac::Function& function){
     }
 
     for(auto& param : function.definition().parameters()){
-        if(!param.paramType->is_standard_type() && !param.paramType->is_pointer() && !param.paramType->is_array()){
+        if(!param.type()->is_standard_type() && !param.type()->is_pointer() && !param.type()->is_array()){
             return false;
         }
     }

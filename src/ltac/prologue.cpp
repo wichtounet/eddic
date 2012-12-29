@@ -32,8 +32,8 @@ std::set<ltac::Register> parameter_registers(eddic::Function& function, Platform
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
 
         for(auto& parameter : function.parameters()){
-            auto type = function.getParameterType(parameter.name);
-            unsigned int position = function.getParameterPositionByType(parameter.name);
+            auto type = function.getParameterType(parameter.name());
+            unsigned int position = function.getParameterPositionByType(parameter.name());
 
             if(mtac::is_single_int_register(type) && position <= maxInt){
                 overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
@@ -53,8 +53,8 @@ std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& functio
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
         for(auto& parameter : function.parameters()){
-            auto type = function.getParameterType(parameter.name);
-            unsigned int position = function.getParameterPositionByType(parameter.name);
+            auto type = function.getParameterType(parameter.name());
+            unsigned int position = function.getParameterPositionByType(parameter.name());
 
             if(mtac::is_single_float_register(type) && position <= maxFloat){
                 overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));

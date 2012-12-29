@@ -89,8 +89,8 @@ std::string eddic::mangle(const std::string& name, const std::vector<ParameterTy
     ss << name;
 
     for(auto& type : parameters){
-        if(type.name != "this"){
-            ss << type.paramType->mangle();
+        if(type.name() != "this"){
+            ss << type.type()->mangle();
         }
     }
 
@@ -104,8 +104,8 @@ std::string eddic::mangle_ctor(const std::vector<ParameterType>& parameters, std
     ss << struct_type->mangle();
 
     for(auto& type : parameters){
-        if(type.name != "this"){
-            ss << type.paramType->mangle();
+        if(type.name() != "this"){
+            ss << type.type()->mangle();
         }
     }
 

@@ -85,7 +85,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     pass_arguments(function, ctor_function, values);
 
     //Pass "this" parameter
-    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
+    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context->getVariable(ctor_function.parameter(0).name()), ctor_function);
     ctor_param->address = true;
     function.add(ctor_param);
 
@@ -113,7 +113,7 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
 
     auto ctor_param = std::make_shared<mtac::Param>(
             this_arg, 
-            ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
+            ctor_function.context->getVariable(ctor_function.parameter(0).name()), ctor_function);
     ctor_param->address = true;
     function.add(ctor_param);
 
@@ -129,7 +129,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     auto& dtor_function = global_context->getFunction(dtor_name);
 
-    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context->getVariable(dtor_function.parameter(0).name), dtor_function);
+    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context->getVariable(dtor_function.parameter(0).name()), dtor_function);
     dtor_param->address = true;
     function.add(dtor_param);
 
@@ -535,7 +535,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name()), definition);
                     mtac_param->address = true;
                     function.add(mtac_param);   
 
@@ -568,7 +568,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
-                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
+                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name()), definition);
                 mtac_param->address = true;
                 function.add(mtac_param);   
 
@@ -1600,7 +1600,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
         int i = definition.parameters().size()-1;
 
         for(auto& first : boost::adaptors::reverse(values)){
-            auto param = definition.parameter(i--).name; 
+            auto param = definition.parameter(i--).name(); 
             
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
@@ -1614,12 +1614,12 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             i = values.size() - 1;
         }
 
-        if(definition.parameter(0).name == "this"){
+        if(definition.parameter(0).name() == "this"){
             i++;
         }
 
         for(auto& first : boost::adaptors::reverse(values)){
-            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name);
+            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name());
 
             arguments args;
             if(param->type()->is_pointer()){
