@@ -172,12 +172,10 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
                         auto state = string_states[src_var];
 
                         if(state){
-                            auto dest_var = variable_clones[src_var];
-
                             //Copy the size
                             auto quadruple = std::make_shared<mtac::Quadruple>();
                             quadruple->op = mtac::Operator::DOT_ASSIGN;
-                            quadruple->result = dest_var;
+                            quadruple->result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
                             quadruple->arg1 = static_cast<int>(INT->size(dest_definition.context->global()->target_platform()));
                             quadruple->arg2 = (*ptr)->arg;
 
