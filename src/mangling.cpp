@@ -13,6 +13,7 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "Function.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/Value.hpp"

@@ -18,6 +18,7 @@
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "Function.hpp"
 #include "Variable.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"

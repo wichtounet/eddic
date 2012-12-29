@@ -13,6 +13,7 @@
 #include "Labels.hpp"
 #include "Variable.hpp"
 #include "logging.hpp"
+#include "Function.hpp"
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp" 
