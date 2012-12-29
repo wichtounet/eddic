@@ -8,9 +8,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "logging.hpp"
 #include "Function.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
+#include "Variable.hpp"
 
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/Program.hpp"
@@ -45,7 +47,7 @@ Arguments collect_arguments(mtac::Program& program){
                         auto it = param_block->statements.rbegin();
                         auto end = param_block->statements.rend();
 
-                        auto discovered = 0;
+                        std::size_t discovered = 0;
 
                         while(it != end && discovered < parameters){
                             auto& param_statement = *it;
@@ -83,9 +85,9 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
         auto& function = global_context->getFunction(function_name);
         auto& function_arguments = function_map.second;
 
-        std::vector<std::pair<int, int>> constant_parameters;
+        std::vector<std::pair<std::size_t, int>> constant_parameters;
 
-        for(int i = 0; i < function.parameters().size(); ++i){
+        for(std::size_t i = 0; i < function.parameters().size(); ++i){
             bool found = false;
             int constant_value = 0;
 
@@ -130,12 +132,12 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                                     auto it = param_block->statements.rbegin();
                                     auto end = param_block->statements.rend();
 
-                                    auto discovered = 0;
+                                    std::size_t discovered = 0;
 
                                     while(it != end && discovered < function.parameters().size()){
                                         auto& param_statement = *it;
 
-                                        if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
+                                        if(boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
                                             if(discovered == parameter.first){
                                                 param_block->statements.erase(--(it.base()));
                                                 --it;
@@ -163,11 +165,15 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     mtac::VariableClones clones;
                     
                     for(auto& parameter : constant_parameters){
-                        clones[mtac_function.context->getVariable(function.parameters()[parameter.first].name)] = parameter.second;
+                        auto param = mtac_function.context->getVariable(function.parameters()[parameter.first].name);
+                        log::emit<Debug>("Opt") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function << log::endl;
+                        clones[param] = parameter.second;
                     }
 
                     VariableReplace replacer(clones);
                     mtac::visit_all_statements(replacer, mtac_function);
+
+                    break;
                 }
             }
         }
