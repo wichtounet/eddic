@@ -33,10 +33,11 @@ class Function {
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
 
-        std::shared_ptr<const Type> getParameter(const std::string& name) const;
         unsigned int getParameterPositionByType(const std::string& name) const;
 
         const Parameter& parameter(std::size_t i) const;
+        const Parameter& parameter(const std::string& name) const;
+
         std::vector<Parameter>& parameters();
         const std::vector<Parameter>& parameters() const;
 

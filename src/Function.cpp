@@ -19,6 +19,16 @@ const Parameter& Function::parameter(std::size_t i) const {
     return m_parameters.at(i);
 }
 
+const Parameter& Function::parameter(const std::string& name) const {
+    for(auto& p : m_parameters){
+        if(p.name() == name){
+            return p;
+        }
+    }
+
+    eddic_unreachable("This parameter does not exists in the given function");
+}
+
 std::vector<Parameter>& Function::parameters(){
     return m_parameters;
 }
@@ -27,18 +37,8 @@ const std::vector<Parameter>& Function::parameters() const {
     return m_parameters;
 }
 
-std::shared_ptr<const Type> Function::getParameter(const std::string& name) const {
-    for(auto& p : m_parameters){
-        if(p.name() == name){
-            return p.type();
-        }
-    }
-
-    eddic_unreachable("This parameter does not exists in the given function");
-}
-
 unsigned int Function::getParameterPositionByType(const std::string& name) const {
-    auto type = getParameter(name);
+    auto type = parameter(name).type();
 
     if(mtac::is_single_int_register(type)){
         unsigned int position = 0;
