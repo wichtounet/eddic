@@ -27,7 +27,7 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::string, std::vector<std::vector<mtac::Argument>>> Arguments;
+typedef std::unordered_map<std::string, std::vector<std::unordered_map<std::size_t, mtac::Argument>>> Arguments;
 
 Arguments collect_arguments(mtac::Program& program){
     Arguments arguments;
@@ -39,7 +39,7 @@ Arguments collect_arguments(mtac::Program& program){
                     auto& function = (*ptr)->functionDefinition;
 
                     if(!function.standard && !function.parameters().empty()){
-                        std::vector<mtac::Argument> function_arguments;
+                        std::unordered_map<std::size_t, mtac::Argument> function_arguments;
 
                         auto parameters = function.parameters().size();
                         auto param_block = block->prev;
@@ -53,9 +53,11 @@ Arguments collect_arguments(mtac::Program& program){
                             auto& param_statement = *it;
 
                             if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
-                                ++discovered;
+                                if((*param_ptr)->param->type() == INT){
+                                    function_arguments[discovered] = (*param_ptr)->arg;
+                                }
 
-                                function_arguments.push_back((*param_ptr)->arg);
+                                ++discovered;
                             }
 
                             ++it;
