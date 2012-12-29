@@ -28,12 +28,12 @@ std::set<ltac::Register> parameter_registers(eddic::Function& function, Platform
 
     auto descriptor = getPlatformDescriptor(platform);
 
-    if(function.standard || configuration->option_defined("fparameter-allocation")){
+    if(function.standard() || configuration->option_defined("fparameter-allocation")){
         unsigned int maxInt = descriptor->numberOfIntParamRegisters();
 
         for(auto& parameter : function.parameters()){
-            auto type = function.getParameterType(parameter.name);
-            unsigned int position = function.getParameterPositionByType(parameter.name);
+            auto type = parameter.type();
+            unsigned int position = function.parameter_position_by_type(parameter.name());
 
             if(mtac::is_single_int_register(type) && position <= maxInt){
                 overriden_registers.insert(ltac::Register(descriptor->int_param_register(position)));
@@ -49,12 +49,12 @@ std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& functio
     
     auto descriptor = getPlatformDescriptor(platform);
 
-    if(function.standard || configuration->option_defined("fparameter-allocation")){
+    if(function.standard() || configuration->option_defined("fparameter-allocation")){
         unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
 
         for(auto& parameter : function.parameters()){
-            auto type = function.getParameterType(parameter.name);
-            unsigned int position = function.getParameterPositionByType(parameter.name);
+            auto type = parameter.type();
+            unsigned int position = function.parameter_position_by_type(parameter.name());
 
             if(mtac::is_single_float_register(type) && position <= maxFloat){
                 overriden_float_registers.insert(ltac::FloatRegister(descriptor->float_param_register(position)));
@@ -66,7 +66,7 @@ std::set<ltac::FloatRegister> float_parameter_registers(eddic::Function& functio
 }
 
 bool callee_save(Function& definition, ltac::Register reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition.returnType;
+    auto return_type = definition.return_type();
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return registers
@@ -89,7 +89,7 @@ bool callee_save(Function& definition, ltac::Register reg, Platform platform, st
 }
 
 bool callee_save(eddic::Function& definition, ltac::FloatRegister reg, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto return_type = definition.returnType;
+    auto return_type = definition.return_type();
     auto descriptor = getPlatformDescriptor(platform);
 
     //Do not save the return register

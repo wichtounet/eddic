@@ -13,44 +13,84 @@
 
 using namespace eddic;
 
-ParameterType::ParameterType(const std::string& n, std::shared_ptr<const Type> t) : name(n), paramType(t) {}
+Function::Function(std::shared_ptr<const Type> return_type, const std::string& name, const std::string& mangled_name) 
+        : _return_type(return_type), _name(name), _mangled_name(mangled_name) {
+    //Nothing to do
+}
 
-Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name), references(0) {}
+Function::Function(Function&& rhs) : 
+        _struct_type(std::move(rhs._struct_type)), _return_type(std::move(rhs._return_type)),  
+        _name(std::move(rhs._name)), _mangled_name(std::move(rhs._mangled_name)),
+        _references(std::move(rhs._references)), _standard(std::move(rhs._standard)),
+        _parameters(std::move(rhs._parameters)) {
+
+   //Reset rhs
+   rhs._references = 0;
+   rhs._standard = false;
+}
+
+Function& Function::operator=(Function&& rhs){
+    _struct_type = std::move(rhs._struct_type);
+    _return_type = std::move(rhs._return_type);
+    _name = std::move(rhs._name);
+    _mangled_name = std::move(rhs._mangled_name);
+    _references = std::move(rhs._references);
+    _standard = std::move(rhs._standard);
+    _parameters = std::move(rhs._parameters);
+
+   //Reset rhs
+   rhs._references = 0;
+   rhs._standard = false;
+
+   return *this;
+}
         
-const ParameterType& Function::parameter(std::size_t i) const {
-    return m_parameters.at(i);
+std::shared_ptr<FunctionContext> _context;
+        std::shared_ptr<const Type> _struct_type = nullptr;
+
+        std::shared_ptr<const Type> _return_type;
+        std::string _name;
+        std::string _mangled_name;
+
+        int _references = 0;
+        bool _standard = false;
+
+        std::vector<Parameter> _parameters;
+        
+const Parameter& Function::parameter(std::size_t i) const {
+    return _parameters.at(i);
 }
 
-std::vector<ParameterType>& Function::parameters(){
-    return m_parameters;
-}
-
-const std::vector<ParameterType>& Function::parameters() const {
-    return m_parameters;
-}
-
-std::shared_ptr<const Type> Function::getParameterType(const std::string& name) const {
-    for(auto& p : m_parameters){
-        if(p.name == name){
-            return p.paramType;
+const Parameter& Function::parameter(const std::string& name) const {
+    for(auto& p : _parameters){
+        if(p.name() == name){
+            return p;
         }
     }
 
     eddic_unreachable("This parameter does not exists in the given function");
 }
 
-unsigned int Function::getParameterPositionByType(const std::string& name) const {
-    auto type = getParameterType(name);
+std::vector<Parameter>& Function::parameters(){
+    return _parameters;
+}
+
+const std::vector<Parameter>& Function::parameters() const {
+    return _parameters;
+}
+
+unsigned int Function::parameter_position_by_type(const std::string& name) const {
+    auto type = parameter(name).type();
 
     if(mtac::is_single_int_register(type)){
         unsigned int position = 0;
         
-        for(auto& p : m_parameters){
-            if(mtac::is_single_int_register(p.paramType)){
+        for(auto& p : _parameters){
+            if(mtac::is_single_int_register(p.type())){
                 ++position; 
             }
 
-            if(p.name == name){
+            if(p.name() == name){
                 return position;
             }
         }
@@ -59,12 +99,12 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     } else if(mtac::is_single_float_register(type)){
         unsigned int position = 0;
         
-        for(auto& p : m_parameters){
-            if(mtac::is_single_float_register(p.paramType)){
+        for(auto& p : _parameters){
+            if(mtac::is_single_float_register(p.type())){
                 ++position; 
             }
 
-            if(p.name == name){
+            if(p.name() == name){
                 return position;
             }
         }
@@ -73,9 +113,48 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     } else {
         return 0;
     }
-
 }
 
 bool Function::operator==(const Function& rhs) const {
-    return mangledName == rhs.mangledName;
+    return _mangled_name == rhs._mangled_name;
+}
+
+std::shared_ptr<FunctionContext>& Function::context(){
+    return _context;
+}
+
+const std::shared_ptr<FunctionContext>& Function::context() const {
+    return _context;
+}
+
+std::shared_ptr<const Type>& Function::struct_type(){
+    return _struct_type;
+}
+
+int Function::references() const {
+   return _references; 
+}
+
+int& Function::references(){
+   return _references; 
+}
+
+bool Function::standard() const {
+    return _standard;
+}
+
+bool& Function::standard(){
+    return _standard;
+}
+
+const std::shared_ptr<const Type>& Function::return_type() const {
+    return _return_type;
+}
+
+const std::string& Function::name(){
+    return _name;
+}
+
+const std::string& Function::mangled_name(){
+    return _mangled_name;
 }

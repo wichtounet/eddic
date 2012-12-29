@@ -21,6 +21,7 @@ class Type;
 class Variable;
 class IntermediateProgram;
 struct GlobalContext;
+class FunctionContext;
 
 /*!
  * \class Context

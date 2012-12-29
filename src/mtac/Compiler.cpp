@@ -85,7 +85,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     pass_arguments(function, ctor_function, values);
 
     //Pass "this" parameter
-    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
+    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
     ctor_param->address = true;
     function.add(ctor_param);
 
@@ -113,7 +113,8 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
 
     auto ctor_param = std::make_shared<mtac::Param>(
             this_arg, 
-            ctor_function.context->getVariable(ctor_function.parameter(0).name), ctor_function);
+            ctor_function.context()->getVariable(ctor_function.parameter(0).name()), 
+            ctor_function);
     ctor_param->address = true;
     function.add(ctor_param);
 
@@ -129,7 +130,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     auto& dtor_function = global_context->getFunction(dtor_name);
 
-    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context->getVariable(dtor_function.parameter(0).name), dtor_function);
+    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
     dtor_param->address = true;
     function.add(dtor_param);
 
@@ -518,7 +519,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     left_value = t1;
                 }
 
-                auto type = definition.returnType;
+                auto type = definition.return_type();
 
                 if(type->is_custom_type() || type->is_template_type()){
                     auto var = function.context->generate_variable("ret_t_", type);
@@ -527,7 +528,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     construct(function, type, {}, var);
                     
                     //Pass the address of return
-                    auto call_param = std::make_shared<mtac::Param>(var, definition.context->getVariable("__ret"), definition);
+                    auto call_param = std::make_shared<mtac::Param>(var, definition.context()->getVariable("__ret"), definition);
                     call_param->address = true;
                     function.add(call_param);
 
@@ -535,11 +536,11 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
+                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                     mtac_param->address = true;
                     function.add(mtac_param);   
 
-                    function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, nullptr, nullptr));
+                    function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
 
                     left = {var};
                     break;
@@ -568,12 +569,12 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
-                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context->getVariable(definition.parameter(0).name), definition);
+                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                 mtac_param->address = true;
                 function.add(mtac_param);   
 
                 //Call the function
-                function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, return_, return2_));
+                function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, return_, return2_));
 
                 break;
             }
@@ -766,12 +767,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
     result_type operator()(ast::FunctionCall& call) const {
         auto& definition = call.Content->context->global()->getFunction(call.Content->mangled_name);
-        auto type = definition.returnType;
+        auto type = definition.return_type();
 
         if(type == VOID){
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, nullptr, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
 
             return {};
         } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -779,7 +780,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, t1, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, t1, nullptr));
 
             return {t1};
         } else if(type == STRING){
@@ -788,7 +789,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, t1, t2));
+            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, t1, t2));
 
             return {t1, t2};
         } else if(type->is_custom_type() || type->is_template_type()){
@@ -798,14 +799,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             construct(function, type, {}, var);
             
             //Pass the address of return
-            auto call_param = std::make_shared<mtac::Param>(var, definition.context->getVariable("__ret"), definition);
+            auto call_param = std::make_shared<mtac::Param>(var, definition.context()->getVariable("__ret"), definition);
             call_param->address = true;
             function.add(call_param);
     
             //Pass the normal arguments of the function
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangledName, definition, nullptr, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
             
             return {var};
         }
@@ -1514,7 +1515,7 @@ class FunctionCompiler : public boost::static_visitor<> {
 
         void operator()(ast::Return& return_){
             auto& definition = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
-            auto return_type = definition.returnType;
+            auto return_type = definition.return_type();
 
             //If the function returns a struct by value, it does not really returns something
             if(return_type->is_custom_type() || return_type->is_template_type()){
@@ -1593,14 +1594,14 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
         return;
     }
 
-    auto context = definition.context;
+    auto context = definition.context();
 
     //If it's a standard function, there are no context
     if(!context){
         int i = definition.parameters().size()-1;
 
         for(auto& first : boost::adaptors::reverse(values)){
-            auto param = definition.parameter(i--).name; 
+            auto param = definition.parameter(i--).name(); 
             
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
@@ -1614,12 +1615,12 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             i = values.size() - 1;
         }
 
-        if(definition.parameter(0).name == "this"){
+        if(definition.parameter(0).name() == "this"){
             i++;
         }
 
         for(auto& first : boost::adaptors::reverse(values)){
-            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name);
+            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name());
 
             arguments args;
             if(param->type()->is_pointer()){

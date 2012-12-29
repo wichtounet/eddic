@@ -38,7 +38,7 @@ Arguments collect_arguments(mtac::Program& program){
                 if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
                     auto& function = (*ptr)->functionDefinition;
 
-                    if(!function.standard && !function.parameters().empty()){
+                    if(!function.standard() && !function.parameters().empty()){
                         std::unordered_map<std::size_t, mtac::Argument> function_arguments;
 
                         auto parameters = function.parameters().size();
@@ -63,7 +63,7 @@ Arguments collect_arguments(mtac::Program& program){
                             ++it;
                         }
                         
-                        arguments[function.mangledName].push_back(std::move(function_arguments));
+                        arguments[function.mangled_name()].push_back(std::move(function_arguments));
                     }
                 }
             }
@@ -127,8 +127,8 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     mtac::VariableClones clones;
                     
                     for(auto& parameter : constant_parameters){
-                        auto param = mtac_function.context->getVariable(function.parameters()[parameter.first].name);
-                        log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name << log::endl;
+                        auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
+                        log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
                         clones[param] = parameter.second;
                     }
 
@@ -140,8 +140,8 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
             }
             
             for(auto& parameter : constant_parameters){
-                auto param = function.context->getVariable(function.parameters()[parameter.first].name);
-                function.context->removeVariable(param); 
+                auto param = function.context()->getVariable(function.parameter(parameter.first).name());
+                function.context()->removeVariable(param); 
             }
 
             for(auto& parameter : constant_parameters){

@@ -13,6 +13,7 @@
 #include "Labels.hpp"
 #include "Variable.hpp"
 #include "logging.hpp"
+#include "Function.hpp"
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp" 
@@ -508,13 +509,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 
         //It's a call to a standard function
         if(param->std_param.length() > 0){
-            type = param->function.getParameterType(param->std_param);
-            position = param->function.getParameterPositionByType(param->std_param);
+            type = param->function.parameter(param->std_param).type();
+            position = param->function.parameter_position_by_type(param->std_param);
         } 
         //It's a call to a user function
         else if(param->param){
             type = param->param->type();
-            position = param->function.getParameterPositionByType(param->param->name());
+            position = param->function.parameter_position_by_type(param->param->name());
         }
 
         register_allocated = 
@@ -561,7 +562,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                     if(param->param && param->param->type() == FLOAT){
                         pass_in_float_register(param->arg, position);
                         return;
-                    } else if(!param->std_param.empty() && param->function.getParameterType(param->std_param) == FLOAT){
+                    } else if(!param->std_param.empty() && param->function.parameter(param->std_param).type() == FLOAT){
                         pass_in_float_register(param->arg, position);
                         return;
                     } 
@@ -612,7 +613,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 if(param->param && param->param->type() == FLOAT){
                     auto label = float_pool->label(0.0);
                     push(ltac::Address(label));
-                } else if(!param->std_param.empty() && param->function.getParameterType(param->std_param) == FLOAT){
+                } else if(!param->std_param.empty() && param->function.parameter(param->std_param).type() == FLOAT){
                     auto label = float_pool->label(0.0);
                     push(ltac::Address(label));
                 } else {
@@ -654,13 +655,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition.standard && !configuration->option_defined("fparameter-allocation")){
+    if(!call->functionDefinition.standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
 
     for(auto& param : call->functionDefinition.parameters()){
-        auto type = param.paramType; 
+        auto type = param.type(); 
 
         if(type->is_array()){
             //Passing an array is just passing an adress
