@@ -13,7 +13,20 @@
 
 using namespace eddic;
 
-Parameter::Parameter(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type) {}
+Parameter::Parameter(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type){
+    //Nothing to do
+}
+
+Parameter::Parameter(const Parameter&& rhs) : _name(std::move(rhs._name)), _type(std::move(rhs._type)) {
+    //Nothing to do 
+}
+
+Parameter& Parameter::operator=(const Parameter&& rhs){
+    _name = std::move(rhs._name);
+    _type = std::move(rhs._type);
+
+    return *this;
+}
 
 const std::string& Parameter::name() const {
     return _name;

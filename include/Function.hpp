@@ -26,6 +26,14 @@ class Type;
 class Parameter {
     public:
         Parameter(const std::string& name, std::shared_ptr<const Type> type);
+        
+        //Parameter cannot be copied
+        Parameter(const Parameter& rhs) = delete;
+        Parameter& operator=(const Parameter& rhs) = delete;
+        
+        //Parameter can be moved
+        Parameter(const Parameter&& rhs);
+        Parameter& operator=(const Parameter&& rhs);
 
         const std::string& name() const;
         const std::shared_ptr<const Type>& type() const;
@@ -43,6 +51,7 @@ class Function {
     public:
         Function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
 
+        //Function cannot be copied
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
 
