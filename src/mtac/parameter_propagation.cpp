@@ -116,7 +116,31 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
         }
 
         if(!constant_parameters.empty()){
-            std::sort(constant_parameters.begin(), constant_parameters.end(), [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
+            std::sort(constant_parameters.begin(), constant_parameters.end(), 
+                    [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
+
+            //Replace the parameter by the constant in each use of the parameter
+            for(auto& mtac_function : program.functions){
+                if(mtac_function.definition() == function){
+                    mtac::VariableClones clones;
+                    
+                    for(auto& parameter : constant_parameters){
+                        auto param = mtac_function.context->getVariable(function.parameters()[parameter.first].name);
+                        log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name << log::endl;
+                        clones[param] = parameter.second;
+                    }
+
+                    VariableReplace replacer(clones);
+                    mtac::visit_all_statements(replacer, mtac_function);
+
+                    break;
+                }
+            }
+            
+            for(auto& parameter : constant_parameters){
+                auto param = function.context->getVariable(function.parameters()[parameter.first].name);
+                function.context->removeVariable(param); 
+            }
 
             for(auto& parameter : constant_parameters){
                 //Remove the parameter passing for each call to the function
@@ -157,24 +181,6 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
 
                 //Remove the parameter from the function definition
                 function.parameters().erase(function.parameters().begin() + parameter.first);
-            }
-
-            //Replace the parameter by the constant in each use of the parameter
-            for(auto& mtac_function : program.functions){
-                if(mtac_function.definition() == function){
-                    mtac::VariableClones clones;
-                    
-                    for(auto& parameter : constant_parameters){
-                        auto param = mtac_function.context->getVariable(function.parameters()[parameter.first].name);
-                        log::emit<Debug>("Opt") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function << log::endl;
-                        clones[param] = parameter.second;
-                    }
-
-                    VariableReplace replacer(clones);
-                    mtac::visit_all_statements(replacer, mtac_function);
-
-                    break;
-                }
             }
         }
     }
