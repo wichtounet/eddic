@@ -510,12 +510,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
         //It's a call to a standard function
         if(param->std_param.length() > 0){
             type = param->function.parameter(param->std_param).type();
-            position = param->function.getParameterPositionByType(param->std_param);
+            position = param->function.parameter_position_by_type(param->std_param);
         } 
         //It's a call to a user function
         else if(param->param){
             type = param->param->type();
-            position = param->function.getParameterPositionByType(param->param->name());
+            position = param->function.parameter_position_by_type(param->param->name());
         }
 
         register_allocated = 

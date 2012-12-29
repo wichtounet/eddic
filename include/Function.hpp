@@ -33,13 +33,13 @@ class Function {
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
 
-        unsigned int getParameterPositionByType(const std::string& name) const;
-
         const Parameter& parameter(std::size_t i) const;
         const Parameter& parameter(const std::string& name) const;
 
         std::vector<Parameter>& parameters();
         const std::vector<Parameter>& parameters() const;
+
+        unsigned int parameter_position_by_type(const std::string& name) const;
 
         bool operator==(const Function& rhs) const;
 

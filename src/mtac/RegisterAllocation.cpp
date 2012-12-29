@@ -31,7 +31,7 @@ void mtac::register_param_allocation(mtac::Program& program, Platform platform){
             for(unsigned int i = 0; i < function.parameters().size(); ++i){
                 auto& parameter = function.parameter(i);
                 auto type = parameter.type();
-                unsigned int position = function.getParameterPositionByType(parameter.name());
+                unsigned int position = function.parameter_position_by_type(parameter.name());
                 auto param = function.context()->getVariable(parameter.name());
 
                 if((mtac::is_single_int_register(type) && position <= maxInt) || (mtac::is_single_float_register(type) && position <= maxFloat)){

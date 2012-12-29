@@ -40,7 +40,7 @@ const std::vector<Parameter>& Function::parameters() const {
     return _parameters;
 }
 
-unsigned int Function::getParameterPositionByType(const std::string& name) const {
+unsigned int Function::parameter_position_by_type(const std::string& name) const {
     auto type = parameter(name).type();
 
     if(mtac::is_single_int_register(type)){
