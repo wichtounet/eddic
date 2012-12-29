@@ -10,6 +10,7 @@
 
 #include "Function.hpp"
 #include "GlobalContext.hpp"
+#include "FunctionContext.hpp"
 
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/Program.hpp"
@@ -17,6 +18,8 @@
 #include "mtac/Call.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Param.hpp"
+#include "mtac/VariableReplace.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -80,6 +83,8 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
         auto& function = global_context->getFunction(function_name);
         auto& function_arguments = function_map.second;
 
+        std::vector<std::pair<int, int>> constant_parameters;
+
         for(int i = 0; i < function.parameters().size(); ++i){
             bool found = false;
             int constant_value = 0;
@@ -104,7 +109,66 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
             }
 
             if(found){
-                //TODO Remove parameter i from function
+                constant_parameters.emplace_back(i, constant_value);
+            }
+        }
+
+        if(!constant_parameters.empty()){
+            std::sort(constant_parameters.begin(), constant_parameters.end(), [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
+
+            for(auto& parameter : constant_parameters){
+                //Remove the parameter passing for each call to the function
+                for(auto& mtac_function : program.functions){
+                    for(auto& block : mtac_function){
+                        for(auto& statement : block){
+                            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
+                                auto& param_function = (*ptr)->functionDefinition;
+
+                                if(param_function == function){
+                                    auto param_block = block->prev;
+
+                                    auto it = param_block->statements.rbegin();
+                                    auto end = param_block->statements.rend();
+
+                                    auto discovered = 0;
+
+                                    while(it != end && discovered < function.parameters().size()){
+                                        auto& param_statement = *it;
+
+                                        if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
+                                            if(discovered == parameter.first){
+                                                param_block->statements.erase(--(it.base()));
+                                                --it;
+                                                end = param_block->statements.rend();
+                                            }
+
+                                            ++discovered;
+                                        }
+
+                                        ++it;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //Remove the parameter from the function definition
+                function.parameters().erase(function.parameters().begin() + parameter.first);
+            }
+
+            //Replace the parameter by the constant in each use of the parameter
+            for(auto& mtac_function : program.functions){
+                if(mtac_function.definition() == function){
+                    mtac::VariableClones clones;
+                    
+                    for(auto& parameter : constant_parameters){
+                        clones[mtac_function.context->getVariable(function.parameters()[parameter.first].name)] = parameter.second;
+                    }
+
+                    VariableReplace replacer(clones);
+                    mtac::visit_all_statements(replacer, mtac_function);
+                }
             }
         }
     }
