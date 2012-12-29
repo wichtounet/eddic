@@ -19,8 +19,6 @@ namespace eddic {
 class FunctionContext;
 class Type;
 
-//TODO Improve encapsulation and constness of these structures
-
 /*!
  * \class Function
  * \brief A function entry in the function table. 
@@ -32,6 +30,10 @@ class Function {
         //Function cannot be copied
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
+        
+        //Function can be moved
+        Function(Function&& rhs);
+        Function& operator=(Function&& rhs);
 
         const Parameter& parameter(std::size_t i) const;
         const Parameter& parameter(const std::string& name) const;

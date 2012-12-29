@@ -28,8 +28,8 @@ class Parameter {
         Parameter& operator=(const Parameter& rhs) = delete;
         
         //Parameter can be moved
-        Parameter(const Parameter&& rhs);
-        Parameter& operator=(const Parameter&& rhs);
+        Parameter(Parameter&& rhs);
+        Parameter& operator=(Parameter&& rhs);
 
         const std::string& name() const;
         const std::shared_ptr<const Type>& type() const;

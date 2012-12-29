@@ -13,11 +13,11 @@ Parameter::Parameter(const std::string& name, std::shared_ptr<const Type> type) 
     //Nothing to do
 }
 
-Parameter::Parameter(const Parameter&& rhs) : _name(std::move(rhs._name)), _type(std::move(rhs._type)) {
+Parameter::Parameter(Parameter&& rhs) : _name(std::move(rhs._name)), _type(std::move(rhs._type)) {
     //Nothing to do 
 }
 
-Parameter& Parameter::operator=(const Parameter&& rhs){
+Parameter& Parameter::operator=(Parameter&& rhs){
     _name = std::move(rhs._name);
     _type = std::move(rhs._type);
 

@@ -17,6 +17,45 @@ Function::Function(std::shared_ptr<const Type> return_type, const std::string& n
         : _return_type(return_type), _name(name), _mangled_name(mangled_name) {
     //Nothing to do
 }
+
+Function::Function(Function&& rhs) : 
+        _struct_type(std::move(rhs._struct_type)), _return_type(std::move(rhs._return_type)),  
+        _name(std::move(rhs._name)), _mangled_name(std::move(rhs._mangled_name)),
+        _references(std::move(rhs._references)), _standard(std::move(rhs._standard)),
+        _parameters(std::move(rhs._parameters)) {
+
+   //Reset rhs
+   rhs._references = 0;
+   rhs._standard = false;
+}
+
+Function& Function::operator=(Function&& rhs){
+    _struct_type = std::move(rhs._struct_type);
+    _return_type = std::move(rhs._return_type);
+    _name = std::move(rhs._name);
+    _mangled_name = std::move(rhs._mangled_name);
+    _references = std::move(rhs._references);
+    _standard = std::move(rhs._standard);
+    _parameters = std::move(rhs._parameters);
+
+   //Reset rhs
+   rhs._references = 0;
+   rhs._standard = false;
+
+   return *this;
+}
+        
+std::shared_ptr<FunctionContext> _context;
+        std::shared_ptr<const Type> _struct_type = nullptr;
+
+        std::shared_ptr<const Type> _return_type;
+        std::string _name;
+        std::string _mangled_name;
+
+        int _references = 0;
+        bool _standard = false;
+
+        std::vector<Parameter> _parameters;
         
 const Parameter& Function::parameter(std::size_t i) const {
     return _parameters.at(i);
