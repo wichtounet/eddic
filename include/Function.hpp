@@ -47,6 +47,8 @@ class Function {
         const ParameterType& parameter(std::size_t i) const;
         std::vector<ParameterType>& parameters();
         const std::vector<ParameterType>& parameters() const;
+
+        bool operator==(const Function& rhs) const;
         
         const std::shared_ptr<const Type> returnType;
         const std::string name;
