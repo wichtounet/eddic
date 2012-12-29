@@ -17,13 +17,15 @@ namespace eddic {
 class FunctionContext;
 class Type;
 
+//TODO Improve encapsulation and constness of these structures
+
 /*!
  * \struct ParameterType
  * \brief A parameter for a function.  
  */
 struct ParameterType {
-    const std::string name;
-    const std::shared_ptr<const Type> paramType;
+    std::string name;
+    std::shared_ptr<const Type> paramType;
 
     ParameterType(const std::string& n, std::shared_ptr<const Type> t);
 };
