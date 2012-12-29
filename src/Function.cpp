@@ -13,31 +13,31 @@
 
 using namespace eddic;
 
-ParameterType::ParameterType(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type) {}
+Parameter::Parameter(const std::string& name, std::shared_ptr<const Type> type) : _name(name), _type(type) {}
 
-const std::string& ParameterType::name() const {
+const std::string& Parameter::name() const {
     return _name;
 }
 
-const std::shared_ptr<const Type>& ParameterType::type() const {
+const std::shared_ptr<const Type>& Parameter::type() const {
     return _type;
 }
 
 Function::Function(std::shared_ptr<const Type> ret, const std::string& n, const std::string& mangled_name) : returnType(ret), name(n), mangledName(mangled_name), references(0) {}
         
-const ParameterType& Function::parameter(std::size_t i) const {
+const Parameter& Function::parameter(std::size_t i) const {
     return m_parameters.at(i);
 }
 
-std::vector<ParameterType>& Function::parameters(){
+std::vector<Parameter>& Function::parameters(){
     return m_parameters;
 }
 
-const std::vector<ParameterType>& Function::parameters() const {
+const std::vector<Parameter>& Function::parameters() const {
     return m_parameters;
 }
 
-std::shared_ptr<const Type> Function::getParameterType(const std::string& name) const {
+std::shared_ptr<const Type> Function::getParameter(const std::string& name) const {
     for(auto& p : m_parameters){
         if(p.name() == name){
             return p.type();
@@ -48,7 +48,7 @@ std::shared_ptr<const Type> Function::getParameterType(const std::string& name) 
 }
 
 unsigned int Function::getParameterPositionByType(const std::string& name) const {
-    auto type = getParameterType(name);
+    auto type = getParameter(name);
 
     if(mtac::is_single_int_register(type)){
         unsigned int position = 0;

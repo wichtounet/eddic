@@ -29,7 +29,7 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
         throw SemanticalException("Cannot return array from function", declaration.Content->position);
     }
 
-    std::vector<ParameterType> parameters;
+    std::vector<Parameter> parameters;
     for(auto& param : declaration.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
         parameters.emplace_back(param.parameterName, paramType);
@@ -62,7 +62,7 @@ void ast::FunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration
 }
 
 void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
-    std::vector<ParameterType> parameters;
+    std::vector<Parameter> parameters;
     for(auto& param : constructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
         parameters.emplace_back(param.parameterName, paramType);
@@ -85,7 +85,7 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
 
 void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
     //This is necessary to collect the "this" parameter
-    std::vector<ParameterType> parameters;
+    std::vector<Parameter> parameters;
     for(auto& param : destructor.Content->parameters){
         auto paramType = visit(ast::TypeTransformer(context), param.parameterType);
         parameters.emplace_back(param.parameterName, paramType);

@@ -20,12 +20,12 @@ class Type;
 //TODO Improve encapsulation and constness of these structures
 
 /*!
- * \struct ParameterType
+ * \struct Parameter
  * \brief A parameter for a function.  
  */
-class ParameterType {
+class Parameter {
     public:
-        ParameterType(const std::string& name, std::shared_ptr<const Type> type);
+        Parameter(const std::string& name, std::shared_ptr<const Type> type);
 
         const std::string& name() const;
         const std::shared_ptr<const Type>& type() const;
@@ -46,12 +46,12 @@ class Function {
         Function(const Function& rhs) = delete;
         Function& operator=(const Function& rhs) = delete;
 
-        std::shared_ptr<const Type> getParameterType(const std::string& name) const;
+        std::shared_ptr<const Type> getParameter(const std::string& name) const;
         unsigned int getParameterPositionByType(const std::string& name) const;
 
-        const ParameterType& parameter(std::size_t i) const;
-        std::vector<ParameterType>& parameters();
-        const std::vector<ParameterType>& parameters() const;
+        const Parameter& parameter(std::size_t i) const;
+        std::vector<Parameter>& parameters();
+        const std::vector<Parameter>& parameters() const;
 
         bool operator==(const Function& rhs) const;
         
@@ -67,7 +67,7 @@ class Function {
         bool standard = false;
     
     private:
-        std::vector<ParameterType> m_parameters;
+        std::vector<Parameter> m_parameters;
 };
 
 } //end of eddic

@@ -75,7 +75,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     eddic_unreachable("Invalid type");
 }
 
-std::string eddic::mangle(const std::string& name, const std::vector<ParameterType>& parameters, std::shared_ptr<const Type> struct_type){
+std::string eddic::mangle(const std::string& name, const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     if(struct_type){
@@ -97,7 +97,7 @@ std::string eddic::mangle(const std::string& name, const std::vector<ParameterTy
     return ss.str();
 }
 
-std::string eddic::mangle_ctor(const std::vector<ParameterType>& parameters, std::shared_ptr<const Type> struct_type){
+std::string eddic::mangle_ctor(const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_C";
