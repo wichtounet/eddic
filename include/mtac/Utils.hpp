@@ -15,6 +15,7 @@
 
 #include "variant.hpp"
 #include "Type.hpp"
+#include "VisitorUtils.hpp"
 
 #include "mtac/Program.hpp"
 #include "mtac/Operator.hpp"

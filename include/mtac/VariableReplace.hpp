@@ -22,7 +22,7 @@ class Variable;
 
 namespace mtac {
 
-typedef std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> VariableClones;
+typedef std::unordered_map<std::shared_ptr<Variable>, mtac::Argument> VariableClones;
 
 struct VariableReplace : public boost::static_visitor<> {
     VariableClones& clones;

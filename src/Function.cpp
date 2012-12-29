@@ -75,3 +75,7 @@ unsigned int Function::getParameterPositionByType(const std::string& name) const
     }
 
 }
+
+bool Function::operator==(const Function& rhs) const {
+    return mangledName == rhs.mangledName;
+}
