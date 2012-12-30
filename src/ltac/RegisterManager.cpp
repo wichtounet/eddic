@@ -93,7 +93,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         } else {
             auto position = variable->position();
 
-            assert(position.isStack() || position.isGlobal() || position.isParameter());
+            eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
