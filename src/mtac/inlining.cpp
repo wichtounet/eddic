@@ -58,6 +58,27 @@ struct BBReplace : public boost::static_visitor<> {
     }
 };
 
+mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic_block_p bb){
+    auto safe_block = dest_function.new_bb();
+
+    //Insert the new basic block before the old one
+    dest_function.insert_before(dest_function.at(bb->next), safe_block);
+
+    safe_block->statements = std::move(bb->statements);
+
+    for(auto succ : bb->successors){
+        mtac::make_edge(safe_block, succ);
+    }
+    
+    while(!bb->successors.empty()){
+        mtac::remove_edge(bb, bb->successors[0]);
+    }
+
+    mtac::make_edge(bb, safe_block);
+
+    return safe_block;
+}
+
 BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
     LOG<Trace>("Inlining") << "Clone " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
@@ -87,7 +108,7 @@ BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, m
             bb_clones[block] = new_bb;
             cloned.push_back(new_bb);
 
-            dest_function.insert_before(dest_function.at(bb), new_bb);
+            dest_function.insert_before(dest_function.at(exit), new_bb);
         }
     }
 
@@ -446,14 +467,16 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                         variable_clones[variable] = dest_definition.context()->newVariable(variable);
                     }
 
-                    //Clone all the source basic blocks in the dest function
-                    auto bb_clones = clone(source_function, dest_function, basic_block, program.context);
-
-                    //Fix all the instructions (clones and return)
-                    adapt_instructions(variable_clones, bb_clones, call, basic_block);
-
                     //Erase the original call
                     it.erase();
+
+                    auto safe = create_safe_block(dest_function, basic_block);
+
+                    //Clone all the source basic blocks in the dest function
+                    auto bb_clones = clone(source_function, dest_function, safe, program.context);
+
+                    //Fix all the instructions (clones and return)
+                    adapt_instructions(variable_clones, bb_clones, call, safe);
 
                     //The target function is called one less time
                     program.context->removeReference(source_definition.mangled_name());
