@@ -7,11 +7,15 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include "Options.hpp"
 #include "Compiler.hpp"
 #include "Utils.hpp"
 #include "Platform.hpp"
+#include "GlobalContext.hpp"
+
+#include "mtac/Program.hpp"
 
 #define BOOST_TEST_MODULE eddic_test_suite
 #include <BoostTestTargetConfig.h>
@@ -554,6 +558,24 @@ BOOST_AUTO_TEST_SUITE(BugFixesSuite)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
     assert_output("while_bug.eddi", "W1W2W3W4W5");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+    
+/* Unit test for optimization regression */
+
+BOOST_AUTO_TEST_SUITE(OptimizationSuite)
+
+BOOST_AUTO_TEST_CASE( parameter_propagation ){
+    auto configuration = parse_options("test/cases/parameter_propagation.eddi", "--64", "--O2", "test/cases/parameter_propagation.eddi.out");
+
+    eddic::Compiler compiler;
+    auto pair = compiler.compile_mtac("test/cases/parameter_propagation.eddi", eddic::Platform::INTEL_X86_64, configuration);
+
+    auto global_context = pair.first->context;
+    auto& stats = global_context->stats();
+
+    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

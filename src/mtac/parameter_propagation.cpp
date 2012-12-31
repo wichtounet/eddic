@@ -128,7 +128,10 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     
                     for(auto& parameter : constant_parameters){
                         auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
+                        
                         log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
+                        mtac_function.context->global()->stats().inc_counter("propagated_parameter");
+
                         clones[param] = parameter.second;
                     }
 

@@ -227,6 +227,7 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_linked_list
     StandardLibSuite/std_vector
     BugFixesSuite/while_bug
+    OptimizationSuite/parameter_propagation
     #Unit tests
     toString
     toNumber
