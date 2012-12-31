@@ -10,6 +10,8 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Position.hpp"
+
 namespace eddic {
 
 namespace ast {
@@ -19,6 +21,7 @@ namespace ast {
  * \brief The AST node for an import.    
  */
 struct Import {
+    Position position;
     std::string file;
 };
 
@@ -29,6 +32,7 @@ struct Import {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Import, 
+    (eddic::ast::Position, position)
     (std::string, file)
 )
 

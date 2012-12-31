@@ -1,0 +1,11 @@
+void main(){
+    int a = 'a';
+}
+
+void test(){
+    int z = 77.7;
+}
+
+void asdf(){
+    int b = "asdf";
+}

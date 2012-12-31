@@ -18,6 +18,7 @@
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "Function.hpp"
 #include "Variable.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
@@ -393,7 +394,7 @@ inline bool is_nop(ltac::Statement& statement){
     return false;
 }
 
-bool basic_optimizations(mtac::function_p function, Platform platform){
+bool basic_optimizations(mtac::Function& function, Platform platform){
     bool optimized = false;
     
     for(auto& bb : function){
@@ -451,7 +452,7 @@ bool basic_optimizations(mtac::function_p function, Platform platform){
     return optimized;
 }
 
-bool constant_propagation(mtac::function_p function){
+bool constant_propagation(mtac::Function& function){
     bool optimized = false;
 
     for(auto& bb : function){
@@ -525,7 +526,7 @@ void remove_reg(std::unordered_map<ltac::Register, ltac::Register>& copies, ltac
     }
 }
 
-bool copy_propagation(mtac::function_p function, Platform platform){
+bool copy_propagation(mtac::Function& function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
 
     bool optimized = false;
@@ -598,19 +599,19 @@ void add_param_registers(RegisterUsage& usage, Platform platform){
     usage.insert(ltac::BP);
 }
 
-void add_escaped_registers(RegisterUsage& usage, mtac::function_p function, Platform platform){
+void add_escaped_registers(RegisterUsage& usage, mtac::Function& function, Platform platform){
     auto descriptor = getPlatformDescriptor(platform);
     
-    if(function->definition.returnType == STRING){
+    if(function.definition().return_type() == STRING){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
         usage.insert(ltac::Register(descriptor->int_return_register2()));
-    } else if(function->definition.returnType != VOID){
+    } else if(function.definition().return_type() != VOID){
         usage.insert(ltac::Register(descriptor->int_return_register1()));
     }
 
     add_param_registers(usage, platform);
 
-    for(auto& var : function->context->stored_variables()){
+    for(auto& var : function.context->stored_variables()){
         if(var->position().is_register() && mtac::is_single_int_register(var->type())){
             usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }
@@ -638,7 +639,7 @@ void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
     }   
 }
 
-RegisterUsage collect_register_usage(mtac::function_p function, Platform platform){
+RegisterUsage collect_register_usage(mtac::Function& function, Platform platform){
     RegisterUsage usage;
     add_escaped_registers(usage, function, platform);
 
@@ -674,7 +675,7 @@ inline bool one_of(const T& value, const std::vector<T>& container){
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
-bool dead_code_elimination(mtac::function_p function){
+bool dead_code_elimination(mtac::Function& function){
     bool optimized = false;
 
     ltac::LiveRegistersProblem problem;
@@ -783,7 +784,7 @@ bool move_forward(BIt& bit, BIt& bend, It& it, It& end){
     return false;
 }
 
-bool conditional_move(mtac::function_p function, Platform platform){
+bool conditional_move(mtac::Function& function, Platform platform){
     bool optimized = false;
 
     RegisterUsage usage = collect_register_usage(function, platform);
@@ -793,8 +794,8 @@ bool conditional_move(mtac::function_p function, Platform platform){
         return optimized;
     }
 
-    auto bit = function->begin();
-    auto bend = function->end();
+    auto bit = function.begin();
+    auto bend = function.end();
 
     auto& bb = *bit;
 
@@ -914,7 +915,7 @@ bool conditional_move(mtac::function_p function, Platform platform){
     return optimized;
 }
 
-bool debug(const std::string& name, bool b, mtac::function_p function){
+bool debug(const std::string& name, bool b, mtac::Function& function){
     if(log::enabled<Debug>()){
         if(b){
             LOG<Debug>("Peephole") << name << " returned true" << log::endl;
@@ -937,7 +938,7 @@ void eddic::ltac::optimize(mtac::Program& program, Platform platform){
 
     for(auto& function : program.functions){
         if(log::enabled<Debug>()){
-            LOG<Debug>("Peephole") << "Start optimizations on " << function->get_name() << log::endl;
+            LOG<Debug>("Peephole") << "Start optimizations on " << function.get_name() << log::endl;
 
             //Print the function
             ltac::Printer printer;

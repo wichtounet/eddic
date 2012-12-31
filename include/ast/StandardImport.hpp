@@ -10,6 +10,8 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "ast/Position.hpp"
+
 namespace eddic {
 
 namespace ast {
@@ -19,9 +21,8 @@ namespace ast {
  * \brief The AST node for an import of the standard import. 
  */
 struct StandardImport {
-    std::string ignoreLess;
+    Position position;
     std::string header;
-    std::string ignoreGreater;
 };
 
 } //end of ast
@@ -31,9 +32,8 @@ struct StandardImport {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StandardImport, 
-    (std::string, ignoreLess)       //Uglyfix in order to get the real value of header (ignoring <)
+    (eddic::ast::Position, position)
     (std::string, header)
-    (std::string, ignoreGreater)    //Uglyfix in order to get the real value of header (ignoring >)
 )
 
 #endif

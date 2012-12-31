@@ -42,7 +42,7 @@ class RegisterManager {
 
         mtac::basic_block_p bb;
 
-        RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        RegisterManager(mtac::Function& function, std::shared_ptr<FloatPool> float_pool);
 
         /*!
          * Deleted copy constructor
@@ -90,7 +90,7 @@ class RegisterManager {
         //Allow to push needed register before the first push param
         bool first_param = true;
         
-        mtac::function_p function;
+        mtac::Function& function;
 
         std::shared_ptr<FloatPool> float_pool;
 

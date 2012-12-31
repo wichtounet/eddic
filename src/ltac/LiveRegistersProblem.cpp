@@ -160,22 +160,22 @@ inline void meet(Domain& in, const Domain& out){
 
 } //End of anonymous namespace
 
-ProblemDomain ltac::LiveRegistersProblem::Boundary(mtac::function_p /*function*/){
+ProblemDomain ltac::LiveRegistersProblem::Boundary(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }
 
-ProblemDomain ltac::LiveRegistersProblem::Init(mtac::function_p /*function*/){
+ProblemDomain ltac::LiveRegistersProblem::Init(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }
     
-PseudoProblemDomain ltac::LivePseudoRegistersProblem::Boundary(mtac::function_p /*function*/){
+PseudoProblemDomain ltac::LivePseudoRegistersProblem::Boundary(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }
 
-PseudoProblemDomain ltac::LivePseudoRegistersProblem::Init(mtac::function_p /*function*/){
+PseudoProblemDomain ltac::LivePseudoRegistersProblem::Init(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }

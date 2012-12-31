@@ -49,6 +49,14 @@ class DependencyVisitor : public boost::static_visitor<> {
                 resolveDependencies(dependency, parser); 
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
+                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                        ptr->Content->standard = true;
+                        ptr->Content->header = import.header;
+                    } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                        ptr->Content->standard = true;
+                        ptr->Content->header = import.header;
+                    }
+
                     blocks.push_back(block);
                 }
             } else {
@@ -70,6 +78,12 @@ class DependencyVisitor : public boost::static_visitor<> {
                 resolveDependencies(dependency, parser); 
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
+                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                        ptr->Content->header = import.file;
+                    } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                        ptr->Content->header = import.file;
+                    }
+
                     blocks.push_back(block);
                 }
             } else {

@@ -42,8 +42,8 @@ template<DataFlowType Type, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
-    virtual ProblemDomain Boundary(mtac::function_p function);
-    virtual ProblemDomain Init(mtac::function_p function);
+    virtual ProblemDomain Boundary(mtac::Function& function);
+    virtual ProblemDomain Init(mtac::Function& function);
 
     /*!
      * \brief Meet two lattices
@@ -68,13 +68,13 @@ struct DataFlowProblem {
 };
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::function_p/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::Function&/* function*/) -> ProblemDomain {
     //By default, return the default element
     return default_element();
 }
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init(mtac::function_p/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Init(mtac::Function&/* function*/) -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }

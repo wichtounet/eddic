@@ -8,6 +8,8 @@
 #include "logging.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/PassManager.hpp"
 #include "ast/Pass.hpp"
@@ -50,20 +52,35 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
     }
 }
     
-void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program){
+void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::shared_ptr<Configuration> configuration){
     LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
+    program.Content->context->stats().inc_counter("passes");
 
     for(unsigned int i = 0; i < pass->passes(); ++i){
         pass->set_current_pass(i);
         pass->apply_program(program, false);
 
+        bool valid = true;
+
         std::vector<ast::SourceFileBlock> blocks = program.Content->blocks;
         for(auto& block : blocks){
-            if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                pass->apply_function(*ptr);
-            } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-                apply_pass(pass, *ptr);
+            try {
+                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                    pass->apply_function(*ptr);
+                } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                    apply_pass(pass, *ptr);
+                }
+            } catch (const SemanticalException& e){
+                if(!configuration->option_defined("quiet")){
+                    output_exception(e);
+                }
+
+                valid = false;
             }
+        }
+
+        if(!valid){
+            throw TerminationException();
         }
     }
 }
@@ -148,6 +165,7 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            program.Content->context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -182,6 +200,7 @@ void ast::PassManager::struct_instantiated(ast::Struct& struct_){
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
+            program.Content->context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
             pass->apply_program(program, true);
@@ -209,6 +228,8 @@ void ast::PassManager::dec_depth(){
 }
 
 void ast::PassManager::run_passes(){
+    program.Content->context = std::make_shared<GlobalContext>(platform);
+    
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
         //They won't be applied on later instantiated function templates and class templates
@@ -227,7 +248,7 @@ void ast::PassManager::run_passes(){
             //The next passes will have to apply it again to fresh functions
             applied_passes.push_back(pass);
 
-            apply_pass(pass, program);
+            apply_pass(pass, program, configuration);
 
             //Add the instantiated class and function templates to the actual program
     

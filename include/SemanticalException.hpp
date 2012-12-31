@@ -46,6 +46,8 @@ class SemanticalException: public std::exception {
         virtual const char* what() const throw();
 };
 
+void output_exception(const SemanticalException& e);
+
 } //end of eddic
 
 #endif

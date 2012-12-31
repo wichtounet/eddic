@@ -31,7 +31,7 @@ mtac::Argument variant_cast(Offset source){
 void mtac::resolve_references(mtac::Program& program){
     for(auto& function : program.functions){
         //This pass is run before basic blocks are extracted
-        auto& statements = function->get_statements();
+        auto& statements = function.get_statements();
 
         auto it = iterate(statements);
 
@@ -50,14 +50,14 @@ void mtac::resolve_references(mtac::Program& program){
 
                     if(var->is_reference()){
                         if(var->type()->is_dynamic_array()){
-                            auto ptr_temp = function->context->new_temporary(var->type());
+                            auto ptr_temp = function.context->new_temporary(var->type());
                             
                             quadruple->arg1 = ptr_temp;
                             
                             it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                         } else {
                             auto index = *quadruple->arg2;
-                            auto temp = function->context->new_temporary(INT);
+                            auto temp = function.context->new_temporary(INT);
 
                             //The reference itself is replaced by its pointed var
                             quadruple->arg1 = var->reference();
@@ -76,13 +76,13 @@ void mtac::resolve_references(mtac::Program& program){
                     auto var = quadruple->result;
 
                     if(var->type()->is_dynamic_array()){
-                        auto ptr_temp = function->context->new_temporary(var->type());
+                        auto ptr_temp = function.context->new_temporary(var->type());
 
                         quadruple->result = ptr_temp;
 
                         it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                     } else {
-                        auto temp = function->context->new_temporary(INT);
+                        auto temp = function.context->new_temporary(INT);
                         auto index = *quadruple->arg1;
                         
                         //The reference itself is replaced by its pointed var

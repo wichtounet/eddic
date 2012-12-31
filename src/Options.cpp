@@ -64,6 +64,7 @@ void init_descriptions(){
         ("warning-unused", "Warn about unused variables, parameters and functions")
         ("warning-cast", "Warn about useless casts")
         ("warning-effects", "Warn about statements without effect")
+        ("warning-includes", "Warn about useless includes")
         ;
     
     po::options_description display("Display options");
@@ -103,14 +104,15 @@ void init_descriptions(){
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
         ("single-threaded", "Disable the multi-threaded optimization")
-        ("timing", "Activate timing system")
+        ("time", "Activate the timing system")
+        ("stats", "Activate the statistics system")
         ("input", po::value<std::string>(), "Input file")
         ;
 
     all.add(general).add(display).add(optimization).add(backend);
     visible.add(general).add(display).add(optimization);
 
-    add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects"});
+    add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects", "warning-includes"});
     
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});

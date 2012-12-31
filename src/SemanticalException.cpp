@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <iostream>
+
 #include "SemanticalException.hpp"
 
 using namespace eddic;
@@ -24,4 +26,14 @@ const std::string& SemanticalException::message() const {
 
 boost::optional<eddic::ast::Position> SemanticalException::position() const {
     return m_position;
+}
+
+void eddic::output_exception(const SemanticalException& e){
+    if(e.position()){
+        auto& position = *e.position();
+
+        std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
+    } else {
+        std::cout << e.what() << std::endl;
+    }
 }

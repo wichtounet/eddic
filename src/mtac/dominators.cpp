@@ -18,7 +18,7 @@ using namespace eddic;
 
 struct dominators {
     const std::size_t cn;
-    mtac::function_p function;
+    mtac::Function& function;
 
     std::vector<unsigned int> parent;
     std::vector<unsigned int> semi;
@@ -36,7 +36,7 @@ struct dominators {
     std::unordered_map<mtac::basic_block_p, unsigned int> numbers;
     std::unordered_map<unsigned int, mtac::basic_block_p> blocks;
 
-    dominators(std::size_t cn, mtac::function_p function) : cn(cn), function(function), 
+    dominators(std::size_t cn, mtac::Function& function) : cn(cn), function(function), 
             parent(cn+1), semi(cn+1), vertex(cn+1), dom(cn+1), size(cn+1), child(cn+1), label(cn+1), ancestor(cn+1),
             succ(cn+1), pred(cn+1), bucket(cn+1) {
 
@@ -204,8 +204,8 @@ struct dominators {
     }
 };
 
-void mtac::compute_dominators(std::shared_ptr<Function> function){
-    auto n = function->bb_count();
+void mtac::compute_dominators(mtac::Function& function){
+    auto n = function.bb_count();
 
     dominators dom(n, function);
     dom.compute_dominators();

@@ -29,7 +29,7 @@ class StatementCompiler : public boost::static_visitor<> {
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 
-        StatementCompiler(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        StatementCompiler(mtac::Function& function, std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -65,7 +65,7 @@ class StatementCompiler : public boost::static_visitor<> {
    
     private:
         //The function being compiled
-        mtac::function_p function;
+        mtac::Function& function;
 
         std::shared_ptr<FloatPool> float_pool;
 

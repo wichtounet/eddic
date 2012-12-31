@@ -23,7 +23,7 @@
 
 using namespace eddic;
 
-bool mtac::dead_code_elimination::operator()(mtac::function_p function){
+bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     bool optimized = false;
 
     mtac::LiveVariableAnalysisProblem problem;
@@ -37,7 +37,7 @@ bool mtac::dead_code_elimination::operator()(mtac::function_p function){
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 if(mtac::erase_result((*ptr)->op)){
-                    if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                    if(results->OUT_S[statement].top() || results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
                         it.erase();
                         optimized=true;
                         continue;
@@ -83,8 +83,8 @@ bool mtac::dead_code_elimination::operator()(mtac::function_p function){
                     if(!quadruple->result->type()->is_pointer() && !quadruple->result->type()->is_array()){
                         if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
                             if(quadruple->result->type()->is_custom_type() || quadruple->result->type()->is_template_type()){
-                                auto struct_type = function->context->global()->get_struct(quadruple->result->type()->mangle());
-                                auto member_type = function->context->global()->member_type(struct_type, *offset_ptr);
+                                auto struct_type = function.context->global()->get_struct(quadruple->result->type()->mangle());
+                                auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
                                 if(member_type->is_pointer()){
                                     ++it;

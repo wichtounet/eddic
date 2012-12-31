@@ -13,6 +13,7 @@
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "Function.hpp"
 
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/Value.hpp"
@@ -75,7 +76,7 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
     eddic_unreachable("Invalid type");
 }
 
-std::string eddic::mangle(const std::string& name, const std::vector<ParameterType>& parameters, std::shared_ptr<const Type> struct_type){
+std::string eddic::mangle(const std::string& name, const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     if(struct_type){
@@ -89,23 +90,23 @@ std::string eddic::mangle(const std::string& name, const std::vector<ParameterTy
     ss << name;
 
     for(auto& type : parameters){
-        if(type.name != "this"){
-            ss << type.paramType->mangle();
+        if(type.name() != "this"){
+            ss << type.type()->mangle();
         }
     }
 
     return ss.str();
 }
 
-std::string eddic::mangle_ctor(const std::vector<ParameterType>& parameters, std::shared_ptr<const Type> struct_type){
+std::string eddic::mangle_ctor(const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type){
     std::ostringstream ss;
 
     ss << "_C";
     ss << struct_type->mangle();
 
     for(auto& type : parameters){
-        if(type.name != "this"){
-            ss << type.paramType->mangle();
+        if(type.name() != "this"){
+            ss << type.type()->mangle();
         }
     }
 

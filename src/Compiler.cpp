@@ -14,6 +14,8 @@
 #include "Utils.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
+#include "GlobalContext.hpp"
 
 #include "FrontEnd.hpp"
 #include "FrontEnds.hpp"
@@ -81,8 +83,10 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
     int code = 0; 
 
+    std::unique_ptr<mtac::Program> program;
+
     try {
-        auto program = front_end->compile(file, platform);
+        program = front_end->compile(file, platform);
 
         //If program is null, it means that the user didn't wanted it
         if(program){
@@ -124,16 +128,21 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
-            if(e.position()){
-                auto& position = *e.position();
-
-                std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-            } else {
-                std::cout << e.what() << std::endl;
-            }
+            output_exception(e);
         }
 
         code = 1;
+    } catch (const TerminationException&) {
+        code = 1;
+    }
+
+    //Display stats if necessary
+    if(configuration->option_defined("stats")){
+        std::cout << "Statistics" << std::endl;
+
+        for(auto& counter : program->context->stats()){
+            std::cout << "\t" << counter.first << ":" << counter.second << std::endl;
+        }
     }
 
     return code;

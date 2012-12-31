@@ -46,7 +46,7 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : function(function), float_pool(float_pool){
+ltac::RegisterManager::RegisterManager(mtac::Function& function, std::shared_ptr<FloatPool> float_pool) : function(function), float_pool(float_pool){
         //Nothing else to init
 }
 
@@ -93,7 +93,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         } else {
             auto position = variable->position();
 
-            assert(position.isStack() || position.isGlobal() || position.isParameter());
+            eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
@@ -211,7 +211,7 @@ bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
     
 void ltac::RegisterManager::collect_parameters(eddic::Function& definition, const PlatformDescriptor* descriptor){
     for(auto& parameter : definition.parameters()){
-        auto param = definition.context->getVariable(parameter.name);
+        auto param = definition.context()->getVariable(parameter.name());
 
         if(param->position().isParamRegister()){
             if(mtac::is_single_int_register(param->type())){

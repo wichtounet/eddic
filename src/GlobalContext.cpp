@@ -193,26 +193,26 @@ bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_)
 }
 
 void GlobalContext::addReference(const std::string& function){
-    ++(getFunction(function).references);
+    ++(getFunction(function).references());
 }
 
 void GlobalContext::removeReference(const std::string& function){
-    --(getFunction(function).references);
+    --(getFunction(function).references());
 }
 
 int GlobalContext::referenceCount(const std::string& function){
-    return getFunction(function).references;
+    return getFunction(function).references();
 }
 
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
     auto& printFunction = add_function(VOID, "print", function);
-    printFunction.standard = true;
+    printFunction.standard() = true;
     printFunction.parameters().emplace_back("a", parameterType);
 }
 
 void GlobalContext::defineStandardFunctions(){
     auto& printLineFunction = add_function(VOID, "print", "_F7println");
-    printLineFunction.standard = true;
+    printLineFunction.standard() = true;
 
     //print string
     addPrintFunction("_F5printS", STRING);
@@ -231,26 +231,26 @@ void GlobalContext::defineStandardFunctions(){
     addPrintFunction("_F7printlnF", FLOAT);
 
     auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
-    read_char_function.standard = true;
+    read_char_function.standard() = true;
     
     //alloc function
     auto& allocFunction = add_function(new_pointer_type(INT), "alloc", "_F5allocI");
-    allocFunction.standard = true;
+    allocFunction.standard() = true;
     allocFunction.parameters().emplace_back("a", INT);
     
     //free function
     auto& freeFunction = add_function(VOID, "free", "_F4freePI");
-    freeFunction.standard = true;
+    freeFunction.standard() = true;
     freeFunction.parameters().emplace_back("a", INT);
     
     //time function
     auto& timeFunction = add_function(VOID, "time", "_F4timeAI");
-    timeFunction.standard = true;
+    timeFunction.standard() = true;
     timeFunction.parameters().emplace_back("a", new_array_type(INT));
     
     //duration function
     auto& durationFunction = add_function(VOID, "duration", "_F8durationAIAI");
-    durationFunction.standard = true;
+    durationFunction.standard() = true;
     durationFunction.parameters().emplace_back("a", new_array_type(INT));
     durationFunction.parameters().emplace_back("b", new_array_type(INT));
 }
@@ -261,4 +261,8 @@ const GlobalContext::FunctionMap& GlobalContext::functions() const {
 
 Platform GlobalContext::target_platform() const {
     return platform;
+}
+
+statistics& GlobalContext::stats(){
+    return m_statistics;
 }

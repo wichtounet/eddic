@@ -11,50 +11,11 @@
 #include "logging.hpp"
 #include "GlobalContext.hpp"
 
-#include "mtac/FunctionOptimizations.hpp"
+#include "mtac/remove_empty_functions.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Statement.hpp"
 
 using namespace eddic;
-
-namespace {
-
-void remove_references(mtac::Program& program, mtac::function_p function){
-    for(auto& bb : function){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                program.context->removeReference((*ptr)->function); 
-            }
-        }
-    }
-}
-
-} //end of anonymous namespace
-
-bool mtac::remove_unused_functions::operator()(mtac::Program& program){
-    auto it = iterate(program.functions);
-
-    while(it.has_next()){
-        auto function = *it;
-
-        if(program.context->referenceCount(function->get_name()) == 0){
-            remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused function " << function->get_name() << log::endl;
-            it.erase();
-            continue;
-        } else if(program.context->referenceCount(function->get_name()) == 1 && mtac::is_recursive(function)){
-            remove_references(program, function);
-            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function->get_name() << log::endl;
-            it.erase();
-            continue;
-        } 
-
-        ++it;
-    }
-
-    //Not necessary to restart the other passes
-    return false;
-}
 
 bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
@@ -62,17 +23,17 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     auto it = iterate(program.functions);
 
     while(it.has_next()){
-        auto function = *it;
+        auto& function = *it;
 
-        if(function->get_name() == "_F4main" || function->get_name() == "_F4mainAS"){
+        if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
             ++it;
             continue;
         }
 
-        unsigned int statements = function->size();
+        unsigned int statements = function.size();
 
         if(statements == 0){
-            removed_functions.push_back(function->get_name());
+            removed_functions.push_back(function.get_name());
             it.erase();
         } else {
             ++it;

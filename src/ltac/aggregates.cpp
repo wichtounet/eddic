@@ -24,7 +24,7 @@ void ltac::allocate_aggregates(mtac::Program& program){
     auto platform = global_context->target_platform();
 
     for(auto& function : program.functions){
-        auto& function_context = function->context;
+        auto& function_context = function.context;
 
         //Consider only user functions
         if(function_context){

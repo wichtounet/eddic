@@ -16,7 +16,7 @@ namespace eddic {
 
 namespace mtac {
 
-void compute_dominators(std::shared_ptr<Function> function);
+void compute_dominators(mtac::Function& function);
 
 } //end of mtac
 

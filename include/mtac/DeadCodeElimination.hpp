@@ -18,7 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct dead_code_elimination {
-    bool operator()(mtac::function_p function);
+    bool operator()(mtac::Function& function);
 };
 
 template<>
