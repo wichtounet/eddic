@@ -42,7 +42,7 @@ class RegisterManager {
 
         mtac::basic_block_p bb;
 
-        RegisterManager(mtac::Function& function, std::shared_ptr<FloatPool> float_pool);
+        RegisterManager(std::shared_ptr<FloatPool> float_pool);
 
         /*!
          * Deleted copy constructor
@@ -87,11 +87,6 @@ class RegisterManager {
         void remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable);
     
     private: 
-        //Allow to push needed register before the first push param
-        bool first_param = true;
-        
-        mtac::Function& function;
-
         std::shared_ptr<FloatPool> float_pool;
 
         //The pseudo registers

@@ -41,7 +41,7 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
 } //end of anonymous namespace
 
 ltac::StatementCompiler::StatementCompiler(mtac::Function& function, std::shared_ptr<FloatPool> float_pool) : 
-        manager(function, float_pool), function(function), float_pool(float_pool) {}
+        manager(float_pool), function(function), float_pool(float_pool) {}
 
 void ltac::StatementCompiler::end_bb(){
     if(ended){
