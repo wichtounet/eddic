@@ -16,7 +16,7 @@
 
 using namespace eddic;
         
-GlobalContext::GlobalContext(Platform platform) : Context(NULL), platform(platform) {
+GlobalContext::GlobalContext(Platform platform) : Context(nullptr), platform(platform) {
     Val zero = 0;
 
     variables["_mem_start"] = std::make_shared<Variable>("_mem_start", INT, Position(PositionType::GLOBAL, "_mem_start"), zero);
