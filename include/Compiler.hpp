@@ -10,10 +10,17 @@
 
 #include <string>
 #include <memory>
+#include <utility>
 
 #include "Platform.hpp"
 
 namespace eddic {
+
+class FrontEnd;
+
+namespace mtac {
+struct Program;
+};
 
 struct Configuration;
 
@@ -39,6 +46,8 @@ struct Compiler {
      * \return Return code of the compilation process. Numbers other than 0 indicates an error. 
      */
     int compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration);
+
+    std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration);
 };
 
 } //end of eddic
