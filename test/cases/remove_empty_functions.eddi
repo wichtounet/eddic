@@ -1,0 +1,7 @@
+void main(){
+    asdf(9);
+}
+
+void asdf(int a){
+    
+}

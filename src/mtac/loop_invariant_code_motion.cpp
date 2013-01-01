@@ -11,6 +11,7 @@
 #include "iterators.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 #include "Variable.hpp"
@@ -145,6 +146,8 @@ bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::Function
                     if(!pre_header){
                         pre_header = create_pre_header(loop, function);
                     }
+
+                    function.context->global()->stats().inc_counter("invariant_moved");
 
                     it.erase();
                     pre_header->statements.push_back(statement);

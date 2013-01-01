@@ -566,16 +566,50 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(OptimizationSuite)
 
-BOOST_AUTO_TEST_CASE( parameter_propagation ){
-    auto configuration = parse_options("test/cases/parameter_propagation.eddi", "--64", "--O2", "test/cases/parameter_propagation.eddi.out");
+eddic::statistics& compute_stats(const std::string& file){
+    auto configuration = parse_options("test/cases/" + file, "--64", "--O2", "test/cases/" + file + ".out");
 
     eddic::Compiler compiler;
-    auto pair = compiler.compile_mtac("test/cases/parameter_propagation.eddi", eddic::Platform::INTEL_X86_64, configuration);
+    auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
 
     auto global_context = pair.first->context;
-    auto& stats = global_context->stats();
+    return global_context->stats();
+}
+
+BOOST_AUTO_TEST_CASE( parameter_propagation ){
+    auto& stats = compute_stats("parameter_propagation.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
+}
+
+BOOST_AUTO_TEST_CASE( remove_empty_functions ){
+    auto& stats = compute_stats("remove_empty_functions.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("empty_function_removed"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( remove_empty_loops ){
+    auto& stats = compute_stats("remove_empty_loops.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("empty_loop_removed"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( invariant_code_motion ){
+    auto& stats = compute_stats("invariant_code_motion.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
+    auto& stats = compute_stats("complete_loop_peeling.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( loop_unrolling ){
+    auto& stats = compute_stats("loop_unrolling.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_unrolled"), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
