@@ -212,6 +212,8 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << " : " << quadruple->depth << endl;
         } else if(op == mtac::Operator::NOP){
             stream << "\tnop" << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::LABEL){
+            stream << "\t" << printArg(*quadruple->arg1) << ":" << endl;
         }
     }
 
@@ -305,10 +307,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
 
         stream << "call " << call->function << " : " << call->depth << endl;
-    }
-
-    void operator()(std::string& label){
-        stream << "\t" << label << ":" << endl;
     }
 };
 

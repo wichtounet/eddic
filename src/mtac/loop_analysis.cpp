@@ -25,10 +25,6 @@ using namespace eddic;
 namespace {
 
 struct DepthInit : public boost::static_visitor<void> {
-    void operator()(std::string){
-        //Nothing
-    }
-    
     template<typename T>
     void operator()(T t){
         t->depth = 0;
@@ -36,10 +32,6 @@ struct DepthInit : public boost::static_visitor<void> {
 };
 
 struct DepthIncrementer : public boost::static_visitor<void> {
-    void operator()(std::string){
-        //Nothing
-    }
-    
     template<typename T>
     void operator()(T t){
         ++t->depth;
