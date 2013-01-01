@@ -1486,12 +1486,11 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
         case mtac::Operator::AND:
             compile_AND(quadruple);
             break;
+        case mtac::Operator::LABEL:
+            bb->l_statements.push_back(boost::get<std::string>(*quadruple->arg1));
+            break;
         case mtac::Operator::NOP:
             //No code necessary
             break;
     }
-}
-
-void ltac::StatementCompiler::operator()(std::string& str){
-    bb->l_statements.push_back(str);
 }
