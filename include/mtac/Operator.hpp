@@ -69,7 +69,9 @@ enum class Operator : unsigned int {
     
     RETURN,         //return from a function
 
-    NOP             //for optimization purpose
+    NOP,            //for optimization purpose
+
+    LABEL
 };
 
 mtac::Operator toOperator(ast::Operator op);
