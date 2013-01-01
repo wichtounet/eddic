@@ -1,18 +1,16 @@
 include<vector>
 
-const int SIZE = 20;
 const int LENGTH = 14;
 str word = "asymptotically";
 
 void main(){
     vector<char> guessed;
-    int state = 0;
-    int count = -1;
+    bool continue = true;
 
     println("Try to guess the word");
     print_word(&guessed);
 
-    while(state == 0){
+    while(continue){
         print("Guess a char: ");
         guessed.push_back(get_char());
         println();
@@ -21,10 +19,10 @@ void main(){
 
         if(complete(&guessed)){
             println("Congratulations, you guessed it !");
-            state = 1;
+            continue = false;
         } else if(guessed.size() == 19){
             println("Too many guesses. Game over !");
-            state = 2;
+            continue = false;
         }
     }
 }
