@@ -271,10 +271,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->block = goto_->block;
         return copy;
     }
-
-    mtac::Statement operator()(const std::string& str){
-        return str;
-    }
 };
 
 }
