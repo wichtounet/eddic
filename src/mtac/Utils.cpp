@@ -163,7 +163,9 @@ bool eddic::mtac::erase_result(mtac::Operator op){
            op != mtac::Operator::DOT_ASSIGN 
         && op != mtac::Operator::DOT_FASSIGN 
         && op != mtac::Operator::DOT_PASSIGN 
-        && op != mtac::Operator::RETURN; 
+        && op != mtac::Operator::RETURN
+        && op != mtac::Operator::NOP
+        && op != mtac::Operator::LABEL; 
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){
