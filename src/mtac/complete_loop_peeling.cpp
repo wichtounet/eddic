@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "iterators.hpp"
+#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 
 #include "mtac/Loop.hpp"
@@ -36,6 +37,8 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 auto bb = *loop->begin();
 
                 optimized = true;
+
+                function.context->global()->stats().inc_counter("loop_peeled");
 
                 //The comparison is not necessary anymore
                 bb->statements.pop_back();

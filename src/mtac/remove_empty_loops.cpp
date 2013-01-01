@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "iterators.hpp"
+#include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
@@ -58,6 +59,8 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
                         }
 
                         if(loop_removed){
+                            function.context->global()->stats().inc_counter("empty_loop_removed");
+
                             //It is not a loop anymore
                             mtac::remove_edge(bb, bb);
 

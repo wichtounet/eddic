@@ -45,7 +45,7 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
         block->label = newLabel();
     }
     
-    StatementCompiler compiler(function, float_pool);
+    StatementCompiler compiler(float_pool);
     compiler.descriptor = getPlatformDescriptor(platform);
     compiler.platform = platform;
     compiler.configuration = configuration;

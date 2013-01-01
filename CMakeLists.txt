@@ -227,6 +227,12 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_linked_list
     StandardLibSuite/std_vector
     BugFixesSuite/while_bug
+    OptimizationSuite/parameter_propagation
+    OptimizationSuite/remove_empty_functions
+    OptimizationSuite/remove_empty_loops
+    OptimizationSuite/invariant_code_motion
+    OptimizationSuite/complete_loop_peeling
+    OptimizationSuite/loop_unrolling
     #Unit tests
     toString
     toNumber
