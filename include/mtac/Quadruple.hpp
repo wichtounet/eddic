@@ -36,8 +36,6 @@ struct Quadruple {
     mtac::Size size = mtac::Size::DEFAULT;
     unsigned int depth;
     
-    std::string label;
-    
     //Filled only in later phase replacing the label
     basic_block_p block;
 
