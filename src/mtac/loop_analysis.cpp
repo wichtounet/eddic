@@ -29,10 +29,6 @@ struct DepthInit : public boost::static_visitor<void> {
         //Nothing
     }
     
-    void operator()(std::shared_ptr<mtac::NoOp>){
-        //Nothing
-    }
-    
     template<typename T>
     void operator()(T t){
         t->depth = 0;
@@ -41,10 +37,6 @@ struct DepthInit : public boost::static_visitor<void> {
 
 struct DepthIncrementer : public boost::static_visitor<void> {
     void operator()(std::string){
-        //Nothing
-    }
-    
-    void operator()(std::shared_ptr<mtac::NoOp>){
         //Nothing
     }
     

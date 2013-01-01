@@ -1492,10 +1492,6 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
     }
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::NoOp>){
-    //Nothing to do
-}
-
 void ltac::StatementCompiler::operator()(std::string& str){
     bb->l_statements.push_back(str);
 }

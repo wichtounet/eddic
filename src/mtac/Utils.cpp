@@ -272,10 +272,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         return copy;
     }
 
-    mtac::Statement operator()(std::shared_ptr<mtac::NoOp>){
-        return std::make_shared<mtac::NoOp>();
-    }
-
     mtac::Statement operator()(const std::string& str){
         return str;
     }

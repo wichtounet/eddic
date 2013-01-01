@@ -192,10 +192,7 @@ struct pass_runner {
             auto it = iterate(block->statements);
 
             while(it.has_next()){
-                if(unlikely(boost::get<std::shared_ptr<mtac::NoOp>>(&*it))){
-                    it.erase();
-                    continue;
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
+                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
                     if((*ptr)->op == mtac::Operator::NOP){
                         it.erase();
                         continue;

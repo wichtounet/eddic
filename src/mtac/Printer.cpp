@@ -289,10 +289,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         stream << "\tgoto " << printTarget(goto_) << " : " << goto_->depth << endl;
     }
 
-    void operator()(std::shared_ptr<mtac::NoOp>){
-        stream << "\tno-op" << endl;
-    }
-
     void operator()(std::shared_ptr<mtac::Call> call){
         stream << "\t";
 
