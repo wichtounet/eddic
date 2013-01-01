@@ -27,7 +27,6 @@ struct ASTConstructor {
     std::shared_ptr<FunctionContext> context;
     
     std::string mangledName;
-    std::string struct_name;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
     Position position;

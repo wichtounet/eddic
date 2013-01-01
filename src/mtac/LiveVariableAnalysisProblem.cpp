@@ -32,37 +32,30 @@ std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& v
     return stream << "}";
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::function_p function){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
     auto value = default_element();
     return value;
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::function_p /*function*/){
+ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, ProblemDomain& in){
+void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDomain& in){
     if(out.top()){
-        return in;
+        out = in;
+        return;
     } else if(in.top()){
-        return out;
+        //out does not change
+        return;
     }
-
-    typename ProblemDomain::Values values;
-    ProblemDomain result(values);
 
     for(auto& value : in.values()){
-        result.values().insert(value);
+        out.values().insert(value);
     }
-    
-    for(auto& value : out.values()){
-        result.values().insert(value);
-    }
-
-    return result;
 }
 
 namespace {

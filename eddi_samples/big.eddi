@@ -1,7 +1,7 @@
 void main(){
     int a = 222;
     int c = 99;
-    string b = "asdf";
+    str b = "asdf";
     print(1);
     print("Test");
     print(a);

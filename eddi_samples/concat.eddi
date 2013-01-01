@@ -1,11 +1,10 @@
-void main(){
-	string a = "asdf";
-	string b = "jklé";
-	string c = a + b;
-    string d = c + b;
-    string e = c + d;
+include<strings>
 
-	println(c);
-	println(d);
-    println(e);
+void main(){
+	string a("asdf");
+	string b("jklé");
+
+    a.append(b);
+
+	print(a);
 }

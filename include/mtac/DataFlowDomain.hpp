@@ -36,6 +36,10 @@ struct Domain {
     DomainValues& values(){
         return *int_values;
     }
+    
+    const DomainValues& values() const {
+        return *int_values;
+    }
 
     bool top() const {
         return !int_values;
@@ -60,37 +64,55 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
         return *int_values;
     }
 
-    Value& operator[](Key key){
+    Value& operator[](const Key& key){
         assert(int_values);
 
         return (*int_values)[key];
     }
-
-    auto begin() -> decltype((*int_values).begin()) {
+    
+    typename Values::iterator begin(){
         assert(int_values);
 
         return (*int_values).begin();
     }
 
-    auto end() -> decltype((*int_values).end()) {
+    typename Values::iterator end(){
         assert(int_values);
 
         return (*int_values).end();
     }
+
+    typename Values::const_iterator begin() const {
+        assert(int_values);
+
+        return (*int_values).cbegin();
+    }
+
+    typename Values::const_iterator end() const {
+        assert(int_values);
+
+        return (*int_values).cend();
+    }
     
-    auto count(Key key) -> decltype((*int_values).count(key)) {
+    auto count(const Key& key) const -> decltype((*int_values).count(key)){
         assert(int_values);
 
         return (*int_values).count(key);
     }
     
-    auto find(Key key) -> decltype((*int_values).find(key)) {
+    typename Values::const_iterator find(const Key& key) const {
         assert(int_values);
 
         return (*int_values).find(key);
     }
 
-    void erase(Key key){
+    typename Values::iterator erase(typename Values::iterator it){
+        assert(int_values);
+        
+        return (*int_values).erase(it);
+    }
+
+    void erase(const Key& key){
         assert(int_values);
 
         (*int_values).erase(key);

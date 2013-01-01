@@ -13,6 +13,7 @@
 #include "Labels.hpp"
 #include "Variable.hpp"
 #include "logging.hpp"
+#include "Function.hpp"
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp" 
@@ -39,8 +40,7 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
 
 } //end of anonymous namespace
 
-ltac::StatementCompiler::StatementCompiler(mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : 
-        manager(function, float_pool), function(function), float_pool(float_pool) {}
+ltac::StatementCompiler::StatementCompiler(std::shared_ptr<FloatPool> float_pool) : manager(float_pool), float_pool(float_pool) {}
 
 void ltac::StatementCompiler::end_bb(){
     if(ended){
@@ -86,7 +86,7 @@ void ltac::StatementCompiler::end_bb(){
     ended = true;
 }
 
-void ltac::StatementCompiler::collect_parameters(std::shared_ptr<eddic::Function> definition){
+void ltac::StatementCompiler::collect_parameters(eddic::Function& definition){
     manager.collect_parameters(definition, descriptor);
 }
 
@@ -323,7 +323,7 @@ void ltac::StatementCompiler::pop(ltac::Argument arg){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
-    log::emit<Trace>("Registers") << "Current statement " << if_false << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << if_false << log::endl;
 
     if(if_false->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -394,7 +394,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
-    log::emit<Trace>("Registers") << "Current statement " << if_ << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << if_ << log::endl;
 
     if(if_->op){
         //Depending on the type of the operator, do a float or a int comparison
@@ -466,7 +466,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
-    log::emit<Trace>("Registers") << "Current statement " << goto_ << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << goto_ << log::endl;
 
     end_bb();
 
@@ -491,7 +491,7 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
-    log::emit<Trace>("Registers") << "Current statement " << param << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << param << log::endl;
 
     if(first_param){
         ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
@@ -508,13 +508,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 
         //It's a call to a standard function
         if(param->std_param.length() > 0){
-            type = param->function->getParameterType(param->std_param);
-            position = param->function->getParameterPositionByType(param->std_param);
+            type = param->function.parameter(param->std_param).type();
+            position = param->function.parameter_position_by_type(param->std_param);
         } 
         //It's a call to a user function
         else if(param->param){
             type = param->param->type();
-            position = param->function->getParameterPositionByType(param->param->name());
+            position = param->function.parameter_position_by_type(param->param->name());
         }
 
         register_allocated = 
@@ -561,7 +561,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                     if(param->param && param->param->type() == FLOAT){
                         pass_in_float_register(param->arg, position);
                         return;
-                    } else if(!param->std_param.empty() && param->function->getParameterType(param->std_param) == FLOAT){
+                    } else if(!param->std_param.empty() && param->function.parameter(param->std_param).type() == FLOAT){
                         pass_in_float_register(param->arg, position);
                         return;
                     } 
@@ -586,7 +586,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg1, reg2);
                 push(reg1);
             } else {
-                if((*ptr)->type()->is_array()){
+                if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
                     auto position = (*ptr)->position();
 
                     if(position.isGlobal()){
@@ -612,7 +612,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
                 if(param->param && param->param->type() == FLOAT){
                     auto label = float_pool->label(0.0);
                     push(ltac::Address(label));
-                } else if(!param->std_param.empty() && param->function->getParameterType(param->std_param) == FLOAT){
+                } else if(!param->std_param.empty() && param->function.parameter(param->std_param).type() == FLOAT){
                     auto label = float_pool->label(0.0);
                     push(ltac::Address(label));
                 } else {
@@ -631,7 +631,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Param> param){
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
-    log::emit<Trace>("Registers") << "Current statement " << call << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
 
     //Means that there are no params
     if(first_param){
@@ -641,7 +641,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     first_param = true;
 
     auto call_instruction = std::make_shared<ltac::Jump>(call->function, ltac::JumpType::CALL);
-    call_instruction->target_function = call->functionDefinition;
+    call_instruction->target_function = &call->functionDefinition;
     call_instruction->uses = uses;
     call_instruction->float_uses = float_uses;
     bb->l_statements.push_back(call_instruction);
@@ -654,13 +654,13 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition->standard && !configuration->option_defined("fparameter-allocation")){
+    if(!call->functionDefinition.standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
 
-    for(auto& param : call->functionDefinition->parameters){
-        auto type = param.paramType; 
+    for(auto& param : call->functionDefinition.parameters()){
+        auto type = param.type(); 
 
         if(type->is_array()){
             //Passing an array is just passing an adress
@@ -1148,7 +1148,15 @@ void ltac::StatementCompiler::compile_MINUS(std::shared_ptr<mtac::Quadruple> qua
     //Constants should have been replaced by the optimizer
     assert(isVariable(*quadruple->arg1));
 
-    ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+    auto var = ltac::get_variable(*quadruple->arg1);
+
+    if(quadruple->result == var){
+        ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+    } else {
+        auto reg = manager.get_pseudo_reg(quadruple->result);
+        ltac::add_instruction(bb, ltac::Operator::MOV, reg, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
+        ltac::add_instruction(bb, ltac::Operator::NEG, reg);
+    }
 
     manager.set_written(quadruple->result);
 }
@@ -1364,7 +1372,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-    log::emit<Trace>("Registers") << "Current statement " << quadruple << log::endl;
+    LOG<Trace>("Registers") << "Current statement " << quadruple << log::endl;
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:

@@ -1,0 +1,52 @@
+include<print>
+
+void debug(string a){
+    print(a.size());
+    print("|");
+
+    print(a);
+    print("|");
+}
+
+void debug_ptr(string* a){
+    print(a.size());
+    print("|");
+
+    print(*a);
+    print("|");
+}
+
+void main(){
+    string a("adsf");
+    string b("dddddddd");
+    string c("adsf");
+
+    print(a);
+    print("|");
+
+    debug(a);
+    debug_ptr(&b);
+    debug_ptr(&c);
+    debug(c);
+
+    print(a.equals(a));
+    print("|");
+    print(a.equals(b));
+    print("|");
+    print(a.equals(c));
+    print("|");
+
+    print(b.equals(a));
+    print("|");
+    print(b.equals(b));
+    print("|");
+    print(b.equals(c));
+    print("|");
+
+    print(c.equals(a));
+    print("|");
+    print(c.equals(b));
+    print("|");
+    print(c.equals(c));
+    print("|");
+}

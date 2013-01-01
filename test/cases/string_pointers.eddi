@@ -1,16 +1,16 @@
 void main(){
-    string a = "a";
+    str a = "a";
     test(&a);
 
     print(a);
     print("|");
 }
 
-void test(string* a){
+void test(str* a){
     print(*a);
     print("|");
 
-    string* b = a;
+    str* b = a;
     
     print(*b);
     print("|");

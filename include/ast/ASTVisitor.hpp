@@ -185,6 +185,11 @@ void operator()(ast::New& new_){\
     visit_each(*this, new_.Content->values);\
 }
 
+#define AUTO_RECURSE_DELETE()\
+void operator()(ast::Delete& delete_){\
+    visit(*this, delete_.Content->value);\
+}
+
 #define AUTO_RECURSE_NEW_ARRAY()\
 void operator()(ast::NewArray& new_){\
     visit(*this, new_.Content->size);\

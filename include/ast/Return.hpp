@@ -28,7 +28,7 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::Return).
  */
 struct ASTReturn {
-    std::shared_ptr<Function> function;
+    std::string mangled_name;
     std::shared_ptr<FunctionContext> context;
 
     Position position;

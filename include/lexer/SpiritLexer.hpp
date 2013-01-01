@@ -72,7 +72,7 @@ class SpiritLexer : public lex::lexer<L> {
             float_ = "[0-9]+\".\"[0-9]+";
             integer = "[0-9]+";
             string_literal = "\\\"[^\\\"]*\\\"";
-            char_literal = "'[a-zA-Z0-9]'";
+            char_literal = "'.'";
 
             /* Constructs  */
             left_parenth = '('; 

@@ -96,7 +96,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
                     value_copy.function_name = ptr->function_name;
                     value_copy.template_types = ptr->template_types;
                     value_copy.mangled_name = ptr->mangled_name;
-                    value_copy.function = ptr->function;
                     value_copy.left_type = ptr->left_type;
 
                     std::vector<ast::Value> values;
@@ -138,7 +137,6 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->function_name = source.Content->function_name;
@@ -243,7 +241,6 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->function = source.Content->function;
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->template_types = source.Content->template_types;
@@ -326,7 +323,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Return& source) const {
         ast::Return copy;
 
-        copy.Content->function = source.Content->function;
+        copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->context = source.Content->context;
         copy.Content->position = source.Content->position;
         copy.Content->value = visit(ValueCopier(), source.Content->value);
@@ -506,10 +503,8 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Delete& source) const {
         ast::Delete copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->variable = source.Content->variable;
         copy.Content->position = source.Content->position;
-        copy.Content->variable_name = source.Content->variable_name;
+        copy.Content->value = visit(ValueCopier(), source.Content->value);
 
         return copy;
     }
@@ -521,6 +516,7 @@ struct Adaptor : public boost::static_visitor<> {
     Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
     AUTO_RECURSE_STRUCT()
+    AUTO_RECURSE_DELETE()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
     AUTO_RECURSE_BRANCHES()
@@ -688,7 +684,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             ast::FunctionDeclaration f;
             f.Content->context = function.Content->context;
             f.Content->position = function.Content->position;
-            f.Content->struct_name = function.Content->struct_name;
             f.Content->returnType = function.Content->returnType;
             f.Content->functionName = function.Content->functionName;
             f.Content->instructions = copy(function.Content->instructions);
@@ -700,7 +695,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Destructor d;
             d.Content->context = destructor.Content->context;
-            d.Content->struct_name = destructor.Content->struct_name;
             d.Content->position = destructor.Content->position;
             d.Content->parameters = destructor.Content->parameters;
             d.Content->instructions = copy(destructor.Content->instructions);
@@ -711,7 +705,6 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Constructor c;
             c.Content->context = constructor.Content->context;
-            c.Content->struct_name = constructor.Content->struct_name;
             c.Content->position = constructor.Content->position;
             c.Content->parameters = constructor.Content->parameters;
             c.Content->instructions = copy(constructor.Content->instructions);
@@ -813,7 +806,7 @@ void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Typ
 }
 
 void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
-    log::emit<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
+    LOG<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
 
     auto it_pair = function_templates[context].equal_range(name);
 
@@ -827,7 +820,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
 
         if(source_types.size() == template_types.size()){
             if(!is_instantiated(name, context, template_types)){
-                log::emit<Info>("Template") << "Instantiate function template " << name << log::endl;
+                LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
 
                 //Instantiate the function 
                 ast::FunctionDeclaration declaration;
@@ -879,7 +872,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
             if(source_types.size() == template_types.size()){
                 if(!is_class_instantiated(name, template_types)){
-                    log::emit<Info>("Template") << "Instantiate class template " << name << log::endl;
+                    LOG<Info>("Template") << "Instantiate class template " << name << log::endl;
 
                     //Instantiate the struct
                     ast::Struct declaration;
@@ -919,13 +912,13 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 }
         
 void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration){
-    log::emit<Trace>("Template") << "Collected class template " << struct_ << log::endl;
+    LOG<Trace>("Template") << "Collected class template " << struct_ << log::endl;
 
     class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration)); 
 }
 
 void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){
-    log::emit<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
+    LOG<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
 
     function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, declaration));
 }

@@ -14,6 +14,8 @@
 #include "Utils.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
+#include "GlobalContext.hpp"
 
 #include "FrontEnd.hpp"
 #include "FrontEnds.hpp"
@@ -63,78 +65,92 @@ int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> co
 }
 
 int Compiler::compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration) {
-    //Make sure that the file exists 
-    if(!file_exists(file)){
-        std::cout << "The file \"" + file + "\" does not exists" << std::endl;
-
-        return false;
-    }
-
-    auto front_end = get_front_end(file);
-    front_end->set_configuration(configuration);
-
-    if(!front_end){
-        std::cout << "The file \"" + file + "\" cannot be compiled using eddic" << std::endl;
-
-        return false;
-    }
-
     int code = 0; 
 
+    std::unique_ptr<mtac::Program> program;
+    std::shared_ptr<FrontEnd> front_end;
+
     try {
-        auto mtac_program = front_end->compile(file, platform);
+        std::tie(program, front_end) = compile_mtac(file, platform, configuration);
 
         //If program is null, it means that the user didn't wanted it
-        if(mtac_program){
-            mtac::resolve_references(mtac_program);
-
-            //Separate into basic blocks
-            mtac::BasicBlockExtractor extractor;
-            extractor.extract(mtac_program);
-
-            //If asked by the user, print the Three Address code representation before optimization
-            if(configuration->option_defined("mtac-opt")){
-                mtac::Printer printer;
-                printer.print(mtac_program);
-            }
-
-            //Optimize MTAC
-            mtac::Optimizer optimizer;
-            optimizer.optimize(mtac_program, front_end->get_string_pool(), platform, configuration);
-
-            //Allocate parameters into registers
-            if(configuration->option_defined("fparameter-allocation")){
-                mtac::register_param_allocation(mtac_program, platform);
-            }
-
-            //If asked by the user, print the Three Address code representation
-            if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
-                mtac::Printer printer;
-                printer.print(mtac_program);
-            }
-
+        if(program){
             if(!configuration->option_defined("mtac-only")){
                 auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
                 back_end->set_string_pool(front_end->get_string_pool());
                 back_end->set_configuration(configuration);
 
-                back_end->generate(mtac_program, platform);
+                back_end->generate(*program, platform);
             }
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
-            if(e.position()){
-                auto& position = *e.position();
-
-                std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-            } else {
-                std::cout << e.what() << std::endl;
-            }
+            output_exception(e);
         }
 
         code = 1;
+    } catch (const TerminationException&) {
+        code = 1;
+    }
+
+    //Display stats if necessary
+    if(program && configuration->option_defined("stats")){
+        std::cout << "Statistics" << std::endl;
+
+        for(auto& counter : program->context->stats()){
+            std::cout << "\t" << counter.first << ":" << counter.second << std::endl;
+        }
     }
 
     return code;
+}
+
+std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration){
+    //Make sure that the file exists 
+    if(!file_exists(file)){
+        throw SemanticalException("The file \"" + file + "\" does not exists");
+    }
+
+    auto front_end = get_front_end(file);
+
+    if(!front_end){
+        throw SemanticalException("The file \"" + file + "\" cannot be compiled using eddic");
+    }
+    
+    front_end->set_configuration(configuration);
+
+    auto program = front_end->compile(file, platform);
+
+    //If program is null, it means that the user didn't wanted it
+    if(program){
+        mtac::resolve_references(*program);
+
+        //Separate into basic blocks
+        mtac::BasicBlockExtractor extractor;
+        extractor.extract(*program);
+
+        //If asked by the user, print the Three Address code representation before optimization
+        if(configuration->option_defined("mtac-opt")){
+            mtac::Printer printer;
+            printer.print(*program);
+        }
+
+        //Optimize MTAC
+        mtac::Optimizer optimizer;
+        optimizer.optimize(*program, front_end->get_string_pool(), platform, configuration);
+
+        //Allocate parameters into registers
+        if(configuration->option_defined("fparameter-allocation")){
+            mtac::register_param_allocation(*program, platform);
+        }
+
+        //If asked by the user, print the Three Address code representation
+        if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
+            mtac::Printer printer;
+            printer.print(*program);
+        }
+    }
+
+    return {std::move(program), front_end};
 }

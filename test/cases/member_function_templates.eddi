@@ -1,3 +1,5 @@
+include <print>
+
 struct A {
     int a;
 
@@ -21,7 +23,7 @@ struct A {
 void main(){
    A value;
    value.test<int>(5);
-   value.test<string>("5");
-   value.deep_test<float, string>(5.5, "5");
+   value.test<str>("5");
+   value.deep_test<float, str>(5.5, "5");
    value.deep_test<int, bool>(100, true);
 }

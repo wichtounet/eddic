@@ -29,7 +29,7 @@ class StatementCompiler : public boost::static_visitor<> {
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 
-        StatementCompiler(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        StatementCompiler(std::shared_ptr<FloatPool> float_pool);
     
         /*!
          * Deleted copy constructor
@@ -41,7 +41,7 @@ class StatementCompiler : public boost::static_visitor<> {
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
-        void collect_parameters(std::shared_ptr<eddic::Function> definition);
+        void collect_parameters(eddic::Function& definition);
         
         void end_bb();
 
@@ -62,12 +62,8 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
-        mtac::program_p program;
    
     private:
-        //The function being compiled
-        mtac::function_p function;
-
         std::shared_ptr<FloatPool> float_pool;
 
         bool first_param = true;

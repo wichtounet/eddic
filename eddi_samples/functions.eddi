@@ -4,9 +4,6 @@ void main(){
     println(sum(5));
 
     println(factorial(9));
-
-    println(hello());
-    println(hello());
 }
 
 int sum(int a){
@@ -23,12 +20,4 @@ int factorial(int n){
     }
 
     return n * factorial(n - 1);
-}
-
-string hello(){
-    return "hello" + helloTwo();
-}
-
-string helloTwo(){
-    return "asfd";
 }

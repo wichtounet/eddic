@@ -229,7 +229,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "neg " << *instruction->arg1 << '\n';
                 break;
             case ltac::Operator::NOT:
-                writer.stream() << "not " << *instruction->arg1 << '\n';
+                writer.stream() << "btc " << *instruction->arg1 << ", 0" << '\n';
                 break;
             case ltac::Operator::AND:
                 writer.stream() << "and " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
@@ -337,8 +337,8 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void as::IntelX86_64CodeGenerator::compile(mtac::function_p function){
-    writer.stream() << '\n' << function->getName() << ":" << '\n';
+void as::IntelX86_64CodeGenerator::compile(mtac::Function& function){
+    writer.stream() << '\n' << function.get_name() << ":" << '\n';
 
     X86_64StatementCompiler compiler(writer);
     
@@ -355,7 +355,7 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -469,14 +469,6 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_printlnC");
     }
     
-    if(context->referenceCount("_F5printB")){
-        output_function("x86_64_printB");
-    }
-    
-    if(context->referenceCount("_F7printlnB")){
-        output_function("x86_64_printlnB");
-    }
-    
     if(context->referenceCount("_F5printF")){
         output_function("x86_64_printF");
     }
@@ -497,12 +489,8 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_printlnS");
     }
     
-    if(context->referenceCount("_F6concatSS")){
-        output_function("x86_64_concat");
-    }
-    
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI") || context->referenceCount("_F6concatSS")){
+    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
         output_function("x86_64_alloc");
         output_function("x86_64_init");
         output_function("x86_64_free");

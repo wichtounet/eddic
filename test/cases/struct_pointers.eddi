@@ -1,13 +1,13 @@
 struct A {
     int a;
-    string b;
+    str b;
     float c;
     B d;
 }
 
 struct B {
     int a;
-    string b;
+    str b;
 }
 
 void main(){

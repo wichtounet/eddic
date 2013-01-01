@@ -88,13 +88,16 @@ struct Collector : public boost::static_visitor<> {
 struct Inspector : public boost::static_visitor<> {
     private:
         Collector& collector;
+        ast::SourceFile& program;
         
         std::shared_ptr<GlobalContext> context;
         std::shared_ptr<Configuration> configuration;
 
+        bool standard = false;
+
     public:
-        Inspector(Collector& collector, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) : 
-                collector(collector), context(context), configuration(configuration) {}
+        Inspector(Collector& collector, ast::SourceFile& program, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) : 
+                collector(collector), program(program), context(context), configuration(configuration) {}
     
         /* The following constructions can contains instructions with warnings  */
         AUTO_RECURSE_GLOBAL_DECLARATION() 
@@ -132,17 +135,59 @@ struct Inspector : public boost::static_visitor<> {
 
             visit_each(*this, program.Content->blocks);
         }
+
+        void check_header(const std::string& file, const ast::Position& position){
+            for(auto& block : program.Content->blocks){
+                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+                    if(ptr->Content->header == file){
+                        int references = context->referenceCount(ptr->Content->mangledName);
+
+                        if(references > 0){
+                            return;
+                        }
+                    }
+                } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                    if(ptr->Content->header == file){
+                        auto struct_ = context->get_struct(ptr->Content->struct_type->mangle());
+
+                        if(struct_->get_references() > 0){
+                            return;
+                        }
+                    }
+                }
+            }
+
+            warn(position, "Useless import: " + file);
+        }
+        
+        void operator()(ast::StandardImport& import){
+            if(configuration->option_defined("warning-includes")){
+                check_header(import.header, import.position);
+            }
+        }
+
+        void operator()(ast::Import& import){
+            if(configuration->option_defined("warning-includes")){
+                check_header(import.file, import.position);
+            }
+        }
         
         void operator()(ast::Struct& declaration){
-            if(configuration->option_defined("warning-unused")){
-                auto struct_ = context->get_struct(declaration.Content->name);
+            standard = declaration.Content->standard;
+            visit_each(*this, declaration.Content->blocks);
+            standard = false;
 
-                if(struct_->get_references() == 0){
-                    warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
-                } else {
-                    for(auto& member : struct_->members){
-                        if(member->get_references() == 0){
-                            warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+            if(!declaration.Content->standard){
+                if(configuration->option_defined("warning-unused")){
+                    auto struct_ = context->get_struct(declaration.Content->struct_type->mangle());
+
+                    if(struct_->get_references() == 0){
+                        warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
+                    } else {
+                        for(auto& member : struct_->members){
+                            if(member->get_references() == 0){
+                                warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+                            }
                         }
                     }
                 }
@@ -152,15 +197,19 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
             
-            if(configuration->option_defined("warning-unused")){
-                int references = context->referenceCount(declaration.Content->mangledName);
+            if(!declaration.Content->standard && !standard){
+                if(configuration->option_defined("warning-unused")){
+                    int references = context->referenceCount(declaration.Content->mangledName);
 
-                if(references == 0){
-                    warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                    if(references == 0){
+                        if(declaration.Content->functionName != "main"){
+                            warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
+                        }
+                    }
                 }
+
+                check_each(declaration.Content->instructions);
             }
-        
-            check_each(declaration.Content->instructions);
         }
     
         void operator()(ast::Cast& cast){
@@ -256,7 +305,7 @@ void ast::WarningsPass::apply_program(ast::SourceFile& program, bool){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(collector, program.Content->context, configuration);
+    Inspector inspector(collector, program, program.Content->context, configuration);
     visit_non_variant(inspector, program);
 }
 

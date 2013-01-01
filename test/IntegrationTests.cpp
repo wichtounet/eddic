@@ -7,11 +7,15 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include "Options.hpp"
 #include "Compiler.hpp"
 #include "Utils.hpp"
 #include "Platform.hpp"
+#include "GlobalContext.hpp"
+
+#include "mtac/Program.hpp"
 
 #define BOOST_TEST_MODULE eddic_test_suite
 #include <BoostTestTargetConfig.h>
@@ -217,6 +221,10 @@ BOOST_AUTO_TEST_CASE( compound ){
     assert_output("compound.eddi", "6|9|6|18|6|0|");
 }
 
+BOOST_AUTO_TEST_CASE( delete_any ){
+    assert_output("delete_any.eddi", "99|");
+}
+
 BOOST_AUTO_TEST_CASE( if_ ){
     assert_output("if.eddi", "1|1|1|");
 }
@@ -257,6 +265,10 @@ BOOST_AUTO_TEST_CASE( dynamic ){
     assert_output("dynamic.eddi", "5|55|555|5555|55555|0|-9|666|9999|1000|0|1|2|3|4|");
 }
 
+BOOST_AUTO_TEST_CASE( dynamic_arrays_in_struct ){
+    assert_output("dynamic_arrays_in_struct.eddi", "5|55|66|77|66|166|177|66|166|177|5|");
+}
+
 BOOST_AUTO_TEST_CASE( dynamic_struct ){
     assert_output("dynamic_struct.eddi", "0|-9|55|asdf|999|-9|0||0|666|777|666|777|1000|");
 }
@@ -288,6 +300,10 @@ BOOST_AUTO_TEST_CASE( member_functions_param_stack ){
 
 BOOST_AUTO_TEST_CASE( memory ){
     assert_output("memory.eddi", "4|4|4|1|1|1|5|6|7|8|5|6|7|8|5|6|7|8|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|1|2|3|4|");
+}
+
+BOOST_AUTO_TEST_CASE( pass_member_by_value ){
+    assert_output("pass_member_by_value.eddi", "77.7699|66|66|55|66|");
 }
 
 BOOST_AUTO_TEST_CASE( ternary ){
@@ -330,7 +346,7 @@ BOOST_AUTO_TEST_CASE( foreach_ ){
 }
 
 BOOST_AUTO_TEST_CASE( globals_ ){
-    assert_output("globals.eddi", "1000a2000aa");
+    assert_output("globals.eddi", "1000a2000");
 }
 
 BOOST_AUTO_TEST_CASE( inc ){
@@ -375,15 +391,11 @@ BOOST_AUTO_TEST_CASE( math ){
 }
 
 BOOST_AUTO_TEST_CASE( builtin ){
-    assert_output("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|8|0|3|");
+    assert_output("builtin.eddi", "10|11|12|13|12|13|10|11|4|8|13|0|3|");
 }
 
 BOOST_AUTO_TEST_CASE( assign_value ){
     assert_output("assign_value.eddi", "66779921");
-}
-
-BOOST_AUTO_TEST_CASE( concat ){
-    assert_output("concat.eddi", "asdf1234|1234asdf|asdfasdf|12341234|");
 }
 
 BOOST_AUTO_TEST_CASE( println ){
@@ -518,8 +530,24 @@ BOOST_AUTO_TEST_CASE( std_lib_str_equals ){
     assert_output("stdlib_str_equals.eddi", "1|0|0|0|1|1|");
 }
 
+BOOST_AUTO_TEST_CASE( std_lib_string ){
+    assert_output("stdlib_string.eddi", "adsf|4|adsf|8|dddddddd|4|adsf|4|adsf|1|0|1|0|1|0|1|0|1|");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_string_concat ){
+    assert_output("stdlib_string_concat.eddi", "asdf1234|1234|asdf1234|1234asdf1234|asdf1234|1234asdf1234|you1234asdf1234|");
+}
+
+BOOST_AUTO_TEST_CASE( std_lib_string_concat_int ){
+    assert_output("stdlib_string_concat_int.eddi", "test987|test987-561|asdf98655|asdf986551|");
+}
+
 BOOST_AUTO_TEST_CASE( std_linked_list ){
     assert_output("stdlib_linked_list.eddi", "0||1|55|55|2|55|11|3|33|11|4|99|11|{99|33|55|11|}{11|33|99|}4|99|11|3|33|11|2|33|88|1|88|88|");
+}
+
+BOOST_AUTO_TEST_CASE( std_vector ){
+    assert_output("stdlib_vector.eddi", "0|0||1|1|55|55|2|2|55|66|3|4|55|77|66|2|4|55|66|5|8|55|111|{55|66|88|99|111|}");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -530,6 +558,58 @@ BOOST_AUTO_TEST_SUITE(BugFixesSuite)
 
 BOOST_AUTO_TEST_CASE( while_bug ){
     assert_output("while_bug.eddi", "W1W2W3W4W5");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+    
+/* Unit test for optimization regression */
+
+BOOST_AUTO_TEST_SUITE(OptimizationSuite)
+
+eddic::statistics& compute_stats(const std::string& file){
+    auto configuration = parse_options("test/cases/" + file, "--64", "--O2", "test/cases/" + file + ".out");
+
+    eddic::Compiler compiler;
+    auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
+
+    auto global_context = pair.first->context;
+    return global_context->stats();
+}
+
+BOOST_AUTO_TEST_CASE( parameter_propagation ){
+    auto& stats = compute_stats("parameter_propagation.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
+}
+
+BOOST_AUTO_TEST_CASE( remove_empty_functions ){
+    auto& stats = compute_stats("remove_empty_functions.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("empty_function_removed"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( remove_empty_loops ){
+    auto& stats = compute_stats("remove_empty_loops.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("empty_loop_removed"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( invariant_code_motion ){
+    auto& stats = compute_stats("invariant_code_motion.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
+    auto& stats = compute_stats("complete_loop_peeling.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( loop_unrolling ){
+    auto& stats = compute_stats("loop_unrolling.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_unrolled"), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

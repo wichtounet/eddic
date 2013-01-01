@@ -1,6 +1,6 @@
 struct A {
     int a;
-    string b;
+    str b;
 }
 
 void main(){
@@ -44,11 +44,11 @@ void test(int* a){
     print("|");
 }
 
-void test(string* a){
+void test(str* a){
     print(*a);
     print("|");
 
-    string* b = a;
+    str* b = a;
     
     print(*b);
     print("|");

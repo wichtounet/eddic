@@ -484,8 +484,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             first_condition.Content->context = switch_.Content->context;
             first_condition.Content->position = switch_.Content->position;
             first_condition.Content->function_name = "str_equals";
-            first_condition.Content->mangled_name = "";
-            first_condition.Content->function = switch_.Content->context->global()->getFunction("_F10str_equalsSS");
+            first_condition.Content->mangled_name = "_F10str_equalsSS";
             first_condition.Content->values.push_back(switch_.Content->value);
             first_condition.Content->values.push_back(cases[0].value);
     
@@ -504,7 +503,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 condition.Content->position = case_.position;
                 condition.Content->function_name = "str_equals";
                 condition.Content->mangled_name = "_F10str_equalsSS";
-                condition.Content->function = switch_.Content->context->global()->getFunction("_F10str_equalsSS");
                 condition.Content->values.push_back(switch_.Content->value);
                 condition.Content->values.push_back(case_.value);
                 
@@ -564,7 +562,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_SWAP()
-    AUTO_IGNORE_DELETE()
 
     void operator()(ast::If& if_){
         if_.Content->condition = visit(transformer, if_.Content->condition);
@@ -653,6 +650,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Return& return_){
         return_.Content->value = visit(transformer, return_.Content->value); 
+    }
+    
+    void operator()(ast::Delete& delete_){
+        delete_.Content->value = visit(transformer, delete_.Content->value); 
     }
 
     void operator()(ast::PrefixOperation& operation){

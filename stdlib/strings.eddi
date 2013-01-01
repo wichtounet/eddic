@@ -1,4 +1,98 @@
-bool str_equals(string a, string b){
+include<math>
+
+struct string {
+    char[] data;
+
+    this(str raw){
+        data = new char[length(raw)];
+
+        for(int i = 0; i < length(raw); ++i){
+            data[i] = raw[i];
+        }
+    }
+    
+    ~this(){
+        delete data;
+    }
+
+    int size(){
+        return size(data);
+    }
+
+    bool equals(string other){
+        if(this.size() != other.size()){
+            return false;
+        }
+
+        for(int i = 0; i < this.size(); ++i){
+            if(data[i] != other.data[i]){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void append(string other){
+        char[] new_data = new char[size() + other.size()];
+
+        //Copy the original string
+        for(int i = 0; i < this.size(); ++i){
+            new_data[i] = data[i];
+        }
+        
+        //Copy the other string
+        for(int i = this.size(); i < this.size() + other.size(); ++i){
+            new_data[i] = other.data[i - this.size()];
+        }
+
+        delete data;
+        data = new_data;
+    }
+
+    void append(int other){
+        int characters = digits(other);
+
+        if(other < 0){
+            ++characters;
+        }
+
+        char[] new_data = new char[size() + characters];
+
+        //Copy the original string
+        for(int i = 0; i < this.size(); ++i){
+            new_data[i] = data[i];
+        }
+        
+        int number = other;
+
+        if(other < 0){
+            new_data[this.size()] = '-';
+            number = -1 * number;
+        }
+
+        int i = size(new_data) - 1;
+
+        while (number != 0) { 
+            int remaining = number % 10;
+
+            new_data[i--] = (char) (remaining + 48);
+
+            number /= 10; 
+        }
+
+        delete data;
+        data = new_data;
+    }
+}
+
+void print(string s){
+    for(int i = 0; i < s.size(); ++i){
+        print(s.data[i]);
+    }
+}
+
+bool str_equals(str a, str b){
     if(length(a) != length(b)){
         return false;
     }

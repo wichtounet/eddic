@@ -12,7 +12,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 
-#include "mtac/VariableOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/Printer.hpp"
@@ -22,7 +22,7 @@ using namespace eddic;
 
 namespace {
 
-bool is_written_once(std::shared_ptr<Variable> variable, mtac::function_p function){
+bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& function){
     bool written = false;
 
     for(auto& block : function){
@@ -50,7 +50,7 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::function_p functi
     return true;
 }
 
-bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, mtac::function_p function){
+bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, mtac::Function& function){
     for(auto& block : function){
         for(auto& statement : block){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
@@ -70,7 +70,7 @@ bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Varia
     return true;
 }
 
-std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> variable, mtac::function_p function){
+std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> variable, mtac::Function& function){
     std::vector<std::shared_ptr<Variable>> targets;
     
     for(auto& block : function){
@@ -92,7 +92,7 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
     return targets;
 }
 
-std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> variable, mtac::function_p function){
+std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> variable, mtac::Function& function){
     std::vector<std::shared_ptr<Variable>> sources;
     
     for(auto& block : function){
@@ -246,12 +246,12 @@ struct VariableReplace : public boost::static_visitor<bool> {
 
 }
 
-bool mtac::remove_aliases::operator()(mtac::function_p function){
+bool mtac::remove_aliases::operator()(mtac::Function& function){
     bool optimized = false;
 
     auto pointer_escaped = mtac::escape_analysis(function);
 
-    for(auto& var : function->context->stored_variables()){
+    for(auto& var : function.context->stored_variables()){
         auto position = var->position();
         auto type = var->type();
 
@@ -299,24 +299,4 @@ bool mtac::remove_aliases::operator()(mtac::function_p function){
     }
 
     return optimized;
-}
-
-bool mtac::clean_variables::operator()(mtac::function_p function){
-    auto variable_usage = mtac::compute_variable_usage(function);
-    
-    std::vector<std::shared_ptr<Variable>> unused;
-    for(auto& variable : function->context->stored_variables()){
-        //Temporary and parameters are not interesting, because they dot not take any space
-        if(!variable->position().isParameter() && !variable->position().isParamRegister()){
-            if(variable_usage[variable] == 0){
-                unused.push_back(variable);
-            }
-        }
-    }
-
-    for(auto& variable : unused){
-        function->context->removeVariable(variable);
-    }
-
-    return false;
 }

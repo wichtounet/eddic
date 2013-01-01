@@ -46,7 +46,7 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool) : function(function), float_pool(float_pool){
+ltac::RegisterManager::RegisterManager(std::shared_ptr<FloatPool> float_pool) : float_pool(float_pool){
         //Nothing else to init
 }
 
@@ -93,7 +93,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         } else {
             auto position = variable->position();
 
-            assert(position.isStack() || position.isGlobal() || position.isParameter());
+            eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
                 ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
@@ -134,7 +134,7 @@ bool is_local(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
 ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     move(var, reg);
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -147,7 +147,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
     auto reg = ::get_pseudo_reg(pseudo_registers, var);
     pseudo_registers.setLocation(var, reg);
     
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -159,7 +159,7 @@ ltac::PseudoRegister ltac::RegisterManager::get_pseudo_reg_no_move(std::shared_p
 ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg(std::shared_ptr<Variable> var){
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     move(var, reg);
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -172,7 +172,7 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_pseudo_float_reg_no_move(st
     auto reg = ::get_pseudo_reg(pseudo_float_registers, var);
     pseudo_float_registers.setLocation(var, reg);
     
-    log::emit<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
+    LOG<Trace>("Registers") << "Get pseudo reg for " << var->name() << " => " << reg << log::endl;
 
     if(is_local(var, *this)){
         local.insert(var);
@@ -199,19 +199,19 @@ ltac::PseudoFloatRegister ltac::RegisterManager::get_free_pseudo_float_reg(){
 
 bool ltac::RegisterManager::is_escaped(std::shared_ptr<Variable> variable){
     if(pointer_escaped->count(variable)){
-        log::emit<Trace>("Registers") << variable->name() << " is escaped " << log::endl;
+        LOG<Trace>("Registers") << variable->name() << " is escaped " << log::endl;
 
         return true;
     }
 
-    log::emit<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
+    LOG<Trace>("Registers") << variable->name() << " is not escaped " << log::endl;
 
     return false;
 }
     
-void ltac::RegisterManager::collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor){
-    for(auto& parameter : definition->parameters){
-        auto param = definition->context->getVariable(parameter.name);
+void ltac::RegisterManager::collect_parameters(eddic::Function& definition, const PlatformDescriptor* descriptor){
+    for(auto& parameter : definition.parameters()){
+        auto param = definition.context()->getVariable(parameter.name());
 
         if(param->position().isParamRegister()){
             if(mtac::is_single_int_register(param->type())){

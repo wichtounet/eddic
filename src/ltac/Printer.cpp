@@ -158,14 +158,14 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     DebugVisitor(std::ostream& out) : out(out) {}
 
-    void operator()(mtac::program_p program){
+    void operator()(mtac::Program& program){
         out << "LTAC Program " << std::endl << std::endl; 
 
-        visit_each_non_variant(*this, program->functions);
+        visit_each_non_variant(*this, program.functions);
     }
 
-    void operator()(mtac::function_p function){
-        out << "Function " << function->getName() << std::endl;
+    void operator()(mtac::Function& function){
+        out << "Function " << function.get_name() << std::endl;
 
         for(auto& bb : function){
             visit_non_variant(*this, bb);
@@ -218,12 +218,12 @@ void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    visit(visitor, statement); 
 }
 
-void ltac::Printer::print(mtac::program_p program) const {
+void ltac::Printer::print(mtac::Program& program) const {
    DebugVisitor visitor(std::cout);
    visitor(program); 
 }
 
-void ltac::Printer::print(mtac::function_p function) const {
+void ltac::Printer::print(mtac::Function& function) const {
    DebugVisitor visitor(std::cout);
    visitor(function); 
 }

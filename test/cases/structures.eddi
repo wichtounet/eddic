@@ -1,9 +1,11 @@
+include <print>
+
 struct Complex {
     int imag;
     int real;
     float d;
     bool b;
-    string s;
+    str s;
 }
 
 void main(){

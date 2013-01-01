@@ -55,8 +55,8 @@ void change_address(Arg& arg, int bp_offset){
 
 }
 
-void ltac::fix_stack_offsets(mtac::program_p program, Platform platform){
-    for(auto& function : program->functions){
+void ltac::fix_stack_offsets(mtac::Program& program, Platform platform){
+    for(auto& function : program.functions){
         std::unordered_map<std::string, int> offset_labels;
         int bp_offset = 0;
         

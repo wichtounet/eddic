@@ -33,7 +33,6 @@ struct CallOperationValue {
     std::vector<ast::Type> template_types;
     std::vector<ast::Value> values;
     std::string mangled_name;
-    std::shared_ptr<eddic::Function> function;
     std::shared_ptr<const eddic::Type> left_type;
 };
 

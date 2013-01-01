@@ -42,7 +42,7 @@ class RegisterManager {
 
         mtac::basic_block_p bb;
 
-        RegisterManager(mtac::function_p function, std::shared_ptr<FloatPool> float_pool);
+        RegisterManager(std::shared_ptr<FloatPool> float_pool);
 
         /*!
          * Deleted copy constructor
@@ -78,7 +78,7 @@ class RegisterManager {
 
         bool is_escaped(std::shared_ptr<Variable> variable);
 
-        void collect_parameters(std::shared_ptr<eddic::Function> definition, const PlatformDescriptor* descriptor);
+        void collect_parameters(eddic::Function& definition, const PlatformDescriptor* descriptor);
 
         int last_pseudo_reg();
         int last_float_pseudo_reg();
@@ -87,11 +87,6 @@ class RegisterManager {
         void remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable);
     
     private: 
-        //Allow to push needed register before the first push param
-        bool first_param = true;
-        
-        mtac::function_p function;
-
         std::shared_ptr<FloatPool> float_pool;
 
         //The pseudo registers

@@ -24,11 +24,11 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
     return type == FLOAT;
 }
 
-bool mtac::is_recursive(mtac::function_p function){
+bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition == function->definition){
+                if((*ptr)->functionDefinition.mangled_name() == function.definition().mangled_name()){
                     return true;
                 }
             }
@@ -124,11 +124,11 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-mtac::VariableUsage mtac::compute_variable_usage(mtac::function_p function){
+mtac::VariableUsage mtac::compute_variable_usage(mtac::Function& function){
     return compute_variable_usage_with_depth(function, 1);
 }
 
-mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::function_p function, int factor){
+mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& function, int factor){
     mtac::VariableUsage usage;
 
     VariableUsageCollector collector(usage, factor);
@@ -138,7 +138,7 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::function_p fun
     return usage;
 }
 
-void eddic::mtac::computeBlockUsage(mtac::function_p function, std::unordered_set<mtac::basic_block_p>& usage){
+void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);
 
     visit_all_statements(collector, function);
@@ -147,8 +147,8 @@ void eddic::mtac::computeBlockUsage(mtac::function_p function, std::unordered_se
 bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
     return 
-        function == "_F5printB" || function == "_F5printI" || function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
-        function == "_F7printlnB" || function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
+        function == "_F5printI" || function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
+        function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
         function == "_F7println"; 
 }
 
@@ -215,20 +215,25 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->arg1 = quadruple->arg1;
         copy->arg2 = quadruple->arg2;
         copy->op = quadruple->op;
+        copy->size = quadruple->size;
         
         return copy;
     }
     
     mtac::Statement operator()(std::shared_ptr<mtac::Param> param){
-        auto copy = std::make_shared<mtac::Param>();
+        if(param->param){
+            auto copy = std::make_shared<mtac::Param>(param->arg, param->param, param->function);
 
-        copy->arg = param->arg;
-        copy->param = param->param;
-        copy->std_param = param->std_param;
-        copy->function = param->function;
-        copy->address = param->address;
+            copy->address = param->address;
+        
+            return copy;
+        } else {
+            auto copy = std::make_shared<mtac::Param>(param->arg, param->std_param, param->function);
 
-        return copy;
+            copy->address = param->address;
+        
+            return copy;
+        }
     }
 
     mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){

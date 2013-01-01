@@ -12,6 +12,7 @@
 #include "Type.hpp"
 #include "Options.hpp"
 #include "logging.hpp"
+#include "GlobalContext.hpp"
 
 #include "ast/GetConstantValue.hpp"
 
@@ -48,7 +49,7 @@ void FunctionContext::set_stack_position(int current){
 std::shared_ptr<Variable> FunctionContext::newParameter(const std::string& variable, std::shared_ptr<const Type> type){
     Position position(PositionType::PARAMETER, currentParameter);
     
-    log::emit<Info>("Variables") << "New parameter " << variable << " at position " << currentParameter << log::endl;
+    LOG<Info>("Variables") << "New parameter " << variable << " at position " << currentParameter << log::endl;
 
     currentParameter += type->size(platform);
 
@@ -106,7 +107,7 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
 }
 
 std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const Type> type){
-    eddic_assert((type->is_standard_type() && type != STRING) || type->is_pointer(), "Invalid temporary");
+    eddic_assert((type->is_standard_type() && type != STRING) || type->is_pointer() || type->is_dynamic_array(), "Invalid temporary");
 
     Position position(PositionType::TEMPORARY);
 
@@ -139,11 +140,29 @@ void FunctionContext::allocate_in_param_register(std::shared_ptr<Variable> varia
 
 void FunctionContext::removeVariable(std::shared_ptr<Variable> variable){
     auto iter_var = std::find(storage.begin(), storage.end(), variable);
-    auto var = *iter_var;
-    
-    storage.erase(iter_var);
-    
-    log::emit<Info>("Variables") << "Remove " << variable->name() << log::endl;
+    auto platform = global()->target_platform();
+
+    if(variable->position().isParameter()){
+        variables.erase(variable->name());
+
+        for(auto& v : variables){
+            if(v.second->position().isParameter()){
+                if(v.second->position().offset() > variable->position().offset()){
+                    Position position(PositionType::PARAMETER, v.second->position().offset() - variable->type()->size(platform));
+                    v.second->setPosition(position);
+                }
+            }
+        }
+        
+        currentParameter -= variable->type()->size(platform);
+        
+        LOG<Info>("Variables") << "Remove parameter " << variable->name() << log::endl;
+    } else {
+        variables.erase(variable->name());
+        storage.erase(iter_var);
+
+        LOG<Info>("Variables") << "Remove variable " << variable->name() << log::endl;
+    }
 }
 
 std::shared_ptr<FunctionContext> FunctionContext::function(){

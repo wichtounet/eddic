@@ -34,6 +34,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
+        AUTO_RECURSE_DELETE()
 
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -180,10 +181,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
-        void operator()(ast::Delete& delete_){
-            delete_.Content->context = currentContext;
-        }
-        
         void operator()(ast::Swap& swap){
             swap.Content->context = currentContext;
         }
@@ -237,7 +234,7 @@ void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool in
     if(indicator){
         currentContext = globalContext = program.Content->context;
     } else {
-        currentContext = program.Content->context = globalContext = std::make_shared<GlobalContext>(platform);
+        currentContext = globalContext = program.Content->context;
 
         for(auto& block : program.Content->blocks){
             if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){

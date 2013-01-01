@@ -29,17 +29,18 @@ struct Expression {
 
 std::ostream& operator<<(std::ostream& stream, Expression& expression);
 
-typedef std::list<Expression> Expressions;
+typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
     std::unordered_set<std::shared_ptr<mtac::Quadruple>> optimized;
 
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     
-    ProblemDomain Init(mtac::function_p function) override;
-    ProblemDomain Boundary(mtac::function_p function) override;
+    ProblemDomain Init(mtac::Function& function) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
     
     bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
     bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };

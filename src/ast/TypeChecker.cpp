@@ -9,6 +9,7 @@
 
 #include "variant.hpp"
 #include "SemanticalException.hpp"
+#include "TerminationException.hpp"
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
@@ -33,7 +34,6 @@ class CheckerVisitor : public boost::static_visitor<> {
     public:
         CheckerVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
 
-        AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_FUNCTION_DECLARATION()
         AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_CONSTRUCTOR()
@@ -184,8 +184,9 @@ class CheckerVisitor : public boost::static_visitor<> {
             visit(*this, return_.Content->value);
            
             auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
-            if(return_type != return_.Content->function->returnType){
-                throw SemanticalException("The return value is not of the good type in the function " + return_.Content->function->name, return_.Content->position);
+            auto& function = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
+            if(return_type != function.return_type()){
+                throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.Content->position);
             }
         }
         
@@ -213,7 +214,11 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
             //Cast with no effects are always valid
-            if(dst_type == src_type || (dst_type->is_pointer() && src_type->is_pointer())){
+            if(
+                        dst_type == src_type 
+                    ||  (dst_type->is_pointer() && src_type->is_pointer())
+                    ||  (dst_type->is_dynamic_array() && src_type->is_pointer())
+                    ||  (dst_type->is_dynamic_array() && src_type->is_dynamic_array())){
                 return;
             }
 
@@ -303,9 +308,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                     }
 
                     if(type == STRING){
-                        if(op != ast::Operator::ADD){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
-                        }
+                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
                     }
 
                     if(type == BOOL){
@@ -371,7 +374,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
         
         void operator()(ast::Delete& delete_){
-            auto type = delete_.Content->variable->type();
+            auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
 
             if(!type->is_pointer() && !type->is_dynamic_array()){
                 throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
@@ -384,9 +387,28 @@ class CheckerVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
+//TODO Rewrite the type checker so that it does not use apply_program
+//And remove the exception code from here
+
 void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
     CheckerVisitor visitor(program.Content->context);
-    visit_non_variant(visitor, program);
+
+    bool valid = true;
+
+    for(auto& block : program.Content->blocks){
+        try {
+            visit(visitor, block);
+        } catch (const SemanticalException& e){
+            if(!configuration->option_defined("quiet")){
+                output_exception(e);
+            }
+            valid = false;
+        }
+    }
+
+    if(!valid){
+        throw TerminationException();
+    }
 }
 
 bool ast::TypeCheckingPass::is_simple(){

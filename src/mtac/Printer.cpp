@@ -109,16 +109,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     DebugVisitor() : stream(std::cout) {}
     DebugVisitor(std::ostream& os) : stream(os) {}
 
-    void operator()(mtac::program_p program){
+    void operator()(mtac::Program& program){
         stream << "TAC Program " << endl << endl; 
 
-        visit_each_non_variant(*this, program->functions);
+        visit_each_non_variant(*this, program.functions);
     }
 
-    void operator()(mtac::function_p function){
-        stream << "Function " << function->getName() << endl;
+    void operator()(mtac::Function& function){
+        stream << "Function " << function.get_name() << endl;
 
-        visit_each(*this, function->getStatements());
+        visit_each(*this, function.get_statements());
 
         for(auto& block : function){
             visit_non_variant(*this, block);
@@ -318,12 +318,12 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void mtac::Printer::print(mtac::program_p program) const {
+void mtac::Printer::print(mtac::Program& program) const {
    DebugVisitor visitor;
    visitor(program); 
 }
 
-void mtac::Printer::printFunction(mtac::function_p function) const {
+void mtac::Printer::printFunction(mtac::Function& function) const {
    DebugVisitor visitor;
    visitor(function); 
 }
@@ -347,12 +347,12 @@ void mtac::Printer::printArgument(mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
 }
 
-void mtac::print(mtac::program_p program){
+void mtac::print(mtac::Program& program){
     mtac::Printer printer;
     printer.print(program);
 }
 
-void mtac::print(mtac::function_p function){
+void mtac::print(mtac::Function& function){
     mtac::Printer printer;
     printer.printFunction(function);
 }

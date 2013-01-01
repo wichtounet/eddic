@@ -71,10 +71,11 @@ struct LiveRegisterValues {
 //Liveness analysis on Hard Registers
 
 struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::Register, ltac::FloatRegister>> {
-    ProblemDomain Boundary(mtac::function_p function) override;
-    ProblemDomain Init(mtac::function_p function) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
+    ProblemDomain Init(mtac::Function& function) override;
    
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
@@ -85,10 +86,11 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
 //Liveness analysis on Pseudo Registers
 
 struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> {
-    ProblemDomain Boundary(mtac::function_p function) override;
-    ProblemDomain Init(mtac::function_p function) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
+    ProblemDomain Init(mtac::Function& function) override;
    
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     

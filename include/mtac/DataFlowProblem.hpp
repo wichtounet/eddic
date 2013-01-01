@@ -42,10 +42,16 @@ template<DataFlowType Type, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
-    virtual ProblemDomain Boundary(mtac::function_p function);
-    virtual ProblemDomain Init(mtac::function_p function);
+    virtual ProblemDomain Boundary(mtac::Function& function);
+    virtual ProblemDomain Init(mtac::Function& function);
 
-    virtual ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) = 0;
+    /*!
+     * \brief Meet two lattices
+     * \param in The result lattice
+     * \param out The met lattice.
+     */
+    virtual void meet(ProblemDomain& in, const ProblemDomain& out) = 0;
+
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
 
@@ -62,30 +68,30 @@ struct DataFlowProblem {
 };
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::function_p/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::Function&/* function*/) -> ProblemDomain {
     //By default, return the default element
     return default_element();
 }
 
 template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init(mtac::function_p/* function*/) -> ProblemDomain {
+auto DataFlowProblem<Type, DomainValues>::Init(mtac::Function&/* function*/) -> ProblemDomain {
     //By default, return the top element
     return top_element();
 }
 
 template<typename ProblemDomain>
-ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
+void intersection_meet(ProblemDomain& in, const ProblemDomain& out){
     //eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top() && out.top()){
         typename ProblemDomain::Values values;
         ProblemDomain result(values);
 
-        return result;
+        in = result;
     } else if(in.top()){
-        return out;
+        in = out;
     } else if(out.top()){
-        return in;
+        //in does not change
     } else {
         typename ProblemDomain::Values values;
         ProblemDomain result(values);
@@ -96,19 +102,19 @@ ProblemDomain intersection_meet(ProblemDomain& in, ProblemDomain& out){
         while(it != end){
             auto var = it->first;
 
-            if(out.find(var) != out.end()){
+            auto out_it = out.find(var);
+            if(out_it != out.end()){
                 auto value_in = it->second;
-                auto value_out = out[var];
+                auto value_out = out_it->second;
 
-                if(value_in == value_out){
-                    result[var] = value_in;
+                if(!(value_in == value_out)){
+                    it = in.erase(it);
+                    continue;
                 }
             }
 
             ++it;
         }
-
-        return result;
     }
 }
 

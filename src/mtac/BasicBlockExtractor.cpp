@@ -31,26 +31,26 @@ bool isReturn(T statement){
 
 } //end of anonymous namespace
 
-void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
-    for(auto& function : program->functions){
+void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
+    for(auto& function : program.functions){
         std::unordered_map<std::string, std::shared_ptr<basic_block>> labels;
        
         //The first is always a leader 
         bool nextIsLeader = true;
 
-        function->create_entry_bb();
+        function.create_entry_bb();
 
         //First separate the statements into basic blocks
-        for(auto& statement : function->getStatements()){
+        for(auto& statement : function.get_statements()){
             if(auto* ptr = boost::get<std::string>(&statement)){
-                function->append_bb();
+                function.append_bb();
 
-                labels[*ptr] = function->current_bb();
+                labels[*ptr] = function.current_bb();
 
                 nextIsLeader = false;
             } else {
                 if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
-                    function->append_bb();
+                    function.append_bb();
                     nextIsLeader = false;
                 }
 
@@ -59,7 +59,7 @@ void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
                     nextIsLeader = true;
                 } 
 
-                function->current_bb()->add(statement);
+                function.current_bb()->add(statement);
             }
         }
 
@@ -76,8 +76,8 @@ void mtac::BasicBlockExtractor::extract(mtac::program_p program) const {
             }
         }
 
-        function->create_exit_bb();
+        function.create_exit_bb();
 
-        function->getStatements().clear();
+        function.release_statements();
     }
 }

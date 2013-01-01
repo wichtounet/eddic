@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_CONCAT_REDUCTION_H
-#define MTAC_CONCAT_REDUCTION_H
+#ifndef MTAC_MERGE_BASIC_BLOCKS_H
+#define MTAC_MERGE_BASIC_BLOCKS_H
 
 #include <memory>
 
@@ -15,24 +15,18 @@
 
 namespace eddic {
 
-struct StringPool;
-
 namespace mtac {
 
-struct optimize_concat {
-    std::shared_ptr<StringPool> pool;
-
-    void set_pool(std::shared_ptr<StringPool> pool);
-
-    bool operator()(mtac::function_p function);
+struct merge_basic_blocks {
+    bool operator()(mtac::Function& function);
 };
 
 template<>
-struct pass_traits<optimize_concat> {
+struct pass_traits<merge_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
-    STATIC_STRING(name, "optimize_concat");
-    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_POOL);
-    STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
+    STATIC_STRING(name, "merge_bb");
+    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_REMOVE_NOP);
 };
 
 } //end of mtac

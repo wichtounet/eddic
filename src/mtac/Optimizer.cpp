@@ -20,6 +20,7 @@
 #include "likely.hpp"
 #include "logging.hpp"
 #include "timing.hpp"
+#include "GlobalContext.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -34,15 +35,22 @@
 
 //The custom optimizations
 #include "mtac/conditional_propagation.hpp"
-#include "mtac/VariableOptimizations.hpp"
-#include "mtac/FunctionOptimizations.hpp"
+#include "mtac/remove_aliases.hpp"
+#include "mtac/clean_variables.hpp"
+#include "mtac/remove_unused_functions.hpp"
+#include "mtac/remove_empty_functions.hpp"
 #include "mtac/DeadCodeElimination.hpp"
-#include "mtac/BasicBlockOptimizations.hpp"
+#include "mtac/merge_basic_blocks.hpp"
+#include "mtac/remove_dead_basic_blocks.hpp"
 #include "mtac/BranchOptimizations.hpp"
-#include "mtac/ConcatReduction.hpp"
 #include "mtac/inlining.hpp"
 #include "mtac/loop_analysis.hpp"
-#include "mtac/loop_optimizations.hpp"
+#include "mtac/induction_variable_optimizations.hpp"
+#include "mtac/loop_unrolling.hpp"
+#include "mtac/complete_loop_peeling.hpp"
+#include "mtac/remove_empty_loops.hpp"
+#include "mtac/loop_invariant_code_motion.hpp"
+#include "mtac/parameter_propagation.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -56,8 +64,6 @@
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/CommonSubexpressionElimination.hpp"
-
-
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -97,7 +103,6 @@ typedef boost::mpl::vector<
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,
-        mtac::optimize_concat*,
         mtac::remove_dead_basic_blocks*,
         mtac::merge_basic_blocks*,
         mtac::dead_code_elimination*,
@@ -138,7 +143,8 @@ typedef boost::mpl::vector<
         mtac::remove_unused_functions*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
-        mtac::inline_functions*
+        mtac::inline_functions*,
+        mtac::parameter_propagation*
     > ipa_passes;
 
 template<typename Pass>
@@ -169,20 +175,20 @@ struct disable_if<true,T> {
 struct pass_runner {
     bool optimized = false;
 
-    mtac::program_p program;
-    mtac::function_p function;
+    mtac::Program& program;
+    mtac::Function* function;
 
     std::shared_ptr<StringPool> pool;
     std::shared_ptr<Configuration> configuration;
     Platform platform;
     timing_system& system;
 
-    pass_runner(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
+    pass_runner(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
             program(program), pool(pool), configuration(configuration), platform(platform), system(system) {};
 
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
-        for(auto& block : function){
+        for(auto& block : *function){
             auto it = iterate(block->statements);
 
             while(it.has_next()){
@@ -261,12 +267,11 @@ struct pass_runner {
     
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(){
-        auto& functions = program->functions;
-        for(auto& function : functions){
-            this->function = function;
+        for(auto& function : program.functions){
+            this->function = &function;
     
             if(log::enabled<Debug>()){
-                log::emit<Debug>("Optimizer") << "Start optimizations on " << function->getName() << log::endl;
+                LOG<Debug>("Optimizer") << "Start optimizations on " << function.get_name() << log::endl;
 
                 print(function);
             }
@@ -281,14 +286,14 @@ struct pass_runner {
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::CUSTOM, bool>::type apply(){
         auto pass = make_pass<Pass>();
 
-        return pass(function);
+        return pass(*function);
     }
 
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
         auto visitor = make_pass<Pass>();
 
-        mtac::visit_all_statements(visitor, function);
+        mtac::visit_all_statements(visitor, *function);
 
         return visitor.optimized;
     }
@@ -299,10 +304,10 @@ struct pass_runner {
 
         auto problem = make_pass<Pass>();
 
-        auto results = mtac::data_flow(function, problem);
+        auto results = mtac::data_flow(*function, problem);
 
         //Once the data-flow problem is fixed, statements can be optimized
-        for(auto& block : function){
+        for(auto& block : *function){
             for(auto& statement : block->statements){
                 optimized |= problem.optimize(statement, results);
             }
@@ -317,7 +322,7 @@ struct pass_runner {
         
         auto visitor = make_pass<Pass>();
 
-        for(auto& block : function){
+        for(auto& block : *function){
             visitor.clear();
 
             visit_each(visitor, block->statements);
@@ -334,7 +339,7 @@ struct pass_runner {
         
         auto visitor = make_pass<Pass>();
 
-        for(auto& block : function){
+        for(auto& block : *function){
             visitor.clear();
 
             visitor.pass = mtac::Pass::DATA_MINING;
@@ -352,7 +357,7 @@ struct pass_runner {
     template<typename Pass>
     inline typename std::enable_if<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type 
     debug_local(bool local){
-        log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
+        LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
     }
 
     template<typename Pass>
@@ -360,12 +365,12 @@ struct pass_runner {
     debug_local(bool local){
         if(log::enabled<Debug>()){
             if(local){
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
+                LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
 
                 //Print the function
-                print(function);
+                print(*function);
             } else {
-                log::emit<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
+                LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
             }
         }
     }
@@ -381,6 +386,7 @@ struct pass_runner {
         }
 
         if(local){
+            program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
             apply_todo<Pass>();
         }
 
@@ -392,12 +398,12 @@ struct pass_runner {
 
 } //end of anonymous namespace
 
-void mtac::Optimizer::optimize(mtac::program_p program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
+void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     timing_system timing_system(configuration);    
     PerfsTimer timer("Whole optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
-    for(auto& function : program->functions){
+    for(auto& function : program.functions){
         mtac::build_control_flow_graph(function);
     }
 

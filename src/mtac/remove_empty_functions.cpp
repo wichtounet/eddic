@@ -11,68 +11,31 @@
 #include "logging.hpp"
 #include "GlobalContext.hpp"
 
-#include "mtac/FunctionOptimizations.hpp"
+#include "mtac/remove_empty_functions.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Statement.hpp"
 
 using namespace eddic;
 
-namespace {
-
-void remove_references(mtac::program_p program, mtac::function_p function){
-    for(auto& bb : function){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                program->context->removeReference((*ptr)->function); 
-            }
-        }
-    }
-}
-
-} //end of anonymous namespace
-
-bool mtac::remove_unused_functions::operator()(mtac::program_p program){
-    auto it = iterate(program->functions);
-
-    while(it.has_next()){
-        auto function = *it;
-
-        if(program->context->referenceCount(function->getName()) == 0){
-            remove_references(program, function);
-            log::emit<Debug>("Optimizer") << "Remove unused function " << function->getName() << log::endl;
-            it.erase();
-            continue;
-        } else if(program->context->referenceCount(function->getName()) == 1 && mtac::is_recursive(function)){
-            remove_references(program, function);
-            log::emit<Debug>("Optimizer") << "Remove unused recursive function " << function->getName() << log::endl;
-            it.erase();
-            continue;
-        } 
-
-        ++it;
-    }
-
-    //Not necessary to restart the other passes
-    return false;
-}
-
-bool mtac::remove_empty_functions::operator()(mtac::program_p program){
+bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
 
-    auto it = iterate(program->functions);
+    auto it = iterate(program.functions);
 
     while(it.has_next()){
-        auto function = *it;
+        auto& function = *it;
 
-        if(function->getName() == "_F4main" || function->getName() == "_F4mainAS"){
+        if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
             ++it;
             continue;
         }
 
-        unsigned int statements = function->size();
+        unsigned int statements = function.size();
 
         if(statements == 0){
-            removed_functions.push_back(function->getName());
+            program.context->stats().inc_counter("empty_function_removed");
+
+            removed_functions.push_back(function.get_name());
             it.erase();
         } else {
             ++it;
@@ -80,7 +43,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
     }
 
     if(!removed_functions.empty()){
-        for(auto& function : program->functions){
+        for(auto& function : program.functions){
             for(auto& block : function){
                 auto fit = block->statements.begin();
 
@@ -91,7 +54,7 @@ bool mtac::remove_empty_functions::operator()(mtac::program_p program){
                         auto function = (*ptr)->function;
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                            int parameters = (*ptr)->functionDefinition->parameters.size();
+                            int parameters = (*ptr)->functionDefinition.parameters().size();
 
                             if(parameters > 0){
                                 //The parameters are in the previous block

@@ -19,7 +19,7 @@ namespace mtac {
 void make_edge(mtac::basic_block_p from, mtac::basic_block_p to);
 void remove_edge(mtac::basic_block_p from, mtac::basic_block_p to);
 
-void build_control_flow_graph(mtac::function_p function);
+void build_control_flow_graph(mtac::Function& function);
 
 } //end of mtac
 

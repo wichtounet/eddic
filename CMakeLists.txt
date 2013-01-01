@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 2)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 1)
 
 #Boost is necessary
 FIND_PACKAGE(Boost REQUIRED) 
@@ -13,18 +13,21 @@ INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(COMMON_CXX_FLAGS          "-pipe -pthread -std=c++11")
-    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
-    set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    set(CMAKE_CXX_FLAGS                 "-pipe -pthread -std=c++11")
+    set(CMAKE_EXE_LINKER_FLAGS          "")
+    
+    set(CMAKE_CXX_FLAGS_DEBUG           "-g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self -fstack-protector-all")
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG    "")
+    
+    set(CMAKE_CXX_FLAGS_RELEASE         "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE  "")
     
     set(CMAKE_CXX_FLAGS_COVERAGE        "${CMAKE_CXX_FLAGS} --coverage")
     set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(COMMON_CXX_FLAGS          "-std=c++11 -Qunused-arguments")
-    set(CMAKE_CXX_FLAGS           "${COMMON_CXX_FLAGS} -g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
-    set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE   "${COMMON_CXX_FLAGS} -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    set(CMAKE_CXX_FLAGS           "-std=c++11 -Qunused-arguments")
+    set(CMAKE_CXX_FLAGS_DEBUG     "-g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
+    set(CMAKE_CXX_FLAGS_RELEASE   "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic can only be compiled on gcc and clang for now")
 endif()
@@ -164,7 +167,9 @@ add_boost_test(eddic_boost_test
     SpecificSuite/int_pointers
     SpecificSuite/bool_pointers
     SpecificSuite/cmove
+    SpecificSuite/delete_any
     SpecificSuite/dynamic
+    SpecificSuite/dynamic_arrays_in_struct
     SpecificSuite/dynamic_struct
     SpecificSuite/float_pointers
     SpecificSuite/struct_pointers
@@ -173,6 +178,7 @@ add_boost_test(eddic_boost_test
     SpecificSuite/member_functions
     SpecificSuite/member_functions_param_stack
     SpecificSuite/memory
+    SpecificSuite/pass_member_by_value
     SpecificSuite/ternary
     SpecificSuite/while_
     SpecificSuite/do_while_
@@ -193,7 +199,6 @@ add_boost_test(eddic_boost_test
     SpecificSuite/math
     SpecificSuite/builtin
     SpecificSuite/assign_value
-    SpecificSuite/concat
     SpecificSuite/println
     SpecificSuite/prints
     SpecificSuite/single_inheritance
@@ -216,8 +221,18 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_lib_math_factorial
     StandardLibSuite/std_lib_math_pow
     StandardLibSuite/std_lib_str_equals
+    StandardLibSuite/std_lib_string
+    StandardLibSuite/std_lib_string_concat
+    StandardLibSuite/std_lib_string_concat_int
     StandardLibSuite/std_linked_list
+    StandardLibSuite/std_vector
     BugFixesSuite/while_bug
+    OptimizationSuite/parameter_propagation
+    OptimizationSuite/remove_empty_functions
+    OptimizationSuite/remove_empty_loops
+    OptimizationSuite/invariant_code_motion
+    OptimizationSuite/complete_loop_peeling
+    OptimizationSuite/loop_unrolling
     #Unit tests
     toString
     toNumber

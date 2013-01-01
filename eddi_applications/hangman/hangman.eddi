@@ -1,29 +1,28 @@
+include<vector>
+
+const int LENGTH = 14;
+str word = "asymptotically";
+
 void main(){
-    string word = "asymptotically";
-    char guessed[20];
-    int state = 0;
-    int count = -1;
+    vector<char> guessed;
+    bool continue = true;
 
     println("Try to guess the word");
-    print_word(word, guessed);
+    print_word(&guessed);
 
-    while(state == 0){
+    while(continue){
         print("Guess a char: ");
-        char c = get_char();
+        guessed.push_back(get_char());
         println();
 
-        if(c != (char) 10){
-            guessed[++count] = c;
+        print_word(&guessed);
 
-            print_word(word, guessed);
-
-            if(complete(word, guessed)){
-                println("Congratulations, you guessed it !");
-                state = 1;
-            } else if(count == 19){
-                println("Too many guesses. Game over !");
-                state = 2;
-            }
+        if(complete(&guessed)){
+            println("Congratulations, you guessed it !");
+            continue = false;
+        } else if(guessed.size() == 19){
+            println("Too many guesses. Game over !");
+            continue = false;
         }
     }
 }
@@ -38,8 +37,8 @@ char get_char(){
     return c;
 }
 
-bool complete(string word, char[] guessed){
-    for(int i = 0; i < length(word); ++i){
+bool complete(vector<char>* guessed){
+    for(int i = 0; i < LENGTH; ++i){
         if(!contains(guessed, word[i])){
             return false;
         }
@@ -48,9 +47,9 @@ bool complete(string word, char[] guessed){
     return true;
 }
 
-bool contains(char[] guessed, char c){
-    for(int i = 0; i < size(guessed); ++i){
-        if(guessed[i] == c){
+bool contains(vector<char>* guessed, char c){
+    for(int i = 0; i < guessed.size(); ++i){
+        if(guessed.at(i) == c){
             return true;
         }
     }
@@ -58,8 +57,8 @@ bool contains(char[] guessed, char c){
     return false;
 }
 
-void print_word(string word, char[] guessed){
-    for(int i = 0; i < length(word); ++i){
+void print_word(vector<char>* guessed){
+    for(int i = 0; i < LENGTH; ++i){
         if(contains(guessed, word[i])){
             print(word[i]);
         } else {

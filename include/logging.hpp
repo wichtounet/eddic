@@ -8,6 +8,16 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
+#ifdef LOGGING_DISABLE
+
+#define LOG if(false) log::emit
+
+#else
+
+#define LOG log::emit
+
+#endif
+
 #include "logging/logging.h"
 
 using namespace ::logging;

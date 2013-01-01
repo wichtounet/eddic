@@ -1,13 +1,11 @@
 int a = 1000;
-string b = "a";
+str b = "a";
 
 void main(){
     print(a);
     print(b);
 
     a = a + 1000;
-    b = b + "a";
 
     print(a);
-    print(b);
 }

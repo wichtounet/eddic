@@ -22,12 +22,12 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
 
-void as::IntelCodeGenerator::generate(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
 
-    for(auto& function : program->functions){
+    for(auto& function : program.functions){
         compile(function);
     }
 
@@ -100,8 +100,6 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
 
 bool as::IntelCodeGenerator::is_enabled_printI(){
     return context->referenceCount("_F5printI") || 
-            context->referenceCount("_F5printB") || 
-            context->referenceCount("_F7printlnB") || 
             context->referenceCount("_F5printF") || 
             context->referenceCount("_F7printlnF") ||
             context->referenceCount("_F8durationAIAI");
@@ -111,7 +109,6 @@ bool as::IntelCodeGenerator::is_enabled_println(){
     return context->referenceCount("_F7println") || 
             context->referenceCount("_F7printlnS") || 
             context->referenceCount("_F7printlnI") || 
-            context->referenceCount("_F7printlnB") || 
             context->referenceCount("_F7printlnC") || 
             context->referenceCount("_F7printlnF");
 }

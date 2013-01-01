@@ -9,7 +9,6 @@
 #define LTAC_JUMP_H
 
 #include <vector>
-#include <memory>
 
 #include "ltac/forward.hpp"
 
@@ -48,7 +47,7 @@ enum struct JumpType : unsigned int {
 struct Jump {
     std::string label;
     JumpType type;
-    std::shared_ptr<eddic::Function> target_function; //Only if a call
+    eddic::Function* target_function; //Only if a call
     
     std::vector<ltac::PseudoRegister> uses;
     std::vector<ltac::PseudoFloatRegister> float_uses;

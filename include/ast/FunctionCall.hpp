@@ -13,8 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "Function.hpp"
-
 #include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
@@ -32,7 +30,6 @@ namespace ast {
  * Should only be used from the Deferred version (eddic::ast::FunctionCall).
  */
 struct ASTFunctionCall {
-    std::shared_ptr<eddic::Function> function;
     std::shared_ptr<Context> context;
     std::string mangled_name;
 

@@ -12,21 +12,12 @@
 #include <string>
 #include <vector>
 
+#include "Parameter.hpp"
+
 namespace eddic {
 
 class FunctionContext;
 class Type;
-
-/*!
- * \struct ParameterType
- * \brief A parameter for a function.  
- */
-struct ParameterType {
-    std::string name;
-    std::shared_ptr<const Type> paramType;
-
-    ParameterType(const std::string& n, std::shared_ptr<const Type> t);
-};
 
 /*!
  * \class Function
@@ -34,22 +25,53 @@ struct ParameterType {
  */
 class Function {
     public:
-        Function(std::shared_ptr<const Type> ret, const std::string& n);
+        Function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
 
-        std::shared_ptr<const Type> getParameterType(const std::string& name) const;
-        unsigned int getParameterPositionByType(const std::string& name) const;
+        //Function cannot be copied
+        Function(const Function& rhs) = delete;
+        Function& operator=(const Function& rhs) = delete;
         
-        std::shared_ptr<const Type> returnType;
-        std::string name;
-        std::string mangledName;
-        std::string struct_;
-        std::vector<ParameterType> parameters;
-        std::shared_ptr<FunctionContext> context;
+        //Function can be moved
+        Function(Function&& rhs);
+        Function& operator=(Function&& rhs);
 
-        std::shared_ptr<const Type> struct_type = nullptr;
+        const Parameter& parameter(std::size_t i) const;
+        const Parameter& parameter(const std::string& name) const;
 
-        int references;
-        bool standard = false;
+        std::vector<Parameter>& parameters();
+        const std::vector<Parameter>& parameters() const;
+
+        unsigned int parameter_position_by_type(const std::string& name) const;
+
+        bool operator==(const Function& rhs) const;
+
+        const std::shared_ptr<const Type>& return_type() const;
+        const std::string& name();
+        const std::string& mangled_name();
+
+        std::shared_ptr<FunctionContext>& context();
+        const std::shared_ptr<FunctionContext>& context() const;
+
+        std::shared_ptr<const Type>& struct_type();
+
+        int references() const;
+        int& references();
+
+        bool standard() const;
+        bool& standard();
+    
+    private:
+        std::shared_ptr<FunctionContext> _context;
+        std::shared_ptr<const Type> _struct_type = nullptr;
+
+        std::shared_ptr<const Type> _return_type;
+        std::string _name;
+        std::string _mangled_name;
+
+        int _references = 0;
+        bool _standard = false;
+
+        std::vector<Parameter> _parameters;
 };
 
 } //end of eddic

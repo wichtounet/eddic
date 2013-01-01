@@ -37,7 +37,7 @@ class CodeGenerator {
          * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
          */
-        virtual void generate(mtac::program_p program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
+        virtual void generate(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

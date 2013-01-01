@@ -56,8 +56,10 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ConstantPropagationLattice
 struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
     mtac::EscapedVariables pointer_escaped;
     
-    ProblemDomain Boundary(mtac::function_p function) override;
-    ProblemDomain meet(ProblemDomain& in, ProblemDomain& out) override;
+    ProblemDomain Boundary(mtac::Function& function) override;
+    
+    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     

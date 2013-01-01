@@ -291,7 +291,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             qi::position(position_begin)
         >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
-        >>  -( value >> *( lexer.comma > value))
+        >>  value >> *( lexer.comma > value)
         >>  lexer.right_parenth;
 
     //Configure debugging and rule naming
@@ -308,7 +308,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(integer);
     DEBUG_RULE(integer_suffix);
     DEBUG_RULE(float_);
-    DEBUG_RULE(builtin_operator);
     DEBUG_RULE(function_call);
     DEBUG_RULE(true_);
     DEBUG_RULE(false_);

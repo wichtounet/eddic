@@ -1,14 +1,14 @@
 //Global Variables
 int ga = 1000;
-string gb = "Global Variable b"; 
+str gb = "Global Variable b"; 
 
 //Global variables with default values
 int defaultA;
-string defaultB;
+str defaultB;
 
 //Global array
 int globalArrayA[10];
-string globalArrayB[10];
+str globalArrayB[10];
 
 //Global unused variable
 int globalUnused = 2222;
@@ -18,9 +18,6 @@ void main(){
 
     int localUnused = 8989;
 
-    string x = "ED" + "DI";
-    println(x);
-
     print("Should print '0' : ");
     println(defaultA);
 
@@ -28,7 +25,7 @@ void main(){
     println(defaultB);
 
     int defaultLA;
-    string defaultLB;
+    str defaultLB;
 
     print("Should print '0' : ");
     println(defaultLA);
@@ -50,7 +47,7 @@ void main(){
     print("Should print 'New value' : ");
     println(gb);
 
-    string a = "Variable a";
+    str a = "Variable a";
     print("Should print 'Variable a' : ");
     println(a);
 
@@ -58,7 +55,7 @@ void main(){
     print("Should print 'New variable a' : ");
     println (a);
 
-    string b = "Variable b";
+    str b = "Variable b";
     print("Should print 'Variable b' : ");
     println(b);
 
@@ -66,8 +63,8 @@ void main(){
     print("Should print 'New variable a' : ");
     println(b);
 
-    string e = "Variable e";
-    string f = "Variable f";
+    str e = "Variable e";
+    str f = "Variable f";
 
     f <=> e;
 
@@ -76,11 +73,6 @@ void main(){
     print("Should print 'Variable f' : ");
     println(e);
     
-    string z = e + f;
-
-    print("Should print 'Variable fVariable e' : ");
-    println(z);
-
     int zaz = 111;
     int zbz = 222;
 
@@ -188,15 +180,15 @@ void main(){
     }
 
     if(4 > 3){
-        string xa = "Cool";
+        str xa = "Cool";
         println(xa);
     } else {
-        string xa = "Super pas cool";
+        str xa = "Super pas cool";
         println(xa);
     }
 
     if(3 == 3){
-        string xa = "Cool";
+        str xa = "Cool";
         println(xa);
     } else {
         println("Pas cool");
@@ -264,7 +256,7 @@ void secondTest(int[] array){
 
 //Test function
 void test(){
-    string x = "test depuis method";
+    str x = "test depuis method";
 
     println(x);
 
@@ -293,8 +285,8 @@ void testGlobalArrays(){
         println(zuizui);
     }
 
-    println("Start foreach string global");
-    foreach(string zaizai in globalArrayB){
+    println("Start foreach str global");
+    foreach(str zaizai in globalArrayB){
         println(zaizai);
     }
 }
@@ -311,15 +303,15 @@ void testArrays(){
     }
     println("End foreach int local");
 
-    string second[10];
+    str second[10];
     second[3] = "asdf";
     println(second[3]);
     
-    println("Start foreach string local");
-    foreach(string youpee in second){
+    println("Start foreach str local");
+    foreach(str youpee in second){
         println(youpee);
     }
-    println("End foreach string local");
+    println("End foreach str local");
 }
 
 void empty(int i){

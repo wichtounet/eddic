@@ -23,98 +23,91 @@
 
 using namespace eddic;
 
-bool mtac::dead_code_elimination::operator()(mtac::function_p function){
-    bool optimized_once = false;
+bool mtac::dead_code_elimination::operator()(mtac::Function& function){
+    bool optimized = false;
 
-    bool optimized;
-    do {
-        optimized = false;
+    mtac::LiveVariableAnalysisProblem problem;
+    auto results = mtac::data_flow(function, problem);
 
-        mtac::LiveVariableAnalysisProblem problem;
-        auto results = mtac::data_flow(function, problem);
+    for(auto& block : function){
+        auto it = iterate(block->statements);
 
-        for(auto& block : function){
-            auto it = iterate(block->statements);
+        while(it.has_next()){
+            auto statement = *it;
 
-            while(it.has_next()){
-                auto statement = *it;
-
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                    if(mtac::erase_result((*ptr)->op)){
-                        if(results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
-                            it.erase();
-                            optimized_once = true;
-                            optimized=true;
-                            continue;
-                        }
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if(mtac::erase_result((*ptr)->op)){
+                    if(results->OUT_S[statement].top() || results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
+                        it.erase();
+                        optimized=true;
+                        continue;
                     }
                 }
-
-                ++it;
             }
+
+            ++it;
         }
+    }
 
-        std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
+    std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
 
-        for(auto& block : function){
-            for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                    auto quadruple = *ptr;
+    for(auto& block : function){
+        for(auto& statement : block->statements){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto quadruple = *ptr;
 
-                    if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
-                        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
-                                mtac::Offset offset(*var_ptr, *offset_ptr);
-                                used_offsets.insert(offset);
-                            }
+                if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                        if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+                            mtac::Offset offset(*var_ptr, *offset_ptr);
+                            used_offsets.insert(offset);
                         }
                     }
                 }
             }
         }
+    }
 
-        for(auto& block : function){
-            auto it = block->statements.begin();
-            auto end = block->statements.end();
+    for(auto& block : function){
+        auto it = block->statements.begin();
+        auto end = block->statements.end();
 
-            while(it != end){
-                auto statement = *it;
+        while(it != end){
+            auto statement = *it;
 
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                    auto quadruple = *ptr;
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                auto quadruple = *ptr;
 
-                    if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
-                        //Arrays are a problem because they are not considered as escaped after being passed in parameters
-                        if(!quadruple->result->type()->is_pointer() && !quadruple->result->type()->is_array()){
-                            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
-                                if(quadruple->result->type()->is_custom_type() || quadruple->result->type()->is_template_type()){
-                                    auto struct_type = function->context->global()->get_struct(quadruple->result->type()->mangle());
-                                    auto member_type = function->context->global()->member_type(struct_type, *offset_ptr);
+                if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
+                    //Arrays are a problem because they are not considered as escaped after being passed in parameters
+                    if(!quadruple->result->type()->is_pointer() && !quadruple->result->type()->is_array()){
+                        if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
+                            if(quadruple->result->type()->is_custom_type() || quadruple->result->type()->is_template_type()){
+                                auto struct_type = function.context->global()->get_struct(quadruple->result->type()->mangle());
+                                auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
-                                    if(member_type->is_pointer()){
-                                        ++it;
-                                        continue;
-                                    }
-                                }
-
-                                mtac::Offset offset(quadruple->result, *offset_ptr);
-
-                                if(problem.pointer_escaped->find(quadruple->result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                                    it = block->statements.erase(it);
-                                    end = block->statements.end();
-                                    optimized=true;
-                                    optimized_once = true;
+                                if(member_type->is_pointer()){
+                                    ++it;
                                     continue;
                                 }
                             }
+
+                            mtac::Offset offset(quadruple->result, *offset_ptr);
+
+                            if(problem.pointer_escaped->find(quadruple->result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
+                                it = block->statements.erase(it);
+                                end = block->statements.end();
+                                optimized=true;
+                                continue;
+                            }
                         }
                     }
                 }
-
-                ++it;
             }
-        }
-    } while(optimized);
 
-    return optimized_once;
+            ++it;
+        }
+    }
+
+    return optimized;
 }

@@ -43,3 +43,16 @@ int factorial(int n){
 
     return n * factorial(n - 1);
 }
+
+//Number of digits in the int
+int digits(int n){
+    int digits = 0; 
+    int number = n;
+    
+    while (number != 0) { 
+        number /= 10; 
+        ++digits;
+    }
+
+    return digits;
+}

@@ -14,11 +14,54 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n) : context(c), name(n) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), _definition(&definition) {
     //Nothing to do   
 }
+        
+mtac::Function::Function(mtac::Function&& rhs) : 
+            _definition(rhs._definition), 
+            context(std::move(rhs.context)), statements(std::move(rhs.statements)), 
+            count(std::move(rhs.count)), index(std::move(rhs.index)),
+            entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
+            _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
+            _variable_registers(std::move(rhs._variable_registers)), _variable_float_registers(std::move(rhs._variable_float_registers)),
+            last_pseudo_registers(std::move(rhs.last_pseudo_registers)), last_float_pseudo_registers(std::move(rhs.last_float_pseudo_registers)),
+            m_loops(std::move(rhs.m_loops)), name(std::move(rhs.name))
+        {
+    //Reset rhs
+    rhs.count = 0;
+    rhs.index = 0;
+    rhs.last_pseudo_registers = 0;
+    rhs.last_float_pseudo_registers = 0;
+}
 
-bool mtac::Function::is_main(){
+mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
+    _definition = rhs._definition;
+    context = std::move(rhs.context); 
+    statements = std::move(rhs.statements); 
+    count = std::move(rhs.count); 
+    index = std::move(rhs.index);
+    entry = std::move(rhs.entry); 
+    exit = std::move(rhs.exit); 
+    _use_registers = std::move(rhs._use_registers); 
+    _use_float_registers = std::move(rhs._use_float_registers);
+    _variable_registers = std::move(rhs._variable_registers); 
+    _variable_float_registers = std::move(rhs._variable_float_registers);
+    last_pseudo_registers = std::move(rhs.last_pseudo_registers); 
+    last_float_pseudo_registers = std::move(rhs.last_float_pseudo_registers);
+    m_loops = std::move(rhs.m_loops); 
+    name = std::move(rhs.name);
+
+    //Reset rhs
+    rhs.count = 0;
+    rhs.index = 0;
+    rhs.last_pseudo_registers = 0;
+    rhs.last_float_pseudo_registers = 0;
+    
+    return *this;
+}
+
+bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
 }
 
@@ -28,6 +71,14 @@ mtac::basic_block_iterator mtac::Function::begin(){
 
 mtac::basic_block_iterator mtac::Function::end(){
     return basic_block_iterator(nullptr, exit);    
+}
+
+mtac::basic_block_const_iterator mtac::Function::begin() const {
+    return basic_block_const_iterator(entry, nullptr);
+}
+
+mtac::basic_block_const_iterator mtac::Function::end() const {
+    return basic_block_const_iterator(nullptr, exit);
 }
 
 mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
@@ -115,7 +166,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     eddic_assert(block, "Cannot remove null block"); 
     eddic_assert(block != exit, "Cannot remove exit"); 
 
-    log::emit<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
+    LOG<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
 
     auto& next = block->next;
 
@@ -175,7 +226,7 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
     eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
 
-    log::emit<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
+    LOG<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
 
     if(!source->statements.empty()){
         //B can have some new successors
@@ -201,15 +252,24 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
     return at(block);
 }
 
-std::string mtac::Function::getName() const {
+std::string mtac::Function::get_name() const {
     return name;
 }
+      
+eddic::Function& mtac::Function::definition(){
+    return *_definition;
+}
 
-std::vector<mtac::Statement>& mtac::Function::getStatements(){
+std::vector<mtac::Statement>& mtac::Function::get_statements(){
     return statements;
 }
 
-std::size_t mtac::Function::bb_count(){
+void mtac::Function::release_statements(){
+    statements.clear();
+    statements.shrink_to_fit();
+}
+
+std::size_t mtac::Function::bb_count() const {
     return count;
 }
 
@@ -261,7 +321,7 @@ void mtac::Function::set_pseudo_float_registers(std::size_t pseudo_registers){
     this->last_float_pseudo_registers = pseudo_registers;
 }
 
-std::size_t mtac::Function::size(){
+std::size_t mtac::Function::size() const {
     std::size_t size = 0;
 
     for(auto& block : *this){
@@ -277,12 +337,4 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
 
 std::vector<std::shared_ptr<mtac::Loop>>& mtac::Function::loops(){
     return m_loops;
-}
-
-mtac::basic_block_iterator mtac::begin(mtac::function_p function){
-    return function->begin();
-}
-
-mtac::basic_block_iterator mtac::end(mtac::function_p function){
-    return function->end();
 }

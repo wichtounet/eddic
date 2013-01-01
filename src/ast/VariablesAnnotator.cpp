@@ -53,6 +53,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_TERNARY()
     AUTO_RECURSE_CAST_VALUES()
     AUTO_RECURSE_NEW()
+    AUTO_RECURSE_DELETE()
     AUTO_RECURSE_FUNCTION_CALLS()
 
     void operator()(ast::Assignment& assignment){

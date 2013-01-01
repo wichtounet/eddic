@@ -1,11 +1,11 @@
-include <strings>
+include <print>
 
 void main(){
-    string a = "asdf";
-    string b = "qwer";
-    string c = "asd";
-    string d = "00";
-    string e = "00";
+    str a = "asdf";
+    str b = "qwer";
+    str c = "asd";
+    str d = "00";
+    str e = "00";
 
     print(str_equals(a, a));
     print("|");

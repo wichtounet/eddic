@@ -14,7 +14,7 @@ namespace eddic {
 
 namespace mtac {
 
-void resolve_references(mtac::program_p program);
+void resolve_references(mtac::Program& program);
 
 } //end of mtac
 

@@ -18,6 +18,8 @@
 
 namespace eddic {
 
+class Parameter;
+
 /*!
  * \brief Return the mangled representation of the given type. 
  * \param type The type to mangle. 
@@ -37,9 +39,8 @@ std::string unmangle(std::string mangled);
  * \param function the function signature.
  * \return The mangled function name. 
  */
-std::string mangle(const std::shared_ptr<Function> function);
-std::string mangle_ctor(const std::shared_ptr<Function> function);
-std::string mangle_dtor(const std::shared_ptr<Function> function);
+std::string mangle(const std::string& name, const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type = nullptr);
+std::string mangle_ctor(const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type);
 
 /*!
  * \brief Return the mangled representation of the given function. Used for function calls.  
