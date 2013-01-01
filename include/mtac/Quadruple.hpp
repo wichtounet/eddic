@@ -35,6 +35,11 @@ struct Quadruple {
     mtac::Operator op;
     mtac::Size size = mtac::Size::DEFAULT;
     unsigned int depth;
+    
+    std::string label;
+    
+    //Filled only in later phase replacing the label
+    basic_block_p block;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;
