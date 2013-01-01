@@ -104,7 +104,7 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
-    void operator()(std::shared_ptr<mtac::Goto> goto_){
+    void operator()(std::shared_ptr<mtac::Quadruple> goto_){
         usage.insert(goto_->block);
     }
     
@@ -164,6 +164,7 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::DOT_FASSIGN 
         && op != mtac::Operator::DOT_PASSIGN 
         && op != mtac::Operator::RETURN
+        && op != mtac::Operator::GOTO
         && op != mtac::Operator::NOP
         && op != mtac::Operator::LABEL; 
 }
@@ -218,6 +219,7 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->arg2 = quadruple->arg2;
         copy->op = quadruple->op;
         copy->size = quadruple->size;
+        copy->block = goto_->block;
         
         return copy;
     }
@@ -266,12 +268,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         global_context->addReference(call->function);
 
         return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::Goto> goto_){
-        auto copy = std::make_shared<mtac::Goto>(goto_->label);
-        copy->block = goto_->block;
-        return copy;
     }
 };
 

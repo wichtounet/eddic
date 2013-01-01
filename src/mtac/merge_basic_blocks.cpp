@@ -62,18 +62,22 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
 
             bool merge = false;
 
-            if(boost::get<std::shared_ptr<mtac::Quadruple>>(&last)){
-                merge = true;
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&last)){
+                auto& quadruple = *ptr;
+
+                if(quadruple->op == mtac::Operator::GOTO){
+                    merge = quadruple->block == next;
+
+                    if(merge){
+                        block->statements.pop_back();
+                        computeBlockUsage(function, usage);
+                    }
+                } else {
+                    merge = true;
+                }
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
                 merge = safe(*ptr); 
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
-                merge = (*ptr)->block == next;
-
-                if(merge){
-                    block->statements.pop_back();
-                    computeBlockUsage(function, usage);
-                }
-            }
+            } 
 
             if(merge && next && next->index != -2){
                 //Only if the next block is not used because we will remove its label
