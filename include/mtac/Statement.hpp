@@ -17,7 +17,6 @@
 #include "mtac/If.hpp"
 #include "mtac/Goto.hpp"
 #include "mtac/Call.hpp"
-#include "mtac/NoOp.hpp"
 
 namespace eddic {
 
@@ -30,7 +29,6 @@ typedef boost::variant<
         std::shared_ptr<mtac::If>,               //Jumping quadruples
         std::shared_ptr<mtac::Goto>,             //Non-conditional jump
         std::shared_ptr<mtac::Call>,             //Call a function
-        std::shared_ptr<mtac::NoOp>,             //Only used by the optimizer
         std::string                              //For labels
     > Statement;
 

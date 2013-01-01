@@ -30,7 +30,6 @@ struct Param;
 struct Quadruple;
 struct Goto;
 struct Call;
-struct NoOp;
 
 typedef boost::variant<
         std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
@@ -39,7 +38,6 @@ typedef boost::variant<
         std::shared_ptr<mtac::If>,               //Jumping quadruples
         std::shared_ptr<mtac::Goto>,             //Non-conditional jump
         std::shared_ptr<mtac::Call>,             //Call a function
-        std::shared_ptr<mtac::NoOp>,             //Only used by the optimizer
         std::string                              //For labels
     > Statement;
 
