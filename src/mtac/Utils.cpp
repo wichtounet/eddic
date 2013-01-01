@@ -215,6 +215,7 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->arg1 = quadruple->arg1;
         copy->arg2 = quadruple->arg2;
         copy->op = quadruple->op;
+        copy->size = quadruple->size;
         
         return copy;
     }
