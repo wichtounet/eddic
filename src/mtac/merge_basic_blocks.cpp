@@ -66,8 +66,6 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 merge = true;
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
                 merge = safe(*ptr); 
-            } else if(boost::get<std::shared_ptr<mtac::NoOp>>(&last)){
-                merge = true;
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last)){
                 merge = (*ptr)->block == next;
 

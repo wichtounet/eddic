@@ -53,7 +53,6 @@ class StatementCompiler : public boost::static_visitor<> {
         void operator()(std::shared_ptr<mtac::Param> param);
         void operator()(std::shared_ptr<mtac::Call> call);
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-        void operator()(std::shared_ptr<mtac::NoOp>);
         void operator()(std::string& str);
 
         void push(ltac::Argument arg);

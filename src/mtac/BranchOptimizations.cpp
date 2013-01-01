@@ -36,7 +36,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     } else if(value == 1){
                         mtac::remove_edge(block, (*ptr)->block);
 
-                        statement = std::make_shared<mtac::NoOp>();
+                        statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
                         optimized = true;
                     }
                 }
@@ -47,7 +47,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     if(value == 0){
                         mtac::remove_edge(block, (*ptr)->block);
 
-                        statement = std::make_shared<mtac::NoOp>();
+                        statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
                         optimized = true;
                     } else if(value == 1){
                         auto goto_ = std::make_shared<mtac::Goto>();
