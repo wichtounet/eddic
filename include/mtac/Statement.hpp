@@ -28,8 +28,7 @@ typedef boost::variant<
         std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
         std::shared_ptr<mtac::If>,               //Jumping quadruples
         std::shared_ptr<mtac::Goto>,             //Non-conditional jump
-        std::shared_ptr<mtac::Call>,             //Call a function
-        std::string                              //For labels
+        std::shared_ptr<mtac::Call>              //Call a function
     > Statement;
 
 std::ostream& operator<<(std::ostream& out, const Statement& statement);

@@ -9,7 +9,6 @@
 #define MTAC_FORWARD_DECLARATIONS_H
 
 #include <memory>
-#include <string>
 
 #include "variant.hpp"
 
@@ -37,8 +36,7 @@ typedef boost::variant<
         std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
         std::shared_ptr<mtac::If>,               //Jumping quadruples
         std::shared_ptr<mtac::Goto>,             //Non-conditional jump
-        std::shared_ptr<mtac::Call>,             //Call a function
-        std::string                              //For labels
+        std::shared_ptr<mtac::Call>              //Call a function
     > Statement;
 
 } //end of mtac
