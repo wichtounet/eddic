@@ -1,3 +1,22 @@
+eddic 1.2.1 - 2012.12.31
+
+* Language: string is renamed to str
+* Language: concatenation is no more possible on str
+* Language: delete can be applied on any left value now
+* Language: Support for dynamic arrays of structures
+* Language: printB is now an EDDI function
+* Standard Library: Add a class string
+* Standard Library: Add support for concatenation of string and int
+* Standard Library: Add a vector
+* Warnings: Better warnings for includes of standard library
+* Bug: The hangman application no works correctly
+* Optimizer: Propagate constant parameters into functions
+* Optimizer: Improved performances of general optimization
+* Tests: Add test case verifying that optimizations are done
+* Compiler: Improved the error reporting to display several errors instead of only the first
+* Compiler: Add statistics system to keep track of counters
+* Compiler: Use less shared_ptr and manipulates references instead (eddic::Function, mtac::Function and mtac::Program)
+
 eddic 1.2.0 - 2012.12.15
 
 * Language: Support for single inheritance
