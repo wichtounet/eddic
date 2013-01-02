@@ -20,6 +20,8 @@ class Variable;
 
 namespace mtac {
 
+class basic_block;
+
 enum class Size : char {
     DEFAULT,
     BYTE,
@@ -35,6 +37,9 @@ struct Quadruple {
     mtac::Operator op;
     mtac::Size size = mtac::Size::DEFAULT;
     unsigned int depth;
+    
+    //Filled only in later phase replacing the label
+    std::shared_ptr<mtac::basic_block> block;
 
     //Quadruple should never get copied
     Quadruple(const Quadruple& rhs) = delete;
@@ -57,6 +62,8 @@ struct Quadruple {
 
     //Quadruples without assign to result
     Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
+
+    const std::string& label() const;
 };
 
 } //end of mtac

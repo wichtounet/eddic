@@ -67,11 +67,13 @@ enum class Operator : unsigned int {
     DOT_FASSIGN,    //result+arg1=arg2
     DOT_PASSIGN,    //result+arg1=arg2
     
+    GOTO,           //jump to a basic block (label in arg1)
+
     RETURN,         //return from a function
 
     NOP,            //for optimization purpose
 
-    LABEL
+    LABEL           //label in arg1
 };
 
 mtac::Operator toOperator(ast::Operator op);

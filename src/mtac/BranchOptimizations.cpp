@@ -24,9 +24,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     int value = boost::get<int>((*ptr)->arg1);
 
                     if(value == 0){
-                        auto goto_ = std::make_shared<mtac::Goto>();
-
-                        goto_->label = (*ptr)->label;
+                        auto goto_ = std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, (*ptr)->label);
                         goto_->block = (*ptr)->block;
 
                         statement = goto_;
@@ -50,9 +48,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                         statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
                         optimized = true;
                     } else if(value == 1){
-                        auto goto_ = std::make_shared<mtac::Goto>();
-
-                        goto_->label = (*ptr)->label;
+                        auto goto_ = std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, (*ptr)->label);
                         goto_->block = (*ptr)->block;
 
                         statement = goto_;

@@ -27,7 +27,6 @@ struct If;
 struct IfFalse;
 struct Param;
 struct Quadruple;
-struct Goto;
 struct Call;
 
 typedef boost::variant<
@@ -35,7 +34,6 @@ typedef boost::variant<
         std::shared_ptr<mtac::Param>,            //Parameters
         std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
         std::shared_ptr<mtac::If>,               //Jumping quadruples
-        std::shared_ptr<mtac::Goto>,             //Non-conditional jump
         std::shared_ptr<mtac::Call>              //Call a function
     > Statement;
 
