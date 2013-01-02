@@ -49,7 +49,6 @@ class StatementCompiler : public boost::static_visitor<> {
 
         void operator()(std::shared_ptr<mtac::IfFalse> if_false);
         void operator()(std::shared_ptr<mtac::If> if_);
-        void operator()(std::shared_ptr<mtac::Goto> goto_);
         void operator()(std::shared_ptr<mtac::Param> param);
         void operator()(std::shared_ptr<mtac::Call> call);
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
@@ -125,6 +124,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple);
         void compile_AND(std::shared_ptr<mtac::Quadruple> quadruple);
+        void compile_GOTO(std::shared_ptr<mtac::Quadruple> quadruple);
 };
 
 } //end of ltac

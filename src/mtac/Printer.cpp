@@ -214,6 +214,12 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << "\tnop" << " : " << quadruple->depth << endl;
         } else if(op == mtac::Operator::LABEL){
             stream << "\t" << printArg(*quadruple->arg1) << ":" << endl;
+        } else if(op == mtac::Operator::GOTO){
+            if(quadruple->block){
+                stream << "\tgoto " << "B" + toString(quadruple->block->index) << " : " << quadruple->depth << endl;
+            } else {
+                stream << "\tgoto " << quadruple->label() << " : " << quadruple->depth << endl;
+            }
         }
     }
 
@@ -285,10 +291,6 @@ struct DebugVisitor : public boost::static_visitor<> {
                 stream << "\tparam " << address << printArg(param->arg) << " : " << param->depth << endl;
             }
         }
-    }
-
-    void operator()(std::shared_ptr<mtac::Goto> goto_){
-        stream << "\tgoto " << printTarget(goto_) << " : " << goto_->depth << endl;
     }
 
     void operator()(std::shared_ptr<mtac::Call> call){

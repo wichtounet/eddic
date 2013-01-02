@@ -349,7 +349,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
 
                 function.add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-                function.add(std::make_shared<mtac::Goto>(endLabel));
+                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, endLabel));
 
                 function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::LABEL, falseLabel));
                 function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
@@ -373,7 +373,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
 
                 function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-                function.add(std::make_shared<mtac::Goto>(endLabel));
+                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, endLabel));
 
                 function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::LABEL, trueLabel));
                 function.add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
@@ -1313,7 +1313,7 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
 
         jump_if_false(function, falseLabel, ternary.Content->condition); 
         assign(function, t1, ternary.Content->true_value);
-        function.add(std::make_shared<mtac::Goto>(endLabel));
+        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, endLabel));
         
         function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::LABEL, falseLabel));
         assign(function, t1, ternary.Content->false_value);
@@ -1330,7 +1330,7 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
         function.add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
         function.add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
 
-        function.add(std::make_shared<mtac::Goto>(endLabel));
+        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, endLabel));
         
         function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::LABEL, falseLabel));
         args = visit(ToArgumentsVisitor<>(function), ternary.Content->false_value);
@@ -1386,7 +1386,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                 if (if_.Content->else_) {
                     std::string elseLabel = newLabel();
 
-                    function.add(std::make_shared<mtac::Goto>(elseLabel));
+                    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, elseLabel));
 
                     function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::LABEL, endLabel));
 
@@ -1408,7 +1408,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                 
                 issue_destructors(if_.Content->context);
 
-                function.add(std::make_shared<mtac::Goto>(end));
+                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, end));
 
                 for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
                     ast::ElseIf& elseIf = if_.Content->elseIfs[i];
@@ -1432,7 +1432,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     
                     issue_destructors(elseIf.context);
 
-                    function.add(std::make_shared<mtac::Goto>(end));
+                    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, end));
                 }
 
                 if (if_.Content->else_) {

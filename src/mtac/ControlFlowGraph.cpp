@@ -80,8 +80,12 @@ void mtac::build_control_flow_graph(mtac::Function& function){
                 make_edge(block, next);
             } 
             //Goto has one possible successor
-            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
+            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&last_statement)){
+                if((*ptr)->op == mtac::Operator::GOTO){
+                    make_edge(block, (*ptr)->block);
+                } else {
+                    make_edge(block, next);
+                }
             }
             //All the other statements have only the fall through successor
             else {

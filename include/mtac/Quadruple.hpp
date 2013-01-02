@@ -62,6 +62,8 @@ struct Quadruple {
 
     //Quadruples without assign to result
     Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
+
+    const std::string& label() const;
 };
 
 } //end of mtac

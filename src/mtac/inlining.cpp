@@ -46,9 +46,11 @@ struct BBReplace : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<mtac::Goto> goto_){
-        if(clones.find(goto_->block) != clones.end()){
-            goto_->block = clones[goto_->block];
+    void operator()(std::shared_ptr<mtac::Quadruple> goto_){
+        if(goto_->op == mtac::Operator::GOTO){
+            if(clones.find(goto_->block) != clones.end()){
+                goto_->block = clones[goto_->block];
+            }
         }
     }
 
@@ -300,7 +302,8 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                 auto quadruple = *ret_ptr;
 
                 if(quadruple->op == mtac::Operator::RETURN){
-                    auto goto_ = std::make_shared<mtac::Goto>();
+                    auto label = "label";
+                    auto goto_ = std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, static_cast<const std::string&>(label));
                     goto_->block = basic_block;
 
                     mtac::remove_edge(new_bb, new_bb->next);

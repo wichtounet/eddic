@@ -465,12 +465,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
     }
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Goto> goto_){
-    LOG<Trace>("Registers") << "Current statement " << goto_ << log::endl;
+void ltac::StatementCompiler::compile_GOTO(std::shared_ptr<mtac::Quadruple> quadruple){
+    LOG<Trace>("Registers") << "Current statement " << quadruple << log::endl;
 
     end_bb();
 
-    bb->l_statements.push_back(std::make_shared<ltac::Jump>(goto_->block->label, ltac::JumpType::ALWAYS));
+    bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple->block->label, ltac::JumpType::ALWAYS));
 }
 
 ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset){
@@ -1485,6 +1485,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
             break;
         case mtac::Operator::AND:
             compile_AND(quadruple);
+            break;
+        case mtac::Operator::GOTO:
+            compile_GOTO(quadruple);
             break;
         case mtac::Operator::LABEL:
             bb->l_statements.push_back(boost::get<std::string>(*quadruple->arg1));

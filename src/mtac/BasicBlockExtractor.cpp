@@ -29,6 +29,15 @@ bool isReturn(T statement){
     return false;
 }
 
+template<typename T>
+bool is_goto(T statement){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+        return (*ptr)->op == mtac::Operator::GOTO;
+    }
+
+    return false;
+}
+
 } //end of anonymous namespace
 
 void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
@@ -46,7 +55,7 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                 if((*ptr)->op == mtac::Operator::LABEL){
                     function.append_bb();
 
-                    labels[boost::get<std::string>(*(*ptr)->arg1)] = function.current_bb();
+                    labels[(*ptr)->label()] = function.current_bb();
 
                     nextIsLeader = false;
                     continue;
@@ -59,7 +68,7 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
             }
 
             if(boost::get<std::shared_ptr<mtac::IfFalse>>(&statement) || boost::get<std::shared_ptr<mtac::If>>(&statement) || 
-                    isReturn(statement) || boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
+                    isReturn(statement) || is_goto(statement)){
                 nextIsLeader = true;
             } 
 
@@ -73,8 +82,10 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                    (*ptr)->block = labels[(*ptr)->label];
                 } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
                    (*ptr)->block = labels[(*ptr)->label];
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&statement)){
-                   (*ptr)->block = labels[(*ptr)->label];
+                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                    if((*ptr)->op == mtac::Operator::GOTO){
+                        (*ptr)->block = labels[(*ptr)->label()];
+                    }
                 }
             }
         }
