@@ -1490,7 +1490,7 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
             compile_GOTO(quadruple);
             break;
         case mtac::Operator::LABEL:
-            bb->l_statements.push_back(boost::get<std::string>(*quadruple->arg1));
+            bb->l_statements.push_back(quadruple->label());
             break;
         case mtac::Operator::NOP:
             //No code necessary
