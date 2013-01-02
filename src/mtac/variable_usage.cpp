@@ -49,10 +49,6 @@ struct VariableReadCollector : public boost::static_visitor<> {
         collect_optional(quadruple->arg2);
     }
     
-    void operator()(std::shared_ptr<mtac::Param> param){
-        collect(param->arg);
-    }
-    
     void operator()(std::shared_ptr<mtac::If> if_){
         collect(if_->arg1);
         collect_optional(if_->arg2);
@@ -94,10 +90,6 @@ struct UsageCollector : public boost::static_visitor<bool> {
 
     bool operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         return quadruple->result == var || collect_optional(quadruple->arg1) || collect_optional(quadruple->arg2);
-    }
-    
-    bool operator()(std::shared_ptr<mtac::Param> param){
-        return collect(param->arg);
     }
     
     bool operator()(std::shared_ptr<mtac::If> if_){

@@ -141,6 +141,17 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* b
             visit(collector, *quadruple->arg1);
                 
             remove_copies = quadruple->result;
+        } 
+        //Passing a variable by pointer erases its value
+        else if(quadruple->op == mtac::Operator::PARAM){
+            if(quadruple->address){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    //Impossible to know if the variable is modified or not, consider it modified
+                    out[*var_ptr].set_nac();
+
+                    remove_copies = *var_ptr;
+                }
+            }
         } else {
             auto op = quadruple->op;
 
@@ -149,19 +160,6 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* b
                 out[quadruple->result].set_nac();
     
                 remove_copies = quadruple->result;
-            }
-        }
-    }
-    //Passing a variable by pointer erases its value
-    else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        auto param = *ptr;
-
-        if(param->address){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-                //Impossible to know if the variable is modified or not, consider it modified
-                out[*ptr].set_nac();
-            
-                remove_copies = *ptr;
             }
         }
     }
@@ -218,6 +216,14 @@ struct ConstantOptimizer : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+        if(quadruple->op == mtac::Operator::PARAM){
+            if(!quadruple->address){
+                changes |= optimize_optional(quadruple->arg1);
+            }
+
+            return;
+        }
+
         //If the constant is a string, we can use it in the dot operator
         if(quadruple->op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
@@ -251,12 +257,6 @@ struct ConstantOptimizer : public boost::static_visitor<> {
                     }
                 }
             }
-        }
-    }
-
-    void operator()(std::shared_ptr<mtac::Param> param){
-        if(!param->address){
-            changes |= optimize_arg(param->arg);
         }
     }
 

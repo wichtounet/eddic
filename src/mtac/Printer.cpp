@@ -220,6 +220,21 @@ struct DebugVisitor : public boost::static_visitor<> {
             } else {
                 stream << "\tgoto " << quadruple->label() << " : " << quadruple->depth << endl;
             }
+        } else if(op == mtac::Operator::PARAM){
+            std::string address;
+            if(quadruple->address){
+                address = " address ";
+            }
+
+            if(quadruple->param()){
+                stream << "\tparam " << address << "(" << printVar(quadruple->param()) << ") " << printArg(*quadruple->arg1) << " : " << quadruple->depth << endl;
+            } else {
+                if(quadruple->std_param().length() > 0){
+                    stream << "\tparam " << address << "(std::" << quadruple->std_param() << ") " << printArg(*quadruple->arg1) << " : " << quadruple->depth << endl;
+                } else {
+                    stream << "\tparam " << address << printArg(*quadruple->arg1) << " : " << quadruple->depth << endl;
+                }
+            }
         }
     }
 
@@ -274,25 +289,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<mtac::Param> param){
-        std::string address;
-        if(param->address){
-            address = " address ";
-        }
-
-        std::string members;
-
-        if(param->param){
-            stream << "\tparam " << address << "(" << printVar(param->param) << ") " << printArg(param->arg) << " : " << param->depth << endl;
-        } else {
-            if(param->std_param.length() > 0){
-                stream << "\tparam " << address << "(std::" << param->std_param << ") " << printArg(param->arg) << " : " << param->depth << endl;
-            } else {
-                stream << "\tparam " << address << printArg(param->arg) << " : " << param->depth << endl;
-            }
-        }
-    }
-
     void operator()(std::shared_ptr<mtac::Call> call){
         stream << "\t";
 

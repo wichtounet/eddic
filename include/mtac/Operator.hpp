@@ -73,6 +73,8 @@ enum class Operator : unsigned int {
 
     NOP,            //for optimization purpose
 
+    PARAM,          //for parameter passing
+
     LABEL           //label in arg1
 };
 

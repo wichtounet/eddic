@@ -192,14 +192,6 @@ struct VariableReplace : public boost::static_visitor<bool> {
         return optimized | optimize_optional(quadruple->arg1) | optimize_optional(quadruple->arg2);
     }
 
-    bool operator()(std::shared_ptr<mtac::Param> param){
-        if(invalid){
-            return false;
-        }
-
-        return optimize_arg(param->arg);
-    }
-
     bool operator()(std::shared_ptr<mtac::IfFalse> if_){
         if(invalid){
             return false;

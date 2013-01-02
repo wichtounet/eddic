@@ -16,10 +16,9 @@
 
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Function.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Call.hpp"
-#include "mtac/Argument.hpp"
-#include "mtac/Param.hpp"
+#include "mtac/Function.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Utils.hpp"
 
@@ -52,12 +51,14 @@ Arguments collect_arguments(mtac::Program& program){
                         while(it != end && discovered < parameters){
                             auto& param_statement = *it;
 
-                            if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
-                                if((*param_ptr)->param->type() == INT){
-                                    function_arguments[discovered] = (*param_ptr)->arg;
-                                }
+                            if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&param_statement)){
+                                if((*param_ptr)->op == mtac::Operator::PARAM){
+                                    if((*param_ptr)->param()->type() == INT){
+                                        function_arguments[discovered] = *(*param_ptr)->arg1;
+                                    }
 
-                                ++discovered;
+                                    ++discovered;
+                                }
                             }
 
                             ++it;
@@ -166,7 +167,7 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                                     while(it != end && discovered < function.parameters().size()){
                                         auto& param_statement = *it;
 
-                                        if(boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
+                                        if(boost::get<std::shared_ptr<mtac::Quadruple>>(&param_statement)){
                                             if(discovered == parameter.first){
                                                 param_block->statements.erase(--(it.base()));
                                                 --it;

@@ -37,6 +37,7 @@ struct Quadruple {
     boost::optional<mtac::Argument> arg2;
     mtac::Operator op;
     mtac::Size size = mtac::Size::DEFAULT;
+    bool address = false; //TODO Use PPARAM instead of PARAM + address = true
     unsigned int depth;
 
     eddic::Function* function; //For PARAM

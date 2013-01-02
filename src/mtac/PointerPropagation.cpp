@@ -95,10 +95,6 @@ struct CopyApplier : public boost::static_visitor<> {
         changes |= optimize_optional(quadruple->arg1);
         changes |= optimize_optional(quadruple->arg2);
     }
-
-    void operator()(std::shared_ptr<mtac::Param> param){
-        changes |= optimize_arg(param->arg);
-    }
 };
 
 } //end of anonymous namespace
@@ -148,11 +144,4 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
     } else if(quadruple->op == mtac::Operator::DOT_FASSIGN){
         optimized |= optimize_dot_assign(quadruple, mtac::Operator::FASSIGN, aliases);
     }
-}
-
-void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Param> param){
-    CopyApplier optimizer(pointer_copies);
-    visit_non_variant(optimizer, param);
-    
-    optimized |= optimizer.changes;
 }
