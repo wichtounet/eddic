@@ -37,6 +37,8 @@ struct Quadruple {
     mtac::Operator op;
     mtac::Size size = mtac::Size::DEFAULT;
     unsigned int depth;
+
+    std::string param; //For LABEL, GOTO, PARAM
     
     //Filled only in later phase replacing the label
     std::shared_ptr<mtac::basic_block> block;
@@ -62,6 +64,9 @@ struct Quadruple {
 
     //Quadruples without assign to result
     Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
+    
+    //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
+    Quadruple(const std::string& param, mtac::Operator op);
 
     const std::string& label() const;
 };

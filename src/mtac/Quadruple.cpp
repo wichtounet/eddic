@@ -32,7 +32,11 @@ mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1) : arg1(a1), op(o
 mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1, mtac::Argument a2) : arg1(a1), arg2(a2), op(o) {
     //Nothing to init    
 }
+    
+mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : op(op), param(param){
+    //Nothing to init
+}
 
 const std::string& mtac::Quadruple::label() const {
-    return boost::get<std::string>(*arg1);
+    return param;
 }

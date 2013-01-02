@@ -303,7 +303,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
 
                 if(quadruple->op == mtac::Operator::RETURN){
                     auto label = "label";
-                    auto goto_ = std::make_shared<mtac::Quadruple>(mtac::Operator::GOTO, static_cast<const std::string&>(label));
+                    auto goto_ = std::make_shared<mtac::Quadruple>(static_cast<const std::string&>(label), mtac::Operator::GOTO);
                     goto_->block = basic_block;
 
                     mtac::remove_edge(new_bb, new_bb->next);
