@@ -16,6 +16,7 @@
 
 namespace eddic {
 
+class Function;
 class Variable;
 
 namespace mtac {
@@ -38,7 +39,9 @@ struct Quadruple {
     mtac::Size size = mtac::Size::DEFAULT;
     unsigned int depth;
 
-    std::string param; //For LABEL, GOTO, PARAM
+    eddic::Function* function; //For PARAM
+
+    std::string m_param; //For LABEL, GOTO, PARAM
     
     //Filled only in later phase replacing the label
     std::shared_ptr<mtac::basic_block> block;
@@ -67,8 +70,15 @@ struct Quadruple {
     
     //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
     Quadruple(const std::string& param, mtac::Operator op);
+    
+    //Quadruples for params
+    Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
+    Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
 
     const std::string& label() const;
+    const std::string& std_param() const;
+
+    std::shared_ptr<Variable> param();
 };
 
 } //end of mtac

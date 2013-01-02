@@ -12,7 +12,6 @@
 #include "variant_hash.hpp"
 
 #include "mtac/Quadruple.hpp"
-#include "mtac/Param.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
 #include "mtac/Call.hpp"
@@ -23,7 +22,6 @@ namespace mtac {
 
 typedef boost::variant<
         std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
-        std::shared_ptr<mtac::Param>,            //Parameters
         std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
         std::shared_ptr<mtac::If>,               //Jumping quadruples
         std::shared_ptr<mtac::Call>              //Call a function

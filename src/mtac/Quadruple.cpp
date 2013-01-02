@@ -33,10 +33,10 @@ mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1, mtac::Argument a
     //Nothing to init    
 }
     
-mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : op(op), param(param){
+mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : op(op), m_param(param){
     //Nothing to init
 }
 
 const std::string& mtac::Quadruple::label() const {
-    return param;
+    return m_param;
 }
