@@ -9,9 +9,9 @@
 
 using namespace eddic;
 
-mtac::Call::Call(const std::string& f, Function& functionDefinition) : 
-    function(f), functionDefinition(functionDefinition) {}
-mtac::Call::Call(const std::string& f, Function& functionDefinition, std::shared_ptr<Variable> r) :
-    function(f), functionDefinition(functionDefinition), return_(r) {}
-mtac::Call::Call(const std::string& f, Function& functionDefinition, std::shared_ptr<Variable> r, std::shared_ptr<Variable> r2) :
-    function(f), functionDefinition(functionDefinition), return_(r), return2_(r2) {}
+mtac::Call::Call(Function& functionDefinition) : 
+    functionDefinition(functionDefinition) {}
+mtac::Call::Call(Function& functionDefinition, std::shared_ptr<Variable> r) :
+    functionDefinition(functionDefinition), return_(r) {}
+mtac::Call::Call(Function& functionDefinition, std::shared_ptr<Variable> r, std::shared_ptr<Variable> r2) :
+    functionDefinition(functionDefinition), return_(r), return2_(r2) {}

@@ -51,7 +51,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                     auto statement = *fit;
 
                     if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                        auto function = (*ptr)->function;
+                        auto function = (*ptr)->functionDefinition.mangled_name();
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
                             int parameters = (*ptr)->functionDefinition.parameters().size();

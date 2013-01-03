@@ -14,6 +14,7 @@
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 #include "mtac/Printer.hpp"
 #include "mtac/Program.hpp"
@@ -304,7 +305,7 @@ struct DebugVisitor : public boost::static_visitor<> {
             stream << " = ";
         }
 
-        stream << "call " << call->function << " : " << call->depth << endl;
+        stream << "call " << call->functionDefinition.mangled_name() << " : " << call->depth << endl;
     }
 };
 

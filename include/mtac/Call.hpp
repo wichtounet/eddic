@@ -19,15 +19,14 @@ class Function;
 namespace mtac {
 
 struct Call {
-    std::string function;
     eddic::Function& functionDefinition;
     std::shared_ptr<Variable> return_;
     std::shared_ptr<Variable> return2_;
     unsigned int depth;
 
-    Call(const std::string& function, eddic::Function& functionDefinition);
-    Call(const std::string& function, eddic::Function& functionDefinition, std::shared_ptr<Variable> return_);
-    Call(const std::string& function, eddic::Function& functionDefinition, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
+    Call(eddic::Function& functionDefinition);
+    Call(eddic::Function& functionDefinition, std::shared_ptr<Variable> return_);
+    Call(eddic::Function& functionDefinition, std::shared_ptr<Variable> return_, std::shared_ptr<Variable> return2_);
 };
 
 } //end of mtac

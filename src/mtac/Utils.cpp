@@ -147,9 +147,7 @@ bool eddic::mtac::safe(const std::string& function){
 }
 
 bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
-    auto function = call->function;
-
-    return safe(function);
+    return safe(call->functionDefinition.mangled_name());
 }
 
 bool eddic::mtac::erase_result(mtac::Operator op){
@@ -249,9 +247,9 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
     }
     
     mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
-        global_context->addReference(call->function);
+        ++call->functionDefinition.references();
 
-        return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
+        return std::make_shared<mtac::Call>(call->functionDefinition, call->return_, call->return2_);
     }
 };
 

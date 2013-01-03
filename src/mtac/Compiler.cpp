@@ -91,7 +91,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
 
     //Call the constructor
     global_context->addReference(ctor_name);
-    function.add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+    function.add(std::make_shared<mtac::Call>(ctor_function)); 
 }
 
 void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg, ast::Value rhs_arg){
@@ -119,7 +119,7 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
     function.add(ctor_param);
 
     global_context->addReference(ctor_name);
-    function.add(std::make_shared<mtac::Call>(ctor_name, ctor_function)); 
+    function.add(std::make_shared<mtac::Call>(ctor_function)); 
 }
 
 void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
@@ -135,7 +135,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
     function.add(dtor_param);
 
     global_context->addReference(dtor_name);
-    function.add(std::make_shared<mtac::Call>(dtor_name, dtor_function)); 
+    function.add(std::make_shared<mtac::Call>(dtor_function)); 
 }
 
 template<typename Source>
@@ -540,7 +540,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     mtac_param->address = true;
                     function.add(mtac_param);   
 
-                    function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
+                    function.add(std::make_shared<mtac::Call>(definition));
 
                     left = {var};
                     break;
@@ -574,7 +574,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 function.add(mtac_param);   
 
                 //Call the function
-                function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, return_, return2_));
+                function.add(std::make_shared<mtac::Call>(definition, return_, return2_));
 
                 break;
             }
@@ -694,7 +694,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
         function.context->global()->addReference("_F5allocI");
-        function.add(std::make_shared<mtac::Call>("_F5allocI", function.context->global()->getFunction("_F5allocI"), t1)); 
+        function.add(std::make_shared<mtac::Call>(function.context->global()->getFunction("_F5allocI"), t1)); 
             
         //If structure type, call the constructor
         if(type->is_custom_type() || type->is_template_type()){
@@ -720,7 +720,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
         function.context->global()->addReference("_F5allocI");
-        function.add(std::make_shared<mtac::Call>("_F5allocI", function.context->global()->getFunction("_F5allocI"), t1)); 
+        function.add(std::make_shared<mtac::Call>(function.context->global()->getFunction("_F5allocI"), t1)); 
         
         function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp));
 
@@ -772,7 +772,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         if(type == VOID){
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition, nullptr, nullptr));
 
             return {};
         } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -780,7 +780,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, t1, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition, t1, nullptr));
 
             return {t1};
         } else if(type == STRING){
@@ -789,7 +789,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, t1, t2));
+            function.add(std::make_shared<mtac::Call>(definition, t1, t2));
 
             return {t1, t2};
         } else if(type->is_custom_type() || type->is_template_type()){
@@ -806,7 +806,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             //Pass the normal arguments of the function
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Call>(definition.mangled_name(), definition, nullptr, nullptr));
+            function.add(std::make_shared<mtac::Call>(definition, nullptr, nullptr));
             
             return {var};
         }
@@ -1547,7 +1547,7 @@ class FunctionCompiler : public boost::static_visitor<> {
             function.add(param);
 
             program.context->addReference(free_name);
-            function.add(std::make_shared<mtac::Call>(free_name, free_function)); 
+            function.add(std::make_shared<mtac::Call>(free_function)); 
         }
        
         void operator()(ast::Assignment& assignment){
