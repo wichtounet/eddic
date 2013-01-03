@@ -85,7 +85,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     pass_arguments(function, ctor_function, values);
 
     //Pass "this" parameter
-    auto ctor_param = std::make_shared<mtac::Param>(this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
+    auto ctor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
     ctor_param->address = true;
     function.add(ctor_param);
 
@@ -111,7 +111,7 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
     //Pass the other structure (the pointer will automatically be handled
     pass_arguments(function, ctor_function, values);
 
-    auto ctor_param = std::make_shared<mtac::Param>(
+    auto ctor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, 
             this_arg, 
             ctor_function.context()->getVariable(ctor_function.parameter(0).name()), 
             ctor_function);
@@ -130,7 +130,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     auto& dtor_function = global_context->getFunction(dtor_name);
 
-    auto dtor_param = std::make_shared<mtac::Param>(this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
+    auto dtor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
     dtor_param->address = true;
     function.add(dtor_param);
 
@@ -528,7 +528,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     construct(function, type, {}, var);
                     
                     //Pass the address of return
-                    auto call_param = std::make_shared<mtac::Param>(var, definition.context()->getVariable("__ret"), definition);
+                    auto call_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
                     call_param->address = true;
                     function.add(call_param);
 
@@ -536,7 +536,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
+                    auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                     mtac_param->address = true;
                     function.add(mtac_param);   
 
@@ -569,7 +569,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
-                auto mtac_param = std::make_shared<mtac::Param>(left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
+                auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                 mtac_param->address = true;
                 function.add(mtac_param);   
 
@@ -689,7 +689,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(function.context->global()), new_.Content->type);
     
-        function.add(std::make_shared<mtac::Param>(type->size(function.context->global()->target_platform()), "a", function.context->global()->getFunction("_F5allocI")));
+        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, type->size(function.context->global()->target_platform()), "a", function.context->global()->getFunction("_F5allocI")));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
@@ -715,7 +715,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         function.add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
         function.add(std::make_shared<mtac::Quadruple>(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform))));
     
-        function.add(std::make_shared<mtac::Param>(size, "a", function.context->global()->getFunction("_F5allocI")));
+        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, size, "a", function.context->global()->getFunction("_F5allocI")));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
@@ -799,7 +799,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             construct(function, type, {}, var);
             
             //Pass the address of return
-            auto call_param = std::make_shared<mtac::Param>(var, definition.context()->getVariable("__ret"), definition);
+            auto call_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
             call_param->address = true;
             function.add(call_param);
     
@@ -1543,7 +1543,7 @@ class FunctionCompiler : public boost::static_visitor<> {
             auto free_name = "_F4freePI";
             auto& free_function = program.context->getFunction(free_name);
 
-            auto param = std::make_shared<mtac::Param>(arg, "a", free_function);
+            auto param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, "a", free_function);
             function.add(param);
 
             program.context->addReference(free_name);
@@ -1605,7 +1605,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
-                function.add(std::make_shared<mtac::Param>(arg, param, definition));   
+                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, param, definition));   
             }
         }
     } else {
@@ -1630,7 +1630,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){
-                auto mtac_param = std::make_shared<mtac::Param>(arg, param, definition);
+                auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, param, definition);
                 mtac_param->address = param->type()->is_pointer();
                 function.add(mtac_param);
             }

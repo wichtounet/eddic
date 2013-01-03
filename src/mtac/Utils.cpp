@@ -73,12 +73,6 @@ struct VariableUsageCollector : public boost::static_visitor<> {
         collect_optional(quadruple->arg2);
     }
     
-    void operator()(std::shared_ptr<mtac::Param> param){
-        current_depth = param->depth;
-
-        collect(param->arg);
-    }
-    
     void operator()(std::shared_ptr<mtac::If> if_){
         current_depth = if_->depth;
 
@@ -207,6 +201,8 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
 namespace {
 
+//TODO Use the copy constructor instead
+
 struct StatementClone : public boost::static_visitor<mtac::Statement> {
     std::shared_ptr<GlobalContext> global_context;
 
@@ -221,24 +217,11 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->op = quadruple->op;
         copy->size = quadruple->size;
         copy->block = quadruple->block;
+        copy->address = quadruple->address;
+        copy->m_function = quadruple->m_function;
+        copy->m_param = quadruple->m_param;
         
         return copy;
-    }
-    
-    mtac::Statement operator()(std::shared_ptr<mtac::Param> param){
-        if(param->param){
-            auto copy = std::make_shared<mtac::Param>(param->arg, param->param, param->function);
-
-            copy->address = param->address;
-        
-            return copy;
-        } else {
-            auto copy = std::make_shared<mtac::Param>(param->arg, param->std_param, param->function);
-
-            copy->address = param->address;
-        
-            return copy;
-        }
     }
 
     mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){

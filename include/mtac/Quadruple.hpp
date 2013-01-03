@@ -40,7 +40,7 @@ struct Quadruple {
     bool address = false; //TODO Use PPARAM instead of PARAM + address = true
     unsigned int depth;
 
-    eddic::Function* function; //For PARAM
+    eddic::Function* m_function; //For PARAM
 
     std::string m_param; //For LABEL, GOTO, PARAM
     
@@ -80,6 +80,8 @@ struct Quadruple {
     const std::string& std_param() const;
 
     std::shared_ptr<Variable> param();
+
+    eddic::Function& function();
 };
 
 } //end of mtac
