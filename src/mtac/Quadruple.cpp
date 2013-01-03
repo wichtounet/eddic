@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
+
 #include "mtac/Quadruple.hpp"
 
 using namespace eddic;
@@ -37,6 +39,28 @@ mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : op(op)
     //Nothing to init
 }
 
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function) : result(param), arg1(arg), op(op), m_function(&function) {
+    //Nothing to init
+}
+
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function) : arg1(arg), op(op), m_function(&function), m_param(param){
+    //Nothing to init
+}
+
 const std::string& mtac::Quadruple::label() const {
     return m_param;
+}
+
+const std::string& mtac::Quadruple::std_param() const {
+    return m_param;
+}
+
+std::shared_ptr<Variable> mtac::Quadruple::param(){
+    return result;
+}
+
+eddic::Function& mtac::Quadruple::function(){
+    eddic_assert(m_function, "function() can only be called on operations that support it");
+
+    return *m_function;
 }
