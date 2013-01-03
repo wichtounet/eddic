@@ -97,10 +97,6 @@ struct LivenessCollector : public boost::static_visitor<> {
         }
     }
     
-    void operator()(std::shared_ptr<mtac::Param> param){
-        update(param->arg);
-    }
-    
     void operator()(std::shared_ptr<mtac::IfFalse> if_false){
         update(if_false->arg1);
         update_optional(if_false->arg2);

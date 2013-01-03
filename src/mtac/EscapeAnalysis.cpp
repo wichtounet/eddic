@@ -18,19 +18,8 @@ mtac::EscapedVariables mtac::escape_analysis(mtac::Function& function){
 
     for(auto& block : function){
         for(auto& statement : block->statements){
-            //Passing a variable as param by address escape its liveness
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-                auto& param = *ptr;
-
-                if(param->address){
-                    if(mtac::isVariable(param->arg)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(param->arg);
-                        pointer_escaped->insert(var);
-                    }
-                }
-            } 
             //Taking the address of a variable escape its liveness
-            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
                 auto& quadruple = *ptr;
 
                 if(quadruple->op == mtac::Operator::PASSIGN){
@@ -47,6 +36,13 @@ mtac::EscapedVariables mtac::escape_analysis(mtac::Function& function){
                     if(quadruple->arg1 && mtac::isVariable(*quadruple->arg1)){
                         auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
                         pointer_escaped->insert(var);
+                    }
+                } else if(quadruple->op == mtac::Operator::PARAM){
+                    if(quadruple->address){
+                        if(mtac::isVariable(*quadruple->arg1)){
+                            auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+                            pointer_escaped->insert(var);
+                        }
                     }
                 }
             }

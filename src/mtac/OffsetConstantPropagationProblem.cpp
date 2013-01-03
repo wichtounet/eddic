@@ -158,24 +158,21 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
                 mtac::Offset offset(variable, *ptr);
                 escaped.insert(offset);
             }
-        }
-    }
-    //Passing a variable by pointer erases its value
-    else if (auto* ptr = boost::get<std::shared_ptr<mtac::Param>>(&statement)){
-        auto& param = *ptr;
+        } else if(quadruple->op == mtac::Operator::PARAM){
+            //Passing a variable by pointer erases its value
+            if(quadruple->address){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    auto variable = *ptr;
 
-        if(param->address){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&param->arg)){
-                auto variable = *ptr;
+                    //Impossible to know if the variable is modified or not, consider it modified
+                    for(auto it = std::begin(out.values()); it != std::end(out.values());){
+                        auto offset = it->first;
 
-                //Impossible to know if the variable is modified or not, consider it modified
-                for(auto it = std::begin(out.values()); it != std::end(out.values());){
-                    auto offset = it->first;
-
-                    if(offset.variable == variable){
-                        it = out.values().erase(it);
-                    } else {
-                        ++it;
+                        if(offset.variable == variable){
+                            it = out.values().erase(it);
+                        } else {
+                            ++it;
+                        }
                     }
                 }
             }

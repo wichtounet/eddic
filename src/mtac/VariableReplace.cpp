@@ -40,10 +40,6 @@ void mtac::VariableReplace::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
     update_usage_optional(quadruple->arg2);
 }
 
-void mtac::VariableReplace::operator()(std::shared_ptr<mtac::Param> param){
-    update_usage(param->arg);
-}
-
 void mtac::VariableReplace::operator()(std::shared_ptr<mtac::IfFalse> if_false){
     update_usage(if_false->arg1);
     update_usage_optional(if_false->arg2);
