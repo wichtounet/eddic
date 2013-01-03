@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "FunctionContext.hpp"
+#include "Function.hpp"
 #include "likely.hpp"
 
 #include "mtac/merge_basic_blocks.hpp"
@@ -72,19 +73,19 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                         block->statements.pop_back();
                         computeBlockUsage(function, usage);
                     }
+                } else if(quadruple->op == mtac::Operator::CALL){
+                    merge = safe(quadruple->function().mangled_name()); 
                 } else {
                     merge = true;
                 }
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&last)){
-                merge = safe(*ptr); 
             } 
 
             if(merge && next && next->index != -2){
                 //Only if the next block is not used because we will remove its label
                 if(usage.find(next) == usage.end()){
                     if(!next->statements.empty()){
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&(next->statements.front()))){
-                            if(!safe(*ptr)){
+                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&(next->statements.front()))){
+                            if((*ptr)->op == mtac::Operator::CALL && !safe((*ptr)->function().mangled_name())){
                                 ++it;
                                 continue;
                             }

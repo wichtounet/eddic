@@ -20,8 +20,10 @@ namespace {
 void remove_references(mtac::Function& function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                --(*ptr)->functionDefinition.references();
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if((*ptr)->op == mtac::Operator::CALL){
+                    --(*ptr)->function().references();
+                }
             }
         }
     }

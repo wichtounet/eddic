@@ -141,6 +141,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         auto op = quadruple->op;
 
+        //TODO Use a switch
+
         if(op == mtac::Operator::ASSIGN){
             stream << "\t" << printVar(quadruple->result) << " = (normal) " << printArg(*quadruple->arg1) << " : "<< quadruple->depth << endl;
         } else if(op == mtac::Operator::FASSIGN){
@@ -236,6 +238,22 @@ struct DebugVisitor : public boost::static_visitor<> {
                     stream << "\tparam " << address << printArg(*quadruple->arg1) << " : " << quadruple->depth << endl;
                 }
             }
+        } else if(op == mtac::Operator::CALL){
+            stream << "\t";
+
+            if(quadruple->return1()){
+                stream << printVar(quadruple->return1());
+            }
+
+            if(quadruple->return2()){
+                stream << ", " << printVar(quadruple->return2());
+            }
+
+            if(quadruple->return1() || quadruple->return2()){
+                stream << " = ";
+            }
+
+            stream << "call " << quadruple->function().mangled_name() << " : " << quadruple->depth << endl;
         }
     }
 
@@ -288,24 +306,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         } else {
             stream << "\tif " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << endl;
         }
-    }
-    
-    void operator()(std::shared_ptr<mtac::Call> call){
-        stream << "\t";
-
-        if(call->return_){
-            stream << printVar(call->return_);
-        }
-
-        if(call->return2_){
-            stream << ", " << printVar(call->return2_);
-        }
-
-        if(call->return_ || call->return2_){
-            stream << " = ";
-        }
-
-        stream << "call " << call->functionDefinition.mangled_name() << " : " << call->depth << endl;
     }
 };
 

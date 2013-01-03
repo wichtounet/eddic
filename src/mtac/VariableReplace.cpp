@@ -36,6 +36,11 @@ void mtac::VariableReplace::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
         quadruple->result = boost::get<std::shared_ptr<Variable>>(clones[quadruple->result]);
     }
 
+    if(quadruple->secondary && clones.find(quadruple->secondary) != clones.end()){
+        eddic_assert(mtac::isVariable(clones[quadruple->secondary]), "The return variable cannot be replaced by other thing than a variable");
+        quadruple->secondary = boost::get<std::shared_ptr<Variable>>(clones[quadruple->secondary]);
+    }
+
     update_usage_optional(quadruple->arg1);
     update_usage_optional(quadruple->arg2);
 }
@@ -48,16 +53,4 @@ void mtac::VariableReplace::operator()(std::shared_ptr<mtac::IfFalse> if_false){
 void mtac::VariableReplace::operator()(std::shared_ptr<mtac::If> if_){
     update_usage(if_->arg1);
     update_usage_optional(if_->arg2);
-}
-
-void mtac::VariableReplace::operator()(std::shared_ptr<mtac::Call> call_){
-    if(call_->return_ && clones.find(call_->return_) != clones.end()){
-        eddic_assert(mtac::isVariable(clones[call_->return_]), "The return variable cannot be replaced by other thing than a variable");
-        call_->return_ = boost::get<std::shared_ptr<Variable>>(clones[call_->return_]);
-    }
-
-    if(call_->return2_ && clones.find(call_->return2_) != clones.end()){
-        eddic_assert(mtac::isVariable(clones[call_->return2_]), "The return variable cannot be replaced by other thing than a variable");
-        call_->return2_ = boost::get<std::shared_ptr<Variable>>(clones[call_->return2_]);
-    }
 }

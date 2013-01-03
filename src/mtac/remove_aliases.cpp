@@ -28,22 +28,22 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& functio
     for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(mtac::erase_result((*ptr)->op) && (*ptr)->result == variable){
+                if((*ptr)->op == mtac::Operator::CALL){
+                    if((*ptr)->return1() == variable || (*ptr)->return2() == variable){
+                        if(written){
+                            return false;
+                        }
+
+                        written = true;
+                    }
+                } else if(mtac::erase_result((*ptr)->op) && (*ptr)->result == variable){
                     if(written){
                         return false;
                     }
 
                     written = true;
                 }
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->return_ == variable || (*ptr)->return2_ == variable){
-                    if(written){
-                        return false;
-                    }
-
-                    written = true;
-                }
-            }
+            } 
         }
     }
 
@@ -127,24 +127,12 @@ struct VariableReplace : public boost::static_visitor<bool> {
 
     void guard(std::shared_ptr<mtac::Quadruple> quadruple){
         if(!reverse){
-            if(quadruple->result == source){
+            if(quadruple->result == source || quadruple->secondary == source){
                 find_first = true;
                 return;
             } 
 
-            if(find_first && quadruple->result == target){
-                invalid = true;
-            }
-        }
-    }
-    
-    void guard(std::shared_ptr<mtac::Call> call){
-        if(!reverse){
-            if(call->return_ == source || call->return2_ == source){
-                find_first = true;
-            }
-
-            if(find_first && (call->return_ == target || call->return2_ == target)){
+            if(find_first && (quadruple->result == target || quadruple->secondary == target)){
                 invalid = true;
             }
         }
@@ -181,8 +169,18 @@ struct VariableReplace : public boost::static_visitor<bool> {
         //Do not replace source by target in the lhs of an assign
         //because it can be invalidated lated
         //and it will removed by other passes if still there
-
-        if(reverse || !mtac::erase_result(quadruple->op)){
+        
+        if(quadruple->op == mtac::Operator::CALL){
+            if(quadruple->result == source){
+                quadruple->result = target;
+                optimized = true;
+            }
+            
+            if(quadruple->secondary == source){
+                quadruple->secondary = target;
+                optimized = true;
+            }
+        } else if(reverse || !mtac::erase_result(quadruple->op)){
             if(quadruple->result == source){
                 quadruple->result = target;
                 optimized = true;
@@ -206,33 +204,6 @@ struct VariableReplace : public boost::static_visitor<bool> {
         }
 
         return optimize_arg(if_->arg1) | optimize_optional(if_->arg2);
-    }
-
-    bool operator()(std::shared_ptr<mtac::Call> call){
-        guard(call);
-
-        if(invalid){
-            return false;
-        }
-
-        bool optimized = false;
-
-        if(call->return_ == source){
-            call->return_ = target;
-            optimized = true;
-        }
-        
-        if(call->return2_ == source){
-            call->return2_ = target;
-            optimized  = true;
-        }
-
-        return optimized;
-    }
-
-    template<typename T>
-    bool operator()(T /*t*/){
-        return false;
     }
 };
 

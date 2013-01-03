@@ -98,6 +98,13 @@ void find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
                     continue;
                 }
 
+                if(quadruple->op == mtac::Operator::CALL){
+                    loop->basic_induction_variables().erase(var);
+                    loop->basic_induction_variables().erase(quadruple->secondary);
+
+                    continue;
+                }
+
                 auto value = loop->basic_induction_variables()[var];
 
                 //TODO In the future, induction variables written several times could be splitted into several induction variables
@@ -121,17 +128,7 @@ void find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
                 } 
                 
                 loop->basic_induction_variables().erase(var);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                auto call = *ptr;
-
-                if(call->return_){
-                    loop->basic_induction_variables().erase(call->return_);
-                }
-
-                if(call->return2_){
-                    loop->basic_induction_variables().erase(call->return2_);
-                }
-            }
+            } 
         }
     }
 
@@ -292,7 +289,7 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
                                 continue;
                             }
                         }
-                    } 
+                    }
                 } else if(quadruple->op == mtac::Operator::MINUS){
                     if(mtac::isVariable(arg1)){
                         auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
@@ -307,20 +304,10 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
                                 continue;
                             }
                         }
-                    } 
+                    }
                 }
                 
                 loop->dependent_induction_variables().erase(var);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                auto call = *ptr;
-
-                if(call->return_){
-                    loop->dependent_induction_variables().erase(call->return_);
-                }
-
-                if(call->return2_){
-                    loop->dependent_induction_variables().erase(call->return2_);
-                }
             }
         }
     }

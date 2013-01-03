@@ -10,6 +10,7 @@
 
 #include "variant.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"
@@ -62,7 +63,7 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                 }
             } 
             
-            if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
+            if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Quadruple>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Quadruple>>(statement)->function().mangled_name()))){
                 function.append_bb();
                 nextIsLeader = false;
             }

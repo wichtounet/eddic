@@ -35,7 +35,6 @@ struct VariableReplace : public boost::static_visitor<> {
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
     void operator()(std::shared_ptr<mtac::IfFalse> if_false);
     void operator()(std::shared_ptr<mtac::If> if_);
-    void operator()(std::shared_ptr<mtac::Call> call_);
 
     template<typename T>
     void operator()(T&){
