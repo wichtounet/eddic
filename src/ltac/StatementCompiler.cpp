@@ -325,142 +325,136 @@ void ltac::StatementCompiler::pop(ltac::Argument arg){
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::IfFalse> if_false){
     LOG<Trace>("Registers") << "Current statement " << if_false << log::endl;
 
-    if(if_false->op != mtac::BinaryOperator::UNARY){
-        //Depending on the type of the operator, do a float or a int comparison
-        if(ltac::is_float_operator(if_false->op)){
+    switch(if_false->op){
+        case mtac::BinaryOperator::UNARY:
+            compare_unary(if_false->arg1);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
+            break;
+        case mtac::BinaryOperator::FE:
             compare_float_binary(if_false->arg1, *if_false->arg2);
-
-            switch(if_false->op){
-                case mtac::BinaryOperator::FE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FNE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FL:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::AE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FLE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::A));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FG:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::BE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FGE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::B));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
-                    break;
-                default:
-                    eddic_unreachable("This operation is not a float operator");
-                    break;
-            }
-        } else {
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FNE:
+            compare_float_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FL:
+            compare_float_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::AE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FLE:
+            compare_float_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::A));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FG:
+            compare_float_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::BE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FGE:
+            compare_float_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::B));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::EQUALS:
             compare_binary(if_false->arg1, *if_false->arg2);
-
-            switch(if_false->op){
-                case mtac::BinaryOperator::EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
-                    break;
-                case mtac::BinaryOperator::NOT_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
-                    break;
-                case mtac::BinaryOperator::LESS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::GE));
-                    break;
-                case mtac::BinaryOperator::LESS_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::G));
-                    break;
-                case mtac::BinaryOperator::GREATER:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::LE));
-                    break;
-                case mtac::BinaryOperator::GREATER_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
-                    break;
-                default:
-                    eddic_unreachable("This operation is not a float operator");
-                    break;
-            }
-        }
-    } else {
-        compare_unary(if_false->arg1);
-
-        bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::Z));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::NE));
+            break;
+        case mtac::BinaryOperator::NOT_EQUALS:
+            compare_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::E));
+            break;
+        case mtac::BinaryOperator::LESS:
+            compare_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::GE));
+            break;
+        case mtac::BinaryOperator::LESS_EQUALS:
+            compare_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::G));
+            break;
+        case mtac::BinaryOperator::GREATER:
+            compare_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::LE));
+            break;
+        case mtac::BinaryOperator::GREATER_EQUALS:
+            compare_binary(if_false->arg1, *if_false->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_false->block->label, ltac::JumpType::L));
+            break;
+        default:
+            eddic_unreachable("This operation is not a comparison operator");
+            break;
     }
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::If> if_){
     LOG<Trace>("Registers") << "Current statement " << if_ << log::endl;
 
-    if(if_->op != mtac::BinaryOperator::UNARY){
-        //Depending on the type of the operator, do a float or a int comparison
-        if(ltac::is_float_operator(if_->op)){
+    switch(if_->op){
+        case mtac::BinaryOperator::UNARY:
+            compare_unary(if_->arg1);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
+            break;
+        case mtac::BinaryOperator::FE:
             compare_float_binary(if_->arg1, *if_->arg2);
-
-            switch(if_->op){
-                case mtac::BinaryOperator::FE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FNE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FL:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::B));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FLE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::BE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FG:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::A));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                case mtac::BinaryOperator::FGE:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::AE));
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
-                    break;
-                default:
-                    eddic_unreachable("This operation is not a float operator");
-                    break;
-            }
-        } else {
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FNE:
+            compare_float_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FL:
+            compare_float_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::B));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FLE:
+            compare_float_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::BE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FG:
+            compare_float_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::A));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::FGE:
+            compare_float_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::AE));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::P));
+            break;
+        case mtac::BinaryOperator::EQUALS:
             compare_binary(if_->arg1, *if_->arg2);
-
-            switch(if_->op){
-                case mtac::BinaryOperator::EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
-                    break;
-                case mtac::BinaryOperator::NOT_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
-                    break;
-                case mtac::BinaryOperator::LESS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::L));
-                    break;
-                case mtac::BinaryOperator::LESS_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::LE));
-                    break;
-                case mtac::BinaryOperator::GREATER:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::G));
-                    break;
-                case mtac::BinaryOperator::GREATER_EQUALS:
-                    bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
-                    break;
-                default:
-                    eddic_unreachable("This operation is not a float operator");
-                    break;
-            }
-        }
-    } else {
-        compare_unary(if_->arg1);
-
-        bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NZ));
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::E));
+            break;
+        case mtac::BinaryOperator::NOT_EQUALS:
+            compare_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::NE));
+            break;
+        case mtac::BinaryOperator::LESS:
+            compare_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::L));
+            break;
+        case mtac::BinaryOperator::LESS_EQUALS:
+            compare_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::LE));
+            break;
+        case mtac::BinaryOperator::GREATER:
+            compare_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::G));
+            break;
+        case mtac::BinaryOperator::GREATER_EQUALS:
+            compare_binary(if_->arg1, *if_->arg2);
+            bb->l_statements.push_back(std::make_shared<ltac::Jump>(if_->block->label, ltac::JumpType::GE));
+            break;
+        default:
+            eddic_unreachable("This operation is not a comparison operator");
+            break;
     }
 }
 
