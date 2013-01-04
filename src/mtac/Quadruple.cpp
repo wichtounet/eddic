@@ -47,6 +47,10 @@ mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::str
     //Nothing to init
 }
 
+mtac::Quadruple::Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1, std::shared_ptr<Variable> return2) : result(return1), op(op), secondary(return2), m_function(&function){
+    eddic_assert(m_function, "Function is mandatory for calls");
+}
+
 const std::string& mtac::Quadruple::label() const {
     return m_param;
 }
@@ -63,4 +67,12 @@ eddic::Function& mtac::Quadruple::function(){
     eddic_assert(m_function, "function() can only be called on operations that support it");
 
     return *m_function;
+}
+
+std::shared_ptr<Variable> mtac::Quadruple::return1(){
+    return result;
+}
+
+std::shared_ptr<Variable> mtac::Quadruple::return2(){
+    return secondary;
 }

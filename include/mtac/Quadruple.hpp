@@ -39,6 +39,8 @@ struct Quadruple {
     mtac::Size size = mtac::Size::DEFAULT;
     bool address = false; //TODO Use PPARAM instead of PARAM + address = true
     unsigned int depth;
+    
+    std::shared_ptr<Variable> secondary; //For CALL
 
     eddic::Function* m_function; //For PARAM
 
@@ -75,11 +77,16 @@ struct Quadruple {
     //Quadruples for params
     Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
     Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
+    
+    //Quadruple for calls
+    Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
 
     const std::string& label() const;
     const std::string& std_param() const;
 
     std::shared_ptr<Variable> param();
+    std::shared_ptr<Variable> return1();
+    std::shared_ptr<Variable> return2();
 
     eddic::Function& function();
 };

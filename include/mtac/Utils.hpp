@@ -86,7 +86,6 @@ VariableUsage compute_variable_usage_with_depth(mtac::Function& function, int fa
 bool is_recursive(mtac::Function& function);
 
 bool safe(const std::string& call);
-bool safe(std::shared_ptr<mtac::Call> call);
 bool erase_result(mtac::Operator op);
 bool is_distributive(mtac::Operator op);
 bool is_expression(mtac::Operator op);

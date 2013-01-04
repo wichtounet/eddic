@@ -274,7 +274,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 //Nothing to output for a nop
                 break;
             default:
-                eddic_unreachable("The instruction operator is not supported");
+                eddic_unreachable("The operator is not supported");
         }
     }
 

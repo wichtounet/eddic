@@ -14,7 +14,6 @@
 #include "mtac/Quadruple.hpp"
 #include "mtac/IfFalse.hpp"
 #include "mtac/If.hpp"
-#include "mtac/Call.hpp"
 
 namespace eddic {
 
@@ -23,8 +22,7 @@ namespace mtac {
 typedef boost::variant<
         std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
         std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
-        std::shared_ptr<mtac::If>,               //Jumping quadruples
-        std::shared_ptr<mtac::Call>              //Call a function
+        std::shared_ptr<mtac::If>                //Jumping quadruples
     > Statement;
 
 std::ostream& operator<<(std::ostream& out, const Statement& statement);

@@ -10,6 +10,7 @@
 
 #include "variant.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"
@@ -60,9 +61,16 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                     nextIsLeader = false;
                     continue;
                 }
+
+                if((*ptr)->op == mtac::Operator::CALL){
+                    if(!safe((*ptr)->function().mangled_name())){
+                        function.append_bb();
+                        nextIsLeader = false;
+                    }
+                }
             } 
             
-            if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Call>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Call>>(statement)))){
+            if(nextIsLeader){
                 function.append_bb();
                 nextIsLeader = false;
             }

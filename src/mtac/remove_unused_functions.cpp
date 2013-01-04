@@ -17,11 +17,13 @@ using namespace eddic;
 
 namespace {
 
-void remove_references(mtac::Program& program, mtac::Function& function){
+void remove_references(mtac::Function& function){
     for(auto& bb : function){
         for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                program.context->removeReference((*ptr)->function); 
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if((*ptr)->op == mtac::Operator::CALL){
+                    --(*ptr)->function().references();
+                }
             }
         }
     }
@@ -36,12 +38,12 @@ bool mtac::remove_unused_functions::operator()(mtac::Program& program){
         auto& function = *it;
 
         if(program.context->referenceCount(function.get_name()) == 0){
-            remove_references(program, function);
+            remove_references(function);
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             it.erase();
             continue;
         } else if(program.context->referenceCount(function.get_name()) == 1 && mtac::is_recursive(function)){
-            remove_references(program, function);
+            remove_references(function);
             LOG<Debug>("Optimizer") << "Remove unused recursive function " << function.get_name() << log::endl;
             it.erase();
             continue;

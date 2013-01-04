@@ -128,18 +128,9 @@ mtac::Usage mtac::compute_write_usage(std::shared_ptr<mtac::Loop> loop){
                 auto quadruple = *ptr;
                 if(mtac::erase_result(quadruple->op)){
                     ++(usage.written[quadruple->result]);
+                    ++(usage.written[quadruple->secondary]);
                 } 
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                auto call = *ptr;
-
-                if(call->return_){
-                    ++(usage.written[call->return_]);
-                }
-                
-                if(call->return2_){
-                    ++(usage.written[call->return2_]);
-                }
-            }
+            } 
         }
     }
 

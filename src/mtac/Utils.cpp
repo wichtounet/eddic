@@ -27,8 +27,8 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition.mangled_name() == function.definition().mangled_name()){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                if((*ptr)->op == mtac::Operator::CALL && (*ptr)->function().mangled_name() == function.definition().mangled_name()){
                     return true;
                 }
             }
@@ -146,12 +146,6 @@ bool eddic::mtac::safe(const std::string& function){
         function == "_F7println"; 
 }
 
-bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
-    auto function = call->function;
-
-    return safe(function);
-}
-
 bool eddic::mtac::erase_result(mtac::Operator op){
    return 
            op != mtac::Operator::DOT_ASSIGN 
@@ -161,6 +155,7 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::GOTO
         && op != mtac::Operator::NOP
         && op != mtac::Operator::PARAM
+        && op != mtac::Operator::CALL
         && op != mtac::Operator::LABEL; 
 }
 
@@ -220,6 +215,11 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->address = quadruple->address;
         copy->m_function = quadruple->m_function;
         copy->m_param = quadruple->m_param;
+        copy->secondary = quadruple->secondary;
+
+        if(copy->op == mtac::Operator::CALL){
+            ++copy->function().references();
+        }
         
         return copy;
     }
@@ -246,12 +246,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->block = if_->block;
 
         return copy;
-    }
-    
-    mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
-        global_context->addReference(call->function);
-
-        return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
     }
 };
 
