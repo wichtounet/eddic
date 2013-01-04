@@ -101,7 +101,7 @@ mtac::Operator to_binary_operator(mtac::Operator op){
 
 template<bool If, typename Branch>
 bool optimize_branch(std::shared_ptr<Branch> branch, mtac::basic_block_p basic_block, mtac::VariableUsage variable_usage){
-    if(!branch->op && mtac::isVariable(branch->arg1)){
+    if(mtac::isVariable(branch->arg1)){
         auto variable = boost::get<std::shared_ptr<Variable>>(branch->arg1);
 
         auto declaration = get_variable_declaration(basic_block, variable);
@@ -136,9 +136,13 @@ bool mtac::conditional_propagation::operator()(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                optimized |= optimize_branch<false>(*ptr, basic_block, variable_usage);
+                if((*ptr)->op == mtac::Operator::IF_FALSE_UNARY){
+                    optimized |= optimize_branch<false>(*ptr, basic_block, variable_usage);
+                }
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                optimized |= optimize_branch<true>(*ptr, basic_block, variable_usage);
+                if((*ptr)->op == mtac::Operator::IF_UNARY){
+                    optimized |= optimize_branch<true>(*ptr, basic_block, variable_usage);
+                }
             }
         }
     }

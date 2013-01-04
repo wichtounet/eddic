@@ -20,7 +20,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
     for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
+                if((*ptr)->op == mtac::Operator::IF_FALSE_UNARY && boost::get<int>(&(*ptr)->arg1)){
                     int value = boost::get<int>((*ptr)->arg1);
 
                     if(value == 0){
@@ -39,7 +39,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     }
                 }
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                if(!(*ptr)->op && boost::get<int>(&(*ptr)->arg1)){
+                if((*ptr)->op == mtac::Operator::IF_UNARY && boost::get<int>(&(*ptr)->arg1)){
                     int value = boost::get<int>((*ptr)->arg1);
 
                     if(value == 0){
