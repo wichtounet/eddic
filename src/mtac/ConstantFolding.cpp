@@ -11,8 +11,6 @@
 #include "mtac/OptimizerUtils.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/If.hpp"
-#include "mtac/IfFalse.hpp"
 
 using namespace eddic;
 

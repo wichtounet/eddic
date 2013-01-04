@@ -16,8 +16,6 @@
 #include "mtac/pass_traits.hpp"
 #include "mtac/Pass.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/IfFalse.hpp"
-#include "mtac/If.hpp"
 
 namespace eddic {
 
@@ -31,13 +29,6 @@ class MathPropagation : public boost::static_visitor<void> {
         void clear();
 
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-        void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
-        void operator()(std::shared_ptr<mtac::If> if_);
-
-        template<typename T>
-        void operator()(T&) const { 
-            //Nothing to optimize here
-        }
     
         void collect(mtac::Argument* arg);
         void collect(boost::optional<mtac::Argument>& arg);

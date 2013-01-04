@@ -35,7 +35,7 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
     if(pass == mtac::Pass::DATA_MINING){
         collect(quadruple->arg1);
         collect(quadruple->arg2);
-    } else {
+    } else if(!quadruple->is_if() && quadruple->is_if_false()){
         if(quadruple->result && quadruple->op != mtac::Operator::CALL){
             assigns[quadruple->result] = quadruple;
         }
@@ -53,19 +53,5 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                 }
             }
         }
-    }
-}
-
-void mtac::MathPropagation::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-    if(pass == mtac::Pass::DATA_MINING){
-        collect(&ifFalse->arg1);
-        collect(ifFalse->arg2);
-    }
-}
-
-void mtac::MathPropagation::operator()(std::shared_ptr<mtac::If> if_){
-    if(pass == mtac::Pass::DATA_MINING){
-        collect(&if_->arg1);
-        collect(if_->arg2);
     }
 }
