@@ -630,7 +630,7 @@ void ltac::StatementCompiler::compile_PARAM(std::shared_ptr<mtac::Quadruple> par
     }
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
+void ltac::StatementCompiler::compile_CALL(std::shared_ptr<mtac::Quadruple> call){
     LOG<Trace>("Registers") << "Current statement " << call << log::endl;
 
     //Means that there are no params
@@ -640,8 +640,8 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
 
     first_param = true;
 
-    auto call_instruction = std::make_shared<ltac::Jump>(call->functionDefinition.mangled_name(), ltac::JumpType::CALL);
-    call_instruction->target_function = &call->functionDefinition;
+    auto call_instruction = std::make_shared<ltac::Jump>(call->function().mangled_name(), ltac::JumpType::CALL);
+    call_instruction->target_function = &call->function();
     call_instruction->uses = uses;
     call_instruction->float_uses = float_uses;
     bb->l_statements.push_back(call_instruction);
@@ -654,12 +654,12 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call->functionDefinition.standard() && !configuration->option_defined("fparameter-allocation")){
+    if(!call->function().standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
 
-    for(auto& param : call->functionDefinition.parameters()){
+    for(auto& param : call->function().parameters()){
         auto type = param.type(); 
 
         if(type->is_array()){
@@ -690,29 +690,29 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Call> call){
 
     //The copies should be cleaned by the optimizations
 
-    if(call->return_){
-        if(call->return_->type() == FLOAT){
-            auto reg = manager.get_pseudo_float_reg_no_move(call->return_);
+    if(call->return1()){
+        if(call->return1()->type() == FLOAT){
+            auto reg = manager.get_pseudo_float_reg_no_move(call->return1());
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             ltac::add_instruction(bb, ltac::Operator::FMOV, reg, return_reg);
             call_instruction->float_kills.push_back(return_reg);
         } else {
-            auto reg = manager.get_pseudo_reg_no_move(call->return_);
+            auto reg = manager.get_pseudo_reg_no_move(call->return1());
             auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
             ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
             call_instruction->kills.push_back(return_reg);
         }
 
-        manager.set_written(call->return_);
+        manager.set_written(call->return1());
     }
 
-    if(call->return2_){
-        auto reg = manager.get_pseudo_reg_no_move(call->return2_);
+    if(call->return2()){
+        auto reg = manager.get_pseudo_reg_no_move(call->return2());
         auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
         ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
         call_instruction->kills.push_back(return_reg);
 
-        manager.set_written(call->return2_);
+        manager.set_written(call->return2());
     }
 }
 
@@ -1491,6 +1491,9 @@ void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadru
             break;
         case mtac::Operator::PARAM:
             compile_PARAM(quadruple);
+            break;
+        case mtac::Operator::CALL:
+            compile_CALL(quadruple);
             break;
         case mtac::Operator::LABEL:
             bb->l_statements.push_back(quadruple->label());

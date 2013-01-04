@@ -281,7 +281,7 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
     return constant;
 }
 
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Call> call, mtac::basic_block_p basic_block){
+void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Quadruple> call, mtac::basic_block_p basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
     BBReplace bb_replacer(bb_clones);
 
@@ -309,7 +309,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                     mtac::remove_edge(new_bb, new_bb->next);
                     mtac::make_edge(new_bb, basic_block);
 
-                    if(!call->return_){
+                    if(!call->return1()){
                         //If the caller does not care about the return value, return has no effect
                         ssit.erase();
                         ssit.insert(goto_);
@@ -317,22 +317,22 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                         continue;
                     } else {
                         mtac::Operator op;
-                        if(call->functionDefinition.return_type() == FLOAT){
+                        if(call->function().return_type() == FLOAT){
                             op = mtac::Operator::FASSIGN;
-                        } else if(call->functionDefinition.return_type()->is_pointer()){
+                        } else if(call->function().return_type()->is_pointer()){
                             op = mtac::Operator::PASSIGN;
                         } else {
                             op = mtac::Operator::ASSIGN;
                         }
 
-                        if(call->return2_){
-                            ssit.insert(std::make_shared<mtac::Quadruple>(call->return2_, *quadruple->arg2, op));
+                        if(call->return2()){
+                            ssit.insert(std::make_shared<mtac::Quadruple>(call->return2(), *quadruple->arg2, op));
 
                             ++ssit;
                         }
 
                         quadruple->op = op;
-                        quadruple->result = call->return_;
+                        quadruple->result = call->return1();
                         quadruple->arg2.reset();
 
                         ++ssit;
@@ -371,7 +371,7 @@ bool can_be_inlined(mtac::Function& function){
     return true;
 }
 
-bool will_inline(mtac::Function& source_function, mtac::Function& target_function, std::shared_ptr<mtac::Call> call, mtac::basic_block_p bb){
+bool will_inline(mtac::Function& source_function, mtac::Function& target_function, std::shared_ptr<mtac::Quadruple> call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function.get_name() == target_function.get_name()){
         return false;
@@ -410,8 +410,8 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
     return false;
 }
 
-bool non_standard_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
-    auto& target_definition = call->functionDefinition;
+bool non_standard_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program& program){
+    auto& target_definition = call->function();
 
     for(auto& function : program.functions){
         if(function.definition().mangled_name() == target_definition.mangled_name()){
@@ -422,8 +422,8 @@ bool non_standard_target(std::shared_ptr<mtac::Call> call, mtac::Program& progra
     return true;
 }
 
-mtac::Function& get_target(std::shared_ptr<mtac::Call> call, mtac::Program& program){
-    auto& target_definition = call->functionDefinition;
+mtac::Function& get_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program& program){
+    auto& target_definition = call->function();
 
     for(auto& function : program.functions){
         if(function.definition().mangled_name() == target_definition.mangled_name()){
@@ -446,46 +446,47 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         auto it = iterate(basic_block->statements);
 
         while(it.has_next()){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&*it)){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
                 auto call = *ptr;
-
-                if(non_standard_target(call, program)){
-                    ++it;
-                    continue;
-                }
-
-                auto& source_function = get_target(call, program);
-
-                auto& source_definition = source_function.definition();
-                auto& dest_definition = dest_function.definition();
-
-                if(will_inline(dest_function, source_function, call, basic_block)){
-                    LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
-
-                    //Copy the parameters
-                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
-
-                    //Allocate storage for the local variables of the inlined function
-                    for(auto& variable : source_definition.context()->stored_variables()){
-                        variable_clones[variable] = dest_definition.context()->newVariable(variable);
+                if(call->op == mtac::Operator::CALL){
+                    if(non_standard_target(call, program)){
+                        ++it;
+                        continue;
                     }
 
-                    //Erase the original call
-                    it.erase();
+                    auto& source_function = get_target(call, program);
 
-                    auto safe = create_safe_block(dest_function, basic_block);
+                    auto& source_definition = source_function.definition();
+                    auto& dest_definition = dest_function.definition();
 
-                    //Clone all the source basic blocks in the dest function
-                    auto bb_clones = clone(source_function, dest_function, safe, program.context);
+                    if(will_inline(dest_function, source_function, call, basic_block)){
+                        LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
-                    //Fix all the instructions (clones and return)
-                    adapt_instructions(variable_clones, bb_clones, call, safe);
+                        //Copy the parameters
+                        auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
-                    //The target function is called one less time
-                    program.context->removeReference(source_definition.mangled_name());
-                    optimized = true;
+                        //Allocate storage for the local variables of the inlined function
+                        for(auto& variable : source_definition.context()->stored_variables()){
+                            variable_clones[variable] = dest_definition.context()->newVariable(variable);
+                        }
 
-                    continue;
+                        //Erase the original call
+                        it.erase();
+
+                        auto safe = create_safe_block(dest_function, basic_block);
+
+                        //Clone all the source basic blocks in the dest function
+                        auto bb_clones = clone(source_function, dest_function, safe, program.context);
+
+                        //Fix all the instructions (clones and return)
+                        adapt_instructions(variable_clones, bb_clones, call, safe);
+
+                        //The target function is called one less time
+                        program.context->removeReference(source_definition.mangled_name());
+                        optimized = true;
+
+                        continue;
+                    }
                 }
             }
 

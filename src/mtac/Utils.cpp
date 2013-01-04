@@ -28,7 +28,7 @@ bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::CALL && (*ptr)->functionDefinition.mangled_name() == function.definition().mangled_name()){
+                if((*ptr)->op == mtac::Operator::CALL && (*ptr)->function().mangled_name() == function.definition().mangled_name()){
                     return true;
                 }
             }
@@ -217,7 +217,7 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
         copy->secondary = quadruple->secondary;
 
         if(copy->op == mtac::Operator::CALL){
-            ++call->functionDefinition.references();
+            ++copy->function().references();
         }
         
         return copy;

@@ -50,44 +50,46 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                 while(fit != block->statements.end()){
                     auto statement = *fit;
 
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                        auto function = (*ptr)->functionDefinition.mangled_name();
+                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
+                        if((*ptr)->op == mtac::Operator::CALL){
+                            auto function = (*ptr)->function().mangled_name();
 
-                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                            int parameters = (*ptr)->functionDefinition.parameters().size();
+                            if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                                int parameters = (*ptr)->function().parameters().size();
 
-                            if(parameters > 0){
-                                //The parameters are in the previous block
-                                if(fit == block->statements.begin()){
-                                    auto previous = block->prev;
+                                if(parameters > 0){
+                                    //The parameters are in the previous block
+                                    if(fit == block->statements.begin()){
+                                        auto previous = block->prev;
 
-                                    auto fend = previous->statements.end();
-                                    --fend;
-
-                                    while(parameters > 0){
-                                        fend = previous->statements.erase(fend);
+                                        auto fend = previous->statements.end();
                                         --fend;
 
-                                        --parameters;
-                                    }
+                                        while(parameters > 0){
+                                            fend = previous->statements.erase(fend);
+                                            --fend;
 
-                                    fit = block->statements.erase(fit);
-                                } 
-                                //The parameters are in the same block
-                                else {
-                                    while(parameters >= 0){
+                                            --parameters;
+                                        }
+
                                         fit = block->statements.erase(fit);
-                                        --fit;
+                                    } 
+                                    //The parameters are in the same block
+                                    else {
+                                        while(parameters >= 0){
+                                            fit = block->statements.erase(fit);
+                                            --fit;
 
-                                        --parameters;
+                                            --parameters;
+                                        }
                                     }
+
+                                } else {
+                                    fit = block->statements.erase(fit);
                                 }
 
-                            } else {
-                                fit = block->statements.erase(fit);
+                                continue;
                             }
-
-                            continue;
                         }
                     }
 
