@@ -35,10 +35,8 @@ struct BBReplace : public boost::static_visitor<> {
     BBReplace(BBClones& clones) : clones(clones) {}
 
     void operator()(std::shared_ptr<mtac::Quadruple> goto_){
-        if(goto_->op == mtac::Operator::GOTO){
-            if(clones.find(goto_->block) != clones.end()){
-                goto_->block = clones[goto_->block];
-            }
+        if(clones.find(goto_->block) != clones.end()){
+            goto_->block = clones[goto_->block];
         }
     }
 };
