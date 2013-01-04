@@ -36,7 +36,7 @@ void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
         collect(quadruple->arg1);
         collect(quadruple->arg2);
     } else {
-        if(quadruple->result){
+        if(quadruple->result && quadruple->op != mtac::Operator::CALL){
             assigns[quadruple->result] = quadruple;
         }
 
