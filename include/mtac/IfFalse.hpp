@@ -24,7 +24,7 @@ namespace mtac {
 
 struct IfFalse {
     Argument arg1;
-    boost::optional<BinaryOperator> op;
+    BinaryOperator op;
     boost::optional<Argument> arg2;
     std::string label;
     unsigned int depth;
@@ -33,7 +33,7 @@ struct IfFalse {
     basic_block_p block;
 
     IfFalse();
-    IfFalse(Argument arg1, const std::string& label);
+    IfFalse(BinaryOperator op, Argument arg1, const std::string& label);
     IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 

@@ -128,7 +128,7 @@ bool computeValueInt(T& if_){
     int left = boost::get<int>(if_->arg1);
     int right = boost::get<int>(*if_->arg2);
 
-    switch(*if_->op){
+    switch(if_->op){
         case mtac::BinaryOperator::EQUALS:
             return left == right;
         case mtac::BinaryOperator::NOT_EQUALS:
@@ -151,7 +151,7 @@ bool computeValueFloat(T& if_){
     double left = boost::get<double>(if_->arg1);
     double right = boost::get<double>(*if_->arg2);
 
-    switch(*if_->op){
+    switch(if_->op){
         case mtac::BinaryOperator::FE:
             return left == right;
         case mtac::BinaryOperator::FNE:
@@ -172,11 +172,11 @@ bool computeValueFloat(T& if_){
 } //End of anonymous namespace
 
 void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-    if(ifFalse->op){
+    if(ifFalse->op != mtac::BinaryOperator::UNARY){
         if(mtac::isInt(ifFalse->arg1) && mtac::isInt(*ifFalse->arg2)){
             bool value = computeValueInt(ifFalse);
 
-            ifFalse->op.reset();
+            ifFalse->op = mtac::BinaryOperator::UNARY;
             ifFalse->arg1 = value ? 1 : 0;
             ifFalse->arg2.reset();
 
@@ -184,7 +184,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
         } else if(mtac::isFloat(ifFalse->arg1) && mtac::isFloat(*ifFalse->arg2)){
             bool value = computeValueFloat(ifFalse);
 
-            ifFalse->op.reset();
+            ifFalse->op = mtac::BinaryOperator::UNARY;
             ifFalse->arg1 = value ? 1 : 0;
             ifFalse->arg2.reset();
 
@@ -194,11 +194,11 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
 }
 
 void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
-    if(if_->op){
+    if(if_->op != mtac::BinaryOperator::UNARY){
         if(mtac::isInt(if_->arg1) && mtac::isInt(*if_->arg2)){
             bool value = computeValueInt(if_);
 
-            if_->op.reset();
+            if_->op = mtac::BinaryOperator::UNARY;
             if_->arg1 = value ? 1 : 0;
             if_->arg2.reset();
 
@@ -206,7 +206,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
         } else if(mtac::isFloat(if_->arg1) && mtac::isFloat(*if_->arg2)){
             bool value = computeValueFloat(if_);
 
-            if_->op.reset();
+            if_->op = mtac::BinaryOperator::UNARY;
             if_->arg1 = value ? 1 : 0;
             if_->arg2.reset();
 

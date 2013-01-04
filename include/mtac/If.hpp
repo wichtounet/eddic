@@ -23,7 +23,7 @@ namespace mtac {
 
 struct If {
     Argument arg1;
-    boost::optional<BinaryOperator> op;
+    BinaryOperator op;
     boost::optional<Argument> arg2;
     std::string label;
     unsigned int depth;
@@ -32,7 +32,7 @@ struct If {
     basic_block_p block;
 
     If();
-    If(Argument arg1, const std::string& label);
+    If(BinaryOperator op, Argument arg1, const std::string& label);
     If(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
 };
 

@@ -267,44 +267,40 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-        if(ifFalse->op){
-            auto op = *ifFalse->op;
-            if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
-                stream << "\tifFalse " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            }
-        } else {
+        auto op = ifFalse->op;
+        if(op == mtac::BinaryOperator::UNARY){
             stream << "\tifFalse " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
+            stream << "\tifFalse " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
         }
     }
 
     void operator()(std::shared_ptr<mtac::If> ifFalse){
-        if(ifFalse->op){
-            auto op = *ifFalse->op;
-            if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
-                stream << "\tif " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
-                stream << "\tif " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
-                stream << "\tif " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
-                stream << "\tif " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
-                stream << "\tif " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
-                stream << "\tif " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-            }
-        } else {
+        auto op = ifFalse->op;
+        if(op == mtac::BinaryOperator::UNARY){
             stream << "\tif " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << endl;
+        } else if(op == mtac::BinaryOperator::EQUALS || op == mtac::BinaryOperator::FE){
+            stream << "\tif " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::NOT_EQUALS || op == mtac::BinaryOperator::FNE){
+            stream << "\tif " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::LESS || op == mtac::BinaryOperator::FL){
+            stream << "\tif " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::LESS_EQUALS || op == mtac::BinaryOperator::FLE){
+            stream << "\tif " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::GREATER || op == mtac::BinaryOperator::FG){
+            stream << "\tif " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+        } else if(op == mtac::BinaryOperator::GREATER_EQUALS || op == mtac::BinaryOperator::FGE){
+            stream << "\tif " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
         }
     }
 };

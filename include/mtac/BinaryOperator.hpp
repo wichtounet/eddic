@@ -17,6 +17,8 @@ namespace eddic {
 namespace mtac {
 
 enum class BinaryOperator : unsigned int {
+    UNARY,
+
     /* relational operators */
     EQUALS,
     NOT_EQUALS,
