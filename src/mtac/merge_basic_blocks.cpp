@@ -75,7 +75,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                     }
                 } else if(quadruple->op == mtac::Operator::CALL){
                     merge = safe(quadruple->function().mangled_name()); 
-                } else {
+                } else if(!quadruple->is_if() && !quadruple->is_if_false()){
                     merge = true;
                 }
             } 
