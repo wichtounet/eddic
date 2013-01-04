@@ -33,8 +33,6 @@ struct VariableReplace : public boost::static_visitor<> {
     void update_usage_optional(boost::optional<mtac::Argument>& opt);
     
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false);
-    void operator()(std::shared_ptr<mtac::If> if_);
 
     template<typename T>
     void operator()(T&){

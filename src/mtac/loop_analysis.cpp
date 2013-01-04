@@ -341,11 +341,11 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
 }
 
 int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&if_statement)){
-        auto if_ = *ptr;
+    auto if_ = boost::get<std::shared_ptr<mtac::Quadruple>>(if_statement);
 
-        if(mtac::isVariable(if_->arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+    if(if_->is_if()){
+        if(mtac::isVariable(*if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
 
             if(var != linear_equation.i){
                 return -1;   
@@ -364,7 +364,7 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
                 return -1;
             } 
-        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+        } else if(auto* cst_ptr = boost::get<int>(&*if_->arg1)){
             int number = *cst_ptr;
 
             if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){
@@ -383,11 +383,9 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
                 return -1;
             } 
         } 
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&if_statement)){
-        auto if_ = *ptr;
-
-        if(mtac::isVariable(if_->arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(if_->arg1);
+    } else if(if_->is_if_false()){
+        if(mtac::isVariable(*if_->arg1)){
+            auto var = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
 
             if(var != linear_equation.i){
                 return -1;   
@@ -406,7 +404,7 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
                 return -1;
             } 
-        } else if(auto* cst_ptr = boost::get<int>(&if_->arg1)){
+        } else if(auto* cst_ptr = boost::get<int>(&*if_->arg1)){
             int number = *cst_ptr;
 
             if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_->arg2)){

@@ -259,21 +259,6 @@ struct ConstantOptimizer : public boost::static_visitor<> {
             }
         }
     }
-
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        changes |= optimize_arg(if_false->arg1);
-        changes |= optimize_optional(if_false->arg2);
-    }
-
-    void operator()(std::shared_ptr<mtac::If> if_){
-        changes |= optimize_arg(if_->arg1);
-        changes |= optimize_optional(if_->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
-    }
 };
 
 } //end of anonymous namespace

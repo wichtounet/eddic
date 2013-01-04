@@ -72,25 +72,6 @@ struct VariableUsageCollector : public boost::static_visitor<> {
         collect_optional(quadruple->arg1);
         collect_optional(quadruple->arg2);
     }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        current_depth = if_->depth;
-
-        collect(if_->arg1);
-        collect_optional(if_->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        current_depth = if_false->depth;
-
-        collect(if_false->arg1);
-        collect_optional(if_false->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
-    }
 };
 
 struct BasicBlockUsageCollector : public boost::static_visitor<> {
@@ -100,19 +81,6 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 
     void operator()(std::shared_ptr<mtac::Quadruple> goto_){
         usage.insert(goto_->block);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        usage.insert(if_->block);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        usage.insert(if_false->block);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
     }
 };
 
@@ -221,30 +189,6 @@ struct StatementClone : public boost::static_visitor<mtac::Statement> {
             ++copy->function().references();
         }
         
-        return copy;
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){
-        auto copy = std::make_shared<mtac::IfFalse>();
-
-        copy->op = if_->op;
-        copy->arg1 = if_->arg1;
-        copy->arg2 = if_->arg2;
-        copy->label = if_->label;
-        copy->block = if_->block;
-
-        return copy;
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::If> if_){
-        auto copy = std::make_shared<mtac::If>();
-
-        copy->op = if_->op;
-        copy->arg1 = if_->arg1;
-        copy->arg2 = if_->arg2;
-        copy->label = if_->label;
-        copy->block = if_->block;
-
         return copy;
     }
 };

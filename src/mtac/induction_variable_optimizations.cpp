@@ -196,31 +196,31 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     std::shared_ptr<Variable> biv;
     int end = 0;
 
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&exit_statement)){
+    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&exit_statement)){
         auto if_ = *ptr;
 
-        if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
-            if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
-                biv = boost::get<std::shared_ptr<Variable>>(if_->arg1);
-                end = boost::get<int>(*if_->arg2);
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(if_->arg1)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                end = boost::get<int>(if_->arg1);
+        if(if_->is_if()){
+            if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
+                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
+                    end = boost::get<int>(*if_->arg2);
+                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
+                    end = boost::get<int>(*if_->arg1);
+                }
+            }
+        } else if(if_->is_if_false()){
+            if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
+                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
+                    end = boost::get<int>(*if_->arg2);
+                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
+                    end = boost::get<int>(*if_->arg1);
+                }
             }
         }
-    } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&exit_statement)){
-        auto if_ = *ptr;
-
-        if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
-            if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
-                biv = boost::get<std::shared_ptr<Variable>>(if_->arg1);
-                end = boost::get<int>(*if_->arg2);
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(if_->arg1)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                end = boost::get<int>(if_->arg1);
-            }
-        }
-    }
+    } 
 
     //The loop is only countable if the condition depends on biv and the biv is increasing
     if(!biv || !basic_induction_variables.count(biv) || basic_induction_variables[biv].d <= 0){
@@ -255,25 +255,25 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
         usage.read[biv] = 0;
     
         //Update the exit condition
-        if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&exit_statement)){
+        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&exit_statement)){
             auto if_ = *ptr;
 
-            if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
-                if_->arg1 = div;
-                if_->arg2 = new_end;
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(if_->arg1)){
-                if_->arg2 = div;
-                if_->arg1 = new_end;
-            }
-        } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&exit_statement)){
-            auto if_ = *ptr;
-
-            if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
-                if_->arg1 = div;
-                if_->arg2 = new_end;
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(if_->arg1)){
-                if_->arg2 = div;
-                if_->arg1 = new_end;
+            if(if_->is_if()){
+                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                    if_->arg1 = div;
+                    if_->arg2 = new_end;
+                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                    if_->arg2 = div;
+                    if_->arg1 = new_end;
+                }
+            } else if((*ptr)->is_if_false()){
+                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                    if_->arg1 = div;
+                    if_->arg2 = new_end;
+                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                    if_->arg2 = div;
+                    if_->arg1 = new_end;
+                }
             }
         }
             

@@ -89,6 +89,9 @@ struct Quadruple {
     std::shared_ptr<Variable> return2();
 
     eddic::Function& function();
+
+    bool is_if();
+    bool is_if_false();
 };
 
 } //end of mtac

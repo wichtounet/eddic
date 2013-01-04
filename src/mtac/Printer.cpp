@@ -254,53 +254,43 @@ struct DebugVisitor : public boost::static_visitor<> {
             }
 
             stream << "call " << quadruple->function().mangled_name() << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_UNARY){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_EQUALS || op == mtac::Operator::IF_FALSE_FE){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_NOT_EQUALS || op == mtac::Operator::IF_FALSE_FNE){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " != " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_LESS || op == mtac::Operator::IF_FALSE_FL){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " < " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_LESS_EQUALS || op == mtac::Operator::IF_FALSE_FLE){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_GREATER || op == mtac::Operator::IF_FALSE_FG){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " > " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_FALSE_GREATER_EQUALS || op == mtac::Operator::IF_FALSE_FGE){
+            stream << "\tquadruple " << printArg(*quadruple->arg1) << " >= " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_UNARY){
+            stream << "\tif " << printArg(*quadruple->arg1) << " goto " << printTarget(quadruple) << endl;
+        } else if(op == mtac::Operator::IF_EQUALS || op == mtac::Operator::IF_FE){
+            stream << "\tif " << printArg(*quadruple->arg1) << " == " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_NOT_EQUALS || op == mtac::Operator::IF_FNE){
+            stream << "\tif " << printArg(*quadruple->arg1) << " != " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_LESS || op == mtac::Operator::IF_FL){
+            stream << "\tif " << printArg(*quadruple->arg1) << " < " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_LESS_EQUALS || op == mtac::Operator::IF_FLE){
+            stream << "\tif " << printArg(*quadruple->arg1) << " <= " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_GREATER || op == mtac::Operator::IF_FG){
+            stream << "\tif " << printArg(*quadruple->arg1) << " > " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
+        } else if(op == mtac::Operator::IF_GREATER_EQUALS || op == mtac::Operator::IF_FGE){
+            stream << "\tif " << printArg(*quadruple->arg1) << " >= " << printArg(*quadruple->arg2) << " goto " << printTarget(quadruple) << " : " << quadruple->depth << endl;
         }
     }
 
     template<typename T>
-    std::string printTarget(std::shared_ptr<T> ifFalse){
-        if(ifFalse->block){
-            return "B" + toString(ifFalse->block->index);   
+    std::string printTarget(std::shared_ptr<T> quadruple){
+        if(quadruple->block){
+            return "B" + toString(quadruple->block->index);   
         } else {
-            return ifFalse->label;
-        }
-    }
-
-    void operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-        auto op = ifFalse->op;
-        if(op == mtac::Operator::IF_FALSE_UNARY){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_EQUALS || op == mtac::Operator::IF_FALSE_FE){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_NOT_EQUALS || op == mtac::Operator::IF_FALSE_FNE){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_LESS || op == mtac::Operator::IF_FALSE_FL){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_LESS_EQUALS || op == mtac::Operator::IF_FALSE_FLE){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_GREATER || op == mtac::Operator::IF_FALSE_FG){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_FALSE_GREATER_EQUALS || op == mtac::Operator::IF_FALSE_FGE){
-            stream << "\tifFalse " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        }
-    }
-
-    void operator()(std::shared_ptr<mtac::If> ifFalse){
-        auto op = ifFalse->op;
-        if(op == mtac::Operator::IF_UNARY){
-            stream << "\tif " << printArg(ifFalse->arg1) << " goto " << printTarget(ifFalse) << endl;
-        } else if(op == mtac::Operator::IF_EQUALS || op == mtac::Operator::IF_FE){
-            stream << "\tif " << printArg(ifFalse->arg1) << " == " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_NOT_EQUALS || op == mtac::Operator::IF_FNE){
-            stream << "\tif " << printArg(ifFalse->arg1) << " != " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_LESS || op == mtac::Operator::IF_FL){
-            stream << "\tif " << printArg(ifFalse->arg1) << " < " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_LESS_EQUALS || op == mtac::Operator::IF_FLE){
-            stream << "\tif " << printArg(ifFalse->arg1) << " <= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_GREATER || op == mtac::Operator::IF_FG){
-            stream << "\tif " << printArg(ifFalse->arg1) << " > " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
-        } else if(op == mtac::Operator::IF_GREATER_EQUALS || op == mtac::Operator::IF_FGE){
-            stream << "\tif " << printArg(ifFalse->arg1) << " >= " << printArg(*ifFalse->arg2) << " goto " << printTarget(ifFalse) << " : " << ifFalse->depth << endl;
+            return quadruple->label();
         }
     }
 };

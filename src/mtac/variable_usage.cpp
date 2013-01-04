@@ -48,21 +48,6 @@ struct VariableReadCollector : public boost::static_visitor<> {
         collect_optional(quadruple->arg1);
         collect_optional(quadruple->arg2);
     }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        collect(if_->arg1);
-        collect_optional(if_->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        collect(if_false->arg1);
-        collect_optional(if_false->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
-    }
 };
 
 struct UsageCollector : public boost::static_visitor<bool> {
@@ -90,19 +75,6 @@ struct UsageCollector : public boost::static_visitor<bool> {
 
     bool operator()(std::shared_ptr<mtac::Quadruple> quadruple){
         return quadruple->result == var || collect_optional(quadruple->arg1) || collect_optional(quadruple->arg2);
-    }
-    
-    bool operator()(std::shared_ptr<mtac::If> if_){
-        return collect(if_->arg1) || collect_optional(if_->arg2);
-    }
-    
-    bool operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        return collect(if_false->arg1) || collect_optional(if_false->arg2);
-    }
-
-    template<typename T>
-    bool operator()(T&){
-        return false;
     }
 };
 

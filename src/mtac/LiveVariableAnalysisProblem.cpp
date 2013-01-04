@@ -96,21 +96,6 @@ struct LivenessCollector : public boost::static_visitor<> {
             update_optional(quadruple->arg2);
         }
     }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        update(if_false->arg1);
-        update_optional(if_false->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        update(if_->arg1);
-        update_optional(if_->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //Nothing to do
-    }
 };
 
 } //End of anonymous namespace

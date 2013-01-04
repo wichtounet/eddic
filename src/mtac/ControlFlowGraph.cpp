@@ -71,25 +71,15 @@ void mtac::build_control_flow_graph(mtac::Function& function){
         else {
             auto& last_statement = block->statements.back();
 
-            //If and IfFalse have two possible successors
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
-                make_edge(block, next);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
-                make_edge(block, next);
-            } 
-            //Goto has one possible successor
-            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&last_statement)){
+            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&last_statement)){
                 if((*ptr)->op == mtac::Operator::GOTO){
                     make_edge(block, (*ptr)->block);
+                } else if((*ptr)->is_if() || (*ptr)->is_if_false()){ 
+                    make_edge(block, (*ptr)->block);
+                    make_edge(block, next);
                 } else {
                     make_edge(block, next);
                 }
-            }
-            //All the other statements have only the fall through successor
-            else {
-                make_edge(block, next);
             }
         }
     }

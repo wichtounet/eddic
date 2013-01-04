@@ -23,14 +23,10 @@ class basic_block;
 typedef std::shared_ptr<mtac::basic_block> basic_block_p;
 typedef std::shared_ptr<const mtac::basic_block> basic_block_cp;
 
-struct If;
-struct IfFalse;
 struct Quadruple;
 
 typedef boost::variant<
-        std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
-        std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
-        std::shared_ptr<mtac::If>               //Jumping quadruples
+        std::shared_ptr<mtac::Quadruple>        //Basic quadruples
     > Statement;
 
 } //end of mtac

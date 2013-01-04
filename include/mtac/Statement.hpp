@@ -12,17 +12,13 @@
 #include "variant_hash.hpp"
 
 #include "mtac/Quadruple.hpp"
-#include "mtac/IfFalse.hpp"
-#include "mtac/If.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
 typedef boost::variant<
-        std::shared_ptr<mtac::Quadruple>,        //Basic quadruples
-        std::shared_ptr<mtac::IfFalse>,          //Jumping quadruples
-        std::shared_ptr<mtac::If>                //Jumping quadruples
+        std::shared_ptr<mtac::Quadruple>        //Basic quadruples
     > Statement;
 
 std::ostream& operator<<(std::ostream& out, const Statement& statement);
