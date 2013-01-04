@@ -77,6 +77,8 @@ struct Quadruple {
     //Quadruples for params
     Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
     Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
+
+    Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label);
     
     //Quadruple for calls
     Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
