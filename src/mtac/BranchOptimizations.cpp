@@ -20,40 +20,39 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
     for(auto& block : function){
         for(auto& statement : block->statements){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(boost::get<int>(&*(*ptr)->arg1)){
+                if((*ptr)->op == mtac::Operator::IF_FALSE_UNARY && boost::get<int>(&*(*ptr)->arg1)){
                     int value = boost::get<int>(*(*ptr)->arg1);
 
-                    if((*ptr)->op == mtac::Operator::IF_FALSE_UNARY){
+                    if(value == 0){
+                        auto goto_ = std::make_shared<mtac::Quadruple>((*ptr)->label(), mtac::Operator::GOTO);
+                        goto_->block = (*ptr)->block;
 
-                        if(value == 0){
-                            auto goto_ = std::make_shared<mtac::Quadruple>((*ptr)->label(), mtac::Operator::GOTO);
-                            goto_->block = (*ptr)->block;
+                        statement = goto_;
+                        optimized = true;
 
-                            statement = goto_;
-                            optimized = true;
+                        mtac::remove_edge(block, block->next);
+                    } else if(value == 1){
+                        mtac::remove_edge(block, (*ptr)->block);
 
-                            mtac::remove_edge(block, block->next);
-                        } else if(value == 1){
-                            mtac::remove_edge(block, (*ptr)->block);
+                        statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
+                        optimized = true;
+                    }
+                } else if((*ptr)->op == mtac::Operator::IF_UNARY && boost::get<int>(&*(*ptr)->arg1)){
+                    int value = boost::get<int>(*(*ptr)->arg1);
 
-                            statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
-                            optimized = true;
-                        }
-                    } else if((*ptr)->op == mtac::Operator::IF_UNARY){
-                        if(value == 0){
-                            mtac::remove_edge(block, (*ptr)->block);
+                    if(value == 0){
+                        mtac::remove_edge(block, (*ptr)->block);
 
-                            statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
-                            optimized = true;
-                        } else if(value == 1){
-                            auto goto_ = std::make_shared<mtac::Quadruple>((*ptr)->label(), mtac::Operator::GOTO);
-                            goto_->block = (*ptr)->block;
+                        statement = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
+                        optimized = true;
+                    } else if(value == 1){
+                        auto goto_ = std::make_shared<mtac::Quadruple>((*ptr)->label(), mtac::Operator::GOTO);
+                        goto_->block = (*ptr)->block;
 
-                            statement = goto_;
-                            optimized = true;
+                        statement = goto_;
+                        optimized = true;
 
-                            mtac::remove_edge(block, block->next);
-                        }
+                        mtac::remove_edge(block, block->next);
                     }
                 }
             } 
