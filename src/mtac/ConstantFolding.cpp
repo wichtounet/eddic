@@ -129,17 +129,23 @@ bool computeValueInt(T& if_){
     int right = boost::get<int>(*if_->arg2);
 
     switch(if_->op){
-        case mtac::BinaryOperator::EQUALS:
+        case mtac::Operator::IF_EQUALS:
+        case mtac::Operator::IF_FALSE_EQUALS:
             return left == right;
-        case mtac::BinaryOperator::NOT_EQUALS:
+        case mtac::Operator::IF_NOT_EQUALS:
+        case mtac::Operator::IF_FALSE_NOT_EQUALS:
             return left != right;
-        case mtac::BinaryOperator::LESS:
+        case mtac::Operator::IF_LESS:
+        case mtac::Operator::IF_FALSE_LESS:
             return left < right;
-        case mtac::BinaryOperator::LESS_EQUALS:
+        case mtac::Operator::IF_LESS_EQUALS:
+        case mtac::Operator::IF_FALSE_LESS_EQUALS:
             return left <= right;
-        case mtac::BinaryOperator::GREATER:
+        case mtac::Operator::IF_GREATER:
+        case mtac::Operator::IF_FALSE_GREATER:
             return left > right;
-        case mtac::BinaryOperator::GREATER_EQUALS:
+        case mtac::Operator::IF_GREATER_EQUALS:
+        case mtac::Operator::IF_FALSE_GREATER_EQUALS:
             return left >= right;
         default:
             eddic_unreachable("Unhandled operator");
@@ -152,17 +158,23 @@ bool computeValueFloat(T& if_){
     double right = boost::get<double>(*if_->arg2);
 
     switch(if_->op){
-        case mtac::BinaryOperator::FE:
+        case mtac::Operator::IF_FE:
+        case mtac::Operator::IF_FALSE_FE:
             return left == right;
-        case mtac::BinaryOperator::FNE:
+        case mtac::Operator::IF_FNE:
+        case mtac::Operator::IF_FALSE_FNE:
             return left != right;
-        case mtac::BinaryOperator::FL:
+        case mtac::Operator::IF_FL:
+        case mtac::Operator::IF_FALSE_FL:
             return left < right;
-        case mtac::BinaryOperator::FLE:
+        case mtac::Operator::IF_FLE:
+        case mtac::Operator::IF_FALSE_FLE:
             return left <= right;
-        case mtac::BinaryOperator::FG:
+        case mtac::Operator::IF_FG:
+        case mtac::Operator::IF_FALSE_FG:
             return left > right;
-        case mtac::BinaryOperator::FGE:
+        case mtac::Operator::IF_FGE:
+        case mtac::Operator::IF_FALSE_FGE:
             return left >= right;
         default:
             eddic_unreachable("Unhandled operator");
@@ -172,11 +184,11 @@ bool computeValueFloat(T& if_){
 } //End of anonymous namespace
 
 void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-    if(ifFalse->op != mtac::BinaryOperator::UNARY){
+    if(ifFalse->op != mtac::Operator::IF_FALSE_UNARY){
         if(mtac::isInt(ifFalse->arg1) && mtac::isInt(*ifFalse->arg2)){
             bool value = computeValueInt(ifFalse);
 
-            ifFalse->op = mtac::BinaryOperator::UNARY;
+            ifFalse->op = mtac::Operator::IF_FALSE_UNARY;
             ifFalse->arg1 = value ? 1 : 0;
             ifFalse->arg2.reset();
 
@@ -184,7 +196,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
         } else if(mtac::isFloat(ifFalse->arg1) && mtac::isFloat(*ifFalse->arg2)){
             bool value = computeValueFloat(ifFalse);
 
-            ifFalse->op = mtac::BinaryOperator::UNARY;
+            ifFalse->op = mtac::Operator::IF_FALSE_UNARY;
             ifFalse->arg1 = value ? 1 : 0;
             ifFalse->arg2.reset();
 
@@ -194,11 +206,11 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
 }
 
 void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
-    if(if_->op != mtac::BinaryOperator::UNARY){
+    if(if_->op != mtac::Operator::IF_UNARY){
         if(mtac::isInt(if_->arg1) && mtac::isInt(*if_->arg2)){
             bool value = computeValueInt(if_);
 
-            if_->op = mtac::BinaryOperator::UNARY;
+            if_->op = mtac::Operator::IF_UNARY;
             if_->arg1 = value ? 1 : 0;
             if_->arg2.reset();
 
@@ -206,7 +218,7 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
         } else if(mtac::isFloat(if_->arg1) && mtac::isFloat(*if_->arg2)){
             bool value = computeValueFloat(if_);
 
-            if_->op = mtac::BinaryOperator::UNARY;
+            if_->op = mtac::Operator::IF_UNARY;
             if_->arg1 = value ? 1 : 0;
             if_->arg2.reset();
 

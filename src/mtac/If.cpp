@@ -10,5 +10,5 @@
 using namespace eddic;
 
 mtac::If::If(){}
-mtac::If::If(BinaryOperator o, Argument a1, const std::string& l) : arg1(a1), op(o), label(l) {}
-mtac::If::If(BinaryOperator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), op(o), arg2(a2), label(l) {}
+mtac::If::If(Operator o, Argument a1, const std::string& l) : arg1(a1), op(o), label(l) {}
+mtac::If::If(Operator o, Argument a1, Argument a2, const std::string& l) : arg1(a1), op(o), arg2(a2), label(l) {}

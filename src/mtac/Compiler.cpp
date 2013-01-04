@@ -151,12 +151,12 @@ Offset variant_cast(Source source){
 
 void jump_if_true(mtac::Function& function, const std::string& l, ast::Value value){
     auto argument = moveToArgument(value, function);
-    function.add(std::make_shared<mtac::If>(mtac::BinaryOperator::UNARY, argument, l));
+    function.add(std::make_shared<mtac::If>(mtac::Operator::IF_UNARY, argument, l));
 }
 
 void jump_if_false(mtac::Function& function, const std::string& l, ast::Value value){
     auto argument = moveToArgument(value, function);
-    function.add(std::make_shared<mtac::IfFalse>(mtac::BinaryOperator::UNARY, argument, l));
+    function.add(std::make_shared<mtac::IfFalse>(mtac::Operator::IF_FALSE_UNARY, argument, l));
 }
 
 arguments struct_to_arguments(mtac::Function& function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset);
@@ -344,7 +344,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto falseLabel = newLabel();
                 auto endLabel = newLabel();
 
-                function.add(std::make_shared<mtac::IfFalse>(mtac::BinaryOperator::UNARY, left[0], falseLabel));
+                function.add(std::make_shared<mtac::IfFalse>(mtac::Operator::IF_FALSE_UNARY, left[0], falseLabel));
 
                 jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
 
@@ -368,7 +368,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto trueLabel = newLabel();
                 auto endLabel = newLabel();
 
-                function.add(std::make_shared<mtac::If>(mtac::BinaryOperator::UNARY, left[0], trueLabel));
+                function.add(std::make_shared<mtac::If>(mtac::Operator::IF_UNARY, left[0], trueLabel));
 
                 jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
 

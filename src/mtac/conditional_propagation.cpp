@@ -28,42 +28,78 @@ std::shared_ptr<mtac::Quadruple> get_variable_declaration(mtac::basic_block_p ba
     return nullptr;
 }
 
-mtac::BinaryOperator to_binary_operator(mtac::Operator op){
-    switch(op){ 
-        /* relational operators */
-        case mtac::Operator::EQUALS:
-            return mtac::BinaryOperator::EQUALS;
-        case mtac::Operator::NOT_EQUALS:
-            return mtac::BinaryOperator::NOT_EQUALS;
-        case mtac::Operator::GREATER:
-            return mtac::BinaryOperator::GREATER;
-        case mtac::Operator::GREATER_EQUALS:
-            return mtac::BinaryOperator::GREATER_EQUALS;
-        case mtac::Operator::LESS:
-            return mtac::BinaryOperator::LESS;
-        case mtac::Operator::LESS_EQUALS:
-            return mtac::BinaryOperator::LESS_EQUALS;
+template<bool If>
+mtac::Operator to_binary_operator(mtac::Operator op){
+    if(If){
+        switch(op){ 
+            /* relational operators */
+            case mtac::Operator::EQUALS:
+                return mtac::Operator::IF_EQUALS;
+            case mtac::Operator::NOT_EQUALS:
+                return mtac::Operator::IF_NOT_EQUALS;
+            case mtac::Operator::GREATER:
+                return mtac::Operator::IF_GREATER;
+            case mtac::Operator::GREATER_EQUALS:
+                return mtac::Operator::IF_GREATER_EQUALS;
+            case mtac::Operator::LESS:
+                return mtac::Operator::IF_LESS;
+            case mtac::Operator::LESS_EQUALS:
+                return mtac::Operator::IF_LESS_EQUALS;
 
             /* float relational operators */
-        case mtac::Operator::FE:
-            return mtac::BinaryOperator::FE;
-        case mtac::Operator::FNE:
-            return mtac::BinaryOperator::FNE;
-        case mtac::Operator::FG:
-            return mtac::BinaryOperator::FG;
-        case mtac::Operator::FGE:
-            return mtac::BinaryOperator::FGE;
-        case mtac::Operator::FLE:
-            return mtac::BinaryOperator::FLE;
-        case mtac::Operator::FL:
-            return mtac::BinaryOperator::FL;
+            case mtac::Operator::FE:
+                return mtac::Operator::IF_FE;
+            case mtac::Operator::FNE:
+                return mtac::Operator::IF_FNE;
+            case mtac::Operator::FG:
+                return mtac::Operator::IF_FG;
+            case mtac::Operator::FGE:
+                return mtac::Operator::IF_FGE;
+            case mtac::Operator::FLE:
+                return mtac::Operator::IF_FLE;
+            case mtac::Operator::FL:
+                return mtac::Operator::IF_FL;
 
-        default:
-            eddic_unreachable("Not a binary operator");
+            default:
+                eddic_unreachable("Not a binary operator");
+        }
+    } else {
+        switch(op){ 
+            /* relational operators */
+            case mtac::Operator::EQUALS:
+                return mtac::Operator::IF_FALSE_EQUALS;
+            case mtac::Operator::NOT_EQUALS:
+                return mtac::Operator::IF_FALSE_NOT_EQUALS;
+            case mtac::Operator::GREATER:
+                return mtac::Operator::IF_FALSE_GREATER;
+            case mtac::Operator::GREATER_EQUALS:
+                return mtac::Operator::IF_FALSE_GREATER_EQUALS;
+            case mtac::Operator::LESS:
+                return mtac::Operator::IF_FALSE_LESS;
+            case mtac::Operator::LESS_EQUALS:
+                return mtac::Operator::IF_FALSE_LESS_EQUALS;
+
+            /* float relational operators */
+            case mtac::Operator::FE:
+                return mtac::Operator::IF_FALSE_FE;
+            case mtac::Operator::FNE:
+                return mtac::Operator::IF_FALSE_FNE;
+            case mtac::Operator::FG:
+                return mtac::Operator::IF_FALSE_FG;
+            case mtac::Operator::FGE:
+                return mtac::Operator::IF_FALSE_FGE;
+            case mtac::Operator::FLE:
+                return mtac::Operator::IF_FALSE_FLE;
+            case mtac::Operator::FL:
+                return mtac::Operator::IF_FALSE_FL;
+
+            default:
+                eddic_unreachable("Not a binary operator");
+        }
     }
 }
 
-template<typename Branch>
+template<bool If, typename Branch>
 bool optimize_branch(std::shared_ptr<Branch> branch, mtac::basic_block_p basic_block, mtac::VariableUsage variable_usage){
     if(!branch->op && mtac::isVariable(branch->arg1)){
         auto variable = boost::get<std::shared_ptr<Variable>>(branch->arg1);
@@ -79,7 +115,7 @@ bool optimize_branch(std::shared_ptr<Branch> branch, mtac::basic_block_p basic_b
                         ||  (declaration->op >= mtac::Operator::FE && declaration->op <= mtac::Operator::FL)){
                     branch->arg1 = *declaration->arg1;
                     branch->arg2 = *declaration->arg2;
-                    branch->op = to_binary_operator(declaration->op);
+                    branch->op = to_binary_operator<If>(declaration->op);
 
                     return true;
                 }
@@ -100,9 +136,9 @@ bool mtac::conditional_propagation::operator()(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& statement : basic_block){
             if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                optimized |= optimize_branch(*ptr, basic_block, variable_usage);
+                optimized |= optimize_branch<false>(*ptr, basic_block, variable_usage);
             } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                optimized |= optimize_branch(*ptr, basic_block, variable_usage);
+                optimized |= optimize_branch<true>(*ptr, basic_block, variable_usage);
             }
         }
     }

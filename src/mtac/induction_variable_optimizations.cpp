@@ -199,7 +199,7 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&exit_statement)){
         auto if_ = *ptr;
 
-        if(if_->op != mtac::BinaryOperator::UNARY && if_->op <= mtac::BinaryOperator::LESS_EQUALS){
+        if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
             if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
                 biv = boost::get<std::shared_ptr<Variable>>(if_->arg1);
                 end = boost::get<int>(*if_->arg2);
@@ -211,7 +211,7 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&exit_statement)){
         auto if_ = *ptr;
 
-        if(if_->op != mtac::BinaryOperator::UNARY && if_->op <= mtac::BinaryOperator::LESS_EQUALS){
+        if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
             if(mtac::isVariable(if_->arg1) && mtac::isInt(*if_->arg2)){
                 biv = boost::get<std::shared_ptr<Variable>>(if_->arg1);
                 end = boost::get<int>(*if_->arg2);

@@ -356,9 +356,9 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
                 //We found the form "var op number"
                 
-                if(if_->op == mtac::BinaryOperator::LESS){
+                if(if_->op == mtac::Operator::IF_LESS){
                     return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                } else if(if_->op == mtac::Operator::IF_LESS_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
 
@@ -374,9 +374,9 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
                 
                 //We found the form "number op var"
 
-                if(if_->op == mtac::BinaryOperator::GREATER){
+                if(if_->op == mtac::Operator::IF_GREATER){
                     return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                } else if(if_->op == mtac::Operator::IF_GREATER_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
 
@@ -398,9 +398,9 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
                 //We found the form "var op number"
                 
-                if(if_->op == mtac::BinaryOperator::GREATER_EQUALS){
+                if(if_->op == mtac::Operator::IF_FALSE_GREATER_EQUALS){
                     return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_->op == mtac::BinaryOperator::GREATER){
+                } else if(if_->op == mtac::Operator::IF_FALSE_GREATER){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
 
@@ -416,9 +416,9 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
                 
                 //We found the form "number op var"
                 
-                if(if_->op == mtac::BinaryOperator::LESS_EQUALS){
+                if(if_->op == mtac::Operator::IF_FALSE_LESS_EQUALS){
                     return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_->op == mtac::BinaryOperator::LESS){
+                } else if(if_->op == mtac::Operator::IF_FALSE_LESS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
 

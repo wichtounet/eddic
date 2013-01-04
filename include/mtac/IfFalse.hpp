@@ -13,9 +13,8 @@
 
 #include <boost/optional.hpp>
 
-#include "mtac/BinaryOperator.hpp"
+#include "mtac/Operator.hpp"
 #include "mtac/Argument.hpp"
-
 #include "mtac/forward.hpp"
 
 namespace eddic {
@@ -24,7 +23,7 @@ namespace mtac {
 
 struct IfFalse {
     Argument arg1;
-    BinaryOperator op;
+    Operator op;
     boost::optional<Argument> arg2;
     std::string label;
     unsigned int depth;
@@ -33,8 +32,8 @@ struct IfFalse {
     basic_block_p block;
 
     IfFalse();
-    IfFalse(BinaryOperator op, Argument arg1, const std::string& label);
-    IfFalse(BinaryOperator op, Argument arg1, Argument arg2, const std::string& label);
+    IfFalse(Operator op, Argument arg1, const std::string& label);
+    IfFalse(Operator op, Argument arg1, Argument arg2, const std::string& label);
 };
 
 } //end of mtac
