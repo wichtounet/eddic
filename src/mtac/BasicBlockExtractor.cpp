@@ -61,9 +61,16 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                     nextIsLeader = false;
                     continue;
                 }
+
+                if((*ptr)->op == mtac::Operator::CALL){
+                    if(!safe((*ptr)->function().mangled_name())){
+                        function.append_bb();
+                        nextIsLeader = false;
+                    }
+                }
             } 
             
-            if(nextIsLeader || (boost::get<std::shared_ptr<mtac::Quadruple>>(&statement) && !safe(boost::get<std::shared_ptr<mtac::Quadruple>>(statement)->function().mangled_name()))){
+            if(nextIsLeader){
                 function.append_bb();
                 nextIsLeader = false;
             }

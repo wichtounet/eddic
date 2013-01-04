@@ -95,13 +95,13 @@ void mtac::resolve_references(mtac::Program& program){
                     }
                     
                     continue;
-                } 
+                }
                 
                 //ref = x
                 if(mtac::erase_result(quadruple->op)){
                     auto result = quadruple->result;
 
-                    if(result->is_reference()){
+                    if(result && result->is_reference()){
                         //The first times a variable is encountered, it is its initialization
                         if(variables.find(result) == variables.end()){
                             variables.insert(result);

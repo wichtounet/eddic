@@ -155,6 +155,7 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::GOTO
         && op != mtac::Operator::NOP
         && op != mtac::Operator::PARAM
+        && op != mtac::Operator::CALL
         && op != mtac::Operator::LABEL; 
 }
 
