@@ -216,7 +216,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         } else if(op == mtac::Operator::NOP){
             stream << "\tnop" << " : " << quadruple->depth << endl;
         } else if(op == mtac::Operator::LABEL){
-            stream << "\t" << printArg(*quadruple->arg1) << ":" << endl;
+            stream << "\t" << quadruple->label() << ":" << endl;
         } else if(op == mtac::Operator::GOTO){
             if(quadruple->block){
                 stream << "\tgoto " << "B" + toString(quadruple->block->index) << " : " << quadruple->depth << endl;

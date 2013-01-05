@@ -36,7 +36,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
             auto statement = *it;
 
             if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if(mtac::erase_result((*ptr)->op)){
+                if((*ptr)->result && mtac::erase_result((*ptr)->op)){
                     if(results->OUT_S[statement].top() || results->OUT_S[statement].values().find((*ptr)->result) == results->OUT_S[statement].values().end()){
                         it.erase();
                         optimized=true;

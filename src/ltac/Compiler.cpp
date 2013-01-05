@@ -12,6 +12,7 @@
 #include "Type.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
@@ -34,6 +35,8 @@ void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> f
 
 void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
+
+    log::emit<Trace>("Compiler") << "Compile LTAC for function " << function.get_name() << log::endl;
     
     //Compute the block usage (in order to know if we have to output the label)
     mtac::computeBlockUsage(function, block_usage);

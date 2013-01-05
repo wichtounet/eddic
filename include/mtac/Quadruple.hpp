@@ -96,6 +96,8 @@ struct Quadruple {
     bool is_if_false();
 };
 
+//TODO Define an operator<<
+
 } //end of mtac
 
 } //end of eddic

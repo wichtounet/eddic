@@ -14,6 +14,7 @@
 #include "Variable.hpp"
 #include "logging.hpp"
 #include "Function.hpp"
+#include "mtac/Printer.hpp"
 
 #include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp" 
@@ -1010,7 +1011,7 @@ void ltac::StatementCompiler::compile_MINUS(std::shared_ptr<mtac::Quadruple> qua
     if(quadruple->result == var){
         ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
     } else {
-        auto reg = manager.get_pseudo_reg(quadruple->result);
+        auto reg = manager.get_pseudo_reg_no_move(quadruple->result);
         ltac::add_instruction(bb, ltac::Operator::MOV, reg, manager.get_pseudo_reg(ltac::get_variable(*quadruple->arg1)));
         ltac::add_instruction(bb, ltac::Operator::NEG, reg);
     }
@@ -1229,7 +1230,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
 }
 
 void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-    LOG<Trace>("Registers") << "Current statement " << quadruple << log::endl;
+    LOG<Trace>("Compiler") << "Current statement " << quadruple << log::endl;
 
     switch(quadruple->op){
         case mtac::Operator::ASSIGN:
