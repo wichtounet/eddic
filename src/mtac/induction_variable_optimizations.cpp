@@ -76,7 +76,9 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
 
                 while(it.has_next()){
                     auto& quadruple = *it;
-                    
+
+                    replacer.replace(quadruple);
+
                     //To avoid replacing j by tj
                     if(quadruple == equation.def){
                         ++it;
@@ -96,8 +98,6 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
                     if(!it.has_next()){
                         break;
                     }
-
-                    replacer.replace(quadruple);
 
                     ++it;
                 }
