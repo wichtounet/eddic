@@ -24,7 +24,7 @@ namespace mtac {
 
 typedef std::unordered_map<std::shared_ptr<Variable>, mtac::Argument> VariableClones;
 
-struct VariableReplace : public boost::static_visitor<> {
+struct VariableReplace {
     VariableClones& clones;
 
     VariableReplace(VariableClones& clones) : clones(clones) {}
@@ -32,12 +32,7 @@ struct VariableReplace : public boost::static_visitor<> {
     void update_usage(mtac::Argument& value);
     void update_usage_optional(boost::optional<mtac::Argument>& opt);
     
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
-    }
+    void replace(std::shared_ptr<mtac::Quadruple> quadruple);
 };
 
 } //end of mtac

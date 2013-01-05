@@ -12,7 +12,7 @@
 #include "Variable.hpp"
 
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -26,11 +26,9 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 
 bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
-        for(auto& statement : basic_block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::CALL && (*ptr)->function().mangled_name() == function.definition().mangled_name()){
-                    return true;
-                }
+        for(auto& quadruple : basic_block->statements){
+            if(quadruple->op == mtac::Operator::CALL && quadruple->function().mangled_name() == function.definition().mangled_name()){
+                return true;
             }
         }
     }
@@ -52,20 +50,15 @@ struct VariableUsageCollector : public boost::static_visitor<> {
     }
 
     template<typename T>
-    void collect(T& arg){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            inc_usage(*variablePtr);
-        }
-    }
-
-    template<typename T>
     void collect_optional(T& opt){
         if(opt){
-            collect(*opt);
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
+                inc_usage(*variablePtr);
+            }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    void collect(std::shared_ptr<mtac::Quadruple> quadruple){
         current_depth = quadruple->depth;
 
         inc_usage(quadruple->result);
@@ -79,7 +72,7 @@ struct BasicBlockUsageCollector : public boost::static_visitor<> {
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
-    void operator()(std::shared_ptr<mtac::Quadruple> goto_){
+    void collect(std::shared_ptr<mtac::Quadruple> goto_){
         usage.insert(goto_->block);
     }
 };
@@ -95,7 +88,11 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& func
 
     VariableUsageCollector collector(usage, factor);
 
-    visit_all_statements(collector, function);
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            collector.collect(quadruple);
+        }
+    }
 
     return usage;
 }
@@ -103,7 +100,11 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& func
 void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);
 
-    visit_all_statements(collector, function);
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            collector.collect(quadruple);
+        }
+    }
 }
 
 bool eddic::mtac::safe(const std::string& function){
@@ -162,40 +163,25 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
     return std::make_pair(offset, member_type);
 }
 
-namespace {
-
 //TODO Use the copy constructor instead
 
-struct StatementClone : public boost::static_visitor<mtac::Statement> {
-    std::shared_ptr<GlobalContext> global_context;
+std::shared_ptr<mtac::Quadruple> mtac::copy(const std::shared_ptr<mtac::Quadruple>& quadruple){
+    auto copy = std::make_shared<mtac::Quadruple>();
 
-    StatementClone(std::shared_ptr<GlobalContext> global_context) : global_context(global_context) {}
+    copy->result = quadruple->result;
+    copy->arg1 = quadruple->arg1;
+    copy->arg2 = quadruple->arg2;
+    copy->op = quadruple->op;
+    copy->size = quadruple->size;
+    copy->block = quadruple->block;
+    copy->address = quadruple->address;
+    copy->m_function = quadruple->m_function;
+    copy->m_param = quadruple->m_param;
+    copy->secondary = quadruple->secondary;
 
-    mtac::Statement operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        auto copy = std::make_shared<mtac::Quadruple>();
-
-        copy->result = quadruple->result;
-        copy->arg1 = quadruple->arg1;
-        copy->arg2 = quadruple->arg2;
-        copy->op = quadruple->op;
-        copy->size = quadruple->size;
-        copy->block = quadruple->block;
-        copy->address = quadruple->address;
-        copy->m_function = quadruple->m_function;
-        copy->m_param = quadruple->m_param;
-        copy->secondary = quadruple->secondary;
-
-        if(copy->op == mtac::Operator::CALL){
-            ++copy->function().references();
-        }
-        
-        return copy;
+    if(copy->op == mtac::Operator::CALL){
+        ++copy->function().references();
     }
-};
 
-}
-
-mtac::Statement mtac::copy(const mtac::Statement& statement, std::shared_ptr<GlobalContext> context){
-    StatementClone cloner(context);
-    return visit(cloner, statement);
+    return copy;
 }

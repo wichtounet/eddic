@@ -15,7 +15,7 @@ namespace eddic {
 
 namespace mtac {
 
-struct ConstantFolding : public boost::static_visitor<void> {
+struct ConstantFolding {
     bool optimized = false;
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple);

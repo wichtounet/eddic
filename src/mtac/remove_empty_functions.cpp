@@ -13,7 +13,7 @@
 
 #include "mtac/remove_empty_functions.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -48,48 +48,46 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                 auto fit = block->statements.begin();
 
                 while(fit != block->statements.end()){
-                    auto statement = *fit;
+                    auto& quadruple = *fit;
 
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                        if((*ptr)->op == mtac::Operator::CALL){
-                            auto function = (*ptr)->function().mangled_name();
+                    if(quadruple->op == mtac::Operator::CALL){
+                        auto function = quadruple->function().mangled_name();
 
-                            if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                                int parameters = (*ptr)->function().parameters().size();
+                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                            int parameters = quadruple->function().parameters().size();
 
-                                if(parameters > 0){
-                                    //The parameters are in the previous block
-                                    if(fit == block->statements.begin()){
-                                        auto previous = block->prev;
+                            if(parameters > 0){
+                                //The parameters are in the previous block
+                                if(fit == block->statements.begin()){
+                                    auto previous = block->prev;
 
-                                        auto fend = previous->statements.end();
+                                    auto fend = previous->statements.end();
+                                    --fend;
+
+                                    while(parameters > 0){
+                                        fend = previous->statements.erase(fend);
                                         --fend;
 
-                                        while(parameters > 0){
-                                            fend = previous->statements.erase(fend);
-                                            --fend;
-
-                                            --parameters;
-                                        }
-
-                                        fit = block->statements.erase(fit);
-                                    } 
-                                    //The parameters are in the same block
-                                    else {
-                                        while(parameters >= 0){
-                                            fit = block->statements.erase(fit);
-                                            --fit;
-
-                                            --parameters;
-                                        }
+                                        --parameters;
                                     }
 
-                                } else {
                                     fit = block->statements.erase(fit);
+                                } 
+                                //The parameters are in the same block
+                                else {
+                                    while(parameters >= 0){
+                                        fit = block->statements.erase(fit);
+                                        --fit;
+
+                                        --parameters;
+                                    }
                                 }
 
-                                continue;
+                            } else {
+                                fit = block->statements.erase(fit);
                             }
+
+                            continue;
                         }
                     }
 

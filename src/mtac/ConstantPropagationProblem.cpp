@@ -14,7 +14,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -123,44 +123,39 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, std::shared_ptr<mtac::Quadruple>& quadruple, ProblemDomain& in){
     auto out = in;
 
     std::shared_ptr<Variable> remove_copies;
 
-    //Quadruple affects variable
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto quadruple = *ptr;
+    if(quadruple->op == mtac::Operator::NOP){
+        return out;
+    }
 
-        if(quadruple->op == mtac::Operator::NOP){
-            return out;
+    if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
+        ConstantCollector collector(out, quadruple->result);
+        visit(collector, *quadruple->arg1);
+
+        remove_copies = quadruple->result;
+    } 
+    //Passing a variable by pointer erases its value
+    else if(quadruple->op == mtac::Operator::PARAM){
+        if(quadruple->address){
+            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                //Impossible to know if the variable is modified or not, consider it modified
+                out[*var_ptr].set_nac();
+
+                remove_copies = *var_ptr;
+            }
         }
+    } else {
+        auto op = quadruple->op;
 
-        if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
-            ConstantCollector collector(out, quadruple->result);
-            visit(collector, *quadruple->arg1);
-                
+        if(mtac::erase_result(op)){
+            //The result is not constant at this point
+            out[quadruple->result].set_nac();
+
             remove_copies = quadruple->result;
-        } 
-        //Passing a variable by pointer erases its value
-        else if(quadruple->op == mtac::Operator::PARAM){
-            if(quadruple->address){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    //Impossible to know if the variable is modified or not, consider it modified
-                    out[*var_ptr].set_nac();
-
-                    remove_copies = *var_ptr;
-                }
-            }
-        } else {
-            auto op = quadruple->op;
-
-            if(mtac::erase_result(op)){
-                //The result is not constant at this point
-                out[quadruple->result].set_nac();
-    
-                remove_copies = quadruple->result;
-            }
         }
     }
 
@@ -215,13 +210,13 @@ struct ConstantOptimizer : public boost::static_visitor<> {
         return false;
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    bool optimize(std::shared_ptr<mtac::Quadruple> quadruple){
         if(quadruple->op == mtac::Operator::PARAM){
             if(!quadruple->address){
                 changes |= optimize_optional(quadruple->arg1);
             }
 
-            return;
+            return changes;
         }
 
         //If the constant is a string, we can use it in the dot operator
@@ -258,21 +253,20 @@ struct ConstantOptimizer : public boost::static_visitor<> {
                 }
             }
         }
+
+        return changes;
     }
 };
 
 } //end of anonymous namespace
 
-bool mtac::ConstantPropagationProblem::optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+bool mtac::ConstantPropagationProblem::optimize(std::shared_ptr<mtac::Quadruple>& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     if(global_results->IN_S[statement].top()){
         return false;
     }
 
     ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
-
-    visit(optimizer, statement);
-
-    return optimizer.changes;
+    return optimizer.optimize(statement);
 }
 
 std::ostream& mtac::operator<<(std::ostream& stream, ConstantPropagationLattice& lattice){

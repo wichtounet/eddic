@@ -21,7 +21,7 @@ namespace eddic {
 
 namespace mtac {
 
-class MathPropagation : public boost::static_visitor<void> {
+class MathPropagation {
     public:
         bool optimized = false;
         Pass pass;

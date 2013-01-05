@@ -12,7 +12,7 @@
 
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -66,25 +66,20 @@ struct LivenessCollector : public boost::static_visitor<> {
     LivenessCollector(ProblemDomain& in) : in(in) {}
 
     template<typename Arg>
-    inline void update(Arg& arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(in.top()){
-                ProblemDomain::Values values;
-                in.int_values = values;
-            }
-
-            in.values().insert(*ptr);
-        }
-    }
-
-    template<typename Arg>
     inline void update_optional(Arg& arg){
         if(arg){
-            update(*arg);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
+                if(in.top()){
+                    ProblemDomain::Values values;
+                    in.int_values = values;
+                }
+
+                in.values().insert(*ptr);
+            }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    void collect(std::shared_ptr<mtac::Quadruple>& quadruple){
         if(quadruple->op != mtac::Operator::NOP){
             if(mtac::erase_result(quadruple->op)){
                 in.values().erase(quadruple->result);
@@ -100,11 +95,11 @@ struct LivenessCollector : public boost::static_visitor<> {
 
 } //End of anonymous namespace
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
+ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& out){
     auto in = out;
     
     LivenessCollector collector(in);
-    visit(collector, statement);
+    collector.collect(statement);
 
     for(auto& escaped_var : *pointer_escaped){
         in.values().insert(escaped_var);
@@ -113,7 +108,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* 
     return in;
 }
 
-bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
+bool mtac::LiveVariableAnalysisProblem::optimize(std::shared_ptr<mtac::Quadruple>& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
     //This analysis is only made to gather information, not to optimize anything
     throw "Unimplemented";
 }

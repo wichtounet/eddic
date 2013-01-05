@@ -13,7 +13,6 @@
 #include "GlobalContext.hpp"
 #include "Type.hpp"
 
-#include "mtac/Statement.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 
 #include "ltac/Statement.hpp"

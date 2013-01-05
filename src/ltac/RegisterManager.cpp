@@ -16,8 +16,6 @@
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Statement.hpp"
-
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"

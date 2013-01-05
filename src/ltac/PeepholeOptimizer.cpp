@@ -22,7 +22,7 @@
 #include "Variable.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Statement.hpp"

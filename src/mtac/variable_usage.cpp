@@ -9,9 +9,9 @@
 
 #include "mtac/variable_usage.hpp"
 #include "mtac/Loop.hpp"
-#include "mtac/Statement.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -27,20 +27,15 @@ struct VariableReadCollector : public boost::static_visitor<> {
     }
 
     template<typename T>
-    void collect(T& arg){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            inc_usage(*variablePtr);
-        }
-    }
-
-    template<typename T>
     void collect_optional(T& opt){
         if(opt){
-            collect(*opt);
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
+                inc_usage(*variablePtr);
+            }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    void collect(std::shared_ptr<mtac::Quadruple> quadruple){
         if(!mtac::erase_result(quadruple->op)){
             inc_usage(quadruple->result);
         }
@@ -56,24 +51,17 @@ struct UsageCollector : public boost::static_visitor<bool> {
     UsageCollector(std::shared_ptr<Variable> var) : var(var) {}
 
     template<typename T>
-    bool collect(T& arg){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            return *variablePtr == var;
-        }
-
-        return false;
-    }
-
-    template<typename T>
     bool collect_optional(T& opt){
         if(opt){
-            return collect(*opt);
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
+                return *variablePtr == var;
+            }
         }
 
         return false;
     }
 
-    bool operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    bool collect(std::shared_ptr<mtac::Quadruple> quadruple){
         return quadruple->result == var || collect_optional(quadruple->arg1) || collect_optional(quadruple->arg2);
     }
 };
@@ -85,7 +73,9 @@ mtac::Usage mtac::compute_read_usage(std::shared_ptr<mtac::Loop> loop){
     VariableReadCollector collector(usage);
 
     for(auto& bb : loop){
-        visit_each(collector, bb->statements);
+        for(auto& quadruple : bb->statements){
+           collector.collect(quadruple);
+        }
     }
 
     return usage;
@@ -95,13 +85,10 @@ mtac::Usage mtac::compute_write_usage(std::shared_ptr<mtac::Loop> loop){
     mtac::Usage usage;
 
     for(auto& bb : loop){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-                if(mtac::erase_result(quadruple->op)){
-                    ++(usage.written[quadruple->result]);
-                    ++(usage.written[quadruple->secondary]);
-                } 
+        for(auto& quadruple : bb->statements){
+            if(mtac::erase_result(quadruple->op)){
+                ++(usage.written[quadruple->result]);
+                ++(usage.written[quadruple->secondary]);
             } 
         }
     }
@@ -113,7 +100,7 @@ bool mtac::use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
     UsageCollector collector(var);
 
     for(auto& statement : bb->statements){
-        if(visit(collector, statement)){
+        if(collector.collect(statement)){
             return true;
         }
     }

@@ -16,7 +16,7 @@
 #include "Function.hpp"
 #include "mtac/Printer.hpp"
 
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp" 
 
 #include "ltac/StatementCompiler.hpp"
@@ -1229,7 +1229,7 @@ void ltac::StatementCompiler::compile_RETURN(std::shared_ptr<mtac::Quadruple> qu
     instruction->float_uses = float_uses;
 }
 
-void ltac::StatementCompiler::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+void ltac::StatementCompiler::compile(std::shared_ptr<mtac::Quadruple> quadruple){
     LOG<Trace>("Compiler") << "Current statement " << quadruple << log::endl;
 
     switch(quadruple->op){

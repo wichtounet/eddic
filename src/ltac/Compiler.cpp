@@ -19,7 +19,7 @@
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
@@ -65,10 +65,12 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            compiler(std::make_shared<mtac::Quadruple>(block->label, mtac::Operator::LABEL));
+            compiler.compile(std::make_shared<mtac::Quadruple>(block->label, mtac::Operator::LABEL));
         }
 
-        visit_each(compiler, block->statements);
+        for(auto& quadruple : block->statements){
+           compiler.compile(quadruple); 
+        }
 
         compiler.end_bb();
     }

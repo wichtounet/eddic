@@ -18,7 +18,7 @@
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/variable_usage.hpp"
 
@@ -75,31 +75,29 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
                 auto it = iterate(bb->statements);
 
                 while(it.has_next()){
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                        auto quadruple = *ptr;
+                    auto& quadruple = *it;
+                    
+                    //To avoid replacing j by tj
+                    if(quadruple == equation.def){
+                        ++it;
+                    } 
+                    //After an assignment to a basic induction variable, insert addition for tj
+                    else if(quadruple == basic_equation.def){
+                        ++it;
+                        auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
+                        it.insert(new_quadruple);
+
+                        new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
 
                         //To avoid replacing j by tj
-                        if(quadruple == equation.def){
-                            ++it;
-                        } 
-                        //After an assignment to a basic induction variable, insert addition for tj
-                        else if(quadruple == basic_equation.def){
-                            ++it;
-                            auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
-                            it.insert(new_quadruple);
-
-                            new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
-
-                            //To avoid replacing j by tj
-                            ++it;
-                        }
+                        ++it;
                     }
 
                     if(!it.has_next()){
                         break;
                     }
 
-                    visit(replacer, *it);
+                    replacer.replace(quadruple);
 
                     ++it;
                 }
@@ -134,26 +132,24 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
         auto it = iterate(bb->statements);
 
         while(it.has_next()){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                auto quadruple = *ptr;
+            auto quadruple = *it;
 
-                if(quadruple->op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple->arg1)){
-                    auto j = quadruple->result;
-                    auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+            if(quadruple->op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple->arg1)){
+                auto j = quadruple->result;
+                auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
 
-                    //If j = tj generated in strength reduction phase
-                    if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){
-                        if(!usage.read.count(j)){
-                            LOG<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
+                //If j = tj generated in strength reduction phase
+                if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){
+                    if(!usage.read.count(j)){
+                        LOG<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
 
-                            //There is one less read of tj
-                            --usage.read[tj];
+                        //There is one less read of tj
+                        --usage.read[tj];
 
-                            dependent_induction_variables.erase(j);
+                        dependent_induction_variables.erase(j);
 
-                            it.erase();
-                            continue;
-                        }
+                        it.erase();
+                        continue;
                     }
                 }
             }
@@ -191,36 +187,32 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     
     auto exit_block = *loop->blocks().rbegin();
 
-    auto exit_statement = exit_block->statements.back();
+    auto if_ = exit_block->statements.back();
 
     std::shared_ptr<Variable> biv;
     int end = 0;
 
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&exit_statement)){
-        auto if_ = *ptr;
-
-        if(if_->is_if()){
-            if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
-                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
-                    end = boost::get<int>(*if_->arg2);
-                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                    end = boost::get<int>(*if_->arg1);
-                }
-            }
-        } else if(if_->is_if_false()){
-            if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
-                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
-                    end = boost::get<int>(*if_->arg2);
-                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                    biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                    end = boost::get<int>(*if_->arg1);
-                }
+    if(if_->is_if()){
+        if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
+            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
+                end = boost::get<int>(*if_->arg2);
+            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
+                end = boost::get<int>(*if_->arg1);
             }
         }
-    } 
+    } else if(if_->is_if_false()){
+        if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
+            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
+                end = boost::get<int>(*if_->arg2);
+            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
+                end = boost::get<int>(*if_->arg1);
+            }
+        }
+    }
 
     //The loop is only countable if the condition depends on biv and the biv is increasing
     if(!biv || !basic_induction_variables.count(biv) || basic_induction_variables[biv].d <= 0){
@@ -255,25 +247,21 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
         usage.read[biv] = 0;
     
         //Update the exit condition
-        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&exit_statement)){
-            auto if_ = *ptr;
-
-            if(if_->is_if()){
-                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                    if_->arg1 = div;
-                    if_->arg2 = new_end;
-                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                    if_->arg2 = div;
-                    if_->arg1 = new_end;
-                }
-            } else if((*ptr)->is_if_false()){
-                if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                    if_->arg1 = div;
-                    if_->arg2 = new_end;
-                } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                    if_->arg2 = div;
-                    if_->arg1 = new_end;
-                }
+        if(if_->is_if()){
+            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                if_->arg1 = div;
+                if_->arg2 = new_end;
+            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                if_->arg2 = div;
+                if_->arg1 = new_end;
+            }
+        } else if(if_->is_if_false()){
+            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
+                if_->arg1 = div;
+                if_->arg2 = new_end;
+            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
+                if_->arg2 = div;
+                if_->arg1 = new_end;
             }
         }
             

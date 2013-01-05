@@ -17,50 +17,34 @@
 #include "mtac/dominators.hpp"
 #include "mtac/Loop.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
 
 namespace {
 
-struct DepthInit : public boost::static_visitor<void> {
-    template<typename T>
-    void operator()(T t){
-        t->depth = 0;
-    }
-};
-
-struct DepthIncrementer : public boost::static_visitor<void> {
-    template<typename T>
-    void operator()(T t){
-        ++t->depth;
-    }
-};
-
 void init_depth(mtac::basic_block_p bb){
-    DepthInit init;
-
     bb->depth = 0;
-    visit_each(init, bb->statements);
+    for(auto& quadruple : bb->statements){
+        quadruple->depth = 0;
+    }
 }
 
 void increase_depth(mtac::basic_block_p bb){
-    DepthIncrementer incrementer;
-
     ++bb->depth;
-    visit_each(incrementer, bb->statements);
+    for(auto& quadruple : bb->statements){
+        ++quadruple->depth;
+    }
 }
 
 mtac::InductionVariables find_all_candidates(std::shared_ptr<mtac::Loop> loop){
     mtac::InductionVariables candidates;
 
     for(auto& bb : loop){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::ADD || (*ptr)->op == mtac::Operator::MUL || (*ptr)->op == mtac::Operator::SUB || (*ptr)->op == mtac::Operator::MINUS){
-                    candidates[(*ptr)->result] = {*ptr, nullptr, 0, 0, false};
-                }
+        for(auto& quadruple : bb->statements){
+            if(quadruple->op == mtac::Operator::ADD || quadruple->op == mtac::Operator::MUL || quadruple->op == mtac::Operator::SUB || quadruple->op == mtac::Operator::MINUS){
+                candidates[quadruple->result] = {quadruple, nullptr, 0, 0, false};
             }
         }
     }
@@ -88,47 +72,44 @@ void find_basic_induction_variables(std::shared_ptr<mtac::Loop> loop){
     loop->basic_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-                auto var = quadruple->result;
+        for(auto& quadruple : bb->statements){
+            auto var = quadruple->result;
 
-                //If it is not a candidate, do not test it
-                if(!loop->basic_induction_variables().count(var)){
-                    continue;
-                }
+            //If it is not a candidate, do not test it
+            if(!loop->basic_induction_variables().count(var)){
+                continue;
+            }
 
-                if(quadruple->op == mtac::Operator::CALL){
-                    loop->basic_induction_variables().erase(var);
-                    loop->basic_induction_variables().erase(quadruple->secondary);
-
-                    continue;
-                }
-
-                auto value = loop->basic_induction_variables()[var];
-
-                //TODO In the future, induction variables written several times could be splitted into several induction variables
-                if(value.i){
-                    loop->basic_induction_variables().erase(var);
-
-                    continue;
-                }
-
-                if(quadruple->op == mtac::Operator::ADD){
-                    auto arg1 = *quadruple->arg1;
-                    auto arg2 = *quadruple->arg2;
-
-                    if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
-                        loop->basic_induction_variables()[var] = {quadruple, var, 1, boost::get<int>(arg1), false};
-                        continue;
-                    } else if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
-                        loop->basic_induction_variables()[var] = {quadruple, var, 1, boost::get<int>(arg2), false}; 
-                        continue;
-                    } 
-                } 
-                
+            if(quadruple->op == mtac::Operator::CALL){
                 loop->basic_induction_variables().erase(var);
+                loop->basic_induction_variables().erase(quadruple->secondary);
+
+                continue;
+            }
+
+            auto value = loop->basic_induction_variables()[var];
+
+            //TODO In the future, induction variables written several times could be splitted into several induction variables
+            if(value.i){
+                loop->basic_induction_variables().erase(var);
+
+                continue;
+            }
+
+            if(quadruple->op == mtac::Operator::ADD){
+                auto arg1 = *quadruple->arg1;
+                auto arg2 = *quadruple->arg2;
+
+                if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
+                    loop->basic_induction_variables()[var] = {quadruple, var, 1, boost::get<int>(arg1), false};
+                    continue;
+                } else if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                    loop->basic_induction_variables()[var] = {quadruple, var, 1, boost::get<int>(arg2), false}; 
+                    continue;
+                } 
             } 
+
+            loop->basic_induction_variables().erase(var);
         }
     }
 
@@ -139,176 +120,173 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
     loop->dependent_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-                auto var = quadruple->result;
+        for(auto& quadruple : bb->statements){
+            auto var = quadruple->result;
 
-                //If it is not a candidate, do not test it
-                if(!loop->dependent_induction_variables().count(var)){
-                    continue;
-                }
-                
-                //We know for sure that all the candidates have a first arg
-                auto arg1 = *quadruple->arg1;
-                
-                //If it is a basic induction variable, it is not a dependent induction variable
-                if(loop->basic_induction_variables().count(var)){
-                    loop->dependent_induction_variables().erase(var);
-
-                    continue;
-                }
-
-                auto source_equation = loop->dependent_induction_variables()[var];
-
-                if(source_equation.i && (mtac::equals(arg1, var) || (quadruple->arg2 && mtac::equals(*quadruple->arg2, var))) ){
-                    auto tj = function.context->new_temporary(INT);
-
-                    source_equation.def->result = tj;
-                    
-                    loop->dependent_induction_variables().erase(var);
-                    loop->dependent_induction_variables()[tj] = source_equation;
-
-                    if(mtac::equals(arg1, var)){
-                        quadruple->arg1 = tj;
-                    }
-
-                    if(quadruple->arg2 && mtac::equals(*quadruple->arg2, var)){
-                        quadruple->arg2 = tj;
-                    }
-                
-                    arg1 = *quadruple->arg1;
-                }
-
-                if(quadruple->op == mtac::Operator::MUL){
-                    auto arg2 = *quadruple->arg2;
-
-                    if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
-                        auto e = boost::get<int>(arg1);
-                        
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, e, 0, false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * e, equation.d * e, false}; 
-                                continue;
-                            }
-                        }
-                    } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
-                        auto e = boost::get<int>(arg2);
-                        
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, e, 0, false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * e, equation.d * e, false}; 
-                                continue;
-                            }
-                        }
-                    } 
-                } else if(quadruple->op == mtac::Operator::ADD){
-                    auto arg2 = *quadruple->arg2;
-
-                    if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
-                        auto e = boost::get<int>(arg1);
-
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, 1, boost::get<int>(arg1), false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d + e, false}; 
-                                continue;
-                            }
-                        }
-                    } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
-                        auto e = boost::get<int>(arg2);
-
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, 1, boost::get<int>(arg2), false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d + e, false}; 
-                                continue;
-                            }
-                        }
-                    } else if(mtac::isVariable(arg1) && mtac::isVariable(arg2)){
-                        auto var1 = boost::get<std::shared_ptr<Variable>>(arg1);
-                        auto var2 = boost::get<std::shared_ptr<Variable>>(arg2);
-
-                        if(var1 == var2 && var1 != var){
-                            if(loop->basic_induction_variables().count(var1)){
-                                loop->dependent_induction_variables()[var] = {quadruple, var1, 2, 0, false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[var1].i){
-                                auto equation = loop->dependent_induction_variables()[var1];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * 2, equation.d * 2, false}; 
-                                continue;
-                            }
-                        }
-                    }
-                } else if(quadruple->op == mtac::Operator::SUB){
-                    auto arg2 = *quadruple->arg2;
-
-                    if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
-                        auto e = boost::get<int>(arg1);
-
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, -1, -1 * e, false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, -1 * equation.e, e - equation.d, false}; 
-                                continue;
-                            }
-                        }
-                    } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
-                        auto e = boost::get<int>(arg2);
-
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, 1, -1 * boost::get<int>(arg2), false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d - e, false}; 
-                                continue;
-                            }
-                        }
-                    }
-                } else if(quadruple->op == mtac::Operator::MINUS){
-                    if(mtac::isVariable(arg1)){
-                        auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
-
-                        if(variable != var){
-                            if(loop->basic_induction_variables().count(variable)){
-                                loop->dependent_induction_variables()[var] = {quadruple, variable, -1, 0, false}; 
-                                continue;
-                            } else if(loop->dependent_induction_variables()[variable].i){
-                                auto equation = loop->dependent_induction_variables()[variable];
-                                loop->dependent_induction_variables()[var] = {quadruple, equation.i, -1 * equation.e, -1 * equation.d, false}; 
-                                continue;
-                            }
-                        }
-                    }
-                }
-                
-                loop->dependent_induction_variables().erase(var);
+            //If it is not a candidate, do not test it
+            if(!loop->dependent_induction_variables().count(var)){
+                continue;
             }
+
+            //We know for sure that all the candidates have a first arg
+            auto arg1 = *quadruple->arg1;
+
+            //If it is a basic induction variable, it is not a dependent induction variable
+            if(loop->basic_induction_variables().count(var)){
+                loop->dependent_induction_variables().erase(var);
+
+                continue;
+            }
+
+            auto source_equation = loop->dependent_induction_variables()[var];
+
+            if(source_equation.i && (mtac::equals(arg1, var) || (quadruple->arg2 && mtac::equals(*quadruple->arg2, var))) ){
+                auto tj = function.context->new_temporary(INT);
+
+                source_equation.def->result = tj;
+
+                loop->dependent_induction_variables().erase(var);
+                loop->dependent_induction_variables()[tj] = source_equation;
+
+                if(mtac::equals(arg1, var)){
+                    quadruple->arg1 = tj;
+                }
+
+                if(quadruple->arg2 && mtac::equals(*quadruple->arg2, var)){
+                    quadruple->arg2 = tj;
+                }
+
+                arg1 = *quadruple->arg1;
+            }
+
+            if(quadruple->op == mtac::Operator::MUL){
+                auto arg2 = *quadruple->arg2;
+
+                if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                    auto e = boost::get<int>(arg1);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, e, 0, false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * e, equation.d * e, false}; 
+                            continue;
+                        }
+                    }
+                } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                    auto e = boost::get<int>(arg2);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, e, 0, false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * e, equation.d * e, false}; 
+                            continue;
+                        }
+                    }
+                } 
+            } else if(quadruple->op == mtac::Operator::ADD){
+                auto arg2 = *quadruple->arg2;
+
+                if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                    auto e = boost::get<int>(arg1);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, 1, boost::get<int>(arg1), false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d + e, false}; 
+                            continue;
+                        }
+                    }
+                } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                    auto e = boost::get<int>(arg2);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, 1, boost::get<int>(arg2), false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d + e, false}; 
+                            continue;
+                        }
+                    }
+                } else if(mtac::isVariable(arg1) && mtac::isVariable(arg2)){
+                    auto var1 = boost::get<std::shared_ptr<Variable>>(arg1);
+                    auto var2 = boost::get<std::shared_ptr<Variable>>(arg2);
+
+                    if(var1 == var2 && var1 != var){
+                        if(loop->basic_induction_variables().count(var1)){
+                            loop->dependent_induction_variables()[var] = {quadruple, var1, 2, 0, false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[var1].i){
+                            auto equation = loop->dependent_induction_variables()[var1];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e * 2, equation.d * 2, false}; 
+                            continue;
+                        }
+                    }
+                }
+            } else if(quadruple->op == mtac::Operator::SUB){
+                auto arg2 = *quadruple->arg2;
+
+                if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
+                    auto e = boost::get<int>(arg1);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, -1, -1 * e, false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, -1 * equation.e, e - equation.d, false}; 
+                            continue;
+                        }
+                    }
+                } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+                    auto e = boost::get<int>(arg2);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, 1, -1 * boost::get<int>(arg2), false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, equation.e, equation.d - e, false}; 
+                            continue;
+                        }
+                    }
+                }
+            } else if(quadruple->op == mtac::Operator::MINUS){
+                if(mtac::isVariable(arg1)){
+                    auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
+
+                    if(variable != var){
+                        if(loop->basic_induction_variables().count(variable)){
+                            loop->dependent_induction_variables()[var] = {quadruple, variable, -1, 0, false}; 
+                            continue;
+                        } else if(loop->dependent_induction_variables()[variable].i){
+                            auto equation = loop->dependent_induction_variables()[variable];
+                            loop->dependent_induction_variables()[var] = {quadruple, equation.i, -1 * equation.e, -1 * equation.d, false}; 
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            loop->dependent_induction_variables().erase(var);
         }
     }
 
@@ -320,27 +298,25 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
     auto end = bb->statements.rend();
 
     while(it != end){
-        auto statement = *it;
+        auto& quadruple = *it;
 
-        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-            if((*ptr)->result == var){
-                if((*ptr)->op == mtac::Operator::ASSIGN){
-                    if(auto* val_ptr = boost::get<int>(&*(*ptr)->arg1)){
-                        return std::make_pair(true, *val_ptr);                    
-                    }
+        if(quadruple->result == var){
+            if(quadruple->op == mtac::Operator::ASSIGN){
+                if(auto* val_ptr = boost::get<int>(&*quadruple->arg1)){
+                    return std::make_pair(true, *val_ptr);                    
                 }
-
-                return std::make_pair(false, 0);
             }
+
+            return std::make_pair(false, 0);
         }
 
         ++it;
     }
-    
+
     return std::make_pair(false, 0);
 }
 
-int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Statement& if_statement){
+int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, std::shared_ptr<mtac::Quadruple>& if_statement){
     auto if_ = boost::get<std::shared_ptr<mtac::Quadruple>>(if_statement);
 
     if(if_->is_if()){

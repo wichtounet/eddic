@@ -18,7 +18,7 @@
 
 #include "mtac/Printer.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -103,42 +103,44 @@ std::string printVar(std::shared_ptr<Variable> var){
 
 typedef std::ostream& (*manipulator)(std::ostream&); 
 
-struct DebugVisitor : public boost::static_visitor<> {
+struct DebugVisitor {
     manipulator endl = std::endl;
     std::ostream& stream;
 
     DebugVisitor() : stream(std::cout) {}
     DebugVisitor(std::ostream& os) : stream(os) {}
 
-    void operator()(mtac::Program& program){
+    void print(mtac::Program& program){
         stream << "TAC Program " << endl << endl; 
 
-        visit_each_non_variant(*this, program.functions);
+        for(auto& function : program.functions){
+            print(function);
+        }
     }
 
-    void operator()(mtac::Function& function){
+    void print(mtac::Function& function){
         stream << "Function " << function.get_name() << endl;
 
-        visit_each(*this, function.get_statements());
+        for(auto& quadruple : function.get_statements()){
+            print(quadruple);
+        }
 
         for(auto& block : function){
-            visit_non_variant(*this, block);
+            print(block);
         }
 
         stream << endl;
     }
 
-    void operator()(mtac::basic_block_p block){
+    void print(mtac::basic_block_p block){
         pretty_print(block, stream);
         
-        visit_each(*this, block->statements);     
+        for(auto& quadruple : block->statements){
+            print(quadruple);
+        }
     }
 
-    void operator()(mtac::Statement& statement){
-        visit(*this, statement);
-    }
-
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    void print(std::shared_ptr<mtac::Quadruple>& quadruple){
         auto op = quadruple->op;
 
         //TODO Use a switch
@@ -299,27 +301,27 @@ struct DebugVisitor : public boost::static_visitor<> {
 
 void mtac::Printer::print(mtac::Program& program) const {
    DebugVisitor visitor;
-   visitor(program); 
+   visitor.print(program);
 }
 
 void mtac::Printer::printFunction(mtac::Function& function) const {
    DebugVisitor visitor;
-   visitor(function); 
+   visitor.print(function); 
 }
 
 std::ostream& inline_manipulator(std::ostream& os){
     return os;
 }
 
-void mtac::Printer::print_inline(mtac::Statement statement, std::ostream& os) const {
+void mtac::Printer::print_inline(std::shared_ptr<mtac::Quadruple> statement, std::ostream& os) const {
    DebugVisitor visitor(os);
    visitor.endl = inline_manipulator;
-   visit(visitor, statement);
+   visitor.print(statement);
 }
 
-void mtac::Printer::printStatement(mtac::Statement statement) const {
+void mtac::Printer::printStatement(std::shared_ptr<mtac::Quadruple> statement) const {
    DebugVisitor visitor;
-   visit(visitor, statement);
+   visitor.print(statement);
 }
 
 void mtac::Printer::printArgument(mtac::Argument& arg) const {

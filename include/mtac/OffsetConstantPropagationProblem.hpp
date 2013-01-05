@@ -41,10 +41,10 @@ class OffsetConstantPropagationProblem : public DataFlowProblem<DataFlowType::Fo
 
         void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
-        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
+        ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) override;
         ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
 
-        bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+        bool optimize(std::shared_ptr<mtac::Quadruple>& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
         bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
 
     private:

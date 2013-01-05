@@ -13,7 +13,6 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/for_each.hpp>
 
-#include "VisitorUtils.hpp"
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
 #include "iterators.hpp"
@@ -31,7 +30,7 @@
 #include "mtac/Program.hpp"
 #include "mtac/Printer.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 //The custom optimizations
 #include "mtac/conditional_propagation.hpp"
@@ -192,11 +191,9 @@ struct pass_runner {
             auto it = iterate(block->statements);
 
             while(it.has_next()){
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                    if((*ptr)->op == mtac::Operator::NOP){
-                        it.erase();
-                        continue;
-                    }
+                if((*it)->op == mtac::Operator::NOP){
+                    it.erase();
+                    continue;
                 }
 
                 ++it;
@@ -290,7 +287,11 @@ struct pass_runner {
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
         auto visitor = make_pass<Pass>();
 
-        mtac::visit_all_statements(visitor, *function);
+        for(auto& block : *function){
+            for(auto& quadruple : block->statements){
+                visitor(quadruple);
+            }
+        }
 
         return visitor.optimized;
     }
@@ -322,7 +323,9 @@ struct pass_runner {
         for(auto& block : *function){
             visitor.clear();
 
-            visit_each(visitor, block->statements);
+            for(auto& quadruple : block->statements){
+                visitor(quadruple);
+            }
 
             optimized |= visitor.optimized;
         }
@@ -340,10 +343,14 @@ struct pass_runner {
             visitor.clear();
 
             visitor.pass = mtac::Pass::DATA_MINING;
-            visit_each(visitor, block->statements);
+            for(auto& quadruple : block->statements){
+                visitor(quadruple);
+            }
 
             visitor.pass = mtac::Pass::OPTIMIZE;
-            visit_each(visitor, block->statements);
+            for(auto& quadruple : block->statements){
+                visitor(quadruple);
+            }
 
             optimized |= visitor.optimized;
         }

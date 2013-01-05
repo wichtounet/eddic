@@ -25,10 +25,6 @@ typedef std::shared_ptr<const mtac::basic_block> basic_block_cp;
 
 struct Quadruple;
 
-typedef boost::variant<
-        std::shared_ptr<mtac::Quadruple>        //Basic quadruples
-    > Statement;
-
 } //end of mtac
 
 } //end of eddic
