@@ -190,10 +190,8 @@ bool mtac::CommonSubexpressionElimination::optimize(std::shared_ptr<mtac::Quadru
                     while(it != end){
                         auto target = *it;
                         if(target == source_statement){
-                            auto quadruple = std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op);
-
                             ++it;
-                            expression.source->statements.insert(it, quadruple);
+                            expression.source->statements.insert(it, std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op));
 
                             break;
                         }
