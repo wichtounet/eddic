@@ -38,7 +38,7 @@ bool mtac::is_recursive(mtac::Function& function){
 
 namespace {
 
-struct VariableUsageCollector : public boost::static_visitor<> {
+struct VariableUsageCollector {
     mtac::VariableUsage& usage;
     int depth_factor;
     int current_depth;
@@ -67,7 +67,7 @@ struct VariableUsageCollector : public boost::static_visitor<> {
     }
 };
 
-struct BasicBlockUsageCollector : public boost::static_visitor<> {
+struct BasicBlockUsageCollector {
     std::unordered_set<mtac::basic_block_p>& usage;
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}

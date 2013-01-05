@@ -60,7 +60,7 @@ void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDo
 
 namespace {
 
-struct LivenessCollector : public boost::static_visitor<> {
+struct LivenessCollector {
     ProblemDomain& in;
 
     LivenessCollector(ProblemDomain& in) : in(in) {}

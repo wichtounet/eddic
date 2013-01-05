@@ -17,7 +17,7 @@ using namespace eddic;
 
 namespace {
 
-struct VariableReadCollector : public boost::static_visitor<> {
+struct VariableReadCollector {
     mtac::Usage& usage;
 
     VariableReadCollector(mtac::Usage& usage) : usage(usage) {}
@@ -45,7 +45,7 @@ struct VariableReadCollector : public boost::static_visitor<> {
     }
 };
 
-struct UsageCollector : public boost::static_visitor<bool> {
+struct UsageCollector {
     std::shared_ptr<Variable> var;
 
     UsageCollector(std::shared_ptr<Variable> var) : var(var) {}

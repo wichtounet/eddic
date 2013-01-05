@@ -182,7 +182,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* b
 
 namespace {
 
-struct ConstantOptimizer : public boost::static_visitor<> {
+struct ConstantOptimizer {
     mtac::Domain<mtac::ConstantPropagationValues>& results;
     mtac::EscapedVariables& pointer_escaped;
     bool changes = false;
