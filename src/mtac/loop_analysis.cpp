@@ -124,7 +124,20 @@ void find_dependent_induction_variables(std::shared_ptr<mtac::Loop> loop, mtac::
             auto var = quadruple->result;
 
             //If it is not a candidate, do not test it
-            if(!loop->dependent_induction_variables().count(var)){
+            if(!var || !loop->dependent_induction_variables().count(var)){
+                continue;
+            }
+
+            //A call invalidates the candidate
+            if(quadruple->op == mtac::Operator::CALL){
+                loop->dependent_induction_variables().erase(quadruple->return1());
+                loop->dependent_induction_variables().erase(quadruple->return2());
+
+                continue;
+            }
+
+            //TODO: Remove that by being sure that NOPs are getting cleared of all their arguments when created and when transformed
+            if(quadruple->op == mtac::Operator::NOP){
                 continue;
             }
 
