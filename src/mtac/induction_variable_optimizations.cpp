@@ -77,8 +77,6 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
                 while(it.has_next()){
                     auto& quadruple = *it;
 
-                    replacer.replace(quadruple);
-
                     //To avoid replacing j by tj
                     if(quadruple == equation.def){
                         ++it;
@@ -98,6 +96,8 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
                     if(!it.has_next()){
                         break;
                     }
+
+                    replacer.replace(*it);
 
                     ++it;
                 }
@@ -126,6 +126,14 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
     auto& dependent_induction_variables = loop->dependent_induction_variables();
     
     mtac::Usage usage = compute_read_usage(loop);
+
+    std::cout << "Loop of " << loop->blocks().size() << std::endl;
+
+    for(auto& u : usage.read){
+        if(u.first){
+            std::cout << u.first->name() << ":" << u.second << std::endl;
+        }
+    }
 
     //Remove generated copy when useless
     for(auto& bb : loop){
