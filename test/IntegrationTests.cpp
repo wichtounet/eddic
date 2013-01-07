@@ -28,10 +28,10 @@
 BOOST_AUTO_TEST_CASE( applications_##file ){\
     assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O0", #file ".1.out");\
     assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O1", #file ".2.out");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O2", #file ".3.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--32", "--O3", #file ".3.out");\
     assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O0", #file ".4.out");\
     assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O1", #file ".5.out");\
-    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O2", #file ".6.out");\
+    assert_compiles("eddi_applications/" #file "/" #file ".eddi", "--64", "--O3", #file ".6.out");\
 }
 
 /*
@@ -42,10 +42,10 @@ BOOST_AUTO_TEST_CASE( applications_##file ){\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
     assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O0", #file ".1.out");\
     assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O1", #file ".2.out");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O2", #file ".3.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--32", "--O3", #file ".3.out");\
     assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O0", #file ".4.out");\
     assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O1", #file ".5.out");\
-    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O2", #file ".6.out");\
+    assert_compiles("eddi_samples/" #file ".eddi", "--64", "--O3", #file ".6.out");\
 }
 
 inline void remove(const std::string& file){
@@ -112,13 +112,13 @@ void assert_output_equals(const std::string& file, const std::string& output, co
 void assert_output_32(const std::string& file, const std::string& output){
     assert_output_equals(file, output, "--32", "--O0", file + ".1.out");
     assert_output_equals(file, output, "--32", "--O1", file + ".2.out");
-    assert_output_equals(file, output, "--32", "--O2", file + ".3.out");
+    assert_output_equals(file, output, "--32", "--O3", file + ".3.out");
 }
 
 void assert_output_64(const std::string& file, const std::string& output){
     assert_output_equals(file, output, "--64", "--O0", file + ".4.out");
     assert_output_equals(file, output, "--64", "--O1", file + ".5.out");
-    assert_output_equals(file, output, "--64", "--O2", file + ".6.out");
+    assert_output_equals(file, output, "--64", "--O3", file + ".6.out");
 }
 
 void assert_output(const std::string& file, const std::string& output){
@@ -453,11 +453,11 @@ static void test_args(const std::string& arg1, const std::string& arg2, const st
 BOOST_AUTO_TEST_CASE( args ){
     test_args("--32", "--O0", "args.1.out");
     test_args("--32", "--O1", "args.2.out");
-    test_args("--32", "--O2", "args.3.out");
+    test_args("--32", "--O3", "args.3.out");
 
     test_args("--64", "--O0", "args.4.out");
     test_args("--64", "--O1", "args.5.out");
-    test_args("--64", "--O2", "args.6.out");
+    test_args("--64", "--O3", "args.6.out");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -486,18 +486,18 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(CompilationErrorsSuite)
 
 BOOST_AUTO_TEST_CASE( params_assign ){
-    assert_compilation_error("params_assign.eddi", "--32", "--O2", "params_assign.out");
-    assert_compilation_error("params_assign.eddi", "--64", "--O2", "params_assign.out");
+    assert_compilation_error("params_assign.eddi", "--32", "--O3", "params_assign.out");
+    assert_compilation_error("params_assign.eddi", "--64", "--O3", "params_assign.out");
 }
 
 BOOST_AUTO_TEST_CASE( wrong_print ){
-    assert_compilation_error("wrong_print.eddi", "--32", "--O2", "wrong_print.out");
-    assert_compilation_error("wrong_print.eddi", "--64", "--O2", "wrong_print.out");
+    assert_compilation_error("wrong_print.eddi", "--32", "--O3", "wrong_print.out");
+    assert_compilation_error("wrong_print.eddi", "--64", "--O3", "wrong_print.out");
 }
 
 BOOST_AUTO_TEST_CASE( invalid_inheritance ){
-    assert_compilation_error("invalid_inheritance.eddi", "--32", "--O2", "invalid_inheritance.out");
-    assert_compilation_error("invalid_inheritance.eddi", "--64", "--O2", "invalid_inheritance.out");
+    assert_compilation_error("invalid_inheritance.eddi", "--32", "--O3", "invalid_inheritance.out");
+    assert_compilation_error("invalid_inheritance.eddi", "--64", "--O3", "invalid_inheritance.out");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(OptimizationSuite)
 
 eddic::statistics& compute_stats(const std::string& file){
-    auto configuration = parse_options("test/cases/" + file, "--64", "--O2", "test/cases/" + file + ".out");
+    auto configuration = parse_options("test/cases/" + file, "--64", "--O3", "test/cases/" + file + ".out");
 
     eddic::Compiler compiler;
     auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
