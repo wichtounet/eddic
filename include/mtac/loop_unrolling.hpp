@@ -18,10 +18,7 @@ namespace eddic {
 namespace mtac {
 
 struct loop_unrolling {
-    std::shared_ptr<Configuration> configuration;
-
-    void set_configuration(std::shared_ptr<Configuration> configuration);
-
+    bool gate(std::shared_ptr<Configuration> configuration);
     bool operator()(mtac::Function& function);
 };
 

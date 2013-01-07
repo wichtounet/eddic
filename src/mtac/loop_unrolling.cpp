@@ -17,15 +17,11 @@
 
 using namespace eddic;
 
-void mtac::loop_unrolling::set_configuration(std::shared_ptr<Configuration> configuration){
-    this->configuration = configuration;
+bool mtac::loop_unrolling::gate(std::shared_ptr<Configuration> configuration){
+    return configuration->option_defined("funroll-loops");
 }
 
 bool mtac::loop_unrolling::operator()(mtac::Function& function){
-    if(!configuration->option_defined("funroll-loops")){
-        return false;
-    }
-
     if(function.loops().empty()){
         return false;
     }
