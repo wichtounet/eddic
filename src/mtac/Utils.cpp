@@ -166,22 +166,5 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 //TODO Use the copy constructor instead
 
 std::shared_ptr<mtac::Quadruple> mtac::copy(const std::shared_ptr<mtac::Quadruple>& quadruple){
-    auto copy = std::make_shared<mtac::Quadruple>();
-
-    copy->result = quadruple->result;
-    copy->arg1 = quadruple->arg1;
-    copy->arg2 = quadruple->arg2;
-    copy->op = quadruple->op;
-    copy->size = quadruple->size;
-    copy->block = quadruple->block;
-    copy->address = quadruple->address;
-    copy->m_function = quadruple->m_function;
-    copy->m_param = quadruple->m_param;
-    copy->secondary = quadruple->secondary;
-
-    if(copy->op == mtac::Operator::CALL){
-        ++copy->function().references();
-    }
-
-    return copy;
+    return std::make_shared<mtac::Quadruple>(*quadruple);
 }
