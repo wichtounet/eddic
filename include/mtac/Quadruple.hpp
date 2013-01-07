@@ -50,8 +50,8 @@ struct Quadruple {
     std::shared_ptr<mtac::basic_block> block;
 
     //Quadruple should never get copied
-    Quadruple(const Quadruple& rhs) = delete;
-    Quadruple& operator=(const Quadruple& rhs) = delete;
+    Quadruple(const Quadruple& rhs);
+    Quadruple& operator=(const Quadruple& rhs);
 
     //Default constructor
     Quadruple();
