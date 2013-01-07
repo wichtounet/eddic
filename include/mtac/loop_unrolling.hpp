@@ -18,6 +18,10 @@ namespace eddic {
 namespace mtac {
 
 struct loop_unrolling {
+    std::shared_ptr<Configuration> configuration;
+
+    void set_configuration(std::shared_ptr<Configuration> configuration);
+
     bool operator()(mtac::Function& function);
 };
 
@@ -25,7 +29,7 @@ template<>
 struct pass_traits<loop_unrolling> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "loop_unrolling");
-    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_CONFIGURATION);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 

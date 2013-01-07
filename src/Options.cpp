@@ -88,7 +88,8 @@ void init_descriptions(){
         ("Opt,O", po::value<int>()->implicit_value(0)->default_value(2), "Define the optimization level")
         ("O0", "Disable all optimizations")
         ("O1", "Enable low-level optimizations")
-        ("O2", "Enable all optimizations. This can be slow for big programs.")
+        ("O2", "Enable all optimizations improving the speed but do imply a space tradeoff.")
+        ("O3", "Enable all optimizations improving the speed but can increase the size of the program.")
         
         ("fglobal-optimization", "Enable optimizer engine")
         ("fparameter-allocation", "Enable parameter allocation in register")
@@ -96,6 +97,7 @@ void init_descriptions(){
         ("fomit-frame-pointer", "Omit frame pointer from functions")
         ("finline-functions", "Enable inlining")
         ("fno-inline-functions", "Disable inlining")
+        ("funroll-loops", "Enable Loop Unrolling")
         ;
     
     po::options_description backend("Backend options");
@@ -117,6 +119,7 @@ void init_descriptions(){
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
     add_trigger("__2", {"fglobal-optimization", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
+    add_trigger("__3", {"funroll-loops"});
 }
 
 inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){
@@ -186,6 +189,8 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
             configuration->values["Opt"].value = 1;
         } else if(options.count("O2")){
             configuration->values["Opt"].value = 2;
+        } else if(options.count("O3")){
+            configuration->values["Opt"].value = 3;
         }
 
         //Triggers dependent options
@@ -201,6 +206,10 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
         
         if(configuration->option_int_value("Opt") >= 2){
             trigger_childs(configuration, triggers["__2"]);
+        }
+        
+        if(configuration->option_int_value("Opt") >= 3){
+            trigger_childs(configuration, triggers["__3"]);
         }
     } catch (const po::ambiguous_option& e) {
         std::cout << "Invalid command line options : " << e.what() << std::endl;
