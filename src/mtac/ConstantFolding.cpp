@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyrhs Baptiste Wicht 2011-2012.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,10 +11,24 @@
 #include "mtac/OptimizerUtils.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/If.hpp"
-#include "mtac/IfFalse.hpp"
 
 using namespace eddic;
+
+bool transform_to_if_false_unary(std::shared_ptr<mtac::Quadruple> ifFalse, bool value){
+    ifFalse->op = mtac::Operator::IF_FALSE_UNARY;
+    ifFalse->arg1 = value ? 1 : 0;
+    ifFalse->arg2.reset();
+
+    return true;
+}
+
+bool transform_to_if_unary(std::shared_ptr<mtac::Quadruple> if_, bool value){
+    if_->op = mtac::Operator::IF_UNARY;
+    if_->arg1 = value ? 1 : 0;
+    if_->arg2.reset();
+
+    return true;
+}
     
 void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(quadruple->arg1){
@@ -69,6 +83,42 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                     case mtac::Operator::NOT_EQUALS:
                         replaceRight(*this, quadruple, static_cast<int>(lhs != rhs), mtac::Operator::ASSIGN);
                         break;
+                    case mtac::Operator::IF_EQUALS:
+                        optimized = transform_to_if_unary(quadruple, lhs == rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_EQUALS:
+                        optimized = transform_to_if_false_unary(quadruple, lhs == rhs);
+                        break;
+                    case mtac::Operator::IF_NOT_EQUALS:
+                        optimized = transform_to_if_unary(quadruple, lhs != rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_NOT_EQUALS:
+                        optimized = transform_to_if_false_unary(quadruple, lhs != rhs);
+                        break;
+                    case mtac::Operator::IF_LESS:
+                        optimized = transform_to_if_unary(quadruple, lhs < rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_LESS:
+                        optimized = transform_to_if_false_unary(quadruple, lhs < rhs);
+                        break;
+                    case mtac::Operator::IF_LESS_EQUALS:
+                        optimized = transform_to_if_unary(quadruple, lhs <= rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_LESS_EQUALS:
+                        optimized = transform_to_if_false_unary(quadruple, lhs <= rhs);
+                        break;
+                    case mtac::Operator::IF_GREATER:
+                        optimized = transform_to_if_unary(quadruple, lhs > rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_GREATER:
+                        optimized = transform_to_if_false_unary(quadruple, lhs > rhs);
+                        break;
+                    case mtac::Operator::IF_GREATER_EQUALS:
+                        optimized = transform_to_if_unary(quadruple, lhs >= rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_GREATER_EQUALS:
+                        optimized = transform_to_if_false_unary(quadruple, lhs >= rhs);
+                        break;
                     default:
                         break;
                 }
@@ -113,104 +163,46 @@ void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadrupl
                     case mtac::Operator::FNE:
                         replaceRight(*this, quadruple, static_cast<int>(lhs != rhs), mtac::Operator::FASSIGN);
                         break;
+                    case mtac::Operator::IF_FE:
+                        optimized = transform_to_if_unary(quadruple, lhs == rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FE:
+                        optimized = transform_to_if_false_unary(quadruple, lhs == rhs);
+                        break;
+                    case mtac::Operator::IF_FNE:
+                        optimized = transform_to_if_unary(quadruple, lhs != rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FNE:
+                        optimized = transform_to_if_false_unary(quadruple, lhs != rhs);
+                        break;
+                    case mtac::Operator::IF_FL:
+                        optimized = transform_to_if_unary(quadruple, lhs < rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FL:
+                        optimized = transform_to_if_false_unary(quadruple, lhs < rhs);
+                        break;
+                    case mtac::Operator::IF_FLE:
+                        optimized = transform_to_if_unary(quadruple, lhs <= rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FLE:
+                        optimized = transform_to_if_false_unary(quadruple, lhs <= rhs);
+                        break;
+                    case mtac::Operator::IF_FG:
+                        optimized = transform_to_if_unary(quadruple, lhs > rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FG:
+                        optimized = transform_to_if_false_unary(quadruple, lhs > rhs);
+                        break;
+                    case mtac::Operator::IF_FGE:
+                        optimized = transform_to_if_unary(quadruple, lhs >= rhs);
+                        break;
+                    case mtac::Operator::IF_FALSE_FGE:
+                        optimized = transform_to_if_false_unary(quadruple, lhs >= rhs);
+                        break;
                     default:
                         break;
                 }
             }
-        }
-    }
-}
-
-namespace {
-
-template<typename T>
-bool computeValueInt(T& if_){
-    int left = boost::get<int>(if_->arg1);
-    int right = boost::get<int>(*if_->arg2);
-
-    switch(*if_->op){
-        case mtac::BinaryOperator::EQUALS:
-            return left == right;
-        case mtac::BinaryOperator::NOT_EQUALS:
-            return left != right;
-        case mtac::BinaryOperator::LESS:
-            return left < right;
-        case mtac::BinaryOperator::LESS_EQUALS:
-            return left <= right;
-        case mtac::BinaryOperator::GREATER:
-            return left > right;
-        case mtac::BinaryOperator::GREATER_EQUALS:
-            return left >= right;
-        default:
-            eddic_unreachable("Unhandled operator");
-    }
-}
-
-template<typename T>
-bool computeValueFloat(T& if_){
-    double left = boost::get<double>(if_->arg1);
-    double right = boost::get<double>(*if_->arg2);
-
-    switch(*if_->op){
-        case mtac::BinaryOperator::FE:
-            return left == right;
-        case mtac::BinaryOperator::FNE:
-            return left != right;
-        case mtac::BinaryOperator::FL:
-            return left < right;
-        case mtac::BinaryOperator::FLE:
-            return left <= right;
-        case mtac::BinaryOperator::FG:
-            return left > right;
-        case mtac::BinaryOperator::FGE:
-            return left >= right;
-        default:
-            eddic_unreachable("Unhandled operator");
-    }
-}
-
-} //End of anonymous namespace
-
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::IfFalse> ifFalse){
-    if(ifFalse->op){
-        if(mtac::isInt(ifFalse->arg1) && mtac::isInt(*ifFalse->arg2)){
-            bool value = computeValueInt(ifFalse);
-
-            ifFalse->op.reset();
-            ifFalse->arg1 = value ? 1 : 0;
-            ifFalse->arg2.reset();
-
-            optimized = true;
-        } else if(mtac::isFloat(ifFalse->arg1) && mtac::isFloat(*ifFalse->arg2)){
-            bool value = computeValueFloat(ifFalse);
-
-            ifFalse->op.reset();
-            ifFalse->arg1 = value ? 1 : 0;
-            ifFalse->arg2.reset();
-
-            optimized = true;
-        }
-    }
-}
-
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::If> if_){
-    if(if_->op){
-        if(mtac::isInt(if_->arg1) && mtac::isInt(*if_->arg2)){
-            bool value = computeValueInt(if_);
-
-            if_->op.reset();
-            if_->arg1 = value ? 1 : 0;
-            if_->arg2.reset();
-
-            optimized = true;
-        } else if(mtac::isFloat(if_->arg1) && mtac::isFloat(*if_->arg2)){
-            bool value = computeValueFloat(if_);
-
-            if_->op.reset();
-            if_->arg1 = value ? 1 : 0;
-            if_->arg2.reset();
-
-            optimized = true;
         }
     }
 }

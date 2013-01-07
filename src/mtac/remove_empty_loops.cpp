@@ -37,39 +37,37 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
             auto bb = *loop->begin();
 
             if(bb->statements.size() == 2){
-                if(auto* first_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&bb->statements[0])){
-                    auto first = *first_ptr;
+                auto first = bb->statements.front();
 
-                    auto& basic_induction_variables = loop->basic_induction_variables();
-                    if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
-                        auto linear_equation = basic_induction_variables.begin()->second;
-                        auto initial_value = loop->initial_value();
+                auto& basic_induction_variables = loop->basic_induction_variables();
+                if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
+                    auto linear_equation = basic_induction_variables.begin()->second;
+                    auto initial_value = loop->initial_value();
 
-                        bool loop_removed = false;
+                    bool loop_removed = false;
 
-                        //The loop does not iterate
-                        if(it == 0){
-                            bb->statements.clear();
-                            loop_removed = true;
-                        } else if(it > 0){
-                            bb->statements.clear();
-                            loop_removed = true;
+                    //The loop does not iterate
+                    if(it == 0){
+                        bb->statements.clear();
+                        loop_removed = true;
+                    } else if(it > 0){
+                        bb->statements.clear();
+                        loop_removed = true;
 
-                            bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN));
-                        }
+                        bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN));
+                    }
 
-                        if(loop_removed){
-                            function.context->global()->stats().inc_counter("empty_loop_removed");
+                    if(loop_removed){
+                        function.context->global()->stats().inc_counter("empty_loop_removed");
 
-                            //It is not a loop anymore
-                            mtac::remove_edge(bb, bb);
+                        //It is not a loop anymore
+                        mtac::remove_edge(bb, bb);
 
-                            lit.erase();
+                        lit.erase();
 
-                            optimized = true;
+                        optimized = true;
 
-                            continue;
-                        }
+                        continue;
                     }
                 }
             }

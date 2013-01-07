@@ -15,31 +15,9 @@
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
-
-namespace {
-
-template<typename T>
-bool isReturn(T statement){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        return (*ptr)->op == mtac::Operator::RETURN;
-    }
-
-    return false;
-}
-
-template<typename T>
-bool is_goto(T statement){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        return (*ptr)->op == mtac::Operator::GOTO;
-    }
-
-    return false;
-}
-
-} //end of anonymous namespace
 
 void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
     for(auto& function : program.functions){
@@ -51,49 +29,40 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
         function.create_entry_bb();
 
         //First separate the statements into basic blocks
-        for(auto& statement : function.get_statements()){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::LABEL){
+        for(auto& quadruple : function.get_statements()){
+            if(quadruple->op == mtac::Operator::LABEL){
+                function.append_bb();
+
+                labels[quadruple->label()] = function.current_bb();
+
+                nextIsLeader = false;
+                continue;
+            }
+
+            if(quadruple->op == mtac::Operator::CALL){
+                if(!safe(quadruple->function().mangled_name())){
                     function.append_bb();
-
-                    labels[(*ptr)->label()] = function.current_bb();
-
                     nextIsLeader = false;
-                    continue;
                 }
+            }
 
-                if((*ptr)->op == mtac::Operator::CALL){
-                    if(!safe((*ptr)->function().mangled_name())){
-                        function.append_bb();
-                        nextIsLeader = false;
-                    }
-                }
-            } 
-            
             if(nextIsLeader){
                 function.append_bb();
                 nextIsLeader = false;
             }
 
-            if(boost::get<std::shared_ptr<mtac::IfFalse>>(&statement) || boost::get<std::shared_ptr<mtac::If>>(&statement) || 
-                    isReturn(statement) || is_goto(statement)){
+            if(quadruple->is_if() || quadruple->is_if_false() || quadruple->op == mtac::Operator::GOTO || quadruple->op == mtac::Operator::RETURN){
                 nextIsLeader = true;
             } 
 
-            function.current_bb()->add(statement);
+            function.current_bb()->add(quadruple);
         }
 
         //Then, replace all the the labels by reference to basic blocks
         for(auto& block : function){
-            for(auto& statement : block->statements){
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&statement)){
-                   (*ptr)->block = labels[(*ptr)->label];
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&statement)){
-                   (*ptr)->block = labels[(*ptr)->label];
-                } else if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                    if((*ptr)->op == mtac::Operator::GOTO){
-                        (*ptr)->block = labels[(*ptr)->label()];
-                    }
+            for(auto& quadruple : block->statements){
+                if(quadruple->op == mtac::Operator::GOTO || quadruple->is_if() || quadruple->is_if_false()){
+                    quadruple->block = labels[quadruple->label()];
                 }
             }
         }

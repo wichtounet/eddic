@@ -12,13 +12,14 @@
 #include "Type.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
@@ -34,6 +35,8 @@ void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> f
 
 void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
+
+    log::emit<Trace>("Compiler") << "Compile LTAC for function " << function.get_name() << log::endl;
     
     //Compute the block usage (in order to know if we have to output the label)
     mtac::computeBlockUsage(function, block_usage);
@@ -62,10 +65,12 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            compiler(std::make_shared<mtac::Quadruple>(block->label, mtac::Operator::LABEL));
+            compiler.compile(std::make_shared<mtac::Quadruple>(block->label, mtac::Operator::LABEL));
         }
 
-        visit_each(compiler, block->statements);
+        for(auto& quadruple : block->statements){
+           compiler.compile(quadruple); 
+        }
 
         compiler.end_bb();
     }

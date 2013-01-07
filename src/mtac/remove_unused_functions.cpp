@@ -11,7 +11,7 @@
 
 #include "mtac/remove_unused_functions.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -19,11 +19,9 @@ namespace {
 
 void remove_references(mtac::Function& function){
     for(auto& bb : function){
-        for(auto& statement : bb->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::CALL){
-                    --(*ptr)->function().references();
-                }
+        for(auto& quadruple : bb->statements){
+            if(quadruple->op == mtac::Operator::CALL){
+                --quadruple->function().references();
             }
         }
     }

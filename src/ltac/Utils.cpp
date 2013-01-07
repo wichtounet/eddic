@@ -18,10 +18,6 @@
 
 using namespace eddic;
 
-bool eddic::ltac::is_float_operator(mtac::BinaryOperator op){
-    return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
-}
-
 bool eddic::ltac::is_float_var(std::shared_ptr<Variable> variable){
     return variable->type() == FLOAT;
 }

@@ -20,18 +20,13 @@ namespace eddic {
 
 namespace mtac {
 
-class PointerPropagation : public boost::static_visitor<> {
+class PointerPropagation {
     public:
         bool optimized = false;
 
         void clear();
 
         void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-
-        template<typename T>
-        void operator()(T&) const { 
-            //Nothing to optimize here
-        }
 
     private:
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> aliases;

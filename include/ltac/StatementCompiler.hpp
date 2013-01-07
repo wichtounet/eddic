@@ -23,7 +23,7 @@ namespace eddic {
 
 namespace ltac {
 
-class StatementCompiler : public boost::static_visitor<> {
+class StatementCompiler {
     public:
         const PlatformDescriptor* descriptor;
         Platform platform;
@@ -47,9 +47,7 @@ class StatementCompiler : public boost::static_visitor<> {
 
         bool ended = false;
 
-        void operator()(std::shared_ptr<mtac::IfFalse> if_false);
-        void operator()(std::shared_ptr<mtac::If> if_);
-        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
+        void compile(std::shared_ptr<mtac::Quadruple> quadruple);
 
         void push(ltac::Argument arg);
         void pop(ltac::Argument arg);

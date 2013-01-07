@@ -21,9 +21,9 @@
 #include "mtac/loop_analysis.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Statement.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/variable_usage.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -39,25 +39,19 @@ bool is_invariant(boost::optional<mtac::Argument>& argument, mtac::Usage& usage)
     return true;
 }
 
-bool is_invariant(mtac::Statement& statement, mtac::Usage& usage){
-    if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-        auto quadruple = *ptr;
+bool is_invariant(std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Usage& usage){
+    //TODO Relax this rule by making a more powerful memory analysis
+    if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
+        return false;
+    }
 
-        //TODO Relax this rule by making a more powerful memory analysis
-        if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
+    if(mtac::erase_result(quadruple->op)){
+        //If there are more than one write to this variable, the computation is not invariant
+        if(usage.written[quadruple->result] > 1){
             return false;
         }
 
-        if(mtac::erase_result(quadruple->op)){
-            //If there are more than one write to this variable, the computation is not invariant
-            if(usage.written[quadruple->result] > 1){
-                return false;
-            }
-
-            return is_invariant(quadruple->arg1, usage) && is_invariant(quadruple->arg2, usage);
-        }
-
-        return false;
+        return is_invariant(quadruple->arg1, usage) && is_invariant(quadruple->arg2, usage);
     }
 
     return false;
@@ -87,9 +81,7 @@ mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Fu
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Statement statement, std::shared_ptr<mtac::Loop> loop){
-    auto quadruple = boost::get<std::shared_ptr<mtac::Quadruple>>(statement);
-
+bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Quadruple> quadruple, std::shared_ptr<mtac::Loop> loop){
     //It is not necessary to move statements with no effects. 
     if(quadruple->op == mtac::Operator::NOP){
         return false;

@@ -30,7 +30,7 @@ namespace mtac {
  */
 class basic_block {
     public:
-        typedef std::vector<mtac::Statement>::iterator iterator;
+        typedef std::vector<std::shared_ptr<mtac::Quadruple>>::iterator iterator;
 
         /*!
          * Create a new basic block with the given index. 
@@ -54,14 +54,14 @@ class basic_block {
          * Add a new statement to the basic block. 
          * \param statement The statement to add. 
          */
-        void add(mtac::Statement statement);
+        void add(std::shared_ptr<mtac::Quadruple> statement);
 
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
         std::string label;  /*!< The label of the block */
         std::shared_ptr<FunctionContext> context = nullptr;     /*!< The context of the enclosing function. */
 
-        std::vector<mtac::Statement> statements;    /*!< The MTAC statements inside the basic block. */
+        std::vector<std::shared_ptr<mtac::Quadruple>> statements;    /*!< The MTAC statements inside the basic block. */
         
         std::vector<ltac::Statement> l_statements;  /*!< The LTAC statements inside the basic block. */
 

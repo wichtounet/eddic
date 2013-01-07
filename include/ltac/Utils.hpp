@@ -14,7 +14,6 @@
 #include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/BinaryOperator.hpp"
 
 #include "ltac/forward.hpp"
 #include "ltac/Operator.hpp"
@@ -26,7 +25,6 @@ namespace ltac {
 
 class RegisterManager;
 
-bool is_float_operator(mtac::BinaryOperator op);
 bool is_float_var(std::shared_ptr<Variable> variable);
 bool is_int_var(std::shared_ptr<Variable> variable);
 

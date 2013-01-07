@@ -66,32 +66,26 @@ bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Opera
     return false;
 }
 
-struct CopyApplier : public boost::static_visitor<> {
+struct CopyApplier {
     std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& pointer_copies;
     bool changes = false;
 
     CopyApplier(std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& pointer_copies) : pointer_copies(pointer_copies) {}
 
-    bool optimize_arg(mtac::Argument& arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(pointer_copies.count(*ptr)){
-                arg = pointer_copies[*ptr];
-                return true;
+    bool optimize_optional(boost::optional<mtac::Argument>& arg){
+        if(arg){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
+                if(pointer_copies.count(*ptr)){
+                    arg = pointer_copies[*ptr];
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    bool optimize_optional(boost::optional<mtac::Argument>& arg){
-        if(arg){
-            return optimize_arg(*arg);
-        }
-
-        return false;
-    }
-
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    void optimize(std::shared_ptr<mtac::Quadruple> quadruple){
         changes |= optimize_optional(quadruple->arg1);
         changes |= optimize_optional(quadruple->arg2);
     }
@@ -107,7 +101,7 @@ void mtac::PointerPropagation::clear(){
 
 void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     CopyApplier optimizer(pointer_copies);
-    visit_non_variant(optimizer, quadruple);
+    optimizer.optimize(quadruple);
 
     optimized |= optimizer.changes;
 

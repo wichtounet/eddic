@@ -14,7 +14,7 @@
 #include "mtac/merge_basic_blocks.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -59,36 +59,31 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 }
             }
         } else {
-            auto& last = block->statements.back();
+            auto& quadruple = block->statements.back();
 
             bool merge = false;
 
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&last)){
-                auto& quadruple = *ptr;
+            if(quadruple->op == mtac::Operator::GOTO){
+                merge = quadruple->block == next;
 
-                if(quadruple->op == mtac::Operator::GOTO){
-                    merge = quadruple->block == next;
-
-                    if(merge){
-                        block->statements.pop_back();
-                        computeBlockUsage(function, usage);
-                    }
-                } else if(quadruple->op == mtac::Operator::CALL){
-                    merge = safe(quadruple->function().mangled_name()); 
-                } else {
-                    merge = true;
+                if(merge){
+                    block->statements.pop_back();
+                    computeBlockUsage(function, usage);
                 }
-            } 
+            } else if(quadruple->op == mtac::Operator::CALL){
+                merge = safe(quadruple->function().mangled_name()); 
+            } else if(!quadruple->is_if() && !quadruple->is_if_false()){
+                merge = true;
+            }
 
             if(merge && next && next->index != -2){
                 //Only if the next block is not used because we will remove its label
                 if(usage.find(next) == usage.end()){
                     if(!next->statements.empty()){
-                        if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&(next->statements.front()))){
-                            if((*ptr)->op == mtac::Operator::CALL && !safe((*ptr)->function().mangled_name())){
-                                ++it;
-                                continue;
-                            }
+                        auto next_quadruple = next->statements.front();
+                        if(next_quadruple->op == mtac::Operator::CALL && !safe(next_quadruple->function().mangled_name())){
+                            ++it;
+                            continue;
                         }
                     }
 

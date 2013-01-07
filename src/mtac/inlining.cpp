@@ -21,7 +21,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -29,34 +29,15 @@ namespace {
 
 typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
 
-struct BBReplace : public boost::static_visitor<> {
+struct BBReplace {
     BBClones& clones;
 
     BBReplace(BBClones& clones) : clones(clones) {}
 
-    void operator()(std::shared_ptr<mtac::IfFalse> if_){
-        if(clones.find(if_->block) != clones.end()){
-            if_->block = clones[if_->block];
-        }
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        if(clones.find(if_->block) != clones.end()){
-            if_->block = clones[if_->block];
-        }
-    }
-    
     void operator()(std::shared_ptr<mtac::Quadruple> goto_){
-        if(goto_->op == mtac::Operator::GOTO){
-            if(clones.find(goto_->block) != clones.end()){
-                goto_->block = clones[goto_->block];
-            }
+        if(clones.find(goto_->block) != clones.end()){
+            goto_->block = clones[goto_->block];
         }
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
     }
 };
 
@@ -81,7 +62,7 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     return safe_block;
 }
 
-BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<GlobalContext> context){
+BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     LOG<Trace>("Inlining") << "Clone " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
     BBClones bb_clones;
@@ -104,7 +85,7 @@ BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, m
             new_bb->predecessors = block->predecessors;
     
             for(auto& statement : block->statements){
-                new_bb->statements.push_back(mtac::copy(statement, context));
+                new_bb->statements.push_back(mtac::copy(statement));
             }
 
             bb_clones[block] = new_bb;
@@ -165,73 +146,71 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
         for(int i = parameters - 1; i >= 0;){
             auto statement = *pit;
 
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::PARAM){
-                    auto src_var = (*ptr)->param();
+            if(statement->op == mtac::Operator::PARAM){
+                auto src_var = statement->param();
 
-                    if(src_var->type()->is_array()){
-                        auto dest_var = boost::get<std::shared_ptr<Variable>>(*(*ptr)->arg1);
+                if(src_var->type()->is_array()){
+                    auto dest_var = boost::get<std::shared_ptr<Variable>>(*statement->arg1);
 
-                        variable_clones[src_var] = dest_var;
+                    variable_clones[src_var] = dest_var;
 
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
-                        quadruple->op = mtac::Operator::NOP;
-                        *pit = quadruple;
-                    } else if(src_var->type() == STRING){
-                        if(!string_states.count(src_var)){
-                            auto dest_var = dest_definition.context()->newVariable(src_var);
-
-                            variable_clones[src_var] = dest_var;
-
-                            //Copy the label
-                            auto quadruple = std::make_shared<mtac::Quadruple>();
-                            quadruple->op = mtac::Operator::ASSIGN;
-                            quadruple->result = dest_var;
-                            quadruple->arg1 = *(*ptr)->arg1;
-
-                            *pit = quadruple;
-
-                            string_states[src_var] = true;
-                        } else {
-                            assert(string_states[src_var]);
-
-                            //Copy the size
-                            auto quadruple = std::make_shared<mtac::Quadruple>();
-                            quadruple->op = mtac::Operator::DOT_ASSIGN;
-                            quadruple->result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
-                            quadruple->arg1 = static_cast<int>(INT->size(dest_definition.context()->global()->target_platform()));
-                            quadruple->arg2 = *(*ptr)->arg1;
-
-                            *pit = quadruple;
-
-                            string_states[src_var] = false;
-                        }
-                    } else {
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
-                        std::shared_ptr<Variable> dest_var;
-
-                        auto type = src_var->type();
-
-                        dest_var = dest_definition.context()->new_temporary(type);
-
-                        if(type == INT || type == BOOL || type == CHAR){
-                            quadruple->op = mtac::Operator::ASSIGN; 
-                        } else if(type->is_pointer()){
-                            quadruple->op = mtac::Operator::PASSIGN;
-                        } else {
-                            quadruple->op = mtac::Operator::FASSIGN; 
-                        }
-
-                        quadruple->arg1 = *(*ptr)->arg1;
+                    auto quadruple = std::make_shared<mtac::Quadruple>();
+                    quadruple->op = mtac::Operator::NOP;
+                    *pit = quadruple;
+                } else if(src_var->type() == STRING){
+                    if(!string_states.count(src_var)){
+                        auto dest_var = dest_definition.context()->newVariable(src_var);
 
                         variable_clones[src_var] = dest_var;
+
+                        //Copy the label
+                        auto quadruple = std::make_shared<mtac::Quadruple>();
+                        quadruple->op = mtac::Operator::ASSIGN;
                         quadruple->result = dest_var;
+                        quadruple->arg1 = *statement->arg1;
 
                         *pit = quadruple;
+
+                        string_states[src_var] = true;
+                    } else {
+                        assert(string_states[src_var]);
+
+                        //Copy the size
+                        auto quadruple = std::make_shared<mtac::Quadruple>();
+                        quadruple->op = mtac::Operator::DOT_ASSIGN;
+                        quadruple->result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
+                        quadruple->arg1 = static_cast<int>(INT->size(dest_definition.context()->global()->target_platform()));
+                        quadruple->arg2 = *statement->arg1;
+
+                        *pit = quadruple;
+
+                        string_states[src_var] = false;
+                    }
+                } else {
+                    auto quadruple = std::make_shared<mtac::Quadruple>();
+                    std::shared_ptr<Variable> dest_var;
+
+                    auto type = src_var->type();
+
+                    dest_var = dest_definition.context()->new_temporary(type);
+
+                    if(type == INT || type == BOOL || type == CHAR){
+                        quadruple->op = mtac::Operator::ASSIGN; 
+                    } else if(type->is_pointer()){
+                        quadruple->op = mtac::Operator::PASSIGN;
+                    } else {
+                        quadruple->op = mtac::Operator::FASSIGN; 
                     }
 
-                    --i;
+                    quadruple->arg1 = *statement->arg1;
+
+                    variable_clones[src_var] = dest_var;
+                    quadruple->result = dest_var;
+
+                    *pit = quadruple;
                 }
+
+                --i;
             }
 
             --pit;
@@ -252,26 +231,24 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
         auto pit = param_bb->statements.end() - 1;
 
         for(int i = source_definition.parameters().size() - 1; i >= 0;){
-            auto statement = *pit;
+            auto quadruple = *pit;
 
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::PARAM){
-                    auto src_var = (*ptr)->param();
+            if(quadruple->op == mtac::Operator::PARAM){
+                auto src_var = quadruple->param();
 
-                    if(src_var->type()->is_standard_type()){
-                        auto arg = *(*ptr)->arg1;
+                if(src_var->type()->is_standard_type()){
+                    auto arg = *quadruple->arg1;
 
-                        if(boost::get<int>(&arg)){
-                            ++constant;
-                        } else if(boost::get<double>(&arg)){
-                            ++constant;
-                        } else if(boost::get<std::string>(&arg)){
-                            ++constant;
-                        }
+                    if(boost::get<int>(&arg)){
+                        ++constant;
+                    } else if(boost::get<double>(&arg)){
+                        ++constant;
+                    } else if(boost::get<std::string>(&arg)){
+                        ++constant;
                     }
-
-                    --i;
                 }
+
+                --i;
             }
 
             --pit;
@@ -293,54 +270,50 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
-            auto statement = *ssit;
+            auto quadruple = *ssit;
 
-            visit(variable_replacer, statement);
-            visit(bb_replacer, statement);
+            variable_replacer.replace(quadruple);
+            bb_replacer(quadruple);
 
-            if(auto* ret_ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ret_ptr;
+            if(quadruple->op == mtac::Operator::RETURN){
+                auto label = "label";
+                auto goto_ = std::make_shared<mtac::Quadruple>(static_cast<const std::string&>(label), mtac::Operator::GOTO);
+                goto_->block = basic_block;
 
-                if(quadruple->op == mtac::Operator::RETURN){
-                    auto label = "label";
-                    auto goto_ = std::make_shared<mtac::Quadruple>(static_cast<const std::string&>(label), mtac::Operator::GOTO);
-                    goto_->block = basic_block;
+                mtac::remove_edge(new_bb, new_bb->next);
+                mtac::make_edge(new_bb, basic_block);
 
-                    mtac::remove_edge(new_bb, new_bb->next);
-                    mtac::make_edge(new_bb, basic_block);
+                if(!call->return1()){
+                    //If the caller does not care about the return value, return has no effect
+                    ssit.erase();
+                    ssit.insert(goto_);
 
-                    if(!call->return1()){
-                        //If the caller does not care about the return value, return has no effect
-                        ssit.erase();
-                        ssit.insert(goto_);
-
-                        continue;
+                    continue;
+                } else {
+                    mtac::Operator op;
+                    if(call->function().return_type() == FLOAT){
+                        op = mtac::Operator::FASSIGN;
+                    } else if(call->function().return_type()->is_pointer()){
+                        op = mtac::Operator::PASSIGN;
                     } else {
-                        mtac::Operator op;
-                        if(call->function().return_type() == FLOAT){
-                            op = mtac::Operator::FASSIGN;
-                        } else if(call->function().return_type()->is_pointer()){
-                            op = mtac::Operator::PASSIGN;
-                        } else {
-                            op = mtac::Operator::ASSIGN;
-                        }
+                        op = mtac::Operator::ASSIGN;
+                    }
 
-                        if(call->return2()){
-                            ssit.insert(std::make_shared<mtac::Quadruple>(call->return2(), *quadruple->arg2, op));
-
-                            ++ssit;
-                        }
-
-                        quadruple->op = op;
-                        quadruple->result = call->return1();
-                        quadruple->arg2.reset();
+                    if(call->return2()){
+                        ssit.insert(std::make_shared<mtac::Quadruple>(call->return2(), *quadruple->arg2, op));
 
                         ++ssit;
-                        
-                        ssit.insert(goto_);
-
-                        continue;
                     }
+
+                    quadruple->op = op;
+                    quadruple->result = call->return1();
+                    quadruple->arg2.reset();
+
+                    ++ssit;
+
+                    ssit.insert(goto_);
+
+                    continue;
                 }
             }
 
@@ -446,47 +419,45 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         auto it = iterate(basic_block->statements);
 
         while(it.has_next()){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&*it)){
-                auto call = *ptr;
-                if(call->op == mtac::Operator::CALL){
-                    if(non_standard_target(call, program)){
-                        ++it;
-                        continue;
+            auto call = *it;
+            if(call->op == mtac::Operator::CALL){
+                if(non_standard_target(call, program)){
+                    ++it;
+                    continue;
+                }
+
+                auto& source_function = get_target(call, program);
+
+                auto& source_definition = source_function.definition();
+                auto& dest_definition = dest_function.definition();
+
+                if(will_inline(dest_function, source_function, call, basic_block)){
+                    LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
+
+                    //Copy the parameters
+                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
+
+                    //Allocate storage for the local variables of the inlined function
+                    for(auto& variable : source_definition.context()->stored_variables()){
+                        variable_clones[variable] = dest_definition.context()->newVariable(variable);
                     }
 
-                    auto& source_function = get_target(call, program);
+                    //Erase the original call
+                    it.erase();
 
-                    auto& source_definition = source_function.definition();
-                    auto& dest_definition = dest_function.definition();
+                    auto safe = create_safe_block(dest_function, basic_block);
 
-                    if(will_inline(dest_function, source_function, call, basic_block)){
-                        LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
+                    //Clone all the source basic blocks in the dest function
+                    auto bb_clones = clone(source_function, dest_function, safe);
 
-                        //Copy the parameters
-                        auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
+                    //Fix all the instructions (clones and return)
+                    adapt_instructions(variable_clones, bb_clones, call, safe);
 
-                        //Allocate storage for the local variables of the inlined function
-                        for(auto& variable : source_definition.context()->stored_variables()){
-                            variable_clones[variable] = dest_definition.context()->newVariable(variable);
-                        }
+                    //The target function is called one less time
+                    program.context->removeReference(source_definition.mangled_name());
+                    optimized = true;
 
-                        //Erase the original call
-                        it.erase();
-
-                        auto safe = create_safe_block(dest_function, basic_block);
-
-                        //Clone all the source basic blocks in the dest function
-                        auto bb_clones = clone(source_function, dest_function, safe, program.context);
-
-                        //Fix all the instructions (clones and return)
-                        adapt_instructions(variable_clones, bb_clones, call, safe);
-
-                        //The target function is called one less time
-                        program.context->removeReference(source_definition.mangled_name());
-                        optimized = true;
-
-                        continue;
-                    }
+                    continue;
                 }
             }
 

@@ -11,7 +11,7 @@ using namespace eddic;
 
 mtac::basic_block::basic_block(int i) : index(i), label("") {}
 
-void mtac::basic_block::add(mtac::Statement statement){
+void mtac::basic_block::add(std::shared_ptr<mtac::Quadruple> statement){
     statements.push_back(statement);
 }
 

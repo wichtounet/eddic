@@ -16,7 +16,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/Printer.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -26,24 +26,22 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& functio
     bool written = false;
 
     for(auto& block : function){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                if((*ptr)->op == mtac::Operator::CALL){
-                    if((*ptr)->return1() == variable || (*ptr)->return2() == variable){
-                        if(written){
-                            return false;
-                        }
-
-                        written = true;
-                    }
-                } else if(mtac::erase_result((*ptr)->op) && (*ptr)->result == variable){
+        for(auto& quadruple : block->statements){
+            if(quadruple->op == mtac::Operator::CALL){
+                if(quadruple->return1() == variable || quadruple->return2() == variable){
                     if(written){
                         return false;
                     }
 
                     written = true;
                 }
-            } 
+            } else if(mtac::erase_result(quadruple->op) && quadruple->result == variable){
+                if(written){
+                    return false;
+                }
+
+                written = true;
+            }
         }
     }
 
@@ -52,18 +50,14 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& functio
 
 bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, mtac::Function& function){
     for(auto& block : function){
-        for(auto& statement : block){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-
-                if(quadruple->op == mtac::Operator::PASSIGN && quadruple->result == source){
-                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if(*var_ptr == target){
-                            return false;
-                        }
+        for(auto& quadruple : block){
+            if(quadruple->op == mtac::Operator::PASSIGN && quadruple->result == source){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(*var_ptr == target){
+                        return false;
                     }
                 }
-            } 
+            }
         }
     }
 
@@ -74,18 +68,14 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
     std::vector<std::shared_ptr<Variable>> targets;
     
     for(auto& block : function){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-
-                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
-                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if(*var_ptr == variable){
-                           targets.push_back(quadruple->result); 
-                        }
+        for(auto& quadruple : block->statements){
+            if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(*var_ptr == variable){
+                        targets.push_back(quadruple->result); 
                     }
                 }
-            } 
+            }
         }
     }
 
@@ -96,25 +86,21 @@ std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> var
     std::vector<std::shared_ptr<Variable>> sources;
     
     for(auto& block : function){
-        for(auto& statement : block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Quadruple>>(&statement)){
-                auto quadruple = *ptr;
-
-                if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
-                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                        if(quadruple->result == variable){
-                           sources.push_back(*var_ptr); 
-                        }
+        for(auto& quadruple : block->statements){
+            if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                    if(quadruple->result == variable){
+                        sources.push_back(*var_ptr); 
                     }
                 }
-            } 
+            }
         }
     }
 
     return sources;
 }
 
-struct VariableReplace : public boost::static_visitor<bool> {
+struct VariableReplace {
     std::shared_ptr<Variable> source;
     std::shared_ptr<Variable> target;
 
@@ -138,26 +124,20 @@ struct VariableReplace : public boost::static_visitor<bool> {
         }
     }
 
-    inline bool optimize_arg(mtac::Argument& arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(*ptr == source){
-                arg = target;
-                return true;
+    inline bool optimize_optional(boost::optional<mtac::Argument>& arg){
+        if(arg){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
+                if(*ptr == source){
+                    arg = target;
+                    return true;
+                }
             }
         }
 
         return false;
     }
 
-    inline bool optimize_optional(boost::optional<mtac::Argument>& arg){
-        if(arg){
-            return optimize_arg(*arg);
-        }
-
-        return false;
-    }
-
-    bool operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+    bool optimize(std::shared_ptr<mtac::Quadruple> quadruple){
         guard(quadruple);
         
         if(invalid){
@@ -189,22 +169,6 @@ struct VariableReplace : public boost::static_visitor<bool> {
 
         return optimized | optimize_optional(quadruple->arg1) | optimize_optional(quadruple->arg2);
     }
-
-    bool operator()(std::shared_ptr<mtac::IfFalse> if_){
-        if(invalid){
-            return false;
-        }
-
-        return optimize_arg(if_->arg1) | optimize_optional(if_->arg2);
-    }
-
-    bool operator()(std::shared_ptr<mtac::If> if_){
-        if(invalid){
-            return false;
-        }
-
-        return optimize_arg(if_->arg1) | optimize_optional(if_->arg2);
-    }
 };
 
 }
@@ -230,7 +194,7 @@ bool mtac::remove_aliases::operator()(mtac::Function& function){
 
                             for(auto& block : function){
                                 for(auto& statement : block->statements){
-                                    optimized |= visit(replacer, statement);
+                                    optimized |= replacer.optimize(statement);
                                 }
                             }
 
@@ -250,7 +214,7 @@ bool mtac::remove_aliases::operator()(mtac::Function& function){
 
                                 for(auto& block : function){
                                     for(auto& statement : block->statements){
-                                        optimized |= visit(replacer, statement);
+                                        optimized |= replacer.optimize(statement);
                                     }
                                 }
                             }

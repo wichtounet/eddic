@@ -8,10 +8,6 @@
 #ifndef MTAC_REDUCE_IN_STRENGTH_H
 #define MTAC_REDUCE_IN_STRENGTH_H
 
-#include <memory>
-
-#include "variant.hpp"
-
 #include "mtac/forward.hpp"
 #include "mtac/pass_traits.hpp"
 
@@ -19,15 +15,10 @@ namespace eddic {
 
 namespace mtac {
 
-struct ReduceInStrength : public boost::static_visitor<void> {
+struct ReduceInStrength {
     bool optimized = false;
 
     void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-
-    template<typename T>
-    void operator()(T&) const { 
-        //Nothing to optimize
-    }
 };
 
 template<>
