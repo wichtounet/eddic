@@ -55,7 +55,7 @@ struct DataFlowProblem {
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) = 0;
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
 
-    virtual bool optimize(std::shared_ptr<mtac::Quadruple>& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
+    virtual bool optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
     virtual bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
 
     ProblemDomain top_element(){

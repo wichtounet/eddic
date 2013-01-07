@@ -260,13 +260,21 @@ struct ConstantOptimizer {
 
 } //end of anonymous namespace
 
-bool mtac::ConstantPropagationProblem::optimize(std::shared_ptr<mtac::Quadruple>& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
-    if(global_results->IN_S[statement].top()){
-        return false;
+bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+    bool optimized = false;
+
+    for(auto& block : function){
+        for(auto& statement : block->statements){
+            if(global_results->IN_S[statement].top()){
+                continue;
+            }
+
+            ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
+            optimized |= optimizer.optimize(statement);
+        }
     }
 
-    ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
-    return optimizer.optimize(statement);
+    return optimized;
 }
 
 std::ostream& mtac::operator<<(std::ostream& stream, ConstantPropagationLattice& lattice){

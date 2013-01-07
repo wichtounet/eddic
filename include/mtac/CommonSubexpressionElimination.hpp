@@ -42,7 +42,7 @@ struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::For
     ProblemDomain Init(mtac::Function& function) override;
     ProblemDomain Boundary(mtac::Function& function) override;
     
-    bool optimize(std::shared_ptr<mtac::Quadruple>& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
     bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
 
     boost::optional<Expressions> init;

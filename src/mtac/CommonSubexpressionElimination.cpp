@@ -157,65 +157,71 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
     return result;
 }
 
-bool mtac::CommonSubexpressionElimination::optimize(std::shared_ptr<mtac::Quadruple>& quadruple, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
-    auto& results = global_results->IN_S[quadruple];
+bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+    bool changes = false;
 
-    if(results.top()){
-        return false;
-    }
+    for(auto& block : function){
+        for(auto quadruple : block->statements){
+            auto& results = global_results->IN_S[quadruple];
 
-    if(mtac::is_expression(quadruple->op)){
-        for(auto& expression : results.values()){
-            auto source_statement = expression.expression;
+            if(results.top()){
+                continue;
+            }
 
-            if(are_equivalent(source_statement, quadruple)){
-                mtac::Operator assign_op;
-                if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
-                    assign_op = mtac::Operator::ASSIGN;
-                } else {
-                    assign_op = mtac::Operator::FASSIGN;
-                } 
+            if(mtac::is_expression(quadruple->op)){
+                for(auto& expression : results.values()){
+                    auto source_statement = expression.expression;
 
-                if(optimized.find(source_statement) == optimized.end()){
-                    std::shared_ptr<Variable> temp;
-                    if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
-                        temp = expression.source->context->new_temporary(INT);
-                    } else {
-                        temp = expression.source->context->new_temporary(FLOAT);
-                    } 
+                    if(are_equivalent(source_statement, quadruple)){
+                        mtac::Operator assign_op;
+                        if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
+                            assign_op = mtac::Operator::ASSIGN;
+                        } else {
+                            assign_op = mtac::Operator::FASSIGN;
+                        } 
 
-                    auto it = expression.source->statements.begin();
-                    auto end = expression.source->statements.end();
+                        if(optimized.find(source_statement) == optimized.end()){
+                            std::shared_ptr<Variable> temp;
+                            if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
+                                temp = expression.source->context->new_temporary(INT);
+                            } else {
+                                temp = expression.source->context->new_temporary(FLOAT);
+                            } 
 
-                    while(it != end){
-                        auto target = *it;
-                        if(target == source_statement){
-                            ++it;
-                            expression.source->statements.insert(it, std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op));
+                            auto it = expression.source->statements.begin();
+                            auto end = expression.source->statements.end();
 
-                            break;
+                            while(it != end){
+                                auto target = *it;
+                                if(target == source_statement){
+                                    ++it;
+                                    expression.source->statements.insert(it, std::make_shared<mtac::Quadruple>(source_statement->result, temp, assign_op));
+
+                                    break;
+                                }
+
+                                ++it;
+                            }
+
+                            source_statement->result = temp;
+
+                            optimized.insert(source_statement);
                         }
 
-                        ++it;
+                        if(optimized.find(quadruple) == optimized.end()){
+                            quadruple->op = assign_op;
+                            quadruple->arg1 = source_statement->result;
+                            quadruple->arg2.reset();
+
+                            optimized.insert(quadruple);
+
+                            changes = true;
+                        }
                     }
-
-                    source_statement->result = temp;
-
-                    optimized.insert(source_statement);
                 }
-
-                if(optimized.find(quadruple) == optimized.end()){
-                    quadruple->op = assign_op;
-                    quadruple->arg1 = source_statement->result;
-                    quadruple->arg2.reset();
-
-                    optimized.insert(quadruple);
-
-                    return true;
-                } 
             }
         }
     }
 
-    return false;
+    return changes;
 }

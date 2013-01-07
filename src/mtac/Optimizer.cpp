@@ -298,20 +298,12 @@ struct pass_runner {
     
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(){
-        bool optimized = false;
-
         auto problem = make_pass<Pass>();
 
         auto results = mtac::data_flow(*function, problem);
-
+        
         //Once the data-flow problem is fixed, statements can be optimized
-        for(auto& block : *function){
-            for(auto& statement : block->statements){
-                optimized |= problem.optimize(statement, results);
-            }
-        }
-
-        return optimized;
+        return problem.optimize(*function, results);
     }
     
     template<typename Pass>
