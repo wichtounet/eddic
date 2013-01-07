@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "assert.hpp"
+#include "Function.hpp"
 
 #include "mtac/Quadruple.hpp"
 
@@ -53,6 +54,49 @@ mtac::Quadruple::Quadruple(mtac::Operator op, eddic::Function& function, std::sh
 
 mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label) : arg1(arg), op(op), m_param(label) {
     //Nothing to init
+}
+
+mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) : 
+        result(rhs.result), 
+        arg1(rhs.arg1),
+        arg2(rhs.arg2),
+        op(rhs.op),
+        size(rhs.size),
+        address(rhs.address),
+        secondary(rhs.secondary),
+        m_function(rhs.m_function),
+        m_param(rhs.m_param),
+        block(rhs.block)
+{
+    //There is a new reference to the called function
+    if(op == mtac::Operator::CALL){
+        ++m_function->references();
+    }
+}
+
+mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
+    //No need to assign this into this
+    if(this == &rhs){
+        return *this;
+    }
+    
+    result = rhs.result;
+    arg1 = rhs.arg1;
+    arg2 = rhs.arg2;
+    op = rhs.op;
+    size = rhs.size;
+    block = rhs.block;
+    address = rhs.address;
+    m_function = rhs.m_function;
+    m_param = rhs.m_param;
+    secondary = rhs.secondary;
+
+    //There is a new reference to the called function
+    if(op == mtac::Operator::CALL){
+        ++m_function->references();
+    }
+
+    return *this;
 }
 
 const std::string& mtac::Quadruple::label() const {
