@@ -472,30 +472,26 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
 
 } //end of anonymous namespace
 
-void mtac::inline_functions::set_configuration(std::shared_ptr<Configuration> configuration){
-    this->configuration = configuration;
-}
-
-bool mtac::inline_functions::operator()(mtac::Program& program){
+bool mtac::inline_functions::gate(std::shared_ptr<Configuration> configuration){
     if(configuration->option_defined("fno-inline-functions")){
         return false;
     }
 
-    if(configuration->option_defined("finline-functions")){
-        bool optimized = false;
-        auto global_context = program.context;
+    return configuration->option_defined("finline-functions");
+}
 
-        for(auto& function : program.functions){
-            //If the function is never called, no need to optimize it
-            if(global_context->referenceCount(function.get_name()) <= 0){
-                continue; 
-            }
+bool mtac::inline_functions::operator()(mtac::Program& program){
+    bool optimized = false;
+    auto global_context = program.context;
 
-            optimized |= call_site_inlining(function, program);
+    for(auto& function : program.functions){
+        //If the function is never called, no need to optimize it
+        if(global_context->referenceCount(function.get_name()) <= 0){
+            continue; 
         }
 
-        return optimized;
-    } else {
-        return false;
+        optimized |= call_site_inlining(function, program);
     }
+
+    return optimized;
 }

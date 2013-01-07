@@ -132,6 +132,16 @@ struct pass_traits<all_optimizations> {
 
 namespace {
 
+template<typename T, typename Sign>                                
+struct has_gate {                                                      
+    typedef char yes[1];                                           
+    typedef char no [2];                                            
+    template <typename U, U> struct type_check;                     
+    template <typename _1> static yes &chk(type_check<Sign, &_1::gate> *); 
+    template <typename   > static no  &chk(...);                   
+    static bool const value = sizeof(chk<T>(0)) == sizeof(yes);     
+};
+
 //TODO Find a more elegant way than using pointers
 
 typedef boost::mpl::vector<
@@ -253,14 +263,22 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, bool>::type apply(){
-        auto pass = make_pass<Pass>();
-
+    inline typename std::enable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass& pass){
+        return pass.gate(configuration);
+    }
+    
+    template<typename Pass>
+    inline typename disable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass&){
+        return true;
+    }
+    
+    template<typename Pass>
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, bool>::type apply(Pass& pass){
         return pass(program);
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(){
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(Pass&){
         for(auto& function : program.functions){
             this->function = &function;
     
@@ -277,16 +295,12 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::CUSTOM, bool>::type apply(){
-        auto pass = make_pass<Pass>();
-
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::CUSTOM, bool>::type apply(Pass& pass){
         return pass(*function);
     }
 
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(){
-        auto visitor = make_pass<Pass>();
-
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::LOCAL, bool>::type apply(Pass& visitor){
         for(auto& block : *function){
             for(auto& quadruple : block->statements){
                 visitor(quadruple);
@@ -297,9 +311,7 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(){
-        auto problem = make_pass<Pass>();
-
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(Pass& problem){
         auto results = mtac::data_flow(*function, problem);
         
         //Once the data-flow problem is fixed, statements can be optimized
@@ -307,10 +319,8 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB, bool>::type apply(){
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB, bool>::type apply(Pass& visitor){
         bool optimized = false;
-        
-        auto visitor = make_pass<Pass>();
 
         for(auto& block : *function){
             visitor.clear();
@@ -326,10 +336,8 @@ struct pass_runner {
     }
     
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB_TWO_PASS, bool>::type apply(){
+    inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB_TWO_PASS, bool>::type apply(Pass& visitor){
         bool optimized = false;
-        
-        auto visitor = make_pass<Pass>();
 
         for(auto& block : *function){
             visitor.clear();
@@ -373,22 +381,26 @@ struct pass_runner {
 
     template<typename Pass>
     inline void operator()(Pass*){
-        bool local = false;
-        {
-            PerfsTimer perfs_timer(mtac::pass_traits<Pass>::name());
-            timing_timer timer(system, mtac::pass_traits<Pass>::name());
+        auto pass = make_pass<Pass>();
 
-            local = apply<Pass>();
+        if(has_to_be_run(pass)){
+            bool local = false;
+            {
+                PerfsTimer perfs_timer(mtac::pass_traits<Pass>::name());
+                timing_timer timer(system, mtac::pass_traits<Pass>::name());
+
+                local = apply<Pass>(pass);
+            }
+
+            if(local){
+                program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
+                apply_todo<Pass>();
+            }
+
+            debug_local<Pass>(local);
+
+            optimized |= local;
         }
-
-        if(local){
-            program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
-            apply_todo<Pass>();
-        }
-
-        debug_local<Pass>(local);
-
-        optimized |= local;
     }
 };
 
