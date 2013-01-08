@@ -30,11 +30,11 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
     while(lit.has_next()){
         auto loop = *lit;
 
-        if(loop->has_estimate()){
-            auto it = loop->estimate();
+        if(loop.has_estimate()){
+            auto it = loop.estimate();
 
             if(it > 0 && it < 12){
-                auto bb = *loop->begin();
+                auto bb = *loop.begin();
 
                 optimized = true;
 

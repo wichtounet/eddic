@@ -33,14 +33,6 @@ long& mtac::Loop::estimate(){
 long& mtac::Loop::initial_value(){
     return m_initial;
 }
-
-mtac::Loop::iterator mtac::begin(std::shared_ptr<mtac::Loop> loop){
-    return loop->begin();
-}
-
-mtac::Loop::iterator mtac::end(std::shared_ptr<mtac::Loop> loop){
-    return loop->end();
-}
       
 std::set<mtac::basic_block_p>& mtac::Loop::blocks(){
     return m_blocks;

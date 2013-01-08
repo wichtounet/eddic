@@ -29,11 +29,11 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        if(loop->has_estimate()){
-            auto it = loop->estimate();
+        if(loop.has_estimate()){
+            auto it = loop.estimate();
 
             if(it > 100){
-                auto bb = *loop->begin();
+                auto bb = *loop.begin();
 
                 //Do not increase too much the size of the body
                 if(bb->statements.size() < 20){

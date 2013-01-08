@@ -58,9 +58,6 @@ class Loop {
         long m_initial;
 };
 
-Loop::iterator begin(std::shared_ptr<mtac::Loop> loop);
-Loop::iterator end(std::shared_ptr<mtac::Loop> loop);
-
 } //end of mtac
 
 } //end of eddic

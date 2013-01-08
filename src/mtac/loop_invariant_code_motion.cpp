@@ -57,8 +57,8 @@ bool is_invariant(std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Usage& usag
     return false;
 }
 
-mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
-    auto first_bb = *loop->blocks().begin();
+mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function){
+    auto first_bb = *loop.begin();
 
     //Remove the fall through edge
     mtac::remove_edge(first_bb->prev, first_bb);
@@ -81,7 +81,7 @@ mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Fu
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Quadruple> quadruple, std::shared_ptr<mtac::Loop> loop){
+bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Loop& loop){
     //It is not necessary to move statements with no effects. 
     if(quadruple->op == mtac::Operator::NOP){
         return false;
@@ -103,7 +103,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Qua
         }
     }
     
-    auto exit_block = *loop->blocks().rbegin();
+    auto exit_block = *loop.blocks().rbegin();
 
     if(exit_block == source_bb){
         return true;
@@ -119,7 +119,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Qua
     return true;
 }
 
-bool loop_invariant_code_motion(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
+bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
     mtac::basic_block_p pre_header;
 
     bool optimized = false;
