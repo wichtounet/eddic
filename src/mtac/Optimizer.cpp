@@ -50,6 +50,7 @@
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/parameter_propagation.hpp"
+#include "mtac/pure_analysis.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -150,6 +151,7 @@ typedef boost::mpl::vector<
 
 typedef boost::mpl::vector<
         mtac::remove_unused_functions*,
+        mtac::pure_analysis*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
         mtac::inline_functions*,
