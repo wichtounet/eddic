@@ -98,6 +98,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         bool is_main() const;
 
+        bool& pure();
+
         eddic::Function& definition();
 
         std::shared_ptr<FunctionContext> context;
@@ -107,6 +109,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         //Before being partitioned, the function has only statement
         std::vector<std::shared_ptr<mtac::Quadruple>> statements;
+
+        bool _pure = false;
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;

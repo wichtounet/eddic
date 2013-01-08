@@ -64,6 +64,10 @@ bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
 }
 
+bool& mtac::Function::pure(){
+    return _pure;
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }
