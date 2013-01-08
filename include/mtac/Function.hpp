@@ -74,7 +74,7 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
-        std::vector<std::shared_ptr<Loop>>& loops();
+        std::vector<mtac::Loop>& loops();
 
         std::size_t bb_count() const;
         std::size_t size() const;
@@ -124,7 +124,7 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t last_pseudo_registers = 0;
         std::size_t last_float_pseudo_registers = 0;
 
-        std::vector<std::shared_ptr<mtac::Loop>> m_loops;
+        std::vector<mtac::Loop> m_loops;
 
         std::string name;
 };
