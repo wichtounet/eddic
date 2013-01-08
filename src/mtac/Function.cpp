@@ -10,7 +10,6 @@
 
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Loop.hpp"
 
 using namespace eddic;
 

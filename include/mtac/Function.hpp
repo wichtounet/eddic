@@ -18,6 +18,7 @@
 #include "mtac/forward.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
+#include "mtac/Loop.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -28,8 +29,6 @@ class Function;
 class FunctionContext;
 
 namespace mtac {
-
-class Loop;
 
 class Function : public std::enable_shared_from_this<Function> {
     public:
