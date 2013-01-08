@@ -110,8 +110,8 @@ void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set
 bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
     return 
-        function == "_F5printI" || function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
-        function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
+        function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
+        function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
         function == "_F7println"; 
 }
 

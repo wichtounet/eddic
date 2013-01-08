@@ -218,10 +218,6 @@ void GlobalContext::defineStandardFunctions(){
     addPrintFunction("_F5printS", STRING);
     addPrintFunction("_F7printlnS", STRING);
 
-    //print integer
-    addPrintFunction("_F5printI", INT);
-    addPrintFunction("_F7printlnI", INT);
-
     //print char
     addPrintFunction("_F5printC", CHAR);
     addPrintFunction("_F7printlnC", CHAR);

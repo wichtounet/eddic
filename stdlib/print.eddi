@@ -12,3 +12,9 @@ void println(bool a){
     print(a);
     println();
 }
+
+void print(int a){
+    string other("");
+    other.append(a);
+    print(other);
+}
