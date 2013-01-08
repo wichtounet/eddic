@@ -68,7 +68,7 @@ struct UsageCollector {
 
 } //end of anonymous namespace
 
-mtac::Usage mtac::compute_read_usage(std::shared_ptr<mtac::Loop> loop){
+mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
     mtac::Usage usage;
     VariableReadCollector collector(usage);
 
@@ -81,7 +81,7 @@ mtac::Usage mtac::compute_read_usage(std::shared_ptr<mtac::Loop> loop){
     return usage;
 }
 
-mtac::Usage mtac::compute_write_usage(std::shared_ptr<mtac::Loop> loop){
+mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
     mtac::Usage usage;
 
     for(auto& bb : loop){

@@ -26,8 +26,8 @@ using namespace eddic;
 
 namespace {
 
-mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
-    auto first_bb = *loop->blocks().begin();
+mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function){
+    auto first_bb = *loop.blocks().begin();
 
     //Remove the fall through edge
     mtac::remove_edge(first_bb->prev, first_bb);
@@ -43,8 +43,8 @@ mtac::basic_block_p create_pre_header(std::shared_ptr<mtac::Loop> loop, mtac::Fu
     return pre_header;
 }
 
-bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
-    auto& dependent_induction_variables = loop->dependent_induction_variables();
+bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
+    auto& dependent_induction_variables = loop.dependent_induction_variables();
 
     mtac::basic_block_p pre_header = nullptr;
     bool optimized = false;
@@ -122,12 +122,12 @@ bool strength_reduce(std::shared_ptr<mtac::Loop> loop, mtac::LinearEquation& bas
     return optimized;
 }
 
-void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
-    auto& dependent_induction_variables = loop->dependent_induction_variables();
+void induction_variable_removal(mtac::Loop& loop){
+    auto& dependent_induction_variables = loop.dependent_induction_variables();
     
     mtac::Usage usage = compute_read_usage(loop);
 
-    std::cout << "Loop of " << loop->blocks().size() << std::endl;
+    std::cout << "Loop of " << loop.blocks().size() << std::endl;
 
     for(auto& u : usage.read){
         if(u.first){
@@ -189,11 +189,11 @@ void induction_variable_removal(std::shared_ptr<mtac::Loop> loop){
     }
 }
 
-void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
-    auto& basic_induction_variables = loop->basic_induction_variables();
-    auto& dependent_induction_variables = loop->dependent_induction_variables();
+void induction_variable_replace(mtac::Loop& loop){
+    auto& basic_induction_variables = loop.basic_induction_variables();
+    auto& dependent_induction_variables = loop.dependent_induction_variables();
     
-    auto exit_block = *loop->blocks().rbegin();
+    auto exit_block = *loop.blocks().rbegin();
 
     auto if_ = exit_block->statements.back();
 
@@ -284,19 +284,19 @@ void induction_variable_replace(std::shared_ptr<mtac::Loop> loop){
     }
 }
 
-bool loop_induction_variables_optimization(std::shared_ptr<mtac::Loop> loop, mtac::Function& function){
+bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& function){
     bool optimized = false;
 
     //1. Strength reduction on each dependent induction variables
-    for(auto& basic : loop->basic_induction_variables()){
+    for(auto& basic : loop.basic_induction_variables()){
         optimized |= strength_reduce(loop, basic.second, function);
     }
     
-    for(auto& biv : loop->basic_induction_variables()){
+    for(auto& biv : loop.basic_induction_variables()){
         LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
     }
     
-    for(auto& biv : loop->dependent_induction_variables()){
+    for(auto& biv : loop.dependent_induction_variables()){
         LOG<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
     }
 

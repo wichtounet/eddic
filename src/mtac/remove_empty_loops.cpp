@@ -32,17 +32,17 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
     while(lit.has_next()){
         auto loop = *lit;
 
-        if(loop->has_estimate()){
-            auto it = loop->estimate();
-            auto bb = *loop->begin();
+        if(loop.has_estimate()){
+            auto it = loop.estimate();
+            auto bb = *loop.begin();
 
             if(bb->statements.size() == 2){
                 auto first = bb->statements.front();
 
-                auto& basic_induction_variables = loop->basic_induction_variables();
+                auto& basic_induction_variables = loop.basic_induction_variables();
                 if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
                     auto linear_equation = basic_induction_variables.begin()->second;
-                    auto initial_value = loop->initial_value();
+                    auto initial_value = loop.initial_value();
 
                     bool loop_removed = false;
 
