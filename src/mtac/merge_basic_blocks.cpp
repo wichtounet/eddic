@@ -71,7 +71,14 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                     computeBlockUsage(function, usage);
                 }
             } else if(quadruple->op == mtac::Operator::CALL){
-                merge = safe(quadruple->function().mangled_name()); 
+                auto& target_function = quadruple->function();
+
+                if(target_function.standard()){
+                    merge = safe(target_function.mangled_name());
+                } else {
+                    //TODO use pure()
+                    merge = false;                
+                }
             } else if(!quadruple->is_if() && !quadruple->is_if_false()){
                 merge = true;
             }
