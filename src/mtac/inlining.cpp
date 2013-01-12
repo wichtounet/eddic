@@ -178,17 +178,8 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     }
 
     if(source_definition.parameters().size() > 0){
-        mtac::basic_block::iterator pit;
-        
-        if(bb->statements.front() == call){
-            pit = bb->prev->statements.end() - 1;
-        } else {
-            pit = bb->statements.begin();
-
-            while(*pit != call){
-                ++pit;
-            }
-        }
+        eddic_assert(bb->statements.front() == call, "This should have been ensured by split_if_necessary");
+        auto pit = bb->prev->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
             auto statement = *pit;
