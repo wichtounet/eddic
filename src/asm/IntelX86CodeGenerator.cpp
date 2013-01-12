@@ -442,14 +442,6 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_32_printI");
-    }
-    
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_32_printlnI");
-    }
-    
     if(context->referenceCount("_F5printC")){
         output_function("x86_32_printC");
     }
@@ -470,7 +462,7 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
         output_function("x86_32_println");
     }
     
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(context->referenceCount("_F5printS") || is_enabled_println()){ 
         output_function("x86_32_printS");
     }
     

@@ -56,7 +56,6 @@ class IntelCodeGenerator : public CodeGenerator {
 
         void output_function(const std::string& function);
 
-        bool is_enabled_printI();
         bool is_enabled_println();
 };
 

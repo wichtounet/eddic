@@ -453,14 +453,6 @@ void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double
 }
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_64_printI");
-    }
-   
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_64_printlnI");
-    }
-    
     if(context->referenceCount("_F5printC")){
         output_function("x86_64_printC");
     }
@@ -481,7 +473,7 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_println");
     }
     
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(context->referenceCount("_F5printS") || is_enabled_println()){ 
         output_function("x86_64_printS");
     }
    
