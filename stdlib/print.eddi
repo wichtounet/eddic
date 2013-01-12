@@ -2,9 +2,9 @@ include <strings>
 
 void print(bool a){
     if(a){
-        print(1);
+        print('1');
     } else {
-        print(0);
+        print('0');
     }
 }
 
@@ -17,4 +17,9 @@ void print(int a){
     string other("");
     other.append(a);
     print(other);
+}
+
+void println(int a){
+    print(a);
+    println();
 }
