@@ -382,7 +382,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
 
 bool can_be_inlined(mtac::Function& function){
     //The main function cannot be inlined
-    if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
+    if(function.is_main()){
         return false;
     }
 
