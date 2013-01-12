@@ -53,7 +53,7 @@ struct Quadruple {
         //Filled only in later phase replacing the label
         std::shared_ptr<mtac::basic_block> block;
 
-        //Quadruple should never get copied
+        //Copy constructors
         Quadruple(const Quadruple& rhs);
         Quadruple& operator=(const Quadruple& rhs);
 
@@ -100,6 +100,9 @@ struct Quadruple {
         bool is_if_false();
 
         std::size_t uid();
+
+        bool operator==(const mtac::Quadruple& quadruple);
+        bool operator!=(const mtac::Quadruple& quadruple);
 };
 
 //TODO Define an operator<<

@@ -138,3 +138,11 @@ bool mtac::Quadruple::is_if(){
 bool mtac::Quadruple::is_if_false(){
     return op >= mtac::Operator::IF_FALSE_UNARY && op <= mtac::Operator::IF_FALSE_FL;
 }
+
+bool mtac::Quadruple::operator==(const mtac::Quadruple& rhs){
+    return _uid == rhs._uid;
+}
+
+bool mtac::Quadruple::operator!=(const mtac::Quadruple& rhs){
+    return !(*this == rhs);
+}
