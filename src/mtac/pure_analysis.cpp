@@ -129,6 +129,9 @@ bool mtac::pure_analysis::operator()(mtac::Program& program){
                 continue;
             }
 
+            //TODO A function can be pure if it calls an unpure function 
+            //that do not modify global variables
+
             if(call_unpure_function(program, function, analyzed)){
                 function.pure() = false;
                 analyzed.insert(function);
