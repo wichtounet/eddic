@@ -56,6 +56,10 @@ struct Quadruple {
         //Copy constructors
         Quadruple(const Quadruple& rhs);
         Quadruple& operator=(const Quadruple& rhs);
+        
+        //Move constructors
+        Quadruple(Quadruple&& rhs);
+        Quadruple& operator=(Quadruple&& rhs);
 
         //Default constructor
         Quadruple();

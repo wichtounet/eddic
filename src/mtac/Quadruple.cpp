@@ -105,6 +105,46 @@ mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
     return *this;
 }
 
+mtac::Quadruple::Quadruple(mtac::Quadruple&& rhs) : 
+        _uid(std::move(rhs._uid)), 
+        result(std::move(rhs.result)), 
+        arg1(std::move(rhs.arg1)),
+        arg2(std::move(rhs.arg2)),
+        op(std::move(rhs.op)),
+        size(std::move(rhs.size)),
+        address(std::move(rhs.address)),
+        secondary(std::move(rhs.secondary)),
+        m_function(std::move(rhs.m_function)),
+        m_param(std::move(rhs.m_param)),
+        block(std::move(rhs.block))
+{
+    rhs._uid = 0;
+}
+
+mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs){
+    //No need to assign this into this
+    if(this == &rhs){
+        return *this;
+    }
+    
+    _uid = std::move(rhs._uid);
+    result = std::move(rhs.result);
+    arg1 = std::move(rhs.arg1);
+    arg2 = std::move(rhs.arg2);
+    op = std::move(rhs.op);
+    size = std::move(rhs.size);
+    block = std::move(rhs.block);
+    address = std::move(rhs.address);
+    m_function = std::move(rhs.m_function);
+    m_param = std::move(rhs.m_param);
+    secondary = std::move(rhs.secondary);
+
+    rhs._uid = 0;
+
+    return *this;
+}
+
+
 const std::string& mtac::Quadruple::label() const {
     return m_param;
 }
