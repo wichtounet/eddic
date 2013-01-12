@@ -173,6 +173,11 @@ struct need_configuration {
     static const bool value = mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_CONFIGURATION;
 };
 
+template<typename Pass>
+struct need_program {
+    static const bool value = mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_PROGRAM;
+};
+
 template <bool B, typename T = void>
 struct disable_if {
     typedef T type;
@@ -252,10 +257,20 @@ struct pass_runner {
     inline typename disable_if<need_configuration<Pass>::value, void>::type set_configuration(Pass&){
         //NOP
     }
+    
+    template<typename Pass>
+    inline typename std::enable_if<need_program<Pass>::value, Pass>::type construct(){
+        return Pass(program);
+    }
+    
+    template<typename Pass>
+    inline typename disable_if<need_program<Pass>::value, Pass>::type construct(){
+        return Pass();
+    }
 
     template<typename Pass>
     Pass make_pass(){
-        Pass pass;
+        auto pass = construct<Pass>();
 
         set_pool(pass);
         set_platform(pass);

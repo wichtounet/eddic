@@ -34,7 +34,8 @@ enum TODO {
 enum PROPERTY {
     PROPERTY_POOL = 1,
     PROPERTY_PLATFORM = 2,
-    PROPERTY_CONFIGURATION = 4
+    PROPERTY_CONFIGURATION = 4,
+    PROPERTY_PROGRAM = 8
 };
 
 template<typename T>
