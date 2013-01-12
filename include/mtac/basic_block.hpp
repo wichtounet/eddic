@@ -57,6 +57,16 @@ class basic_block {
          */
         void add(std::shared_ptr<mtac::Quadruple> statement);
 
+        template< class... Args >
+        void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+        
+        template< class... Args >
+        void emplace_back_low( Args&&... args ){
+            l_statements.emplace_back(std::forward<Args>(args)...);
+        }
+
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
         std::string label;  /*!< The label of the block */
