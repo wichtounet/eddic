@@ -159,7 +159,7 @@ BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, m
     return bb_clones;
 }
 
-mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
+mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     mtac::VariableClones variable_clones;
 
     auto& source_definition = source_function.definition();
@@ -178,7 +178,8 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     }
 
     if(source_definition.parameters().size() > 0){
-        eddic_assert(bb->statements.front() == call, "This should have been ensured by split_if_necessary");
+        //We know for sure that that the parameters are in the previous block
+        //This is ensured by split_if_necessary
         auto pit = bb->prev->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
@@ -266,11 +267,6 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
     if(source_definition.parameters().size() > 0){
         mtac::basic_block::iterator pit;
         
-        std::cout << "---" << std::endl;
-        std::cout << call << std::endl;
-        std::cout << bb << std::endl;
-        std::cout << bb->statements.size() << std::endl;
-        std::cout << bb->statements.front() << std::endl;
         if(bb->statements.front() == call){
             pit = bb->prev->statements.end() - 1;
         } else {
@@ -477,8 +473,6 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
 
                 auto& source_function = get_target(call, program);
 
-                std::cout << source_function.get_name() << std::endl;
-
                 auto& source_definition = source_function.definition();
                 auto& dest_definition = dest_function.definition();
 
@@ -486,7 +480,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
                     //Copy the parameters
-                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block, call);
+                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
                     //Allocate storage for the local variables of the inlined function
                     for(auto& variable : source_definition.context()->stored_variables()){
