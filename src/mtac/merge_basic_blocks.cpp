@@ -71,7 +71,19 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                     computeBlockUsage(function, usage);
                 }
             } else if(quadruple->op == mtac::Operator::CALL){
-                merge = safe(quadruple->function().mangled_name()); 
+                auto& target_function = quadruple->function();
+
+                if(target_function.standard()){
+                    merge = safe(target_function.mangled_name());
+                } else {
+                    merge = false;
+
+                    for(auto& f : program.functions){
+                        if(f.definition() == target_function){
+                            merge = f.pure();
+                        }
+                    }
+                }
             } else if(!quadruple->is_if() && !quadruple->is_if_false()){
                 merge = true;
             }
@@ -81,9 +93,28 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 if(usage.find(next) == usage.end()){
                     if(!next->statements.empty()){
                         auto next_quadruple = next->statements.front();
-                        if(next_quadruple->op == mtac::Operator::CALL && !safe(next_quadruple->function().mangled_name())){
-                            ++it;
-                            continue;
+                        if(next_quadruple->op == mtac::Operator::CALL){
+                            auto& target_function = next_quadruple->function();
+
+                            if(target_function.standard()){
+                                if(!safe(target_function.mangled_name())){
+                                    ++it;
+                                    continue;
+                                }
+                            } else {
+                                auto safe = false;
+
+                                for(auto& f : program.functions){
+                                    if(f.definition() == target_function){
+                                        safe = f.pure();
+                                    }
+                                }
+
+                                if(!safe){
+                                    ++it;
+                                    continue;
+                                }
+                            }
                         }
                     }
 

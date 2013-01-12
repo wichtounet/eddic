@@ -63,10 +63,9 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     }
 
     for(auto& block : function){
-        auto it = block->statements.begin();
-        auto end = block->statements.end();
+        auto it = iterate(block->statements);
 
-        while(it != end){
+        while(it.has_next()){
             auto& quadruple = *it;
 
             if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
@@ -86,8 +85,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                         mtac::Offset offset(quadruple->result, *offset_ptr);
 
                         if(problem.pointer_escaped->find(quadruple->result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                            it = block->statements.erase(it);
-                            end = block->statements.end();
+                            it.erase();
                             optimized=true;
                             continue;
                         }

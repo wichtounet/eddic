@@ -119,7 +119,7 @@ struct DebugVisitor {
     }
 
     void print(mtac::Function& function){
-        stream << "Function " << function.get_name() << endl;
+        stream << "Function " << function.get_name() << "(pure:" << function.pure() << ")" <<endl;
 
         for(auto& quadruple : function.get_statements()){
             print(quadruple);

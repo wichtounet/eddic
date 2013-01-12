@@ -64,6 +64,10 @@ bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
 }
 
+bool& mtac::Function::pure(){
+    return _pure;
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }
@@ -159,6 +163,10 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
     bb->prev = block;
     
     return at(block);
+}
+
+mtac::basic_block_iterator mtac::Function::insert_after(mtac::basic_block_iterator it, mtac::basic_block_p block){
+    return insert_before(++it, block);
 }
 
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
@@ -336,4 +344,8 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
 
 std::vector<mtac::Loop>& mtac::Function::loops(){
     return m_loops;
+}
+
+bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
+    return lhs.get_name() == rhs.get_name();
 }

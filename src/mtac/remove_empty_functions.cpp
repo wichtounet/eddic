@@ -25,7 +25,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     while(it.has_next()){
         auto& function = *it;
 
-        if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
+        if(function.is_main()){
             ++it;
             continue;
         }

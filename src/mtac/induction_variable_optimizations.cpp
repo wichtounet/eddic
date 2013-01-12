@@ -127,14 +127,6 @@ void induction_variable_removal(mtac::Loop& loop){
     
     mtac::Usage usage = compute_read_usage(loop);
 
-    std::cout << "Loop of " << loop.blocks().size() << std::endl;
-
-    for(auto& u : usage.read){
-        if(u.first){
-            std::cout << u.first->name() << ":" << u.second << std::endl;
-        }
-    }
-
     //Remove generated copy when useless
     for(auto& bb : loop){
         auto it = iterate(bb->statements);

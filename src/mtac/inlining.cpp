@@ -22,6 +22,7 @@
 #include "mtac/VariableReplace.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Quadruple.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -45,7 +46,7 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     auto safe_block = dest_function.new_bb();
 
     //Insert the new basic block before the old one
-    dest_function.insert_before(dest_function.at(bb->next), safe_block);
+    dest_function.insert_after(dest_function.at(bb), safe_block);
 
     safe_block->statements = std::move(bb->statements);
 
@@ -60,6 +61,52 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     mtac::make_edge(bb, safe_block);
 
     return safe_block;
+}
+
+mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
+    if(bb->statements.front() == call){
+        log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
+
+        //Erase the call
+        bb->statements.erase(bb->statements.begin());
+
+        //The basic block remains the same
+        return bb;
+    } else {
+        log::emit<Trace>("Inlining") << "Split block " << bb << " to perform inlining" << log::endl;
+
+        auto split_block = dest_function.new_bb();
+
+        dest_function.insert_after(dest_function.at(bb), split_block);
+
+        for(auto succ : bb->successors){
+            mtac::make_edge(split_block, succ);
+        }
+    
+        while(!bb->successors.empty()){
+            mtac::remove_edge(bb, bb->successors[0]);
+        }
+
+        mtac::make_edge(bb, split_block);
+
+        auto pit = bb->statements.begin();
+
+        while(*pit != call){
+            ++pit;
+        }
+
+        //Erase the call
+        pit = bb->statements.erase(pit);
+
+        //Transfer the remaining statements to split_block
+        split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
+        bb->statements.erase(pit, bb->statements.end());
+
+        mtac::Printer printer;
+        printer.printFunction(dest_function);
+
+        return split_block;
+    }
 }
 
 BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
@@ -139,9 +186,9 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     }
 
     if(source_definition.parameters().size() > 0){
-        auto param_bb = bb->prev;
-
-        auto pit = param_bb->statements.end() - 1;
+        //We know for sure that that the parameters are in the previous block
+        //This is ensured by split_if_necessary
+        auto pit = bb->prev->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
             auto statement = *pit;
@@ -220,15 +267,23 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb){
+unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
     unsigned int constant = 0;
 
     auto& source_definition = source_function.definition();
 
     if(source_definition.parameters().size() > 0){
-        auto param_bb = bb->prev;
+        mtac::basic_block::iterator pit;
+        
+        if(bb->statements.front() == call){
+            pit = bb->prev->statements.end() - 1;
+        } else {
+            pit = bb->statements.begin();
 
-        auto pit = param_bb->statements.end() - 1;
+            while(*pit != call){
+                ++pit;
+            }
+        }
 
         for(int i = source_definition.parameters().size() - 1; i >= 0;){
             auto quadruple = *pit;
@@ -327,7 +382,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
 
 bool can_be_inlined(mtac::Function& function){
     //The main function cannot be inlined
-    if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
+    if(function.is_main()){
         return false;
     }
 
@@ -354,7 +409,7 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
         auto source_size = source_function.size();
         auto target_size = target_function.size();
 
-        auto constant_parameters = count_constant_parameters(target_function, source_function, bb);
+        auto constant_parameters = count_constant_parameters(target_function, source_function, bb, call);
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function.definition().parameters().size() == constant_parameters){
@@ -408,8 +463,6 @@ mtac::Function& get_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program&
 }
 
 bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
-    bool optimized = false;
-
     auto bit = dest_function.begin();
     auto bend = dest_function.end();
         
@@ -434,6 +487,8 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                 if(will_inline(dest_function, source_function, call, basic_block)){
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
+                    basic_block = split_if_necessary(dest_function, basic_block, call);
+
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
@@ -441,9 +496,6 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     for(auto& variable : source_definition.context()->stored_variables()){
                         variable_clones[variable] = dest_definition.context()->newVariable(variable);
                     }
-
-                    //Erase the original call
-                    it.erase();
 
                     auto safe = create_safe_block(dest_function, basic_block);
 
@@ -455,9 +507,10 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
 
                     //The target function is called one less time
                     program.context->removeReference(source_definition.mangled_name());
-                    optimized = true;
 
-                    continue;
+                    //All the iterators are invalidated at this point
+                    //The loop will be restarted
+                    return true;
                 }
             }
 
@@ -467,7 +520,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         ++bit;
     }
 
-    return optimized;
+    return false;
 }
 
 } //end of anonymous namespace
@@ -490,7 +543,11 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
             continue; 
         }
 
-        optimized |= call_site_inlining(function, program);
+        bool local = false;
+        do {
+            local = call_site_inlining(function, program);
+            optimized |= local;
+        } while(local);
     }
 
     return optimized;

@@ -67,6 +67,7 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_iterator at(basic_block_p bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, basic_block_p block);
+        basic_block_iterator insert_after(basic_block_iterator it, basic_block_p block);
         basic_block_iterator merge_basic_blocks(basic_block_iterator it, basic_block_p block);
         basic_block_iterator remove(basic_block_iterator it);
         basic_block_iterator remove(basic_block_p bb);
@@ -98,6 +99,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         bool is_main() const;
 
+        bool& pure();
+
         eddic::Function& definition();
 
         std::shared_ptr<FunctionContext> context;
@@ -107,6 +110,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         //Before being partitioned, the function has only statement
         std::vector<std::shared_ptr<mtac::Quadruple>> statements;
+
+        bool _pure = false;
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;
@@ -127,6 +132,8 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string name;
 };
+
+bool operator==(const mtac::Function& lhs, const mtac::Function& rhs);
 
 } //end of mtac
 
