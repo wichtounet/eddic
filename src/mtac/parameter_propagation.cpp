@@ -40,10 +40,21 @@ Arguments collect_arguments(mtac::Program& program){
                         std::unordered_map<std::size_t, mtac::Argument> function_arguments;
 
                         auto parameters = function.parameters().size();
-                        auto param_block = block->prev;
 
-                        auto it = param_block->statements.rbegin();
-                        auto end = param_block->statements.rend();
+                        mtac::basic_block::reverse_iterator it;
+                        mtac::basic_block::reverse_iterator end;
+
+                        if(block->statements.front() == quadruple){
+                            it = block->prev->statements.rbegin();
+                            end = block->prev->statements.rend();
+                        } else {
+                            it = block->statements.rbegin();
+                            end = block->statements.rend();
+
+                            while(*it != quadruple){
+                                ++it;
+                            }
+                        }
 
                         std::size_t discovered = 0;
 
@@ -158,10 +169,23 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                                 auto& param_function = quadruple->function();
 
                                 if(param_function == function){
-                                    auto param_block = block->prev;
+                                    mtac::basic_block_p param_block;
+                                    mtac::basic_block::reverse_iterator it;
+                                    mtac::basic_block::reverse_iterator end;
 
-                                    auto it = param_block->statements.rbegin();
-                                    auto end = param_block->statements.rend();
+                                    if(block->statements.front() == quadruple){
+                                        param_block = block->prev;
+                                        it = block->prev->statements.rbegin();
+                                        end = block->prev->statements.rend();
+                                    } else {
+                                        param_block = block;
+                                        it = block->statements.rbegin();
+                                        end = block->statements.rend();
+
+                                        while(*it != quadruple){
+                                            ++it;
+                                        }
+                                    }
 
                                     std::size_t discovered = 0;
 
