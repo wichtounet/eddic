@@ -132,6 +132,8 @@ class Function : public std::enable_shared_from_this<Function> {
         std::string name;
 };
 
+bool operator==(const mtac::Function& lhs, const mtac::Function& rhs);
+
 } //end of mtac
 
 template<>

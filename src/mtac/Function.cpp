@@ -341,3 +341,7 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
 std::vector<mtac::Loop>& mtac::Function::loops(){
     return m_loops;
 }
+
+bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
+    return lhs.get_name() == rhs.get_name();
+}
