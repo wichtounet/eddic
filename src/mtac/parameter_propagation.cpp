@@ -194,9 +194,11 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
 
                                         if(param_quadruple->op == mtac::Operator::PARAM){
                                             if(discovered == parameter.first){
-                                                param_block->statements.erase(--(it.base()));
-                                                --it;
-                                                end = param_block->statements.rend();
+                                                param_quadruple->op = mtac::Operator::NOP;
+                                                param_quadruple->arg1.reset();
+                                                param_quadruple->arg2.reset();
+
+                                                optimized = true;
                                             }
 
                                             ++discovered;
