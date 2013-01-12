@@ -165,6 +165,10 @@ mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_itera
     return at(block);
 }
 
+mtac::basic_block_iterator mtac::Function::insert_after(mtac::basic_block_iterator it, mtac::basic_block_p block){
+    return insert_before(++it, block);
+}
+
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     eddic_assert(block, "Cannot remove null block"); 
     eddic_assert(block != exit, "Cannot remove exit"); 

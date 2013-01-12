@@ -45,7 +45,7 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     auto safe_block = dest_function.new_bb();
 
     //Insert the new basic block before the old one
-    dest_function.insert_before(dest_function.at(bb->next), safe_block);
+    dest_function.insert_after(dest_function.at(bb), safe_block);
 
     safe_block->statements = std::move(bb->statements);
 
@@ -60,6 +60,45 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     mtac::make_edge(bb, safe_block);
 
     return safe_block;
+}
+
+mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
+    if(bb->statements.front() == call){
+        //Erase the call
+        bb->statements.erase(bb->statements.begin());
+
+        //The basic block remains the same
+        return bb;
+    } else {
+        auto split_block = dest_function.new_bb();
+
+        dest_function.insert_after(dest_function.at(bb), split_block);
+
+        for(auto succ : bb->successors){
+            mtac::make_edge(split_block, succ);
+        }
+    
+        while(!bb->successors.empty()){
+            mtac::remove_edge(bb, bb->successors[0]);
+        }
+
+        mtac::make_edge(bb, split_block);
+
+        auto pit = bb->statements.begin();
+
+        while(*pit != call){
+            ++pit;
+        }
+
+        //Erase the call
+        pit = bb->statements.erase(pit);
+
+        //Transfer the remaining statements to split_block
+        split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
+        bb->statements.erase(pit, bb->statements.end());
+
+        return split_block;
+    }
 }
 
 BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
@@ -463,8 +502,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                         variable_clones[variable] = dest_definition.context()->newVariable(variable);
                     }
 
-                    //Erase the original call
-                    it.erase();
+                    basic_block = split_if_necessary(dest_function, basic_block, call);
 
                     auto safe = create_safe_block(dest_function, basic_block);
 
@@ -514,8 +552,8 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
 
         bool local = false;
         do {
-        local = call_site_inlining(function, program);
-        optimized |= local;
+            local = call_site_inlining(function, program);
+            optimized |= local;
         } while(local);
     }
 

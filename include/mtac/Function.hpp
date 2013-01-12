@@ -67,6 +67,7 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_iterator at(basic_block_p bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, basic_block_p block);
+        basic_block_iterator insert_after(basic_block_iterator it, basic_block_p block);
         basic_block_iterator merge_basic_blocks(basic_block_iterator it, basic_block_p block);
         basic_block_iterator remove(basic_block_iterator it);
         basic_block_iterator remove(basic_block_p bb);
