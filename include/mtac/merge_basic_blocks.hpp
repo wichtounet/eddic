@@ -18,6 +18,10 @@ namespace eddic {
 namespace mtac {
 
 struct merge_basic_blocks {
+    mtac::Program& program;
+
+    merge_basic_blocks(mtac::Program& program) : program(program){}
+
     bool operator()(mtac::Function& function);
 };
 
@@ -25,7 +29,7 @@ template<>
 struct pass_traits<merge_basic_blocks> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "merge_bb");
-    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_PROGRAM);
     STATIC_CONSTANT(unsigned int, todo_after_flags, TODO_REMOVE_NOP);
 };
 

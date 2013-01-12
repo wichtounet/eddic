@@ -31,6 +31,7 @@ namespace mtac {
 class basic_block {
     public:
         typedef std::vector<std::shared_ptr<mtac::Quadruple>>::iterator iterator;
+        typedef std::vector<std::shared_ptr<mtac::Quadruple>>::reverse_iterator reverse_iterator;
 
         /*!
          * Create a new basic block with the given index. 

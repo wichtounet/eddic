@@ -125,7 +125,8 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::NOP
         && op != mtac::Operator::PARAM
         && op != mtac::Operator::CALL
-        && op != mtac::Operator::LABEL; 
+        && op != mtac::Operator::LABEL
+        && !(op >= mtac::Operator::IF_UNARY && op <= mtac::Operator::IF_FALSE_FL);
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){
