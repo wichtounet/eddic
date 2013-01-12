@@ -22,6 +22,7 @@
 #include "mtac/VariableReplace.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Quadruple.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -64,12 +65,16 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
 
 mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
     if(bb->statements.front() == call){
+        log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
+
         //Erase the call
         bb->statements.erase(bb->statements.begin());
 
         //The basic block remains the same
         return bb;
     } else {
+        log::emit<Trace>("Inlining") << "Split block " << bb << " to perform inlining" << log::endl;
+
         auto split_block = dest_function.new_bb();
 
         dest_function.insert_after(dest_function.at(bb), split_block);
@@ -96,6 +101,9 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         //Transfer the remaining statements to split_block
         split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
         bb->statements.erase(pit, bb->statements.end());
+
+        mtac::Printer printer;
+        printer.printFunction(dest_function);
 
         return split_block;
     }
@@ -479,6 +487,8 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                 if(will_inline(dest_function, source_function, call, basic_block)){
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
+                    basic_block = split_if_necessary(dest_function, basic_block, call);
+
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
@@ -486,8 +496,6 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     for(auto& variable : source_definition.context()->stored_variables()){
                         variable_clones[variable] = dest_definition.context()->newVariable(variable);
                     }
-
-                    basic_block = split_if_necessary(dest_function, basic_block, call);
 
                     auto safe = create_safe_block(dest_function, basic_block);
 
