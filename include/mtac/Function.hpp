@@ -50,6 +50,14 @@ class Function : public std::enable_shared_from_this<Function> {
         void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);
         }
+        
+        void push_back(const mtac::Quadruple& quadruple){
+            statements.push_back(quadruple);
+        }
+
+        void push_back(mtac::Quadruple&& quadruple){
+            statements.push_back(quadruple);
+        }
 
         std::vector<mtac::Quadruple>& get_statements();
         void release_statements();
