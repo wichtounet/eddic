@@ -36,12 +36,12 @@ struct VariableReadCollector {
     }
 
     void collect(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(!mtac::erase_result(quadruple->op)){
-            inc_usage(quadruple->result);
+        if(!mtac::erase_result(quadruple.op)){
+            inc_usage(quadruple.result);
         }
 
-        collect_optional(quadruple->arg1);
-        collect_optional(quadruple->arg2);
+        collect_optional(quadruple.arg1);
+        collect_optional(quadruple.arg2);
     }
 };
 
@@ -62,7 +62,7 @@ struct UsageCollector {
     }
 
     bool collect(std::shared_ptr<mtac::Quadruple> quadruple){
-        return quadruple->result == var || collect_optional(quadruple->arg1) || collect_optional(quadruple->arg2);
+        return quadruple.result == var || collect_optional(quadruple.arg1) || collect_optional(quadruple.arg2);
     }
 };
 
@@ -86,9 +86,9 @@ mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            if(mtac::erase_result(quadruple->op)){
-                ++(usage.written[quadruple->result]);
-                ++(usage.written[quadruple->secondary]);
+            if(mtac::erase_result(quadruple.op)){
+                ++(usage.written[quadruple.result]);
+                ++(usage.written[quadruple.secondary]);
             } 
         }
     }

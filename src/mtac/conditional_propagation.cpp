@@ -18,7 +18,7 @@ namespace {
 
 std::shared_ptr<mtac::Quadruple> get_variable_declaration(mtac::basic_block_p basic_block, std::shared_ptr<Variable> variable){
     for(auto& quadruple : basic_block){
-        if(quadruple->result == variable){
+        if(quadruple.result == variable){
             return quadruple;
         }
     }
@@ -133,9 +133,9 @@ bool mtac::conditional_propagation::operator()(mtac::Function& function){
 
     for(auto& basic_block : function){
         for(auto& quadruple : basic_block){
-            if(quadruple->op == mtac::Operator::IF_FALSE_UNARY){
+            if(quadruple.op == mtac::Operator::IF_FALSE_UNARY){
                 optimized |= optimize_branch<false>(quadruple, basic_block, variable_usage);
-            } else if(quadruple->op == mtac::Operator::IF_UNARY){
+            } else if(quadruple.op == mtac::Operator::IF_UNARY){
                 optimized |= optimize_branch<true>(quadruple, basic_block, variable_usage);
             }
         }

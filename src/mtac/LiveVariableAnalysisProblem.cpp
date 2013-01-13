@@ -80,15 +80,15 @@ struct LivenessCollector {
     }
 
     void collect(std::shared_ptr<mtac::Quadruple>& quadruple){
-        if(quadruple->op != mtac::Operator::NOP){
-            if(mtac::erase_result(quadruple->op)){
-                in.values().erase(quadruple->result);
+        if(quadruple.op != mtac::Operator::NOP){
+            if(mtac::erase_result(quadruple.op)){
+                in.values().erase(quadruple.result);
             } else {
-                in.values().insert(quadruple->result);
+                in.values().insert(quadruple.result);
             }
 
-            update_optional(quadruple->arg1);
-            update_optional(quadruple->arg2);
+            update_optional(quadruple.arg1);
+            update_optional(quadruple.arg2);
         }
     }
 };

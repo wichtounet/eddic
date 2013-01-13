@@ -134,9 +134,9 @@ void induction_variable_removal(mtac::Loop& loop){
         while(it.has_next()){
             auto quadruple = *it;
 
-            if(quadruple->op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple->arg1)){
-                auto j = quadruple->result;
-                auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+            if(quadruple.op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
+                auto j = quadruple.result;
+                auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
 
                 //If j = tj generated in strength reduction phase
                 if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){

@@ -27,14 +27,14 @@ namespace {
 void init_depth(mtac::basic_block_p bb){
     bb->depth = 0;
     for(auto& quadruple : bb->statements){
-        quadruple->depth = 0;
+        quadruple.depth = 0;
     }
 }
 
 void increase_depth(mtac::basic_block_p bb){
     ++bb->depth;
     for(auto& quadruple : bb->statements){
-        ++quadruple->depth;
+        ++quadruple.depth;
     }
 }
 
@@ -43,8 +43,8 @@ mtac::InductionVariables find_all_candidates(mtac::Loop& loop){
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            if(quadruple->op == mtac::Operator::ADD || quadruple->op == mtac::Operator::MUL || quadruple->op == mtac::Operator::SUB || quadruple->op == mtac::Operator::MINUS){
-                candidates[quadruple->result] = {quadruple, nullptr, 0, 0, false};
+            if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MINUS){
+                candidates[quadruple.result] = {quadruple, nullptr, 0, 0, false};
             }
         }
     }
@@ -73,16 +73,16 @@ void find_basic_induction_variables(mtac::Loop& loop){
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            auto var = quadruple->result;
+            auto var = quadruple.result;
 
             //If it is not a candidate, do not test it
             if(!loop.basic_induction_variables().count(var)){
                 continue;
             }
 
-            if(quadruple->op == mtac::Operator::CALL){
+            if(quadruple.op == mtac::Operator::CALL){
                 loop.basic_induction_variables().erase(var);
-                loop.basic_induction_variables().erase(quadruple->secondary);
+                loop.basic_induction_variables().erase(quadruple.secondary);
 
                 continue;
             }
@@ -96,9 +96,9 @@ void find_basic_induction_variables(mtac::Loop& loop){
                 continue;
             }
 
-            if(quadruple->op == mtac::Operator::ADD){
-                auto arg1 = *quadruple->arg1;
-                auto arg2 = *quadruple->arg2;
+            if(quadruple.op == mtac::Operator::ADD){
+                auto arg1 = *quadruple.arg1;
+                auto arg2 = *quadruple.arg2;
 
                 if(mtac::isInt(arg1) && mtac::equals(arg2, var)){
                     loop.basic_induction_variables()[var] = {quadruple, var, 1, boost::get<int>(arg1), false};
@@ -121,7 +121,7 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            auto var = quadruple->result;
+            auto var = quadruple.result;
 
             //If it is not a candidate, do not test it
             if(!var || !loop.dependent_induction_variables().count(var)){
@@ -129,20 +129,20 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
             }
 
             //A call invalidates the candidate
-            if(quadruple->op == mtac::Operator::CALL){
-                loop.dependent_induction_variables().erase(quadruple->return1());
-                loop.dependent_induction_variables().erase(quadruple->return2());
+            if(quadruple.op == mtac::Operator::CALL){
+                loop.dependent_induction_variables().erase(quadruple.return1());
+                loop.dependent_induction_variables().erase(quadruple.return2());
 
                 continue;
             }
 
             //TODO: Remove that by being sure that NOPs are getting cleared of all their arguments when created and when transformed
-            if(quadruple->op == mtac::Operator::NOP){
+            if(quadruple.op == mtac::Operator::NOP){
                 continue;
             }
 
             //We know for sure that all the candidates have a first arg
-            auto arg1 = *quadruple->arg1;
+            auto arg1 = *quadruple.arg1;
 
             //If it is a basic induction variable, it is not a dependent induction variable
             if(loop.basic_induction_variables().count(var)){
@@ -153,7 +153,7 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
 
             auto source_equation = loop.dependent_induction_variables()[var];
 
-            if(source_equation.i && (mtac::equals(arg1, var) || (quadruple->arg2 && mtac::equals(*quadruple->arg2, var))) ){
+            if(source_equation.i && (mtac::equals(arg1, var) || (quadruple.arg2 && mtac::equals(*quadruple.arg2, var))) ){
                 auto tj = function.context->new_temporary(INT);
 
                 source_equation.def->result = tj;
@@ -162,18 +162,18 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                 loop.dependent_induction_variables()[tj] = source_equation;
 
                 if(mtac::equals(arg1, var)){
-                    quadruple->arg1 = tj;
+                    quadruple.arg1 = tj;
                 }
 
-                if(quadruple->arg2 && mtac::equals(*quadruple->arg2, var)){
-                    quadruple->arg2 = tj;
+                if(quadruple.arg2 && mtac::equals(*quadruple.arg2, var)){
+                    quadruple.arg2 = tj;
                 }
 
-                arg1 = *quadruple->arg1;
+                arg1 = *quadruple.arg1;
             }
 
-            if(quadruple->op == mtac::Operator::MUL){
-                auto arg2 = *quadruple->arg2;
+            if(quadruple.op == mtac::Operator::MUL){
+                auto arg2 = *quadruple.arg2;
 
                 if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
@@ -204,8 +204,8 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                         }
                     }
                 } 
-            } else if(quadruple->op == mtac::Operator::ADD){
-                auto arg2 = *quadruple->arg2;
+            } else if(quadruple.op == mtac::Operator::ADD){
+                auto arg2 = *quadruple.arg2;
 
                 if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
@@ -250,8 +250,8 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                         }
                     }
                 }
-            } else if(quadruple->op == mtac::Operator::SUB){
-                auto arg2 = *quadruple->arg2;
+            } else if(quadruple.op == mtac::Operator::SUB){
+                auto arg2 = *quadruple.arg2;
 
                 if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
@@ -282,7 +282,7 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                         }
                     }
                 }
-            } else if(quadruple->op == mtac::Operator::MINUS){
+            } else if(quadruple.op == mtac::Operator::MINUS){
                 if(mtac::isVariable(arg1)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
 
@@ -313,9 +313,9 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
     while(it != end){
         auto& quadruple = *it;
 
-        if(quadruple->result == var){
-            if(quadruple->op == mtac::Operator::ASSIGN){
-                if(auto* val_ptr = boost::get<int>(&*quadruple->arg1)){
+        if(quadruple.result == var){
+            if(quadruple.op == mtac::Operator::ASSIGN){
+                if(auto* val_ptr = boost::get<int>(&*quadruple.arg1)){
                     return std::make_pair(true, *val_ptr);                    
                 }
             }

@@ -27,7 +27,7 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& quadruple : basic_block->statements){
-            if(quadruple->op == mtac::Operator::CALL && quadruple->function().mangled_name() == function.definition().mangled_name()){
+            if(quadruple.op == mtac::Operator::CALL && quadruple.function().mangled_name() == function.definition().mangled_name()){
                 return true;
             }
         }
@@ -59,11 +59,11 @@ struct VariableUsageCollector {
     }
 
     void collect(std::shared_ptr<mtac::Quadruple> quadruple){
-        current_depth = quadruple->depth;
+        current_depth = quadruple.depth;
 
-        inc_usage(quadruple->result);
-        collect_optional(quadruple->arg1);
-        collect_optional(quadruple->arg2);
+        inc_usage(quadruple.result);
+        collect_optional(quadruple.arg1);
+        collect_optional(quadruple.arg2);
     }
 };
 

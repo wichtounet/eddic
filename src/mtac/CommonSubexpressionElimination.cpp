@@ -66,7 +66,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
 
 ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& quadruple, ProblemDomain& in){
     auto out = in;
-    auto op = quadruple->op;
+    auto op = quadruple.op;
 
     if(mtac::is_expression(op)){
         bool exists = false;
@@ -94,7 +94,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
 
             if(expression->arg1){
                 if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression->arg1)){
-                    if(*var_ptr == quadruple->result){
+                    if(*var_ptr == quadruple.result){
                         it.erase();
                         continue;
                     }
@@ -103,7 +103,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
 
             if(expression->arg2){
                 if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression->arg2)){
-                    if(*var_ptr == quadruple->result){
+                    if(*var_ptr == quadruple.result){
                         it.erase();
                         continue;
                     }
@@ -131,7 +131,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
     
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(mtac::is_expression(quadruple->op)){
+            if(mtac::is_expression(quadruple.op)){
                 bool exists = false;
                 for(auto& expression : values){
                     if(are_equivalent(quadruple, expression.expression)){
@@ -168,13 +168,13 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                 continue;
             }
 
-            if(mtac::is_expression(quadruple->op)){
+            if(mtac::is_expression(quadruple.op)){
                 for(auto& expression : results.values()){
                     auto source_statement = expression.expression;
 
                     if(are_equivalent(source_statement, quadruple)){
                         mtac::Operator assign_op;
-                        if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
+                        if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
                             assign_op = mtac::Operator::ASSIGN;
                         } else {
                             assign_op = mtac::Operator::FASSIGN;
@@ -182,7 +182,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
 
                         if(optimized.find(source_statement) == optimized.end()){
                             std::shared_ptr<Variable> temp;
-                            if(quadruple->op >= mtac::Operator::ADD && quadruple->op <= mtac::Operator::MOD){
+                            if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
                                 temp = expression.source->context->new_temporary(INT);
                             } else {
                                 temp = expression.source->context->new_temporary(FLOAT);
@@ -209,9 +209,9 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                         }
 
                         if(optimized.find(quadruple) == optimized.end()){
-                            quadruple->op = assign_op;
-                            quadruple->arg1 = source_statement->result;
-                            quadruple->arg2.reset();
+                            quadruple.op = assign_op;
+                            quadruple.arg1 = source_statement->result;
+                            quadruple.arg2.reset();
 
                             optimized.insert(quadruple);
 

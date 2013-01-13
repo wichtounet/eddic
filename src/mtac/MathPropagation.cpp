@@ -33,21 +33,21 @@ void mtac::MathPropagation::collect(boost::optional<mtac::Argument>& arg){
 
 void mtac::MathPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
     if(pass == mtac::Pass::DATA_MINING){
-        collect(quadruple->arg1);
-        collect(quadruple->arg2);
-    } else if(!quadruple->is_if() && quadruple->is_if_false()){
-        if(quadruple->result && quadruple->op != mtac::Operator::CALL){
-            assigns[quadruple->result] = quadruple;
+        collect(quadruple.arg1);
+        collect(quadruple.arg2);
+    } else if(!quadruple.is_if() && quadruple.is_if_false()){
+        if(quadruple.result && quadruple.op != mtac::Operator::CALL){
+            assigns[quadruple.result] = quadruple;
         }
 
-        if(quadruple->op == mtac::Operator::ASSIGN){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        if(quadruple.op == mtac::Operator::ASSIGN){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                 //We only duplicate the math operation if the variable is used once to not add overhead
-                if(!quadruple->result->type()->is_array() && (*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
+                if(!quadruple.result->type()->is_array() && (*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
                     auto assign = assigns[*ptr];
-                    quadruple->op = assign->op;
-                    quadruple->arg1 = assign->arg1;
-                    quadruple->arg2 = assign->arg2;
+                    quadruple.op = assign->op;
+                    quadruple.arg1 = assign->arg1;
+                    quadruple.arg2 = assign->arg2;
 
                     optimized = true;
                 }

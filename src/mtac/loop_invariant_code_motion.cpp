@@ -41,17 +41,17 @@ bool is_invariant(boost::optional<mtac::Argument>& argument, mtac::Usage& usage)
 
 bool is_invariant(std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Usage& usage){
     //TODO Relax this rule by making a more powerful memory analysis
-    if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
+    if(quadruple.op == mtac::Operator::DOT || quadruple.op == mtac::Operator::FDOT || quadruple.op == mtac::Operator::PDOT){
         return false;
     }
 
-    if(mtac::erase_result(quadruple->op)){
+    if(mtac::erase_result(quadruple.op)){
         //If there are more than one write to this variable, the computation is not invariant
-        if(usage.written[quadruple->result] > 1){
+        if(usage.written[quadruple.result] > 1){
             return false;
         }
 
-        return is_invariant(quadruple->arg1, usage) && is_invariant(quadruple->arg2, usage);
+        return is_invariant(quadruple.arg1, usage) && is_invariant(quadruple.arg2, usage);
     }
 
     return false;
@@ -83,11 +83,11 @@ mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function
  */
 bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Loop& loop){
     //It is not necessary to move statements with no effects. 
-    if(quadruple->op == mtac::Operator::NOP){
+    if(quadruple.op == mtac::Operator::NOP){
         return false;
     }
 
-    auto var = quadruple->result;
+    auto var = quadruple.result;
 
     for(auto& bb : loop){
         //A bb always dominates itself => no need to consider the source basic block

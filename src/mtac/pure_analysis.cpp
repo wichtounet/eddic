@@ -58,8 +58,8 @@ bool has_pointer_parameters(mtac::Function& function){
 bool edit_global_variables(mtac::Function& function){
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(mtac::erase_result(quadruple->op)){
-                if(quadruple->result->position().isGlobal()){
+            if(mtac::erase_result(quadruple.op)){
+                if(quadruple.result->position().isGlobal()){
                     return true;
                 }
             }
@@ -74,14 +74,14 @@ typedef std::unordered_set<std::reference_wrapper<mtac::Function>> Functions;
 bool call_unpure_function(mtac::Program& program, mtac::Function& function, Functions& analyzed){
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::CALL){
-                if(!quadruple->function().standard()){
-                    auto& target_function = get_function(program, quadruple->function());
+            if(quadruple.op == mtac::Operator::CALL){
+                if(!quadruple.function().standard()){
+                    auto& target_function = get_function(program, quadruple.function());
                     if(!target_function.pure() && analyzed.find(target_function) != analyzed.end()){
                         return true;
                     }
                 } else {
-                    if(!mtac::safe(quadruple->function().mangled_name())){
+                    if(!mtac::safe(quadruple.function().mangled_name())){
                         return true;
                     }
                 }
@@ -95,9 +95,9 @@ bool call_unpure_function(mtac::Program& program, mtac::Function& function, Func
 bool call_not_analyzed_function(mtac::Program& program, mtac::Function& function, Functions& analyzed){
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::CALL){
-                if(!quadruple->function().standard()){
-                    if(analyzed.find(get_function(program, quadruple->function())) == analyzed.end()){
+            if(quadruple.op == mtac::Operator::CALL){
+                if(!quadruple.function().standard()){
+                    if(analyzed.find(get_function(program, quadruple.function())) == analyzed.end()){
                         return true;
                     }
                 }

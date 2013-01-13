@@ -63,15 +63,15 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
 
             bool merge = false;
 
-            if(quadruple->op == mtac::Operator::GOTO){
-                merge = quadruple->block == next;
+            if(quadruple.op == mtac::Operator::GOTO){
+                merge = quadruple.block == next;
 
                 if(merge){
                     block->statements.pop_back();
                     computeBlockUsage(function, usage);
                 }
-            } else if(quadruple->op == mtac::Operator::CALL){
-                auto& target_function = quadruple->function();
+            } else if(quadruple.op == mtac::Operator::CALL){
+                auto& target_function = quadruple.function();
 
                 if(target_function.standard()){
                     merge = safe(target_function.mangled_name());
@@ -84,7 +84,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                         }
                     }
                 }
-            } else if(!quadruple->is_if() && !quadruple->is_if_false()){
+            } else if(!quadruple.is_if() && !quadruple.is_if_false()){
                 merge = true;
             }
 
@@ -93,8 +93,8 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 if(usage.find(next) == usage.end()){
                     if(!next->statements.empty()){
                         auto next_quadruple = next->statements.front();
-                        if(next_quadruple->op == mtac::Operator::CALL){
-                            auto& target_function = next_quadruple->function();
+                        if(next_quadruple.op == mtac::Operator::CALL){
+                            auto& target_function = next_quadruple.function();
 
                             if(target_function.standard()){
                                 if(!safe(target_function.mangled_name())){

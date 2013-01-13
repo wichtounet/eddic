@@ -22,27 +22,27 @@ template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op){
     visitor.optimized = true;
 
-    quadruple->op = op;
-    quadruple->arg1.reset();
-    quadruple->arg2.reset();
+    quadruple.op = op;
+    quadruple.arg1.reset();
+    quadruple.arg2.reset();
 }
 
 template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Argument arg, mtac::Operator op){
     visitor.optimized = true;
 
-    quadruple->op = op;
-    quadruple->arg1 = arg;
-    quadruple->arg2.reset();
+    quadruple.op = op;
+    quadruple.arg1 = arg;
+    quadruple.arg2.reset();
 }
 
 template<typename T>
 inline void replaceRight(T& visitor, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2){
     visitor.optimized = true;
 
-    quadruple->op = op;
-    quadruple->arg1 = arg1;
-    quadruple->arg2 = arg2;
+    quadruple.op = op;
+    quadruple.arg1 = arg1;
+    quadruple.arg2 = arg2;
 }
 
 } //end of mtac

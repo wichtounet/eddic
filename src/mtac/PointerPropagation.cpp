@@ -18,19 +18,19 @@ using namespace eddic;
 namespace {
 
 bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
         auto variable = *ptr;
 
         if(aliases.count(variable)){
             auto alias = aliases[variable];
 
-            quadruple->arg1 = alias;
+            quadruple.arg1 = alias;
 
             if((alias->type()->is_pointer() && alias->type()->data_type()->is_standard_type()) || alias->type()->is_standard_type()){
-                if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+                if(auto* offset_ptr = boost::get<int>(&*quadruple.arg2)){
                     if(*offset_ptr == 0){
-                        quadruple->op = op;
-                        quadruple->arg2.reset();
+                        quadruple.op = op;
+                        quadruple.arg2.reset();
                     }
                 }
             }
@@ -43,19 +43,19 @@ bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op,
 }
 
 bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
-    auto variable = quadruple->result;
+    auto variable = quadruple.result;
 
     if(aliases.count(variable)){
         auto alias = aliases[variable];
 
-        quadruple->result = alias;
+        quadruple.result = alias;
 
         if((alias->type()->is_pointer() && alias->type()->data_type()->is_standard_type()) || alias->type()->is_standard_type()){
-            if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
+            if(auto* offset_ptr = boost::get<int>(&*quadruple.arg1)){
                 if(*offset_ptr == 0){
-                    quadruple->op = op;
-                    quadruple->arg1.reset();
-                    quadruple->arg1 = quadruple->arg2;
+                    quadruple.op = op;
+                    quadruple.arg1.reset();
+                    quadruple.arg1 = quadruple.arg2;
                 }
             }
         }
@@ -86,8 +86,8 @@ struct CopyApplier {
     }
 
     void optimize(std::shared_ptr<mtac::Quadruple> quadruple){
-        changes |= optimize_optional(quadruple->arg1);
-        changes |= optimize_optional(quadruple->arg2);
+        changes |= optimize_optional(quadruple.arg1);
+        changes |= optimize_optional(quadruple.arg2);
     }
 };
 
@@ -105,37 +105,37 @@ void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadr
 
     optimized |= optimizer.changes;
 
-    if(mtac::erase_result(quadruple->op)){
-        aliases.erase(quadruple->result);
-        pointer_copies.erase(quadruple->result);
+    if(mtac::erase_result(quadruple.op)){
+        aliases.erase(quadruple.result);
+        pointer_copies.erase(quadruple.result);
     }
 
-    if(quadruple->op == mtac::Operator::PASSIGN){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+    if(quadruple.op == mtac::Operator::PASSIGN){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
             if(!(*ptr)->type()->is_pointer()){
-                aliases[quadruple->result] = *ptr;
+                aliases[quadruple.result] = *ptr;
             } else if((*ptr)->type()->is_pointer()){
                 if(aliases.count(*ptr)){
                     auto alias = aliases[*ptr];
-                    quadruple->arg1 = alias;
+                    quadruple.arg1 = alias;
 
                     optimized = true;
                 }
             }
         }
         
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-            if((*ptr)->type()->is_pointer() && quadruple->result->type()->is_pointer()){
-                pointer_copies[quadruple->result] = *ptr;    
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            if((*ptr)->type()->is_pointer() && quadruple.result->type()->is_pointer()){
+                pointer_copies[quadruple.result] = *ptr;    
             }
         }
-    } else if(quadruple->op == mtac::Operator::DOT){
+    } else if(quadruple.op == mtac::Operator::DOT){
         optimized |= optimize_dot(quadruple, mtac::Operator::ASSIGN, aliases);
-    } else if(quadruple->op == mtac::Operator::FDOT){
+    } else if(quadruple.op == mtac::Operator::FDOT){
         optimized |= optimize_dot(quadruple, mtac::Operator::FASSIGN, aliases);
-    } else if(quadruple->op == mtac::Operator::DOT_ASSIGN){
+    } else if(quadruple.op == mtac::Operator::DOT_ASSIGN){
         optimized |= optimize_dot_assign(quadruple, mtac::Operator::ASSIGN, aliases);
-    } else if(quadruple->op == mtac::Operator::DOT_FASSIGN){
+    } else if(quadruple.op == mtac::Operator::DOT_FASSIGN){
         optimized |= optimize_dot_assign(quadruple, mtac::Operator::FASSIGN, aliases);
     }
 }

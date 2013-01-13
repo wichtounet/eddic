@@ -50,11 +50,11 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                 while(fit != block->statements.end()){
                     auto& quadruple = *fit;
 
-                    if(quadruple->op == mtac::Operator::CALL){
-                        auto function = quadruple->function().mangled_name();
+                    if(quadruple.op == mtac::Operator::CALL){
+                        auto function = quadruple.function().mangled_name();
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                            int parameters = quadruple->function().parameters().size();
+                            int parameters = quadruple.function().parameters().size();
 
                             if(parameters > 0){
                                 //The parameters are in the previous block

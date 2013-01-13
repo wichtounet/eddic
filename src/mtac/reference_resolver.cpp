@@ -39,28 +39,28 @@ void mtac::resolve_references(mtac::Program& program){
 
         while(it.has_next()){
             auto& quadruple = *it;
-            auto op = quadruple->op;
+            auto op = quadruple.op;
 
             //x = (r)z => x = (ref(r))(z+offset(r))
-            if((op == mtac::Operator::DOT || op == mtac::Operator::FDOT) && mtac::optional_is<std::shared_ptr<Variable>>(quadruple->arg1)){
-                auto var = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+            if((op == mtac::Operator::DOT || op == mtac::Operator::FDOT) && mtac::optional_is<std::shared_ptr<Variable>>(quadruple.arg1)){
+                auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
 
                 if(var->is_reference()){
                     if(var->type()->is_dynamic_array()){
                         auto ptr_temp = function.context->new_temporary(var->type());
 
-                        quadruple->arg1 = ptr_temp;
+                        quadruple.arg1 = ptr_temp;
 
                         it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                     } else {
-                        auto index = *quadruple->arg2;
+                        auto index = *quadruple.arg2;
                         auto temp = function.context->new_temporary(INT);
 
                         //The reference itself is replaced by its pointed var
-                        quadruple->arg1 = var->reference();
+                        quadruple.arg1 = var->reference();
 
                         //The new offset is the sum of the old ones
-                        quadruple->arg2 = temp;
+                        quadruple.arg2 = temp;
 
                         it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                     }
@@ -69,24 +69,24 @@ void mtac::resolve_references(mtac::Program& program){
                 }
             } 
             //(r)z = x => (ref(r))(z+offset(r)) = x
-            else if((op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN)&& quadruple->result->is_reference()){
-                auto var = quadruple->result;
+            else if((op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN)&& quadruple.result->is_reference()){
+                auto var = quadruple.result;
 
                 if(var->type()->is_dynamic_array()){
                     auto ptr_temp = function.context->new_temporary(var->type());
 
-                    quadruple->result = ptr_temp;
+                    quadruple.result = ptr_temp;
 
                     it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                 } else {
                     auto temp = function.context->new_temporary(INT);
-                    auto index = *quadruple->arg1;
+                    auto index = *quadruple.arg1;
 
                     //The reference itself is replaced by its pointed var
-                    quadruple->result = var->reference();
+                    quadruple.result = var->reference();
 
                     //The new offset is the sum of the old ones
-                    quadruple->arg1 = temp;
+                    quadruple.arg1 = temp;
 
                     it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                 }
@@ -95,8 +95,8 @@ void mtac::resolve_references(mtac::Program& program){
             }
 
             //ref = x
-            if(mtac::erase_result(quadruple->op)){
-                auto result = quadruple->result;
+            if(mtac::erase_result(quadruple.op)){
+                auto result = quadruple.result;
 
                 if(result && result->is_reference()){
                     //The first times a variable is encountered, it is its initialization

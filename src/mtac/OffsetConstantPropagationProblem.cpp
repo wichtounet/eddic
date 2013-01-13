@@ -125,16 +125,16 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
     auto out = in;
 
     //Store the value assigned to result+arg1
-    if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
-        if(auto* ptr = boost::get<int>(&*quadruple->arg1)){
-            if(!quadruple->result->type()->is_pointer()){
-                mtac::Offset offset(quadruple->result, *ptr);
+    if(quadruple.op == mtac::Operator::DOT_ASSIGN || quadruple.op == mtac::Operator::DOT_FASSIGN || quadruple.op == mtac::Operator::DOT_PASSIGN){
+        if(auto* ptr = boost::get<int>(&*quadruple.arg1)){
+            if(!quadruple.result->type()->is_pointer()){
+                mtac::Offset offset(quadruple.result, *ptr);
 
                 ConstantCollector collector(out, offset);
-                visit(collector, *quadruple->arg2);
+                visit(collector, *quadruple.arg2);
             }
-        } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-            auto variable = quadruple->result;
+        } else if(boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            auto variable = quadruple.result;
 
             //Impossible to know which offset is modified, consider the whole variable modified
             for(auto it = std::begin(out.values()); it != std::end(out.values());){
@@ -148,17 +148,17 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
             }
         }
         //PDOT Lets escape an offset
-    } else if(quadruple->op == mtac::Operator::PDOT){
-        if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-            auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple->arg1);
+    } else if(quadruple.op == mtac::Operator::PDOT){
+        if(auto* ptr = boost::get<int>(&*quadruple.arg2)){
+            auto variable = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
 
             mtac::Offset offset(variable, *ptr);
             escaped.insert(offset);
         }
-    } else if(quadruple->op == mtac::Operator::PARAM){
+    } else if(quadruple.op == mtac::Operator::PARAM){
         //Passing a variable by pointer erases its value
-        if(quadruple->address){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        if(quadruple.address){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                 auto variable = *ptr;
 
                 //Impossible to know if the variable is modified or not, consider it modified
@@ -201,44 +201,44 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
             }
 
             //If constant replace the value assigned to result by the value stored for arg1+arg2
-            if(quadruple->op == mtac::Operator::DOT){
-                if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            if(quadruple.op == mtac::Operator::DOT){
+                if(auto* ptr = boost::get<int>(&*quadruple.arg2)){
+                    if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                         mtac::Offset offset(*var_ptr, *ptr);
 
                         if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
-                            quadruple->op = mtac::Operator::ASSIGN;
-                            *quadruple->arg1 = results[offset];
-                            quadruple->arg2.reset();
+                            quadruple.op = mtac::Operator::ASSIGN;
+                            *quadruple.arg1 = results[offset];
+                            quadruple.arg2.reset();
 
-                            if(quadruple->result->type()->is_pointer()){
-                                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+                            if(quadruple.result->type()->is_pointer()){
+                                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                                     if(!(*var_ptr)->type()->is_pointer()){
-                                        quadruple->op = mtac::Operator::PASSIGN;
+                                        quadruple.op = mtac::Operator::PASSIGN;
                                     }
                                 }
                             }
 
                             optimized = true;
                         }
-                    } else if(auto* string_ptr = boost::get<std::string>(&*quadruple->arg1)){
+                    } else if(auto* string_ptr = boost::get<std::string>(&*quadruple.arg1)){
                         auto string_value = string_pool->value(*string_ptr);
 
-                        quadruple->op = mtac::Operator::ASSIGN;
-                        *quadruple->arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
-                        quadruple->arg2.reset();
+                        quadruple.op = mtac::Operator::ASSIGN;
+                        *quadruple.arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
+                        quadruple.arg2.reset();
 
                         optimized = true;
                     }
                 }
-            } else if(quadruple->op == mtac::Operator::FDOT){
-                if(auto* ptr = boost::get<int>(&*quadruple->arg2)){
-                    mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple->arg1), *ptr);
+            } else if(quadruple.op == mtac::Operator::FDOT){
+                if(auto* ptr = boost::get<int>(&*quadruple.arg2)){
+                    mtac::Offset offset(boost::get<std::shared_ptr<Variable>>(*quadruple.arg1), *ptr);
 
                     if(results.find(offset) != results.end() && pointer_escaped->find(offset.variable) == pointer_escaped->end()){
-                        quadruple->op = mtac::Operator::FASSIGN;
-                        *quadruple->arg1 = results[offset];
-                        quadruple->arg2.reset();
+                        quadruple.op = mtac::Operator::FASSIGN;
+                        *quadruple.arg1 = results[offset];
+                        quadruple.arg2.reset();
 
                         optimized = true;
                     }

@@ -27,15 +27,15 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& functio
 
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::CALL){
-                if(quadruple->return1() == variable || quadruple->return2() == variable){
+            if(quadruple.op == mtac::Operator::CALL){
+                if(quadruple.return1() == variable || quadruple.return2() == variable){
                     if(written){
                         return false;
                     }
 
                     written = true;
                 }
-            } else if(mtac::erase_result(quadruple->op) && quadruple->result == variable){
+            } else if(mtac::erase_result(quadruple.op) && quadruple.result == variable){
                 if(written){
                     return false;
                 }
@@ -51,8 +51,8 @@ bool is_written_once(std::shared_ptr<Variable> variable, mtac::Function& functio
 bool is_not_direct_alias(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target, mtac::Function& function){
     for(auto& block : function){
         for(auto& quadruple : block){
-            if(quadruple->op == mtac::Operator::PASSIGN && quadruple->result == source){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            if(quadruple.op == mtac::Operator::PASSIGN && quadruple.result == source){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                     if(*var_ptr == target){
                         return false;
                     }
@@ -69,10 +69,10 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
     
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+            if(quadruple.op == mtac::Operator::ASSIGN || quadruple.op == mtac::Operator::PASSIGN || quadruple.op == mtac::Operator::PASSIGN){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                     if(*var_ptr == variable){
-                        targets.push_back(quadruple->result); 
+                        targets.push_back(quadruple.result); 
                     }
                 }
             }
@@ -87,9 +87,9 @@ std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> var
     
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::PASSIGN || quadruple->op == mtac::Operator::PASSIGN){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(quadruple->result == variable){
+            if(quadruple.op == mtac::Operator::ASSIGN || quadruple.op == mtac::Operator::PASSIGN || quadruple.op == mtac::Operator::PASSIGN){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                    if(quadruple.result == variable){
                         sources.push_back(*var_ptr); 
                     }
                 }
@@ -113,12 +113,12 @@ struct VariableReplace {
 
     void guard(std::shared_ptr<mtac::Quadruple> quadruple){
         if(!reverse){
-            if(quadruple->result == source || quadruple->secondary == source){
+            if(quadruple.result == source || quadruple.secondary == source){
                 find_first = true;
                 return;
             } 
 
-            if(find_first && (quadruple->result == target || quadruple->secondary == target)){
+            if(find_first && (quadruple.result == target || quadruple.secondary == target)){
                 invalid = true;
             }
         }
@@ -150,24 +150,24 @@ struct VariableReplace {
         //because it can be invalidated lated
         //and it will removed by other passes if still there
         
-        if(quadruple->op == mtac::Operator::CALL){
-            if(quadruple->result == source){
-                quadruple->result = target;
+        if(quadruple.op == mtac::Operator::CALL){
+            if(quadruple.result == source){
+                quadruple.result = target;
                 optimized = true;
             }
             
-            if(quadruple->secondary == source){
-                quadruple->secondary = target;
+            if(quadruple.secondary == source){
+                quadruple.secondary = target;
                 optimized = true;
             }
-        } else if(reverse || !mtac::erase_result(quadruple->op)){
-            if(quadruple->result == source){
-                quadruple->result = target;
+        } else if(reverse || !mtac::erase_result(quadruple.op)){
+            if(quadruple.result == source){
+                quadruple.result = target;
                 optimized = true;
             }
         }
 
-        return optimized | optimize_optional(quadruple->arg1) | optimize_optional(quadruple->arg2);
+        return optimized | optimize_optional(quadruple.arg1) | optimize_optional(quadruple.arg2);
     }
 };
 
