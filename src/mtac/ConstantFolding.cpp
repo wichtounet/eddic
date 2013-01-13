@@ -14,23 +14,23 @@
 
 using namespace eddic;
 
-bool transform_to_if_false_unary(std::shared_ptr<mtac::Quadruple> ifFalse, bool value){
-    ifFalse->op = mtac::Operator::IF_FALSE_UNARY;
-    ifFalse->arg1 = value ? 1 : 0;
-    ifFalse->arg2.reset();
+bool transform_to_if_false_unary(mtac::Quadruple& ifFalse, bool value){
+    ifFalse.op = mtac::Operator::IF_FALSE_UNARY;
+    ifFalse.arg1 = value ? 1 : 0;
+    ifFalse.arg2.reset();
 
     return true;
 }
 
-bool transform_to_if_unary(std::shared_ptr<mtac::Quadruple> if_, bool value){
-    if_->op = mtac::Operator::IF_UNARY;
-    if_->arg1 = value ? 1 : 0;
-    if_->arg2.reset();
+bool transform_to_if_unary(mtac::Quadruple& if_, bool value){
+    if_.op = mtac::Operator::IF_UNARY;
+    if_.arg1 = value ? 1 : 0;
+    if_.arg2.reset();
 
     return true;
 }
     
-void mtac::ConstantFolding::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+void mtac::ConstantFolding::operator()(mtac::Quadruple& quadruple){
     if(quadruple.arg1){
         if(mtac::isInt(*quadruple.arg1)){
             if(quadruple.op == mtac::Operator::MINUS){

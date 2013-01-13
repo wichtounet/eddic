@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-void mtac::ReduceInStrength::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+void mtac::ReduceInStrength::operator()(mtac::Quadruple& quadruple){
     switch(quadruple.op){
         case mtac::Operator::MOD:
             if(auto* ptr = boost::get<int>(&*quadruple.arg2)){

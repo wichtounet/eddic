@@ -17,7 +17,7 @@ using namespace eddic;
 
 namespace {
 
-bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
+bool optimize_dot(mtac::Quadruple& quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
         auto variable = *ptr;
 
@@ -42,7 +42,7 @@ bool optimize_dot(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op,
     return false;
 }
 
-bool optimize_dot_assign(std::shared_ptr<mtac::Quadruple> quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
+bool optimize_dot_assign(mtac::Quadruple& quadruple, mtac::Operator op, std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>>& aliases){
     auto variable = quadruple.result;
 
     if(aliases.count(variable)){
@@ -85,7 +85,7 @@ struct CopyApplier {
         return false;
     }
 
-    void optimize(std::shared_ptr<mtac::Quadruple> quadruple){
+    void optimize(mtac::Quadruple& quadruple){
         changes |= optimize_optional(quadruple.arg1);
         changes |= optimize_optional(quadruple.arg2);
     }
@@ -99,7 +99,7 @@ void mtac::PointerPropagation::clear(){
     pointer_copies.clear();
 }
 
-void mtac::PointerPropagation::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+void mtac::PointerPropagation::operator()(mtac::Quadruple& quadruple){
     CopyApplier optimizer(pointer_copies);
     optimizer.optimize(quadruple);
 

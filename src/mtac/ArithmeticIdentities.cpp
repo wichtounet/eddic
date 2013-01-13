@@ -11,7 +11,7 @@
 
 using namespace eddic;
     
-void mtac::ArithmeticIdentities::operator()(std::shared_ptr<mtac::Quadruple> quadruple){
+void mtac::ArithmeticIdentities::operator()(mtac::Quadruple& quadruple){
     switch(quadruple.op){
         case mtac::Operator::ASSIGN:
         case mtac::Operator::PASSIGN:
