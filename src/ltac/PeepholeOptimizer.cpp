@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 
