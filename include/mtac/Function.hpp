@@ -19,6 +19,7 @@
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
 #include "mtac/Loop.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
