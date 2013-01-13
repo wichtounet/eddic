@@ -121,7 +121,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, std::shared_ptr<mtac::Quadruple>& quadruple, ProblemDomain& in){
+ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
 
     //Store the value assigned to result+arg1

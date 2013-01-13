@@ -60,6 +60,8 @@ class Function : public std::enable_shared_from_this<Function> {
             statements.push_back(quadruple);
         }
 
+        mtac::Quadruple& find(std::size_t uid);
+
         std::vector<mtac::Quadruple>& get_statements();
         void release_statements();
 

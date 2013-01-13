@@ -21,7 +21,7 @@ class Variable;
 namespace mtac {
 
 struct LinearEquation {
-    std::shared_ptr<mtac::Quadruple> def;
+    mtac::Quadruple& def;
     std::shared_ptr<Variable> i;
     int e;
     int d;

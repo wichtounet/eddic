@@ -62,7 +62,7 @@ struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backwa
    
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     
     bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results) override;

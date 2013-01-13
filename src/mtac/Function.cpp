@@ -100,7 +100,7 @@ mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
 }
 
-void mtac::Function::add(std::shared_ptr<mtac::Quadruple> statement){
+void mtac::Function::add(mtac::Quadruple statement){
     statements.push_back(statement);
 }
 
@@ -267,7 +267,7 @@ eddic::Function& mtac::Function::definition(){
     return *_definition;
 }
 
-std::vector<std::shared_ptr<mtac::Quadruple>>& mtac::Function::get_statements(){
+std::vector<mtac::Quadruple>& mtac::Function::get_statements(){
     return statements;
 }
 

@@ -329,7 +329,7 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
     return std::make_pair(false, 0);
 }
 
-int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, std::shared_ptr<mtac::Quadruple>& if_){
+int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Quadruple& if_){
     if(if_->is_if()){
         if(mtac::isVariable(*if_->arg1)){
             auto var = boost::get<std::shared_ptr<Variable>>(*if_->arg1);

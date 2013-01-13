@@ -111,7 +111,7 @@ struct VariableReplace {
     VariableReplace(std::shared_ptr<Variable> source, std::shared_ptr<Variable> target) : source(source), target(target) {}
     VariableReplace(const VariableReplace& rhs) = delete;
 
-    void guard(std::shared_ptr<mtac::Quadruple> quadruple){
+    void guard(mtac::Quadruple& quadruple){
         if(!reverse){
             if(quadruple.result == source || quadruple.secondary == source){
                 find_first = true;
@@ -137,7 +137,7 @@ struct VariableReplace {
         return false;
     }
 
-    bool optimize(std::shared_ptr<mtac::Quadruple> quadruple){
+    bool optimize(mtac::Quadruple& quadruple){
         guard(quadruple);
         
         if(invalid){

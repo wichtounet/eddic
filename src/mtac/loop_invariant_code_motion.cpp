@@ -39,7 +39,7 @@ bool is_invariant(boost::optional<mtac::Argument>& argument, mtac::Usage& usage)
     return true;
 }
 
-bool is_invariant(std::shared_ptr<mtac::Quadruple>& quadruple, mtac::Usage& usage){
+bool is_invariant(mtac::Quadruple& quadruple, mtac::Usage& usage){
     //TODO Relax this rule by making a more powerful memory analysis
     if(quadruple.op == mtac::Operator::DOT || quadruple.op == mtac::Operator::FDOT || quadruple.op == mtac::Operator::PDOT){
         return false;
@@ -81,7 +81,7 @@ mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(mtac::basic_block_p source_bb, std::shared_ptr<mtac::Quadruple> quadruple, mtac::Loop& loop){
+bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadruple, mtac::Loop& loop){
     //It is not necessary to move statements with no effects. 
     if(quadruple.op == mtac::Operator::NOP){
         return false;

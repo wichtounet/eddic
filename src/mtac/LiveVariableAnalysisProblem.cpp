@@ -79,7 +79,7 @@ struct LivenessCollector {
         }
     }
 
-    void collect(std::shared_ptr<mtac::Quadruple>& quadruple){
+    void collect(mtac::Quadruple& quadruple){
         if(quadruple.op != mtac::Operator::NOP){
             if(mtac::erase_result(quadruple.op)){
                 in.values().erase(quadruple.result);
@@ -95,7 +95,7 @@ struct LivenessCollector {
 
 } //End of anonymous namespace
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& out){
+ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& out){
     auto in = out;
     
     LivenessCollector collector(in);

@@ -123,7 +123,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, std::shared_ptr<mtac::Quadruple>& quadruple, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
 
     std::shared_ptr<Variable> remove_copies;
@@ -210,7 +210,7 @@ struct ConstantOptimizer {
         return false;
     }
 
-    bool optimize(std::shared_ptr<mtac::Quadruple> quadruple){
+    bool optimize(mtac::Quadruple& quadruple){
         if(quadruple.op == mtac::Operator::PARAM){
             if(!quadruple.address){
                 changes |= optimize_optional(quadruple.arg1);

@@ -77,7 +77,7 @@ struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::L
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, std::shared_ptr<mtac::Quadruple>&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Quadruple&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
     bool optimize(mtac::Function&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };
@@ -92,7 +92,7 @@ struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowT
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, std::shared_ptr<mtac::Quadruple>&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
+    ProblemDomain transfer(mtac::basic_block_p, mtac::Quadruple&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
     
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
     bool optimize(mtac::Function&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };

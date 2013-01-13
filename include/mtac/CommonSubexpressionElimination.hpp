@@ -17,13 +17,14 @@
 #include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/forward.hpp"
+#include "mtac/Quadruple.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
 struct Expression {
-    std::shared_ptr<mtac::Quadruple> expression;
+    std::size_t expression;
     basic_block_p source;
 };
 
@@ -32,11 +33,12 @@ std::ostream& operator<<(std::ostream& stream, Expression& expression);
 typedef std::vector<Expression> Expressions;
 
 struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
-    std::unordered_set<std::shared_ptr<mtac::Quadruple>> optimized;
+    std::unordered_set<std::size_t> optimized;
+    mtac::Function* function;
 
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     
     ProblemDomain Init(mtac::Function& function) override;
