@@ -57,8 +57,8 @@ mtac::Argument index_of_array(std::shared_ptr<Variable> array, ast::Value indexV
     
     auto temp = function.context->new_temporary(INT);
 
-    function.add(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::MUL, array->type()->data_type()->size(function.context->global()->target_platform())));
-    function.add(std::make_shared<mtac::Quadruple>(temp, temp, mtac::Operator::ADD, INT->size(function.context->global()->target_platform())));
+    function.emplace_back(temp, index, mtac::Operator::MUL, array->type()->data_type()->size(function.context->global()->target_platform()));
+    function.emplace_back(temp, temp, mtac::Operator::ADD, INT->size(function.context->global()->target_platform()));
    
     return temp;
 }
@@ -85,13 +85,13 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     pass_arguments(function, ctor_function, values);
 
     //Pass "this" parameter
-    auto ctor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
-    ctor_param->address = true;
-    function.add(ctor_param);
+    mtac::Quadruple ctor_param(mtac::Operator::PARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
+    ctor_param.address = true;
+    function.push_back(std::move(ctor_param));
 
     //Call the constructor
     global_context->addReference(ctor_name);
-    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, ctor_function)); 
+    function.emplace_back(mtac::Operator::CALL, ctor_function); 
 }
 
 void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg, ast::Value rhs_arg){
@@ -111,15 +111,15 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
     //Pass the other structure (the pointer will automatically be handled
     pass_arguments(function, ctor_function, values);
 
-    auto ctor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, 
+    mtac::Quadruple ctor_param(mtac::Operator::PARAM, 
             this_arg, 
             ctor_function.context()->getVariable(ctor_function.parameter(0).name()), 
             ctor_function);
-    ctor_param->address = true;
-    function.add(ctor_param);
+    ctor_param.address = true;
+    function.push_back(std::move(ctor_param));
 
     global_context->addReference(ctor_name);
-    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, ctor_function)); 
+    function.emplace_back(mtac::Operator::CALL, ctor_function); 
 }
 
 void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
@@ -130,12 +130,12 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     auto& dtor_function = global_context->getFunction(dtor_name);
 
-    auto dtor_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
-    dtor_param->address = true;
-    function.add(dtor_param);
+    mtac::Quadruple dtor_param(mtac::Operator::PARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
+    dtor_param.address = true;
+    function.push_back(std::move(dtor_param));
 
     global_context->addReference(dtor_name);
-    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, dtor_function)); 
+    function.emplace_back(mtac::Operator::CALL, dtor_function); 
 }
 
 template<typename Source>
@@ -151,12 +151,12 @@ Offset variant_cast(Source source){
 
 void jump_if_true(mtac::Function& function, const std::string& l, ast::Value value){
     auto argument = moveToArgument(value, function);
-    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::IF_UNARY, argument, l));
+    function.emplace_back(mtac::Operator::IF_UNARY, argument, l);
 }
 
 void jump_if_false(mtac::Function& function, const std::string& l, ast::Value value){
     auto argument = moveToArgument(value, function);
-    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::IF_FALSE_UNARY, argument, l));
+    function.emplace_back(mtac::Operator::IF_FALSE_UNARY, argument, l);
 }
 
 arguments struct_to_arguments(mtac::Function& function, std::shared_ptr<const Type> type, std::shared_ptr<Variable> base_var, unsigned int offset);
@@ -175,8 +175,8 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         auto t1 = function.context->new_temporary(INT);
         auto t2 = function.context->new_temporary(INT);
 
-        function.add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, offset));
-        function.add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, offset + INT->size(platform)));
+        function.emplace_back(t1, var, mtac::Operator::DOT, offset);
+        function.emplace_back(t2, var, mtac::Operator::DOT, offset + INT->size(platform));
 
         return {t1, t2};
     } else if(member_type->is_array() && !member_type->is_dynamic_array()){
@@ -199,8 +199,8 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                     auto t1 = function.context->new_temporary(INT);
                     auto t2 = function.context->new_temporary(INT);
                     
-                    function.add(std::make_shared<mtac::Quadruple>(t1, var, mtac::Operator::DOT, index_offset));
-                    function.add(std::make_shared<mtac::Quadruple>(t2, var, mtac::Operator::DOT, index_offset + INT->size(function.context->global()->target_platform())));
+                    function.emplace_back(t1, var, mtac::Operator::DOT, index_offset);
+                    function.emplace_back(t2, var, mtac::Operator::DOT, index_offset + INT->size(function.context->global()->target_platform()));
 
                     result.push_back(t1);
                     result.push_back(t2);
@@ -221,9 +221,9 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                     auto temp = function.context->new_temporary(data_type);
 
                     if(data_type == FLOAT){
-                        function.add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, index_offset));
+                        function.emplace_back(temp, var, mtac::Operator::FDOT, index_offset);
                     } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                        function.add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, index_offset));
+                        function.emplace_back(temp, var, mtac::Operator::DOT, index_offset);
                     }
 
                     result.push_back(temp);
@@ -254,9 +254,9 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         }
 
         if(member_type == FLOAT){
-            function.add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::FDOT, offset));
+            function.emplace_back(temp, var, mtac::Operator::FDOT, offset);
         } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer() || member_type->is_dynamic_array()){
-            function.add(std::make_shared<mtac::Quadruple>(temp, var, mtac::Operator::DOT, offset));
+            function.emplace_back(temp, var, mtac::Operator::DOT, offset);
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member
         } else {
@@ -301,9 +301,9 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     auto temp = function.context->new_temporary(type);
 
                     if(type == FLOAT){
-                        function.add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::toFloatOperator(op), right_value));
+                        function.emplace_back(temp, left[0], mtac::toFloatOperator(op), right_value);
                     } else {
-                        function.add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::toOperator(op), right_value));
+                        function.emplace_back(temp, left[0], mtac::toOperator(op), right_value);
                     }
 
                     left = {temp};
@@ -325,9 +325,9 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
 
                 if(type == INT || type == CHAR || type->is_pointer() || type->is_dynamic_array()){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toRelationalOperator(op), right));
+                    function.emplace_back(t1, left[0], mtac::toRelationalOperator(op), right);
                 } else if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::toFloatRelationalOperator(op), right));
+                    function.emplace_back(t1, left[0], mtac::toFloatRelationalOperator(op), right);
                 } else {
                     eddic_unreachable("Unsupported type in relational operator");
                 }
@@ -344,17 +344,17 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto falseLabel = newLabel();
                 auto endLabel = newLabel();
 
-                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::IF_FALSE_UNARY, left[0], falseLabel));
+                function.emplace_back(mtac::Operator::IF_FALSE_UNARY, left[0], falseLabel);
 
                 jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
 
-                function.add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
-                function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::GOTO));
+                function.emplace_back(t1, 1, mtac::Operator::ASSIGN);
+                function.emplace_back(endLabel, mtac::Operator::GOTO);
 
-                function.add(std::make_shared<mtac::Quadruple>(falseLabel, mtac::Operator::LABEL));
-                function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
+                function.emplace_back(falseLabel, mtac::Operator::LABEL);
+                function.emplace_back(t1, 0, mtac::Operator::ASSIGN);
 
-                function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+                function.emplace_back(endLabel, mtac::Operator::LABEL);
 
                 left = {t1};
 
@@ -368,17 +368,17 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto trueLabel = newLabel();
                 auto endLabel = newLabel();
 
-                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::IF_UNARY, left[0], trueLabel));
+                function.emplace_back(mtac::Operator::IF_UNARY, left[0], trueLabel);
 
                 jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
 
-                function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::ASSIGN));
-                function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::GOTO));
+                function.emplace_back(t1, 0, mtac::Operator::ASSIGN);
+                function.emplace_back(endLabel, mtac::Operator::GOTO);
 
-                function.add(std::make_shared<mtac::Quadruple>(trueLabel, mtac::Operator::LABEL));
-                function.add(std::make_shared<mtac::Quadruple>(t1, 1, mtac::Operator::ASSIGN));
+                function.emplace_back(trueLabel, mtac::Operator::LABEL);
+                function.emplace_back(t1, 1, mtac::Operator::ASSIGN);
 
-                function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+                function.emplace_back(endLabel, mtac::Operator::LABEL);
 
                 left = {t1};
 
@@ -397,12 +397,12 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     auto t1 = function.context->new_temporary(INT);
 
                     //Get the label
-                    function.add(std::make_shared<mtac::Quadruple>(pointer_temp, left[0], mtac::Operator::ASSIGN));
+                    function.emplace_back(pointer_temp, left[0], mtac::Operator::ASSIGN);
 
                     //Get the specified char 
-                    auto quadruple = std::make_shared<mtac::Quadruple>(t1, pointer_temp, mtac::Operator::DOT, index);
-                    quadruple->size = mtac::Size::BYTE;
-                    function.add(quadruple);
+                    mtac::Quadruple quadruple(t1, pointer_temp, mtac::Operator::DOT, index);
+                    quadruple.size = mtac::Size::BYTE;
+                    function.push_back(std::move(quadruple));
 
                     left = {t1};
                 } else {
@@ -414,7 +414,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     if(T == ArgumentType::ADDRESS){
                         auto temp = function.context->new_temporary(data_type->is_pointer() ? data_type : new_pointer_type(data_type));
 
-                        function.add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::PDOT, index));
+                        function.emplace_back(temp, left[0], mtac::Operator::PDOT, index);
 
                         left = {temp};
                     } else {
@@ -426,18 +426,18 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                                 temp = function.context->new_temporary(data_type);
                             }
 
-                            function.add(std::make_shared<mtac::Quadruple>(temp, left[0], mtac::Operator::DOT, index));
+                            function.emplace_back(temp, left[0], mtac::Operator::DOT, index);
                             left = {temp};
                         } else if (data_type == STRING){
                             auto t1 = function.context->new_temporary(INT);
-                            function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::DOT, index));
+                            function.emplace_back(t1, left[0], mtac::Operator::DOT, index);
 
                             auto t2 = function.context->new_temporary(INT);
                             auto t3 = function.context->new_temporary(INT);
 
                             //Assign the second part of the string
-                            function.add(std::make_shared<mtac::Quadruple>(t3, index, mtac::Operator::ADD, INT->size(function.context->global()->target_platform())));
-                            function.add(std::make_shared<mtac::Quadruple>(t2, left[0], mtac::Operator::DOT, t3));
+                            function.emplace_back(t3, index, mtac::Operator::ADD, INT->size(function.context->global()->target_platform()));
+                            function.emplace_back(t2, left[0], mtac::Operator::DOT, t3);
 
                             left = {t1, t2};
                         } else {
@@ -468,7 +468,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function.context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
 
-                    function.add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::PDOT, offset));
+                    function.emplace_back(temp, variable, mtac::Operator::PDOT, offset);
 
                     left = {temp};
                 } else {
@@ -510,10 +510,10 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     auto t1 = function.context->new_temporary(type->is_pointer() ? type : new_pointer_type(type));
 
                     if(type->is_pointer()){
-                        function.add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::ADD, offset));
+                        function.emplace_back(t1, left_value, mtac::Operator::ADD, offset);
                     } else {
-                        function.add(std::make_shared<mtac::Quadruple>(t1, left_value, mtac::Operator::PASSIGN));
-                        function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, offset));
+                        function.emplace_back(t1, left_value, mtac::Operator::PASSIGN);
+                        function.emplace_back(t1, t1, mtac::Operator::ADD, offset);
                     }
 
                     left_value = t1;
@@ -528,19 +528,19 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     construct(function, type, {}, var);
                     
                     //Pass the address of return
-                    auto call_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
-                    call_param->address = true;
-                    function.add(call_param);
+                    mtac::Quadruple call_param(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
+                    call_param.address = true;
+                    function.push_back(std::move(call_param));
 
                     //Pass the normal arguments of the function
                     pass_arguments(function, definition, call_operation_value.values);
                     
                     //Pass the address of the object to the member function
-                    auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
-                    mtac_param->address = true;
-                    function.add(mtac_param);   
+                    mtac::Quadruple mtac_param(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
+                    mtac_param.address = true;
+                    function.push_back(std::move(mtac_param));
 
-                    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition));
+                    function.emplace_back(mtac::Operator::CALL, definition);
 
                     left = {var};
                     break;
@@ -569,12 +569,12 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 pass_arguments(function, definition, call_operation_value.values);
 
                 //Pass the address of the object to the member function
-                auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
-                mtac_param->address = true;
-                function.add(mtac_param);   
+                mtac::Quadruple mtac_param(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
+                mtac_param.address = true;
+                function.push_back(std::move(mtac_param));
 
                 //Call the function
-                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition, return_, return2_));
+                function.emplace_back(mtac::Operator::CALL, definition, return_, return2_);
 
                 break;
             }
@@ -587,11 +587,11 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto t2 = function.context->new_temporary(type);
 
                 if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::FASSIGN));
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+                    function.emplace_back(t2, t1, mtac::Operator::FASSIGN);
+                    function.emplace_back(t1, t1, mtac::Operator::FADD, 1.0);
                 } else if (type == INT){
-                    function.add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::ASSIGN));
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+                    function.emplace_back(t2, t1, mtac::Operator::ASSIGN);
+                    function.emplace_back(t1, t1, mtac::Operator::ADD, 1);
                 } else {
                     eddic_unreachable("invalid type");
                 }
@@ -609,11 +609,11 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 auto t2 = function.context->new_temporary(type);
 
                 if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::FASSIGN));
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+                    function.emplace_back(t2, t1, mtac::Operator::FASSIGN);
+                    function.emplace_back(t1, t1, mtac::Operator::FSUB, 1.0);
                 } else if (type == INT){
-                    function.add(std::make_shared<mtac::Quadruple>(t2, t1, mtac::Operator::ASSIGN));
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+                    function.emplace_back(t2, t1, mtac::Operator::ASSIGN);
+                    function.emplace_back(t1, t1, mtac::Operator::SUB, 1);
                 } else {
                     eddic_unreachable("invalid type");
                 }
@@ -689,12 +689,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(function.context->global()), new_.Content->type);
     
-        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, type->size(function.context->global()->target_platform()), "a", function.context->global()->getFunction("_F5allocI")));
+        function.emplace_back(mtac::Operator::PARAM, type->size(function.context->global()->target_platform()), "a", function.context->global()->getFunction("_F5allocI"));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
         function.context->global()->addReference("_F5allocI");
-        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1)); 
+        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
             
         //If structure type, call the constructor
         if(type->is_custom_type() || type->is_template_type()){
@@ -712,17 +712,17 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         
         auto platform = function.context->global()->target_platform();
 
-        function.add(std::make_shared<mtac::Quadruple>(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform))));
-        function.add(std::make_shared<mtac::Quadruple>(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform))));
+        function.emplace_back(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform)));
+        function.emplace_back(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform)));
     
-        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, size, "a", function.context->global()->getFunction("_F5allocI")));
+        function.emplace_back(mtac::Operator::PARAM, size, "a", function.context->global()->getFunction("_F5allocI"));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
         function.context->global()->addReference("_F5allocI");
-        function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1)); 
+        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
         
-        function.add(std::make_shared<mtac::Quadruple>(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp));
+        function.emplace_back(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp);
 
         return {t1};
     }
@@ -746,7 +746,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                         auto t1 = function.context->new_temporary(INT);
 
                         //The size of the array is at the address pointed by the variable
-                        function.add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
+                        function.emplace_back(t1, variable, mtac::Operator::DOT, 0);
 
                         return {t1};
                     }
@@ -772,7 +772,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         if(type == VOID){
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition, nullptr, nullptr));
+            function.emplace_back(mtac::Operator::CALL, definition, nullptr, nullptr);
 
             return {};
         } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
@@ -780,7 +780,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition, t1, nullptr));
+            function.emplace_back(mtac::Operator::CALL, definition, t1, nullptr);
 
             return {t1};
         } else if(type == STRING){
@@ -789,7 +789,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition, t1, t2));
+            function.emplace_back(mtac::Operator::CALL, definition, t1, t2);
 
             return {t1, t2};
         } else if(type->is_custom_type() || type->is_template_type()){
@@ -799,14 +799,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             construct(function, type, {}, var);
             
             //Pass the address of return
-            auto call_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
-            call_param->address = true;
-            function.add(call_param);
+            mtac::Quadruple call_param(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
+            call_param.address = true;
+            function.push_back(std::move(call_param));
     
             //Pass the normal arguments of the function
             pass_arguments(function, definition, call.Content->values);
 
-            function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, definition, nullptr, nullptr));
+            function.emplace_back(mtac::Operator::CALL, definition, nullptr, nullptr);
             
             return {var};
         }
@@ -861,7 +861,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             return {value.Content->var};
         } else if(type == STRING){
             auto temp = value.Content->context->new_temporary(INT);
-            function.add(std::make_shared<mtac::Quadruple>(temp, value.Content->var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform())));
+            function.emplace_back(temp, value.Content->var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
 
             return {value.Content->var, temp};
         } else if(type->is_structure()) {
@@ -875,21 +875,21 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         if(type == INT || type == CHAR || type == BOOL){
             auto temp = function.context->new_temporary(type);
 
-            function.add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::DOT, 0));
+            function.emplace_back(temp, variable, mtac::Operator::DOT, 0);
 
             return {temp};
         } else if(type == FLOAT){
             auto temp = function.context->new_temporary(type);
 
-            function.add(std::make_shared<mtac::Quadruple>(temp, variable, mtac::Operator::FDOT, 0));
+            function.emplace_back(temp, variable, mtac::Operator::FDOT, 0);
 
             return {temp};
         } else if(type == STRING){
             auto t1 = function.context->new_temporary(INT);
             auto t2 = function.context->new_temporary(INT);
 
-            function.add(std::make_shared<mtac::Quadruple>(t1, variable, mtac::Operator::DOT, 0));
-            function.add(std::make_shared<mtac::Quadruple>(t2, variable, mtac::Operator::DOT, INT->size(function.context->global()->target_platform())));
+            function.emplace_back(t1, variable, mtac::Operator::DOT, 0);
+            function.emplace_back(t2, variable, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
 
             return {t1, t2};
         } else if(type->is_structure()){
@@ -932,7 +932,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                 auto t1 = function.context->new_temporary(BOOL);
 
-                function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::NOT));
+                function.emplace_back(t1, left[0], mtac::Operator::NOT);
 
                 return {t1};
             }
@@ -950,9 +950,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 auto t1 = function.context->new_temporary(type);
 
                 if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::FMINUS));
+                    function.emplace_back(t1, left[0], mtac::Operator::FMINUS);
                 } else if(type == INT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, left[0], mtac::Operator::MINUS));
+                    function.emplace_back(t1, left[0], mtac::Operator::MINUS);
                 } else {
                     eddic_unreachable("Invalid type");
                 }
@@ -970,9 +970,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
 
                 if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FADD, 1.0));
+                    function.emplace_back(t1, t1, mtac::Operator::FADD, 1.0);
                 } else if (type == INT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::ADD, 1));
+                    function.emplace_back(t1, t1, mtac::Operator::ADD, 1);
                 } else {
                     eddic_unreachable("Invalid type");
                 }
@@ -990,9 +990,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 auto t1 = boost::get<std::shared_ptr<Variable>>(left[0]);
 
                 if(type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::FSUB, 1.0));
+                    function.emplace_back(t1, t1, mtac::Operator::FSUB, 1.0);
                 } else if (type == INT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, t1, mtac::Operator::SUB, 1));
+                    function.emplace_back(t1, t1, mtac::Operator::SUB, 1);
                 } else {
                     eddic_unreachable("Invalid type");
                 }
@@ -1050,15 +1050,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             auto t1 = function.context->new_temporary(dest_type);
 
             if(dest_type == FLOAT){
-                function.add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::I2F));
+                function.emplace_back(t1, arg, mtac::Operator::I2F);
             } else if(dest_type == INT){
                 if(src_type == FLOAT){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::F2I));
+                    function.emplace_back(t1, arg, mtac::Operator::F2I);
                 } else if(src_type == CHAR){
-                    function.add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+                    function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
                 }
             } else if(dest_type == CHAR){
-                function.add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ASSIGN));
+                function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
             } else if(dest_type->is_pointer() && src_type->is_pointer()){
                 if(dest_type->data_type()->is_structure() && src_type->data_type()->is_structure()){
                     auto global_context = function.context->global();
@@ -1083,7 +1083,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     }
 
                     if(is_parent){
-                        function.add(std::make_shared<mtac::Quadruple>(t1, arg, mtac::Operator::ADD, offset));
+                        function.emplace_back(t1, arg, mtac::Operator::ADD, offset);
 
                         return {t1};
                     }
@@ -1121,17 +1121,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            function.add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::PASSIGN));
+            function.emplace_back(variable, values[0], mtac::Operator::PASSIGN);
         } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            function.add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
+            function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
         } else if(type == STRING){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            function.add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::ASSIGN));
-            function.add(std::make_shared<mtac::Quadruple>(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
+            function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
+            function.emplace_back(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
         } else if(type == FLOAT){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            function.add(std::make_shared<mtac::Quadruple>(variable, values[0], mtac::Operator::FASSIGN));
+            function.emplace_back(variable, values[0], mtac::Operator::FASSIGN);
         } else if(type->is_custom_type() || type->is_template_type()){
             copy_construct(function, variable->type(), variable, right_value);
         } else {
@@ -1197,17 +1197,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             }
 
             if(left_type->is_pointer()){
-                function.add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]));
+                function.emplace_back(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]);
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
-                function.add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]));
+                function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
-                function.add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]));
+                function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
 
                 auto temp1 = function.context->new_temporary(INT);
-                function.add(std::make_shared<mtac::Quadruple>(temp1, index, mtac::Operator::ADD, INT->size(platform)));
-                function.add(std::make_shared<mtac::Quadruple>(array_variable, temp1, mtac::Operator::DOT_ASSIGN, values[1]));
+                function.emplace_back(temp1, index, mtac::Operator::ADD, INT->size(platform));
+                function.emplace_back(array_variable, temp1, mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(right_type == FLOAT){
-                function.add(std::make_shared<mtac::Quadruple>(array_variable, index, mtac::Operator::DOT_FASSIGN, values[0]));
+                function.emplace_back(array_variable, index, mtac::Operator::DOT_FASSIGN, values[0]);
             } else {
                 eddic_unreachable("Unhandled value type");
             }
@@ -1231,14 +1231,14 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             }
             
             if(member_type->is_pointer()){
-                function.add(std::make_shared<mtac::Quadruple>(struct_variable, offset, mtac::Operator::DOT_PASSIGN, values[0]));
+                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_PASSIGN, values[0]);
             } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
-                function.add(std::make_shared<mtac::Quadruple>(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]));
+                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(member_type == STRING){
-                function.add(std::make_shared<mtac::Quadruple>(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]));
-                function.add(std::make_shared<mtac::Quadruple>(struct_variable, offset + INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
+                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]);
+                function.emplace_back(struct_variable, offset + INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(member_type == FLOAT){
-                function.add(std::make_shared<mtac::Quadruple>(struct_variable, offset, mtac::Operator::DOT_FASSIGN, values[0]));
+                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_FASSIGN, values[0]);
             } else {
                 eddic_unreachable("Unhandled value type");
             }
@@ -1261,14 +1261,14 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto right_type = visit(ast::GetTypeVisitor(), right_value); 
 
             if(right_type->is_pointer()){
-                function.add(std::make_shared<mtac::Quadruple>(pointer_variable, 0, mtac::Operator::DOT_PASSIGN, values[0]));
+                function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_PASSIGN, values[0]);
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
-                function.add(std::make_shared<mtac::Quadruple>(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]));
+                function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
-                function.add(std::make_shared<mtac::Quadruple>(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]));
-                function.add(std::make_shared<mtac::Quadruple>(pointer_variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]));
+                function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
+                function.emplace_back(pointer_variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(right_type == FLOAT){
-                function.add(std::make_shared<mtac::Quadruple>(pointer_variable, 0, mtac::Operator::DOT_FASSIGN, values[0]));
+                function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_FASSIGN, values[0]);
             } else {
                 eddic_unreachable("Unhandled variable type");
             }
@@ -1313,12 +1313,12 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
 
         jump_if_false(function, falseLabel, ternary.Content->condition); 
         assign(function, t1, ternary.Content->true_value);
-        function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::GOTO));
+        function.emplace_back(endLabel, mtac::Operator::GOTO);
         
-        function.add(std::make_shared<mtac::Quadruple>(falseLabel, mtac::Operator::LABEL));
+        function.emplace_back(falseLabel, mtac::Operator::LABEL);
         assign(function, t1, ternary.Content->false_value);
         
-        function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+        function.emplace_back(endLabel, mtac::Operator::LABEL);
 
         return {t1};
     } else if(type == STRING){
@@ -1327,17 +1327,17 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
         
         jump_if_false(function, falseLabel, ternary.Content->condition); 
         auto args = visit(ToArgumentsVisitor<>(function), ternary.Content->true_value);
-        function.add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
-        function.add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
+        function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);
+        function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);
 
-        function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::GOTO));
+        function.emplace_back(endLabel, mtac::Operator::GOTO);
         
-        function.add(std::make_shared<mtac::Quadruple>(falseLabel, mtac::Operator::LABEL));
+        function.emplace_back(falseLabel, mtac::Operator::LABEL);
         args = visit(ToArgumentsVisitor<>(function), ternary.Content->false_value);
-        function.add(std::make_shared<mtac::Quadruple>(t1, args[0], mtac::Operator::ASSIGN));  
-        function.add(std::make_shared<mtac::Quadruple>(t2, args[1], mtac::Operator::ASSIGN));  
+        function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);  
+        function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);  
         
-        function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+        function.emplace_back(endLabel, mtac::Operator::LABEL);
         
         return {t1, t2};
     }
@@ -1386,17 +1386,17 @@ class FunctionCompiler : public boost::static_visitor<> {
                 if (if_.Content->else_) {
                     std::string elseLabel = newLabel();
 
-                    function.add(std::make_shared<mtac::Quadruple>(elseLabel, mtac::Operator::GOTO));
+                    function.emplace_back(elseLabel, mtac::Operator::GOTO);
 
-                    function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+                    function.emplace_back(endLabel, mtac::Operator::LABEL);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
                     
                     issue_destructors((*if_.Content->else_).context);
 
-                    function.add(std::make_shared<mtac::Quadruple>(elseLabel, mtac::Operator::LABEL));
+                    function.emplace_back(elseLabel, mtac::Operator::LABEL);
                 } else {
-                    function.add(std::make_shared<mtac::Quadruple>(endLabel, mtac::Operator::LABEL));
+                    function.emplace_back(endLabel, mtac::Operator::LABEL);
                 }
             } else {
                 std::string end = newLabel();
@@ -1408,12 +1408,12 @@ class FunctionCompiler : public boost::static_visitor<> {
                 
                 issue_destructors(if_.Content->context);
 
-                function.add(std::make_shared<mtac::Quadruple>(end, mtac::Operator::GOTO));
+                function.emplace_back(end, mtac::Operator::GOTO);
 
                 for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
                     ast::ElseIf& elseIf = if_.Content->elseIfs[i];
 
-                    function.add(std::make_shared<mtac::Quadruple>(next, mtac::Operator::LABEL));
+                    function.emplace_back(next, mtac::Operator::LABEL);
 
                     //Last elseif
                     if (i == if_.Content->elseIfs.size() - 1) {
@@ -1432,18 +1432,18 @@ class FunctionCompiler : public boost::static_visitor<> {
                     
                     issue_destructors(elseIf.context);
 
-                    function.add(std::make_shared<mtac::Quadruple>(end, mtac::Operator::GOTO));
+                    function.emplace_back(end, mtac::Operator::GOTO);
                 }
 
                 if (if_.Content->else_) {
-                    function.add(std::make_shared<mtac::Quadruple>(next, mtac::Operator::LABEL));
+                    function.emplace_back(next, mtac::Operator::LABEL);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
                     
                     issue_destructors((*if_.Content->else_).context);
                 }
 
-                function.add(std::make_shared<mtac::Quadruple>(end, mtac::Operator::LABEL));
+                function.emplace_back(end, mtac::Operator::LABEL);
             }
         }
 
@@ -1480,21 +1480,21 @@ class FunctionCompiler : public boost::static_visitor<> {
             auto t1 = swap.Content->context->new_temporary(INT);
 
             if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
-                function.add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::ASSIGN));  
-                function.add(std::make_shared<mtac::Quadruple>(rhs_var, lhs_var, mtac::Operator::ASSIGN));  
-                function.add(std::make_shared<mtac::Quadruple>(lhs_var, t1, mtac::Operator::ASSIGN));  
+                function.emplace_back(t1, rhs_var, mtac::Operator::ASSIGN);
+                function.emplace_back(rhs_var, lhs_var, mtac::Operator::ASSIGN);
+                function.emplace_back(lhs_var, t1, mtac::Operator::ASSIGN);
                 
                 if(lhs_var->type() == STRING){
                     auto t2 = swap.Content->context->new_temporary(INT);
 
                     //t1 = 4(b)
-                    function.add(std::make_shared<mtac::Quadruple>(t1, rhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform())));  
+                    function.emplace_back(t1, rhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
                     //t2 = 4(a)
-                    function.add(std::make_shared<mtac::Quadruple>(t2, lhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform())));  
+                    function.emplace_back(t2, lhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
                     //4(b) = t2
-                    function.add(std::make_shared<mtac::Quadruple>(rhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t2));  
+                    function.emplace_back(rhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t2);
                     //4(a) = t1
-                    function.add(std::make_shared<mtac::Quadruple>(lhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t1));  
+                    function.emplace_back(lhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t1);
                 }
             } else {
                 eddic_unreachable("Unhandled variable type");
@@ -1504,7 +1504,7 @@ class FunctionCompiler : public boost::static_visitor<> {
         void operator()(ast::DoWhile& while_){
             std::string startLabel = newLabel();
 
-            function.add(std::make_shared<mtac::Quadruple>(startLabel, mtac::Operator::LABEL));
+            function.emplace_back(startLabel, mtac::Operator::LABEL);
 
             visit_each(*this, while_.Content->instructions);
 
@@ -1524,9 +1524,9 @@ class FunctionCompiler : public boost::static_visitor<> {
                 auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
 
                 if(arguments.size() == 1){
-                    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0]));
+                    function.emplace_back(mtac::Operator::RETURN, arguments[0]);
                 } else if(arguments.size() == 2){
-                    function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::RETURN, arguments[0], arguments[1]));
+                    function.emplace_back(mtac::Operator::RETURN, arguments[0], arguments[1]);
                 } else {
                     eddic_unreachable("Unhandled arguments size");
                 }   
@@ -1543,11 +1543,10 @@ class FunctionCompiler : public boost::static_visitor<> {
             auto free_name = "_F4freePI";
             auto& free_function = program.context->getFunction(free_name);
 
-            auto param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, "a", free_function);
-            function.add(param);
+            function.emplace_back(mtac::Operator::PARAM, arg, "a", free_function);
 
             program.context->addReference(free_name);
-            function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::CALL, free_function)); 
+            function.emplace_back(mtac::Operator::CALL, free_function); 
         }
        
         void operator()(ast::Assignment& assignment){
@@ -1605,7 +1604,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
-                function.add(std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, param, definition));   
+                function.emplace_back(mtac::Operator::PARAM, arg, param, definition);
             }
         }
     } else {
@@ -1620,7 +1619,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
         }
 
         for(auto& first : boost::adaptors::reverse(values)){
-            std::shared_ptr<Variable> param = context->getVariable(definition.parameter(i--).name());
+            auto param = context->getVariable(definition.parameter(i--).name());
 
             arguments args;
             if(param->type()->is_pointer()){
@@ -1630,9 +1629,9 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){
-                auto mtac_param = std::make_shared<mtac::Quadruple>(mtac::Operator::PARAM, arg, param, definition);
-                mtac_param->address = param->type()->is_pointer();
-                function.add(mtac_param);
+                mtac::Quadruple mtac_param(mtac::Operator::PARAM, arg, param, definition);
+                mtac_param.address = param->type()->is_pointer();
+                function.push_back(std::move(mtac_param));
             }
         }
     }
