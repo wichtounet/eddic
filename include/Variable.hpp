@@ -11,7 +11,7 @@
 #include <utility>
 #include <string>
 #include <memory>
-#include <iostream>
+#include <ostream>
 
 #include "variant.hpp"
 #include "Position.hpp"

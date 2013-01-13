@@ -9,7 +9,7 @@
 #define MTAC_LIVE_REGISTERS_PROBLEM_H
 
 #include <memory>
-#include <iostream>
+#include <ostream>
 #include <unordered_set>
 
 #include "assert.hpp"

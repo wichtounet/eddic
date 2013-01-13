@@ -9,7 +9,7 @@
 #define MTAC_GLOBAL_OPTIMIZATIONS_H
 
 #include <memory>
-#include <iostream>
+#include <ostream>
 #include <type_traits>
 
 #include "assert.hpp"
