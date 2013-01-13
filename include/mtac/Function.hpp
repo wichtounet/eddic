@@ -44,8 +44,14 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string get_name() const;
 
-        void add(std::shared_ptr<mtac::Quadruple> statement);
-        std::vector<std::shared_ptr<mtac::Quadruple>>& get_statements();
+        void add(mtac::Quadruple statement);
+        
+        template< class... Args >
+        void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+
+        std::vector<mtac::Quadruple>& get_statements();
         void release_statements();
 
         void create_entry_bb();
@@ -109,7 +115,7 @@ class Function : public std::enable_shared_from_this<Function> {
         eddic::Function* _definition;
 
         //Before being partitioned, the function has only statement
-        std::vector<std::shared_ptr<mtac::Quadruple>> statements;
+        std::vector<mtac::Quadruple> statements;
 
         bool _pure = false;
         
