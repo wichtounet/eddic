@@ -9,6 +9,7 @@
 #define MTAC_QUADRUPLE_H
 
 #include <memory>
+#include <ostream>
 #include <boost/optional.hpp>
 
 #include "mtac/Operator.hpp"
@@ -110,6 +111,9 @@ struct Quadruple {
 };
 
 //TODO Define an operator<<
+
+std::ostream& operator<<(std::ostream& stream, const mtac::Quadruple& quadruple);
+
 
 } //end of mtac
 
