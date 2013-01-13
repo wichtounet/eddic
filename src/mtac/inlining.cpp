@@ -220,7 +220,6 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
                         assert(string_states[src_var]);
 
                         //Copy the size
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
                         statement.op = mtac::Operator::DOT_ASSIGN;
                         statement.result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
                         statement.arg2 = statement.arg1;

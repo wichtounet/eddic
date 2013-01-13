@@ -265,11 +265,11 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::s
 
     for(auto& block : function){
         for(auto& statement : block->statements){
-            if(global_results->IN_S[statement].top()){
+            if(global_results->IN_S[statement.uid()].top()){
                 continue;
             }
 
-            ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
+            ConstantOptimizer optimizer(global_results->IN_S[statement.uid()], pointer_escaped);
             optimized |= optimizer.optimize(statement);
         }
     }

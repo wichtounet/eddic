@@ -194,7 +194,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
 
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            auto& results = global_results->IN_S[quadruple];
+            auto& results = global_results->IN_S[quadruple.uid()];
 
             if(results.top()){
                 continue;

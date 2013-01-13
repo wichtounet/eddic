@@ -51,7 +51,7 @@ void mtac::resolve_references(mtac::Program& program){
 
                         quadruple.arg1 = ptr_temp;
 
-                        it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
+                        it.insert_no_move(mtac::Quadruple(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                     } else {
                         auto index = *quadruple.arg2;
                         auto temp = function.context->new_temporary(INT);
@@ -62,7 +62,7 @@ void mtac::resolve_references(mtac::Program& program){
                         //The new offset is the sum of the old ones
                         quadruple.arg2 = temp;
 
-                        it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
+                        it.insert_no_move(mtac::Quadruple(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                     }
 
                     continue;
@@ -77,7 +77,7 @@ void mtac::resolve_references(mtac::Program& program){
 
                     quadruple.result = ptr_temp;
 
-                    it.insert_no_move(std::make_shared<mtac::Quadruple>(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
+                    it.insert_no_move(mtac::Quadruple(ptr_temp, var->reference(), mtac::Operator::DOT, variant_cast(var->reference_offset())));
                 } else {
                     auto temp = function.context->new_temporary(INT);
                     auto index = *quadruple.arg1;
@@ -88,7 +88,7 @@ void mtac::resolve_references(mtac::Program& program){
                     //The new offset is the sum of the old ones
                     quadruple.arg1 = temp;
 
-                    it.insert_no_move(std::make_shared<mtac::Quadruple>(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
+                    it.insert_no_move(mtac::Quadruple(temp, index, mtac::Operator::ADD, variant_cast(var->reference_offset())));
                 }
 
                 continue;
@@ -109,11 +109,11 @@ void mtac::resolve_references(mtac::Program& program){
                         }
                     } else {
                         if(result->type() == FLOAT){
-                            it.insert_after(std::make_shared<mtac::Quadruple>(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_FASSIGN, result));
+                            it.insert_after(mtac::Quadruple(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_FASSIGN, result));
                         } else if(result->type()->is_pointer()){
-                            it.insert_after(std::make_shared<mtac::Quadruple>(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_PASSIGN, result));
+                            it.insert_after(mtac::Quadruple(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_PASSIGN, result));
                         } else {
-                            it.insert_after(std::make_shared<mtac::Quadruple>(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_ASSIGN, result));
+                            it.insert_after(mtac::Quadruple(result->reference(), variant_cast(result->reference_offset()), mtac::Operator::DOT_ASSIGN, result));
                         }
                     }
                 }

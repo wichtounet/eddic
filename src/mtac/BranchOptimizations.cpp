@@ -23,7 +23,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                 int value = boost::get<int>(*quadruple.arg1);
 
                 if(value == 0){
-                    auto goto_ = std::make_shared<mtac::Quadruple>(quadruple.label(), mtac::Operator::GOTO);
+                    mtac::Quadruple goto_(quadruple.label(), mtac::Operator::GOTO);
                     goto_->block = quadruple.block;
 
                     quadruple = goto_;
@@ -33,7 +33,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                 } else if(value == 1){
                     mtac::remove_edge(block, quadruple.block);
 
-                    quadruple = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
+                    quadruple = mtac::Quadruple(mtac::Operator::NOP);
                     optimized = true;
                 }
             } else if(quadruple.op == mtac::Operator::IF_UNARY && boost::get<int>(&*quadruple.arg1)){
@@ -42,10 +42,10 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                 if(value == 0){
                     mtac::remove_edge(block, quadruple.block);
 
-                    quadruple = std::make_shared<mtac::Quadruple>(mtac::Operator::NOP);
+                    quadruple = mtac::Quadruple(mtac::Operator::NOP);
                     optimized = true;
                 } else if(value == 1){
-                    auto goto_ = std::make_shared<mtac::Quadruple>(quadruple.label(), mtac::Operator::GOTO);
+                    auto goto_ = mtac::Quadruple(quadruple.label(), mtac::Operator::GOTO);
                     goto_->block = quadruple.block;
 
                     quadruple = goto_;

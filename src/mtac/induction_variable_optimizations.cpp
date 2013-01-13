@@ -84,9 +84,10 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                     //After an assignment to a basic induction variable, insert addition for tj
                     else if(quadruple == basic_equation.def){
                         ++it;
-                        auto new_quadruple = std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, db);
+                        mtac::Quadruple new_quadruple = (tj, tj, mtac::Operator::ADD, db);
                         it.insert(new_quadruple);
 
+                        //TODO This won't work
                         new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
 
                         //To avoid replacing j by tj
@@ -108,8 +109,8 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                 pre_header = create_pre_header(loop, function);
             }
 
-            pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, equation.e, mtac::Operator::MUL, i));
-            pre_header->statements.push_back(std::make_shared<mtac::Quadruple>(tj, tj, mtac::Operator::ADD, equation.d));
+            pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);
+            pre_header->emplace_back(tj, tj, mtac::Operator::ADD, equation.d));
 
             optimized = true;
         }

@@ -54,7 +54,7 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
                         bb->statements.clear();
                         loop_removed = true;
 
-                        bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN));
+                        bb->emplace_back(first->result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN);
                     }
 
                     if(loop_removed){
