@@ -24,7 +24,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
 
                 if(value == 0){
                     mtac::Quadruple goto_(quadruple.label(), mtac::Operator::GOTO);
-                    goto_->block = quadruple.block;
+                    goto_.block = quadruple.block;
 
                     quadruple = goto_;
                     optimized = true;
@@ -46,7 +46,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     optimized = true;
                 } else if(value == 1){
                     auto goto_ = mtac::Quadruple(quadruple.label(), mtac::Operator::GOTO);
-                    goto_->block = quadruple.block;
+                    goto_.block = quadruple.block;
 
                     quadruple = goto_;
                     optimized = true;
