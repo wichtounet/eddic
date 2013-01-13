@@ -140,7 +140,7 @@ struct DebugVisitor {
         }
     }
 
-    void print(std::shared_ptr<mtac::Quadruple>& quadruple){
+    void print(mtac::Quadruple& quadruple){
         auto op = quadruple.op;
 
         //TODO Use a switch
@@ -287,8 +287,7 @@ struct DebugVisitor {
         }
     }
 
-    template<typename T>
-    std::string printTarget(std::shared_ptr<T> quadruple){
+    std::string printTarget(mtac::Quadruple& quadruple){
         if(quadruple.block){
             return "B" + toString(quadruple.block->index);   
         } else {
@@ -313,13 +312,13 @@ std::ostream& inline_manipulator(std::ostream& os){
     return os;
 }
 
-void mtac::Printer::print_inline(std::shared_ptr<mtac::Quadruple> statement, std::ostream& os) const {
+void mtac::Printer::print_inline(mtac::Quadruple& statement, std::ostream& os) const {
    DebugVisitor visitor(os);
    visitor.endl = inline_manipulator;
    visitor.print(statement);
 }
 
-void mtac::Printer::printStatement(std::shared_ptr<mtac::Quadruple> statement) const {
+void mtac::Printer::printStatement(mtac::Quadruple& statement) const {
    DebugVisitor visitor;
    visitor.print(statement);
 }

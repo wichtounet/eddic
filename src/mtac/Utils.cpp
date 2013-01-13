@@ -58,7 +58,7 @@ struct VariableUsageCollector {
         }
     }
 
-    void collect(std::shared_ptr<mtac::Quadruple> quadruple){
+    void collect(mtac::Quadruple& quadruple){
         current_depth = quadruple.depth;
 
         inc_usage(quadruple.result);
@@ -72,8 +72,8 @@ struct BasicBlockUsageCollector {
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
-    void collect(std::shared_ptr<mtac::Quadruple> goto_){
-        usage.insert(goto_->block);
+    void collect(mtac::Quadruple& goto_){
+        usage.insert(goto_.block);
     }
 };
 
@@ -164,8 +164,6 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
     return std::make_pair(offset, member_type);
 }
 
-//TODO Use the copy constructor instead
-
-std::shared_ptr<mtac::Quadruple> mtac::copy(const std::shared_ptr<mtac::Quadruple>& quadruple){
-    return std::make_shared<mtac::Quadruple>(*quadruple);
+mtac::Quadruple mtac::copy(const mtac::Quadruple& quadruple){
+    return quadruple;
 }
