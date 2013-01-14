@@ -67,9 +67,9 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
             mtac::VariableReplace replacer(variable_clones);
 
             //There is only a single assignment to j, replace it with j = tj
-            equation.def->op = mtac::Operator::ASSIGN;
-            equation.def->arg1 = tj;
-            equation.def->arg2.reset();
+            function.find(equation.def).op = mtac::Operator::ASSIGN;
+            function.find(equation.def).arg1 = tj;
+            function.find(equation.def).arg2.reset();
 
             for(auto& bb : loop){
                 auto it = iterate(bb->statements);
@@ -78,17 +78,17 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                     auto& quadruple = *it;
 
                     //To avoid replacing j by tj
-                    if(quadruple == equation.def){
+                    if(quadruple.uid() == equation.def){
                         ++it;
                     } 
                     //After an assignment to a basic induction variable, insert addition for tj
-                    else if(quadruple == basic_equation.def){
+                    else if(quadruple.uid() == basic_equation.def){
                         ++it;
-                        mtac::Quadruple new_quadruple = (tj, tj, mtac::Operator::ADD, db);
+                        mtac::Quadruple new_quadruple(tj, tj, mtac::Operator::ADD, db);
                         it.insert(new_quadruple);
 
                         //TODO This won't work
-                        new_induction_variables[tj] = {new_quadruple, i, equation.e, equation.d, true};
+                        new_induction_variables[tj] = {new_quadruple.uid(), i, equation.e, equation.d, true};
 
                         //To avoid replacing j by tj
                         ++it;
@@ -110,7 +110,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
             }
 
             pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);
-            pre_header->emplace_back(tj, tj, mtac::Operator::ADD, equation.d));
+            pre_header->emplace_back(tj, tj, mtac::Operator::ADD, equation.d);
 
             optimized = true;
         }
@@ -123,7 +123,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
     return optimized;
 }
 
-void induction_variable_removal(mtac::Loop& loop){
+void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     auto& dependent_induction_variables = loop.dependent_induction_variables();
     
     mtac::Usage usage = compute_read_usage(loop);
@@ -164,10 +164,12 @@ void induction_variable_removal(mtac::Loop& loop){
     //Remove induction variables that contribute only to themselves
     for(auto& var : dependent_induction_variables){
         if(usage.read[var.first] == 1){
-            var.second.def->op = mtac::Operator::NOP;
-            var.second.def->result = nullptr;
-            var.second.def->arg1.reset();
-            var.second.def->arg2.reset();
+            auto& def = function.find(var.second.def);
+
+            def.op = mtac::Operator::NOP;
+            def.result = nullptr;
+            def.arg1.reset();
+            def.arg2.reset();
 
             usage.read[var.first] = 0;
 
@@ -182,35 +184,35 @@ void induction_variable_removal(mtac::Loop& loop){
     }
 }
 
-void induction_variable_replace(mtac::Loop& loop){
+void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
     auto& basic_induction_variables = loop.basic_induction_variables();
     auto& dependent_induction_variables = loop.dependent_induction_variables();
     
     auto exit_block = *loop.blocks().rbegin();
 
-    auto if_ = exit_block->statements.back();
+    auto& if_ = exit_block->statements.back();
 
     std::shared_ptr<Variable> biv;
     int end = 0;
 
-    if(if_->is_if()){
-        if(if_->op != mtac::Operator::IF_UNARY && if_->op <= mtac::Operator::IF_LESS_EQUALS){
-            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
-                end = boost::get<int>(*if_->arg2);
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                end = boost::get<int>(*if_->arg1);
+    if(if_.is_if()){
+        if(if_.op != mtac::Operator::IF_UNARY && if_.op <= mtac::Operator::IF_LESS_EQUALS){
+            if(mtac::isVariable(*if_.arg1) && mtac::isInt(*if_.arg2)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
+                end = boost::get<int>(*if_.arg2);
+            } else if(mtac::isVariable(*if_.arg2) && mtac::isInt(*if_.arg1)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_.arg2);
+                end = boost::get<int>(*if_.arg1);
             }
         }
-    } else if(if_->is_if_false()){
-        if(if_->op != mtac::Operator::IF_FALSE_UNARY && if_->op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
-            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg1);
-                end = boost::get<int>(*if_->arg2);
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                biv = boost::get<std::shared_ptr<Variable>>(*if_->arg2);
-                end = boost::get<int>(*if_->arg1);
+    } else if(if_.is_if_false()){
+        if(if_.op != mtac::Operator::IF_FALSE_UNARY && if_.op <= mtac::Operator::IF_FALSE_LESS_EQUALS){
+            if(mtac::isVariable(*if_.arg1) && mtac::isInt(*if_.arg2)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
+                end = boost::get<int>(*if_.arg2);
+            } else if(mtac::isVariable(*if_.arg2) && mtac::isInt(*if_.arg1)){
+                biv = boost::get<std::shared_ptr<Variable>>(*if_.arg2);
+                end = boost::get<int>(*if_.arg1);
             }
         }
     }
@@ -228,8 +230,9 @@ void induction_variable_replace(mtac::Loop& loop){
         
         for(auto& d : dependent_induction_variables){
             auto eq = d.second;
+            auto& def = function.find(eq.def);
 
-            if(eq.def && eq.def->op != mtac::Operator::NOP && eq.i == biv && eq.e > 0){
+            if(def.op != mtac::Operator::NOP && eq.i == biv && eq.e > 0){
                 div = d.first;
                 break;
             }
@@ -248,29 +251,30 @@ void induction_variable_replace(mtac::Loop& loop){
         usage.read[biv] = 0;
     
         //Update the exit condition
-        if(if_->is_if()){
-            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                if_->arg1 = div;
-                if_->arg2 = new_end;
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                if_->arg2 = div;
-                if_->arg1 = new_end;
+        if(if_.is_if()){
+            if(mtac::isVariable(*if_.arg1) && mtac::isInt(*if_.arg2)){
+                if_.arg1 = div;
+                if_.arg2 = new_end;
+            } else if(mtac::isVariable(*if_.arg2) && mtac::isInt(*if_.arg1)){
+                if_.arg2 = div;
+                if_.arg1 = new_end;
             }
-        } else if(if_->is_if_false()){
-            if(mtac::isVariable(*if_->arg1) && mtac::isInt(*if_->arg2)){
-                if_->arg1 = div;
-                if_->arg2 = new_end;
-            } else if(mtac::isVariable(*if_->arg2) && mtac::isInt(*if_->arg1)){
-                if_->arg2 = div;
-                if_->arg1 = new_end;
+        } else if(if_.is_if_false()){
+            if(mtac::isVariable(*if_.arg1) && mtac::isInt(*if_.arg2)){
+                if_.arg1 = div;
+                if_.arg2 = new_end;
+            } else if(mtac::isVariable(*if_.arg2) && mtac::isInt(*if_.arg1)){
+                if_.arg2 = div;
+                if_.arg1 = new_end;
             }
         }
             
         //The unique assignment to i is not useful anymore 
-        basic_induction_variables[biv].def->op = mtac::Operator::NOP;
-        basic_induction_variables[biv].def->result = nullptr;
-        basic_induction_variables[biv].def->arg1.reset();
-        basic_induction_variables[biv].def->arg2.reset();
+        auto& def = function.find(basic_induction_variables[biv].def);
+        def.op = mtac::Operator::NOP;
+        def.result = nullptr;
+        def.arg1.reset();
+        def.arg2.reset();
 
         //Not a basic induction variable anymore
         basic_induction_variables.erase(biv);
@@ -294,10 +298,10 @@ bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& fun
     }
 
     //2. Removal of dependent induction variables
-    induction_variable_removal(loop);
+    induction_variable_removal(function, loop);
 
     //3. Replace basic induction variable with another dependent variable
-    induction_variable_replace(loop);
+    induction_variable_replace(function, loop);
 
     return optimized;
 }

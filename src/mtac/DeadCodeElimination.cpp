@@ -36,7 +36,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
             auto quadruple = *it;
 
             if(quadruple.result && mtac::erase_result(quadruple.op)){
-                if(results->OUT_S[quadruple].top() || results->OUT_S[quadruple].values().find(quadruple.result) == results->OUT_S[quadruple].values().end()){
+                if(results->OUT_S[quadruple.uid()].top() || results->OUT_S[quadruple.uid()].values().find(quadruple.result) == results->OUT_S[quadruple.uid()].values().end()){
                     it.erase();
                     optimized=true;
                     continue;
