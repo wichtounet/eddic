@@ -43,7 +43,7 @@ struct Quadruple {
         mtac::Operator op;
         mtac::Size size = mtac::Size::DEFAULT;
         bool address = false; //TODO Use PPARAM instead of PARAM + address = true
-        unsigned int depth;
+        unsigned int depth = 0;
 
         std::shared_ptr<Variable> secondary; //For CALL
 
