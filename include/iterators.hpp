@@ -21,8 +21,12 @@ struct Iterators {
 
     Iterators(Container& container) : container(container), it(container.begin()), end(container.end()) {}
 
-    auto operator*() -> decltype(*it) {
+    typename Container::value_type& operator*(){
         return *it;
+    }
+    
+    typename Container::value_type* operator->(){
+        return &*it;
     }
 
     void operator++(){

@@ -208,7 +208,7 @@ struct pass_runner {
             auto it = iterate(block->statements);
 
             while(it.has_next()){
-                if((*it)->op == mtac::Operator::NOP){
+                if(it->op == mtac::Operator::NOP){
                     it.erase();
                     continue;
                 }
