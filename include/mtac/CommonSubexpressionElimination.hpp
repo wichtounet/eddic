@@ -28,7 +28,7 @@ struct Expression {
     basic_block_p source;
 };
 
-std::ostream& operator<<(std::ostream& stream, Expression& expression);
+std::ostream& operator<<(std::ostream& stream, const Expression& expression);
 
 typedef std::vector<Expression> Expressions;
 

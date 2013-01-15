@@ -18,7 +18,7 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
+std::ostream& mtac::operator<<(std::ostream& stream, const mtac::LiveVariableValues& value){
     stream << "set{";
 
     for(auto& v : value){

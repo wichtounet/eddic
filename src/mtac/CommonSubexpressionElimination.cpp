@@ -21,7 +21,7 @@ using namespace eddic;
 
 typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& os, Expression& expression){
+std::ostream& mtac::operator<<(std::ostream& os, const Expression& expression){
     return os << "Expression {expression = " << expression.expression;
 }
 

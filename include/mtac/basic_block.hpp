@@ -92,8 +92,8 @@ class basic_block {
 
 typedef std::shared_ptr<basic_block> basic_block_p;
 
-std::ostream& operator<<(std::ostream& stream, basic_block& basic_block);
-std::ostream& operator<<(std::ostream& stream, basic_block_p& basic_block);
+std::ostream& operator<<(std::ostream& stream, const basic_block& basic_block);
+std::ostream& operator<<(std::ostream& stream, const basic_block_p& basic_block);
 
 mtac::basic_block::iterator begin(mtac::basic_block_p function);
 mtac::basic_block::iterator end(mtac::basic_block_p function);

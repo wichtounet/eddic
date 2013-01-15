@@ -31,15 +31,15 @@ class ConstantPropagationLattice {
         ConstantPropagationLattice(){}; //NAC
         ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
 
-        ConstantValue value(){
+        ConstantValue value() const {
             return *m_value;
         }
 
-        bool constant(){
+        bool constant() const {
             return m_value;
         }
 
-        bool nac(){
+        bool nac() const {
             return !constant();
         }
 
@@ -75,7 +75,7 @@ struct pass_traits<ConstantPropagationProblem> {
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
-std::ostream& operator<<(std::ostream& stream, ConstantPropagationLattice& lattice);
+std::ostream& operator<<(std::ostream& stream, const ConstantPropagationLattice& lattice);
 
 } //end of mtac
 

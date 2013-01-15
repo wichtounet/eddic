@@ -52,7 +52,7 @@ struct LiveVariableValues {
     }
 };
 
-std::ostream& operator<<(std::ostream& stream, LiveVariableValues& expression);
+std::ostream& operator<<(std::ostream& stream, const LiveVariableValues& expression);
 
 struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backward, LiveVariableValues> {
     mtac::EscapedVariables pointer_escaped;

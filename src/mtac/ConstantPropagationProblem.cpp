@@ -277,7 +277,7 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::s
     return optimized;
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, ConstantPropagationLattice& lattice){
+std::ostream& mtac::operator<<(std::ostream& stream, const ConstantPropagationLattice& lattice){
     if(lattice.nac()){
         return stream << "NAC";
     } else {

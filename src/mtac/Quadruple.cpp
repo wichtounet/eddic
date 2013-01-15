@@ -75,6 +75,8 @@ mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) :
         m_param(rhs.m_param),
         block(rhs.block)
 {
+    std::cout << "COPY" << std::endl;
+
     //There is a new reference to the called function
     if(op == mtac::Operator::CALL){
         ++m_function->references();
@@ -82,6 +84,8 @@ mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) :
 }
 
 mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
+    std::cout << "COPY_ASSIGN" << std::endl;
+
     //No need to assign this into this
     if(this == &rhs){
         return *this;

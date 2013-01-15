@@ -70,8 +70,8 @@ class Variable {
         Offset reference_offset() const;
 };
 
-std::ostream& operator<<(std::ostream& stream, Variable& variable);
-std::ostream& operator<<(std::ostream& stream, std::shared_ptr<Variable>& variable);
+std::ostream& operator<<(std::ostream& stream, const Variable& variable);
+std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<Variable>& variable);
 
 } //end of eddic
 

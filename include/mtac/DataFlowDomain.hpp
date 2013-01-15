@@ -63,6 +63,10 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
     Values& values(){
         return *int_values;
     }
+    
+    const Values& values() const {
+        return *int_values;
+    }
 
     Value& operator[](const Key& key){
         assert(int_values);
@@ -130,7 +134,7 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
 };
 
 template<typename T>
-std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
+std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values){
     stream << "vector{";
 
     for(auto& value : values){
@@ -141,7 +145,7 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& stream, std::list<T>& values){
+std::ostream& operator<<(std::ostream& stream, const std::list<T>& values){
     stream << "list{";
 
     for(auto& value : values){
@@ -152,7 +156,7 @@ std::ostream& operator<<(std::ostream& stream, std::list<T>& values){
 }
 
 template<typename Key, typename Value, typename Hasher>
-std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>& values){
+std::ostream& operator<<(std::ostream& stream, const std::unordered_map<Key, Value, Hasher>& values){
     stream << "map{";
 
     for(auto& value : values){
@@ -163,7 +167,7 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Ha
 }
 
 template<typename Value, typename Hasher>
-std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>& values){
+std::ostream& operator<<(std::ostream& stream, const std::unordered_set<Value, Hasher>& values){
     stream << "set{";
 
     for(auto& value : values){
@@ -174,7 +178,7 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>
 }
 
 template<typename DomainValues>
-std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
+std::ostream& operator<<(std::ostream& stream, const Domain<DomainValues>& domain){
     if(domain.top()){
         return stream << "top";
     }
