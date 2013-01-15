@@ -30,11 +30,7 @@ struct PlatformDescriptor {
     virtual unsigned short a_register() const = 0;
     virtual unsigned short d_register() const = 0;
 
-    virtual unsigned int number_of_variable_registers() const = 0;  
-    virtual unsigned int number_of_float_variable_registers() const = 0;  
-    
     virtual unsigned short int_variable_register(unsigned int position) const = 0;
-    virtual unsigned short float_variable_register(unsigned int position) const = 0;
     
     virtual unsigned int numberOfIntParamRegisters() const = 0;  
     virtual unsigned int numberOfFloatParamRegisters() const = 0;  
