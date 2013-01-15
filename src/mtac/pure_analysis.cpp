@@ -35,7 +35,7 @@ struct hash<std::reference_wrapper<mtac::Function>> {
 
 namespace {
 
-mtac::Function& get_function(mtac::Program& program, Function& function){
+mtac::Function& get_function(mtac::Program& program, const Function& function){
     for(auto& f : program.functions){
         if(f.definition() == function){
             return f;

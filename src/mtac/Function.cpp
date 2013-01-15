@@ -68,6 +68,18 @@ bool& mtac::Function::pure(){
     return _pure;
 }
 
+mtac::Quadruple& mtac::Function::find(std::size_t uid){
+    for(auto& block : *this){
+        for(auto& quadruple : block){
+            if(quadruple.uid() == uid){
+                return quadruple;
+            }
+        }
+    }
+
+    eddic_unreachable("The given uid does not exist");
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }

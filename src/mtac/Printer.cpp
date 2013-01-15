@@ -25,7 +25,7 @@ using namespace eddic;
 namespace {
 
 struct ArgumentToString : public boost::static_visitor<std::string> {
-   std::string operator()(std::shared_ptr<Variable> variable) const {
+   std::string operator()(const std::shared_ptr<Variable>& variable) const {
         std::string type = "";
 
         if(variable->type()->is_pointer()){
@@ -80,20 +80,20 @@ struct ArgumentToString : public boost::static_visitor<std::string> {
         }
    }
 
-   std::string operator()(int& integer) const {
+   std::string operator()(const int& integer) const {
         return toString(integer);
    }
    
-   std::string operator()(double& float_) const {
+   std::string operator()(const double& float_) const {
         return toString(float_);
    }
 
-   std::string operator()(std::string& str) const {
+   std::string operator()(const std::string& str) const {
         return str;
    }
 };
 
-std::string printArg(mtac::Argument& arg){
+std::string printArg(const mtac::Argument& arg){
     return visit(ArgumentToString(), arg);
 }
 
@@ -140,7 +140,7 @@ struct DebugVisitor {
         }
     }
 
-    void print(mtac::Quadruple& quadruple){
+    void print(const mtac::Quadruple& quadruple){
         auto op = quadruple.op;
 
         //TODO Use a switch
@@ -287,7 +287,7 @@ struct DebugVisitor {
         }
     }
 
-    std::string printTarget(mtac::Quadruple& quadruple){
+    std::string printTarget(const mtac::Quadruple& quadruple){
         if(quadruple.block){
             return "B" + toString(quadruple.block->index);   
         } else {
@@ -312,18 +312,18 @@ std::ostream& inline_manipulator(std::ostream& os){
     return os;
 }
 
-void mtac::Printer::print_inline(mtac::Quadruple& statement, std::ostream& os) const {
+void mtac::Printer::print_inline(const mtac::Quadruple& statement, std::ostream& os) const {
    DebugVisitor visitor(os);
    visitor.endl = inline_manipulator;
    visitor.print(statement);
 }
 
-void mtac::Printer::printStatement(mtac::Quadruple& statement) const {
+void mtac::Printer::printStatement(const mtac::Quadruple& statement) const {
    DebugVisitor visitor;
    visitor.print(statement);
 }
 
-void mtac::Printer::printArgument(mtac::Argument& arg) const {
+void mtac::Printer::printArgument(const mtac::Argument& arg) const {
     std::cout << printArg(arg) << std::endl;
 }
 

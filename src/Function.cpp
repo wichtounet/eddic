@@ -151,10 +151,10 @@ const std::shared_ptr<const Type>& Function::return_type() const {
     return _return_type;
 }
 
-const std::string& Function::name(){
+const std::string& Function::name() const {
     return _name;
 }
 
-const std::string& Function::mangled_name(){
+const std::string& Function::mangled_name() const {
     return _mangled_name;
 }

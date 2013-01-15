@@ -11,6 +11,7 @@
 #include "Function.hpp"
 
 #include "mtac/Quadruple.hpp"
+#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -144,6 +145,9 @@ mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs){
     return *this;
 }
 
+std::size_t mtac::Quadruple::uid() const {
+    return _uid;
+}
 
 const std::string& mtac::Quadruple::label() const {
     return m_param;
@@ -153,21 +157,27 @@ const std::string& mtac::Quadruple::std_param() const {
     return m_param;
 }
 
-std::shared_ptr<Variable> mtac::Quadruple::param(){
-    return result;
-}
-
 eddic::Function& mtac::Quadruple::function(){
     eddic_assert(m_function, "function() can only be called on operations that support it");
 
     return *m_function;
 }
 
-std::shared_ptr<Variable> mtac::Quadruple::return1(){
+const eddic::Function& mtac::Quadruple::function() const {
+    eddic_assert(m_function, "function() can only be called on operations that support it");
+
+    return *m_function;
+}
+
+const std::shared_ptr<Variable>& mtac::Quadruple::param() const {
     return result;
 }
 
-std::shared_ptr<Variable> mtac::Quadruple::return2(){
+const std::shared_ptr<Variable>& mtac::Quadruple::return1() const {
+    return result;
+}
+
+const std::shared_ptr<Variable>& mtac::Quadruple::return2() const {
     return secondary;
 }
 
@@ -179,10 +189,16 @@ bool mtac::Quadruple::is_if_false(){
     return op >= mtac::Operator::IF_FALSE_UNARY && op <= mtac::Operator::IF_FALSE_FL;
 }
 
-bool mtac::Quadruple::operator==(const mtac::Quadruple& rhs){
+bool mtac::Quadruple::operator==(const mtac::Quadruple& rhs) const {
     return _uid == rhs._uid;
 }
 
-bool mtac::Quadruple::operator!=(const mtac::Quadruple& rhs){
+bool mtac::Quadruple::operator!=(const mtac::Quadruple& rhs) const {
     return !(*this == rhs);
+}
+
+std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadruple& quadruple){
+    mtac::Printer printer;
+    printer.print_inline(quadruple, stream);
+    return stream;
 }

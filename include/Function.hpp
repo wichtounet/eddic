@@ -46,8 +46,8 @@ class Function {
         bool operator==(const Function& rhs) const;
 
         const std::shared_ptr<const Type>& return_type() const;
-        const std::string& name();
-        const std::string& mangled_name();
+        const std::string& name() const;
+        const std::string& mangled_name() const;
 
         std::shared_ptr<FunctionContext>& context();
         const std::shared_ptr<FunctionContext>& context() const;

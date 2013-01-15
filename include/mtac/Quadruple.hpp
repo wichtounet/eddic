@@ -95,25 +95,23 @@ struct Quadruple {
         const std::string& label() const;
         const std::string& std_param() const;
 
-        std::shared_ptr<Variable> param();
-        std::shared_ptr<Variable> return1();
-        std::shared_ptr<Variable> return2();
+        const std::shared_ptr<Variable>& param() const;
+        const std::shared_ptr<Variable>& return1() const;
+        const std::shared_ptr<Variable>& return2() const;
 
         eddic::Function& function();
+        const eddic::Function& function() const;
 
         bool is_if();
         bool is_if_false();
 
-        std::size_t uid();
+        std::size_t uid() const;
 
-        bool operator==(const mtac::Quadruple& quadruple);
-        bool operator!=(const mtac::Quadruple& quadruple);
+        bool operator==(const mtac::Quadruple& quadruple) const;
+        bool operator!=(const mtac::Quadruple& quadruple) const;
 };
 
-//TODO Define an operator<<
-
 std::ostream& operator<<(std::ostream& stream, const mtac::Quadruple& quadruple);
-
 
 } //end of mtac
 
