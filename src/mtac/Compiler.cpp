@@ -87,7 +87,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     //Pass "this" parameter
     mtac::Quadruple ctor_param(mtac::Operator::PARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
     ctor_param.address = true;
-    function.push_back(std::move(ctor_param));
+    function.emplace_back(std::move(ctor_param));
 
     //Call the constructor
     global_context->addReference(ctor_name);
@@ -116,7 +116,7 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
             ctor_function.context()->getVariable(ctor_function.parameter(0).name()), 
             ctor_function);
     ctor_param.address = true;
-    function.push_back(std::move(ctor_param));
+    function.emplace_back(std::move(ctor_param));
 
     global_context->addReference(ctor_name);
     function.emplace_back(mtac::Operator::CALL, ctor_function); 
@@ -132,7 +132,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     mtac::Quadruple dtor_param(mtac::Operator::PARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
     dtor_param.address = true;
-    function.push_back(std::move(dtor_param));
+    function.emplace_back(std::move(dtor_param));
 
     global_context->addReference(dtor_name);
     function.emplace_back(mtac::Operator::CALL, dtor_function); 
@@ -402,7 +402,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     //Get the specified char 
                     mtac::Quadruple quadruple(t1, pointer_temp, mtac::Operator::DOT, index);
                     quadruple.size = mtac::Size::BYTE;
-                    function.push_back(std::move(quadruple));
+                    function.emplace_back(std::move(quadruple));
 
                     left = {t1};
                 } else {
@@ -530,7 +530,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     //Pass the address of return
                     mtac::Quadruple call_param(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
                     call_param.address = true;
-                    function.push_back(std::move(call_param));
+                    function.emplace_back(std::move(call_param));
 
                     //Pass the normal arguments of the function
                     pass_arguments(function, definition, call_operation_value.values);
@@ -538,7 +538,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     //Pass the address of the object to the member function
                     mtac::Quadruple mtac_param(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                     mtac_param.address = true;
-                    function.push_back(std::move(mtac_param));
+                    function.emplace_back(std::move(mtac_param));
 
                     function.emplace_back(mtac::Operator::CALL, definition);
 
@@ -571,7 +571,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 //Pass the address of the object to the member function
                 mtac::Quadruple mtac_param(mtac::Operator::PARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
                 mtac_param.address = true;
-                function.push_back(std::move(mtac_param));
+                function.emplace_back(std::move(mtac_param));
 
                 //Call the function
                 function.emplace_back(mtac::Operator::CALL, definition, return_, return2_);
@@ -801,7 +801,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             //Pass the address of return
             mtac::Quadruple call_param(mtac::Operator::PARAM, var, definition.context()->getVariable("__ret"), definition);
             call_param.address = true;
-            function.push_back(std::move(call_param));
+            function.emplace_back(std::move(call_param));
     
             //Pass the normal arguments of the function
             pass_arguments(function, definition, call.Content->values);
@@ -1631,7 +1631,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             for(auto& arg : boost::adaptors::reverse(args)){
                 mtac::Quadruple mtac_param(mtac::Operator::PARAM, arg, param, definition);
                 mtac_param.address = param->type()->is_pointer();
-                function.push_back(std::move(mtac_param));
+                function.emplace_back(std::move(mtac_param));
             }
         }
     }
