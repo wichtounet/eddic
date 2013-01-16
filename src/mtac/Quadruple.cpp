@@ -75,6 +75,7 @@ mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) :
         m_param(rhs.m_param),
         block(rhs.block)
 {
+    assert(false);
     std::cout << "COPY" << std::endl;
 
     //There is a new reference to the called function
@@ -112,7 +113,7 @@ mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
     return *this;
 }
 
-mtac::Quadruple::Quadruple(mtac::Quadruple&& rhs) : 
+mtac::Quadruple::Quadruple(mtac::Quadruple&& rhs) noexcept : 
         _uid(std::move(rhs._uid)), 
         result(std::move(rhs.result)), 
         arg1(std::move(rhs.arg1)),
@@ -126,10 +127,14 @@ mtac::Quadruple::Quadruple(mtac::Quadruple&& rhs) :
         m_param(std::move(rhs.m_param)),
         block(std::move(rhs.block))
 {
+    std::cout << "MOVE" << std::endl;
+
     rhs._uid = 0;
 }
 
-mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs){
+mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs) noexcept {
+    std::cout << "MOVE_ASSIGN" << std::endl;
+
     //No need to assign this into this
     if(this == &rhs){
         return *this;

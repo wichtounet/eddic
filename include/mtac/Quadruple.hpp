@@ -59,8 +59,8 @@ struct Quadruple {
         Quadruple& operator=(const Quadruple& rhs);
         
         //Move constructors
-        Quadruple(Quadruple&& rhs);
-        Quadruple& operator=(Quadruple&& rhs);
+        Quadruple(Quadruple&& rhs) noexcept;
+        Quadruple& operator=(Quadruple&& rhs) noexcept;
 
         //Default constructor
         Quadruple();
