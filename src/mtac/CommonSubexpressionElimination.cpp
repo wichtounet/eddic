@@ -151,7 +151,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
     bool changes = false;
 
     for(auto& block : function){
-        for(auto quadruple : block->statements){
+        for(auto& quadruple : block->statements){
             auto& results = global_results->IN_S[quadruple.uid()];
 
             if(results.top()){
