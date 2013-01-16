@@ -84,11 +84,9 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                     //After an assignment to a basic induction variable, insert addition for tj
                     else if(quadruple.uid() == basic_equation.def){
                         ++it;
-                        mtac::Quadruple new_quadruple(tj, tj, mtac::Operator::ADD, db);
-                        it.insert(new_quadruple);
+                        it.insert(mtac::Quadruple(tj, tj, mtac::Operator::ADD, db));
 
-                        //TODO This won't work
-                        new_induction_variables[tj] = {new_quadruple.uid(), i, equation.e, equation.d, true};
+                        new_induction_variables[tj] = {it->uid(), i, equation.e, equation.d, true};
 
                         //To avoid replacing j by tj
                         ++it;
@@ -133,7 +131,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
         auto it = iterate(bb->statements);
 
         while(it.has_next()){
-            auto quadruple = *it;
+            auto& quadruple = *it;
 
             if(quadruple.op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
                 auto j = quadruple.result;
