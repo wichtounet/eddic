@@ -13,6 +13,7 @@
 #include "variant.hpp"
 
 #include "mtac/forward.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/forward.hpp"
 
@@ -55,7 +56,7 @@ class basic_block {
          * Add a new statement to the basic block. 
          * \param statement The statement to add. 
          */
-        void add(mtac::Quadruple statement);
+        void push_back(mtac::Quadruple&& statement);
 
         template< class... Args >
         void emplace_back( Args&&... args ){

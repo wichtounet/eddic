@@ -55,10 +55,10 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                 nextIsLeader = true;
             } 
 
-            function.current_bb()->add(quadruple);
+            function.current_bb()->emplace_back(std::move(quadruple));
         }
 
-        //Then, replace all the the labels by reference to basic blocks
+        //Then, replace all the labels by reference to basic blocks
         for(auto& block : function){
             for(auto& quadruple : block->statements){
                 if(quadruple.op == mtac::Operator::GOTO || quadruple.is_if() || quadruple.is_if_false()){
