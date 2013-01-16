@@ -52,12 +52,8 @@ class Function : public std::enable_shared_from_this<Function> {
             statements.emplace_back(std::forward<Args>(args)...);
         }
         
-        void push_back(const mtac::Quadruple& quadruple){
-            statements.push_back(quadruple);
-        }
-
         void push_back(mtac::Quadruple&& quadruple){
-            statements.push_back(quadruple);
+            statements.push_back(std::forward<mtac::Quadruple>(quadruple));
         }
 
         mtac::Quadruple& find(std::size_t uid);

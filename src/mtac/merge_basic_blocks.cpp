@@ -92,7 +92,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 //Only if the next block is not used because we will remove its label
                 if(usage.find(next) == usage.end()){
                     if(!next->statements.empty()){
-                        auto next_quadruple = next->statements.front();
+                        auto& next_quadruple = next->statements.front();
                         if(next_quadruple.op == mtac::Operator::CALL){
                             auto& target_function = next_quadruple.function();
 

@@ -37,7 +37,7 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
             auto bb = *loop.begin();
 
             if(bb->statements.size() == 2){
-                auto first = bb->statements.front();
+                auto& first = bb->statements.front();
 
                 auto& basic_induction_variables = loop.basic_induction_variables();
                 if(basic_induction_variables.find(first.result) != basic_induction_variables.end()){

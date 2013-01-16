@@ -26,7 +26,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     mtac::Quadruple goto_(quadruple.label(), mtac::Operator::GOTO);
                     goto_.block = quadruple.block;
 
-                    quadruple = goto_;
+                    quadruple = std::move(goto_);
                     optimized = true;
 
                     mtac::remove_edge(block, block->next);
@@ -48,7 +48,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                     auto goto_ = mtac::Quadruple(quadruple.label(), mtac::Operator::GOTO);
                     goto_.block = quadruple.block;
 
-                    quadruple = goto_;
+                    quadruple = std::move(goto_);
                     optimized = true;
 
                     mtac::remove_edge(block, block->next);

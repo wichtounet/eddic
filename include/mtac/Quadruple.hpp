@@ -55,8 +55,8 @@ struct Quadruple {
         std::shared_ptr<mtac::basic_block> block;
 
         //Copy constructors
-        Quadruple(const Quadruple& rhs);
-        Quadruple& operator=(const Quadruple& rhs);
+        Quadruple(const Quadruple& rhs) = delete;
+        Quadruple& operator=(const Quadruple& rhs) = delete;
         
         //Move constructors
         Quadruple(Quadruple&& rhs) noexcept;

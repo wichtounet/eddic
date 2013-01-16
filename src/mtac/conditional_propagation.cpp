@@ -103,7 +103,7 @@ bool optimize_branch(Branch& branch, mtac::basic_block_p basic_block, mtac::Vari
         auto variable = boost::get<std::shared_ptr<Variable>>(*branch.arg1);
 
         if(variable_usage[variable] == 2){
-            auto declaration = get_variable_declaration(basic_block, variable);
+            auto& declaration = get_variable_declaration(basic_block, variable);
 
             if(declaration.result == variable){
                 if(

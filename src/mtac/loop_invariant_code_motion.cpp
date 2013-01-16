@@ -130,7 +130,7 @@ bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
         auto it = iterate(bb->statements); 
 
         while(it.has_next()){
-            auto statement = *it;
+            auto& statement = *it;
 
             if(is_invariant(statement, usage)){
                 if(is_valid_invariant(bb, statement, loop)){
@@ -141,8 +141,8 @@ bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
 
                     function.context->global()->stats().inc_counter("invariant_moved");
 
-                    it.erase();
                     pre_header->statements.push_back(statement);
+                    it.erase();
 
                     optimized = true;
 

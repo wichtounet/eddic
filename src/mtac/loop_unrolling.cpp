@@ -64,7 +64,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     //Start at 1 because there is already the original body
                     for(unsigned int i = 1; i < factor; ++i){
                         for(auto& statement : statements){
-                            bb->statements.push_back(mtac::copy(statement)); 
+                            bb->statements.push_back(statement); 
                         }
                     }
 

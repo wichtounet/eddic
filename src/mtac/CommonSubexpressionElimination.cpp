@@ -182,7 +182,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                             auto end = expression.source->statements.end();
 
                             while(it != end){
-                                auto target = *it;
+                                auto& target = *it;
                                 if(target == source_statement){
                                     ++it;
                                     expression.source->statements.insert(it, mtac::Quadruple(source_statement.result, temp, assign_op));

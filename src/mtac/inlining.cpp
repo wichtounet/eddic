@@ -331,7 +331,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                 if(!call.return1()){
                     //If the caller does not care about the return value, return has no effect
                     ssit.erase();
-                    ssit.insert(goto_);
+                    ssit.insert(std::move(goto_));
 
                     continue;
                 } else {
@@ -356,7 +356,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
 
                     ++ssit;
 
-                    ssit.insert(goto_);
+                    ssit.insert(std::move(goto_));
 
                     continue;
                 }
