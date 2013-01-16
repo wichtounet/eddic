@@ -276,7 +276,7 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
         }
 
         for(int i = source_definition.parameters().size() - 1; i >= 0;){
-            auto quadruple = *pit;
+            auto& quadruple = *pit;
 
             if(quadruple.op == mtac::Operator::PARAM){
                 auto src_var = quadruple.param();
@@ -315,7 +315,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
-            auto quadruple = *ssit;
+            auto& quadruple = *ssit;
 
             variable_replacer.replace(quadruple);
             bb_replacer(quadruple);
@@ -462,7 +462,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         auto it = iterate(basic_block->statements);
 
         while(it.has_next()){
-            auto call = *it;
+            auto& call = *it;
             if(call.op == mtac::Operator::CALL){
                 if(non_standard_target(call, program)){
                     ++it;
