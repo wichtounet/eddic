@@ -151,64 +151,86 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
     bool changes = false;
 
     for(auto& block : function){
-        for(auto& quadruple : block->statements){
+        auto qit = block->statements.begin();
+        auto qend = block->statements.end();
+
+        while(qit != qend){
+            bool local = false;
+            auto& quadruple = *qit;
             auto& results = global_results->IN_S[quadruple.uid()];
 
             if(results.top()){
+                ++qit;
                 continue;
             }
 
-            if(mtac::is_expression(quadruple.op)){
-                for(auto& expression : results.values()){
-                    auto& source_statement = function.find(expression.expression);
+            if(optimized.find(quadruple.uid()) == optimized.end()){
+                if(mtac::is_expression(quadruple.op)){
+                    for(auto& expression : results.values()){
+                        auto& source_statement = function.find(expression.expression);
+                        auto result = source_statement.result;
+                        auto quid = quadruple.uid();
 
-                    if(are_equivalent(source_statement, quadruple)){
-                        mtac::Operator assign_op;
-                        if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
-                            assign_op = mtac::Operator::ASSIGN;
-                        } else {
-                            assign_op = mtac::Operator::FASSIGN;
-                        } 
-
-                        if(optimized.find(source_statement.uid()) == optimized.end()){
-                            std::shared_ptr<Variable> temp;
+                        if(are_equivalent(source_statement, quadruple)){
+                            mtac::Operator assign_op;
                             if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
-                                temp = expression.source->context->new_temporary(INT);
+                                assign_op = mtac::Operator::ASSIGN;
                             } else {
-                                temp = expression.source->context->new_temporary(FLOAT);
+                                assign_op = mtac::Operator::FASSIGN;
                             } 
 
-                            auto it = expression.source->statements.begin();
-                            auto end = expression.source->statements.end();
+                            if(optimized.find(source_statement.uid()) == optimized.end()){
+                                std::shared_ptr<Variable> temp;
+                                if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
+                                    temp = expression.source->context->new_temporary(INT);
+                                } else {
+                                    temp = expression.source->context->new_temporary(FLOAT);
+                                } 
 
-                            while(it != end){
-                                auto& target = *it;
-                                if(target == source_statement){
+                                auto it = expression.source->statements.begin();
+                                auto end = expression.source->statements.end();
+
+                                source_statement.result = temp;
+
+                                optimized.insert(source_statement.uid());
+
+                                while(it != end){
+                                    auto& target = *it;
+                                    if(target == source_statement){
+                                        ++it;
+                                        expression.source->statements.insert(it, mtac::Quadruple(result, temp, assign_op));
+
+                                        break;
+                                    }
+
                                     ++it;
-                                    expression.source->statements.insert(it, mtac::Quadruple(source_statement.result, temp, assign_op));
-
-                                    break;
                                 }
-
-                                ++it;
                             }
 
-                            source_statement.result = temp;
+                            if(optimized.find(quadruple.uid()) == optimized.end()){
+                                auto& quadruple = function.find(quid);
 
-                            optimized.insert(source_statement.uid());
-                        }
+                                quadruple.op = assign_op;
+                                quadruple.arg1 = result;
+                                quadruple.arg2.reset();
 
-                        if(optimized.find(quadruple.uid()) == optimized.end()){
-                            quadruple.op = assign_op;
-                            quadruple.arg1 = source_statement.result;
-                            quadruple.arg2.reset();
+                                optimized.insert(quid);
 
-                            optimized.insert(quadruple.uid());
+                                local = true;
+                                changes = true;
 
-                            changes = true;
+                                break;
+                            }
                         }
                     }
                 }
+            }
+
+            if(local){
+                qit = block->statements.begin();
+                qend = block->statements.end();
+            } else {
+                ++qit;
             }
         }
     }

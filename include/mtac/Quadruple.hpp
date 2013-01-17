@@ -47,7 +47,7 @@ struct Quadruple {
 
         std::shared_ptr<Variable> secondary; //For CALL
 
-        eddic::Function* m_function; //For PARAM
+        eddic::Function* m_function = nullptr; //For PARAM
 
         std::string m_param; //For LABEL, GOTO, PARAM
 
@@ -55,8 +55,8 @@ struct Quadruple {
         std::shared_ptr<mtac::basic_block> block;
 
         //Copy constructors
-        Quadruple(const Quadruple& rhs) = delete;
-        Quadruple& operator=(const Quadruple& rhs) = delete;
+        Quadruple(const Quadruple& rhs);
+        Quadruple& operator=(const Quadruple& rhs);
         
         //Move constructors
         Quadruple(Quadruple&& rhs) noexcept;

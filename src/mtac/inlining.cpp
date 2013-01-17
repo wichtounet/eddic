@@ -63,8 +63,8 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     return safe_block;
 }
 
-mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, mtac::Quadruple& call){
-    if(bb->statements.front() == call){
+mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::size_t call_uid){
+    if(bb->statements.front().uid() == call_uid){
         log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
 
         //Erase the call
@@ -91,7 +91,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
 
         auto pit = bb->statements.begin();
 
-        while(*pit != call){
+        while(pit->uid() != call_uid){
             ++pit;
         }
 
@@ -191,7 +191,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
         auto pit = bb->prev->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
-            auto statement = *pit;
+            auto& statement = *pit;
 
             if(statement.op == mtac::Operator::PARAM){
                 auto src_var = statement.param();
@@ -462,22 +462,25 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         auto it = iterate(basic_block->statements);
 
         while(it.has_next()){
-            auto& call = *it;
-            if(call.op == mtac::Operator::CALL){
-                if(non_standard_target(call, program)){
+            auto& src_call = *it;
+            if(src_call.op == mtac::Operator::CALL){
+                if(non_standard_target(src_call, program)){
                     ++it;
                     continue;
                 }
 
-                auto& source_function = get_target(call, program);
+                auto& source_function = get_target(src_call, program);
 
                 auto& source_definition = source_function.definition();
                 auto& dest_definition = dest_function.definition();
 
-                if(will_inline(dest_function, source_function, call, basic_block)){
+                if(will_inline(dest_function, source_function, src_call, basic_block)){
+                    auto call = src_call;
+                    auto src_call_uid = src_call.uid();
+
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
-                    basic_block = split_if_necessary(dest_function, basic_block, call);
+                    basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
 
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
