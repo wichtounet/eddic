@@ -102,9 +102,6 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
         bb->statements.erase(pit, bb->statements.end());
 
-        mtac::Printer printer;
-        printer.printFunction(dest_function);
-
         return split_block;
     }
 }
