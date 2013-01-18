@@ -348,7 +348,7 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::sh
     return reg;
 }
 
-void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
+std::tuple<std::shared_ptr<const Type>, bool, unsigned int> ltac::StatementCompiler::common_param(mtac::Quadruple& param){
     LOG<Trace>("Registers") << "Current statement " << param << log::endl;
 
     if(first_param){
@@ -380,111 +380,121 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             ||  (mtac::is_single_float_register(type) && position <= maxFloat);
     }
 
-    //Push the address of the var
-    if(param.address){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
-            auto variable = *ptr;
+    return std::make_tuple(type, register_allocated, position);
+}
 
-            if(variable->type()->is_pointer()){
-                auto reg = manager.get_pseudo_reg(variable);
+void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
+    std::shared_ptr<const Type> type;
+    bool register_allocated;
+    unsigned int position;
 
-                if(register_allocated){
-                    auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
-                    ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
-                    uses.push_back(param_reg);
-                } else {
-                    push(reg);
-                }
-            } else {
-                auto reg = get_address_in_pseudo_reg(variable, 0);
+    std::tie(type, register_allocated, position) = common_param(param);
 
-                if(register_allocated){
-                    auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
-                    ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
-                    uses.push_back(param_reg);
-                } else {
-                    push(reg);
-                }
-            }
-        } else {
-            auto value = boost::get<int>(*param.arg1);
-            push(value);
-        }
-    } 
-    //Push by value
-    else {
-        if(register_allocated){
-            if(auto* ptr = boost::get<int>(&*param.arg1)){
-                if(*ptr == 0){
-                    if(param.param() && param.param()->type() == FLOAT){
-                        pass_in_float_register(*param.arg1, position);
-                        return;
-                    } else if(!param.std_param().empty() && param.function().parameter(param.std_param()).type() == FLOAT){
-                        pass_in_float_register(*param.arg1, position);
-                        return;
-                    } 
-                } 
-            }
-
-            if(mtac::is_single_int_register(type)){
-                pass_in_int_register(*param.arg1, position);
-            } else {
-                pass_in_float_register(*param.arg1, position);
-            }
-
-            return;
-        }
-
-        //If the param as not been handled as register passing, push it on the stack 
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
-            if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
-                auto reg1 = manager.get_free_pseudo_reg();
-                auto reg2 = manager.get_pseudo_float_reg(*ptr);
-
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg1, reg2);
-                push(reg1);
-            } else {
-                if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
-                    auto position = (*ptr)->position();
-
-                    if(position.isGlobal()){
-                        auto reg = manager.get_free_pseudo_reg();
-
-                        ltac::add_instruction(bb, ltac::Operator::MOV, reg, "V" + position.name());
-                        push(reg);
-                    } else if(position.isStack()){
-                        auto reg = manager.get_free_pseudo_reg();
-
-                        ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
-                        push(reg);
-                    } else if(position.isParameter()){
-                        push(stack_address(position.offset()));
-                    }
-                } else {
-                    auto reg = manager.get_pseudo_reg(*ptr);
-                    push(reg);
-                }
-            }
-        } else if(auto* ptr = boost::get<int>(&*param.arg1)){
+    if(register_allocated){
+        if(auto* ptr = boost::get<int>(&*param.arg1)){
             if(*ptr == 0){
-                if(param.param() && param.param()->type() == FLOAT){
-                    auto label = float_pool->label(0.0);
-                    push(ltac::Address(label));
-                } else if(!param.std_param().empty() && param.function().parameter(param.std_param()).type() == FLOAT){
-                    auto label = float_pool->label(0.0);
-                    push(ltac::Address(label));
-                } else {
-                    push(to_arg(*param.arg1));
+                if(type == FLOAT){
+                    pass_in_float_register(*param.arg1, position);
+                    return;
+                } 
+            } 
+        }
+
+        if(mtac::is_single_int_register(type)){
+            pass_in_int_register(*param.arg1, position);
+        } else {
+            pass_in_float_register(*param.arg1, position);
+        }
+
+        return;
+    }
+
+    //If the param as not been handled as register passing, push it on the stack 
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
+        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
+            auto reg1 = manager.get_free_pseudo_reg();
+            auto reg2 = manager.get_pseudo_float_reg(*ptr);
+
+            ltac::add_instruction(bb, ltac::Operator::MOV, reg1, reg2);
+            push(reg1);
+        } else {
+            if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
+                auto position = (*ptr)->position();
+
+                if(position.isGlobal()){
+                    auto reg = manager.get_free_pseudo_reg();
+
+                    ltac::add_instruction(bb, ltac::Operator::MOV, reg, "V" + position.name());
+                    push(reg);
+                } else if(position.isStack()){
+                    auto reg = manager.get_free_pseudo_reg();
+
+                    ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
+                    push(reg);
+                } else if(position.isParameter()){
+                    push(stack_address(position.offset()));
                 }
+            } else {
+                auto reg = manager.get_pseudo_reg(*ptr);
+                push(reg);
+            }
+        }
+    } else if(auto* ptr = boost::get<int>(&*param.arg1)){
+        if(*ptr == 0){
+            if(param.param() && param.param()->type() == FLOAT){
+                auto label = float_pool->label(0.0);
+                push(ltac::Address(label));
+            } else if(!param.std_param().empty() && param.function().parameter(param.std_param()).type() == FLOAT){
+                auto label = float_pool->label(0.0);
+                push(ltac::Address(label));
             } else {
                 push(to_arg(*param.arg1));
             }
-        } else if(auto* ptr = boost::get<double>(&*param.arg1)){
-            auto label = float_pool->label(*ptr);
-            push(ltac::Address(label));
         } else {
             push(to_arg(*param.arg1));
         }
+    } else if(auto* ptr = boost::get<double>(&*param.arg1)){
+        auto label = float_pool->label(*ptr);
+        push(ltac::Address(label));
+    } else {
+        push(to_arg(*param.arg1));
+    }
+}
+
+void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
+    std::shared_ptr<const Type> type;
+    bool register_allocated;
+    unsigned int position;
+
+    std::tie(type, register_allocated, position) = common_param(param);
+
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
+        auto variable = *ptr;
+
+        if(variable->type()->is_pointer()){
+            auto reg = manager.get_pseudo_reg(variable);
+
+            if(register_allocated){
+                auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
+                ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                uses.push_back(param_reg);
+            } else {
+                push(reg);
+            }
+        } else {
+            auto reg = get_address_in_pseudo_reg(variable, 0);
+
+            if(register_allocated){
+                auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
+                ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                uses.push_back(param_reg);
+            } else {
+                push(reg);
+            }
+        }
+    } else {
+        auto value = boost::get<int>(*param.arg1);
+        push(value);
     }
 }
 
@@ -1349,6 +1359,9 @@ void ltac::StatementCompiler::compile(mtac::Quadruple& quadruple){
             break;
         case mtac::Operator::PARAM:
             compile_PARAM(quadruple);
+            break;
+        case mtac::Operator::PPARAM:
+            compile_PPARAM(quadruple);
             break;
         case mtac::Operator::CALL:
             compile_CALL(quadruple);

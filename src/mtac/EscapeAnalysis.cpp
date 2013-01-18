@@ -33,12 +33,10 @@ mtac::EscapedVariables mtac::escape_analysis(mtac::Function& function){
                     auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
                     pointer_escaped->insert(var);
                 }
-            } else if(quadruple.op == mtac::Operator::PARAM){
-                if(quadruple.address){
-                    if(mtac::isVariable(*quadruple.arg1)){
-                        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
-                        pointer_escaped->insert(var);
-                    }
+            } else if(quadruple.op == mtac::Operator::PPARAM){
+                if(mtac::isVariable(*quadruple.arg1)){
+                    auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
+                    pointer_escaped->insert(var);
                 }
             }
         }

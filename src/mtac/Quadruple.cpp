@@ -68,7 +68,6 @@ mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) :
         arg2(rhs.arg2),
         op(rhs.op),
         size(rhs.size),
-        address(rhs.address),
         depth(rhs.depth),
         secondary(rhs.secondary),
         m_function(rhs.m_function),
@@ -94,7 +93,6 @@ mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
     op = rhs.op;
     size = rhs.size;
     block = rhs.block;
-    address = rhs.address;
     depth = rhs.depth;
     m_function = rhs.m_function;
     m_param = rhs.m_param;
@@ -115,7 +113,6 @@ mtac::Quadruple::Quadruple(mtac::Quadruple&& rhs) noexcept :
         arg2(std::move(rhs.arg2)),
         op(std::move(rhs.op)),
         size(std::move(rhs.size)),
-        address(std::move(rhs.address)),
         depth(std::move(rhs.depth)),
         secondary(std::move(rhs.secondary)),
         m_function(std::move(rhs.m_function)),
@@ -138,7 +135,6 @@ mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs) noexcept {
     op = std::move(rhs.op);
     size = std::move(rhs.size);
     block = std::move(rhs.block);
-    address = std::move(rhs.address);
     depth = std::move(rhs.depth);
     m_function = std::move(rhs.m_function);
     m_param = std::move(rhs.m_param);

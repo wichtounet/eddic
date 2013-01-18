@@ -139,14 +139,12 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* b
         remove_copies = quadruple.result;
     } 
     //Passing a variable by pointer erases its value
-    else if(quadruple.op == mtac::Operator::PARAM){
-        if(quadruple.address){
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                //Impossible to know if the variable is modified or not, consider it modified
-                out[*var_ptr].set_nac();
+    else if(quadruple.op == mtac::Operator::PPARAM){
+        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            //Impossible to know if the variable is modified or not, consider it modified
+            out[*var_ptr].set_nac();
 
-                remove_copies = *var_ptr;
-            }
+            remove_copies = *var_ptr;
         }
     } else {
         auto op = quadruple.op;
@@ -211,13 +209,13 @@ struct ConstantOptimizer {
     }
 
     bool optimize(mtac::Quadruple& quadruple){
-        if(quadruple.op == mtac::Operator::PARAM){
-            if(!quadruple.address){
-                changes |= optimize_optional(quadruple.arg1);
-            }
+        if(quadruple.op == mtac::Operator::PPARAM){
+            return changes;
+        } else if(quadruple.op == mtac::Operator::PARAM){
+            changes |= optimize_optional(quadruple.arg1);
 
             return changes;
-        }
+        } 
 
         //If the constant is a string, we can use it in the dot operator
         if(quadruple.op == mtac::Operator::DOT){

@@ -229,18 +229,23 @@ struct DebugVisitor {
                 stream << "\t" << "goto " << quadruple.label() << " : " << quadruple.depth << endl;
             }
         } else if(op == mtac::Operator::PARAM){
-            std::string address;
-            if(quadruple.address){
-                address = " address ";
-            }
-
             if(quadruple.param()){
-                stream << "\t" << "param " << address << "(" << printVar(quadruple.param()) << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+                stream << "\t" << "param " << "(" << printVar(quadruple.param()) << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
             } else {
                 if(quadruple.std_param().length() > 0){
-                    stream << "\t" << "param " << address << "(std::" << quadruple.std_param() << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+                    stream << "\t" << "param " << "(std::" << quadruple.std_param() << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
                 } else {
-                    stream << "\t" << "param " << address << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+                    stream << "\t" << "param " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+                }
+            }
+        } else if(op == mtac::Operator::PPARAM){
+            if(quadruple.param()){
+                stream << "\t" << "param address " << "(" << printVar(quadruple.param()) << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+            } else {
+                if(quadruple.std_param().length() > 0){
+                    stream << "\t" << "param address " << "(std::" << quadruple.std_param() << ") " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
+                } else {
+                    stream << "\t" << "param address " << printArg(*quadruple.arg1) << " : " << quadruple.depth << endl;
                 }
             }
         } else if(op == mtac::Operator::CALL){

@@ -61,7 +61,7 @@ Arguments collect_arguments(mtac::Program& program){
                         while(it != end && discovered < parameters){
                             auto& param_quadruple = *it;
 
-                            if(param_quadruple.op == mtac::Operator::PARAM){
+                            if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
                                 if(param_quadruple.param()->type() == INT){
                                     function_arguments[discovered] = *param_quadruple.arg1;
                                 }
@@ -192,7 +192,7 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                                     while(it != end && discovered < function.parameters().size()){
                                         auto& param_quadruple = *it;
 
-                                        if(param_quadruple.op == mtac::Operator::PARAM){
+                                        if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
                                             if(discovered == parameter.first){
                                                 param_quadruple.op = mtac::Operator::NOP;
                                                 param_quadruple.arg1.reset();

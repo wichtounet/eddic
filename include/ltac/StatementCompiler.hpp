@@ -82,6 +82,8 @@ class StatementCompiler {
         ltac::Argument to_arg(mtac::Argument argument);
         
         ltac::Address address(std::shared_ptr<Variable> var, mtac::Argument offset);
+
+        std::tuple<std::shared_ptr<const Type>, bool, unsigned int> common_param(mtac::Quadruple& param);
     
         void compile_ASSIGN(mtac::Quadruple& quadruple);
         void compile_PASSIGN(mtac::Quadruple& quadruple);
@@ -122,6 +124,7 @@ class StatementCompiler {
         void compile_AND(mtac::Quadruple& quadruple);
         void compile_GOTO(mtac::Quadruple& quadruple);
         void compile_PARAM(mtac::Quadruple& quadruple);
+        void compile_PPARAM(mtac::Quadruple& quadruple);
         void compile_CALL(mtac::Quadruple& quadruple);
 };
 

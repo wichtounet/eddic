@@ -190,7 +190,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
         for(int i = parameters - 1; i >= 0;){
             auto& statement = *pit;
 
-            if(statement.op == mtac::Operator::PARAM){
+            if(statement.op == mtac::Operator::PARAM || statement.op == mtac::Operator::PPARAM){
                 auto src_var = statement.param();
 
                 if(src_var->type()->is_array()){
@@ -275,7 +275,7 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
         for(int i = source_definition.parameters().size() - 1; i >= 0;){
             auto& quadruple = *pit;
 
-            if(quadruple.op == mtac::Operator::PARAM){
+            if(quadruple.op == mtac::Operator::PARAM || quadruple.op == mtac::Operator::PPARAM){
                 auto src_var = quadruple.param();
 
                 if(src_var->type()->is_standard_type()){
