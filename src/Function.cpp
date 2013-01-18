@@ -45,18 +45,6 @@ Function& Function::operator=(Function&& rhs){
    return *this;
 }
         
-std::shared_ptr<FunctionContext> _context;
-        std::shared_ptr<const Type> _struct_type = nullptr;
-
-        std::shared_ptr<const Type> _return_type;
-        std::string _name;
-        std::string _mangled_name;
-
-        int _references = 0;
-        bool _standard = false;
-
-        std::vector<Parameter> _parameters;
-        
 const Parameter& Function::parameter(std::size_t i) const {
     return _parameters.at(i);
 }
@@ -68,7 +56,7 @@ const Parameter& Function::parameter(const std::string& name) const {
         }
     }
 
-    eddic_unreachable("This parameter does not exists in the given function");
+    eddic_unreachable(("There are no \"" + name + "\" parameter in the function").c_str());
 }
 
 std::vector<Parameter>& Function::parameters(){
@@ -151,10 +139,10 @@ const std::shared_ptr<const Type>& Function::return_type() const {
     return _return_type;
 }
 
-const std::string& Function::name(){
+const std::string& Function::name() const {
     return _name;
 }
 
-const std::string& Function::mangled_name(){
+const std::string& Function::mangled_name() const {
     return _mangled_name;
 }

@@ -80,7 +80,7 @@ namespace logging {
              *         allowed.
              */
             template< typename T>
-            OutputLevelRunTimeSwitch& operator<<(T t) {
+            OutputLevelRunTimeSwitch& operator<<(const T& t) {
                 if ( allowed() )
                     Base::operator<<(t);
                 return *this;

@@ -65,7 +65,8 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            compiler.compile(std::make_shared<mtac::Quadruple>(block->label, mtac::Operator::LABEL));
+            mtac::Quadruple fake_label(block->label, mtac::Operator::LABEL);
+            compiler.compile(fake_label);
         }
 
         for(auto& quadruple : block->statements){

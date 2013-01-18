@@ -33,10 +33,10 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         auto it = iterate(block->statements);
 
         while(it.has_next()){
-            auto quadruple = *it;
+            auto& quadruple = *it;
 
-            if(quadruple->result && mtac::erase_result(quadruple->op)){
-                if(results->OUT_S[quadruple].top() || results->OUT_S[quadruple].values().find(quadruple->result) == results->OUT_S[quadruple].values().end()){
+            if(quadruple.result && mtac::erase_result(quadruple.op)){
+                if(results->OUT_S[quadruple.uid()].top() || results->OUT_S[quadruple.uid()].values().find(quadruple.result) == results->OUT_S[quadruple.uid()].values().end()){
                     it.erase();
                     optimized=true;
                     continue;
@@ -51,9 +51,9 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
 
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            if(quadruple->op == mtac::Operator::DOT || quadruple->op == mtac::Operator::FDOT || quadruple->op == mtac::Operator::PDOT){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                    if(auto* offset_ptr = boost::get<int>(&*quadruple->arg2)){
+            if(quadruple.op == mtac::Operator::DOT || quadruple.op == mtac::Operator::FDOT || quadruple.op == mtac::Operator::PDOT){
+                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                    if(auto* offset_ptr = boost::get<int>(&*quadruple.arg2)){
                         mtac::Offset offset(*var_ptr, *offset_ptr);
                         used_offsets.insert(offset);
                     }
@@ -68,12 +68,12 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         while(it.has_next()){
             auto& quadruple = *it;
 
-            if(quadruple->op == mtac::Operator::DOT_ASSIGN || quadruple->op == mtac::Operator::DOT_FASSIGN || quadruple->op == mtac::Operator::DOT_PASSIGN){
+            if(quadruple.op == mtac::Operator::DOT_ASSIGN || quadruple.op == mtac::Operator::DOT_FASSIGN || quadruple.op == mtac::Operator::DOT_PASSIGN){
                 //Arrays are a problem because they are not considered as escaped after being passed in parameters
-                if(!quadruple->result->type()->is_pointer() && !quadruple->result->type()->is_array()){
-                    if(auto* offset_ptr = boost::get<int>(&*quadruple->arg1)){
-                        if(quadruple->result->type()->is_custom_type() || quadruple->result->type()->is_template_type()){
-                            auto struct_type = function.context->global()->get_struct(quadruple->result->type()->mangle());
+                if(!quadruple.result->type()->is_pointer() && !quadruple.result->type()->is_array()){
+                    if(auto* offset_ptr = boost::get<int>(&*quadruple.arg1)){
+                        if(quadruple.result->type()->is_custom_type() || quadruple.result->type()->is_template_type()){
+                            auto struct_type = function.context->global()->get_struct(quadruple.result->type()->mangle());
                             auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
                             if(member_type->is_pointer()){
@@ -82,9 +82,9 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                             }
                         }
 
-                        mtac::Offset offset(quadruple->result, *offset_ptr);
+                        mtac::Offset offset(quadruple.result, *offset_ptr);
 
-                        if(problem.pointer_escaped->find(quadruple->result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
+                        if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
                             it.erase();
                             optimized=true;
                             continue;

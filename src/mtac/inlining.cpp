@@ -35,9 +35,9 @@ struct BBReplace {
 
     BBReplace(BBClones& clones) : clones(clones) {}
 
-    void operator()(std::shared_ptr<mtac::Quadruple> goto_){
-        if(clones.find(goto_->block) != clones.end()){
-            goto_->block = clones[goto_->block];
+    void operator()(mtac::Quadruple& goto_){
+        if(clones.find(goto_.block) != clones.end()){
+            goto_.block = clones[goto_.block];
         }
     }
 };
@@ -63,8 +63,8 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     return safe_block;
 }
 
-mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
-    if(bb->statements.front() == call){
+mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basic_block_p bb, std::size_t call_uid){
+    if(bb->statements.front().uid() == call_uid){
         log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
 
         //Erase the call
@@ -91,7 +91,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
 
         auto pit = bb->statements.begin();
 
-        while(*pit != call){
+        while(pit->uid() != call_uid){
             ++pit;
         }
 
@@ -101,9 +101,6 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         //Transfer the remaining statements to split_block
         split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
         bb->statements.erase(pit, bb->statements.end());
-
-        mtac::Printer printer;
-        printer.printFunction(dest_function);
 
         return split_block;
     }
@@ -191,19 +188,19 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
         auto pit = bb->prev->statements.end() - 1;
 
         for(int i = parameters - 1; i >= 0;){
-            auto statement = *pit;
+            auto& statement = *pit;
 
-            if(statement->op == mtac::Operator::PARAM){
-                auto src_var = statement->param();
+            if(statement.op == mtac::Operator::PARAM || statement.op == mtac::Operator::PPARAM){
+                auto src_var = statement.param();
 
                 if(src_var->type()->is_array()){
-                    auto dest_var = boost::get<std::shared_ptr<Variable>>(*statement->arg1);
+                    auto dest_var = boost::get<std::shared_ptr<Variable>>(*statement.arg1);
 
                     variable_clones[src_var] = dest_var;
 
-                    auto quadruple = std::make_shared<mtac::Quadruple>();
-                    quadruple->op = mtac::Operator::NOP;
-                    *pit = quadruple;
+                    statement.op = mtac::Operator::NOP;
+                    statement.arg1.reset();
+                    statement.arg2.reset();
                 } else if(src_var->type() == STRING){
                     if(!string_states.count(src_var)){
                         auto dest_var = dest_definition.context()->newVariable(src_var);
@@ -211,30 +208,23 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
                         variable_clones[src_var] = dest_var;
 
                         //Copy the label
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
-                        quadruple->op = mtac::Operator::ASSIGN;
-                        quadruple->result = dest_var;
-                        quadruple->arg1 = *statement->arg1;
-
-                        *pit = quadruple;
+                        statement.op = mtac::Operator::ASSIGN;
+                        statement.result = dest_var;
+                        statement.arg2.reset();
 
                         string_states[src_var] = true;
                     } else {
                         assert(string_states[src_var]);
 
                         //Copy the size
-                        auto quadruple = std::make_shared<mtac::Quadruple>();
-                        quadruple->op = mtac::Operator::DOT_ASSIGN;
-                        quadruple->result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
-                        quadruple->arg1 = static_cast<int>(INT->size(dest_definition.context()->global()->target_platform()));
-                        quadruple->arg2 = *statement->arg1;
-
-                        *pit = quadruple;
+                        statement.op = mtac::Operator::DOT_ASSIGN;
+                        statement.result = boost::get<std::shared_ptr<Variable>>(variable_clones[src_var]);
+                        statement.arg2 = statement.arg1;
+                        statement.arg1 = static_cast<int>(INT->size(dest_definition.context()->global()->target_platform()));
 
                         string_states[src_var] = false;
                     }
                 } else {
-                    auto quadruple = std::make_shared<mtac::Quadruple>();
                     std::shared_ptr<Variable> dest_var;
 
                     auto type = src_var->type();
@@ -242,19 +232,16 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
                     dest_var = dest_definition.context()->new_temporary(type);
 
                     if(type == INT || type == BOOL || type == CHAR){
-                        quadruple->op = mtac::Operator::ASSIGN; 
+                        statement.op = mtac::Operator::ASSIGN; 
                     } else if(type->is_pointer()){
-                        quadruple->op = mtac::Operator::PASSIGN;
+                        statement.op = mtac::Operator::PASSIGN;
                     } else {
-                        quadruple->op = mtac::Operator::FASSIGN; 
+                        statement.op = mtac::Operator::FASSIGN; 
                     }
 
-                    quadruple->arg1 = *statement->arg1;
-
                     variable_clones[src_var] = dest_var;
-                    quadruple->result = dest_var;
-
-                    *pit = quadruple;
+                    statement.result = dest_var;
+                    statement.arg2.reset();
                 }
 
                 --i;
@@ -267,7 +254,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
     return variable_clones;
 }
 
-unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb, std::shared_ptr<mtac::Quadruple> call){
+unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Function& /*dest_function*/, mtac::basic_block_p bb, mtac::Quadruple& call){
     unsigned int constant = 0;
 
     auto& source_definition = source_function.definition();
@@ -286,13 +273,13 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
         }
 
         for(int i = source_definition.parameters().size() - 1; i >= 0;){
-            auto quadruple = *pit;
+            auto& quadruple = *pit;
 
-            if(quadruple->op == mtac::Operator::PARAM){
-                auto src_var = quadruple->param();
+            if(quadruple.op == mtac::Operator::PARAM || quadruple.op == mtac::Operator::PPARAM){
+                auto src_var = quadruple.param();
 
                 if(src_var->type()->is_standard_type()){
-                    auto arg = *quadruple->arg1;
+                    auto arg = *quadruple.arg1;
 
                     if(boost::get<int>(&arg)){
                         ++constant;
@@ -313,7 +300,7 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
     return constant;
 }
 
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, std::shared_ptr<mtac::Quadruple> call, mtac::basic_block_p basic_block){
+void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, mtac::Quadruple& call, mtac::basic_block_p basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
     BBReplace bb_replacer(bb_clones);
 
@@ -325,48 +312,53 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
         auto ssit = iterate(new_bb->statements);
 
         while(ssit.has_next()){
-            auto quadruple = *ssit;
+            auto& quadruple = *ssit;
 
             variable_replacer.replace(quadruple);
             bb_replacer(quadruple);
 
-            if(quadruple->op == mtac::Operator::RETURN){
+            if(quadruple.op == mtac::Operator::RETURN){
                 auto label = "label";
-                auto goto_ = std::make_shared<mtac::Quadruple>(static_cast<const std::string&>(label), mtac::Operator::GOTO);
-                goto_->block = basic_block;
+                mtac::Quadruple goto_(static_cast<const std::string&>(label), mtac::Operator::GOTO);
+                goto_.block = basic_block;
 
                 mtac::remove_edge(new_bb, new_bb->next);
                 mtac::make_edge(new_bb, basic_block);
 
-                if(!call->return1()){
+                if(!call.return1()){
                     //If the caller does not care about the return value, return has no effect
                     ssit.erase();
-                    ssit.insert(goto_);
+                    ssit.insert(std::move(goto_));
 
                     continue;
                 } else {
                     mtac::Operator op;
-                    if(call->function().return_type() == FLOAT){
+                    if(call.function().return_type() == FLOAT){
                         op = mtac::Operator::FASSIGN;
-                    } else if(call->function().return_type()->is_pointer()){
+                    } else if(call.function().return_type()->is_pointer()){
                         op = mtac::Operator::PASSIGN;
                     } else {
                         op = mtac::Operator::ASSIGN;
                     }
 
-                    if(call->return2()){
-                        ssit.insert(std::make_shared<mtac::Quadruple>(call->return2(), *quadruple->arg2, op));
+                    if(call.return2()){
+                        mtac::Quadruple second(call.return2(), *quadruple.arg2, op);
 
+                        quadruple.op = op;
+                        quadruple.result = call.return1();
+                        quadruple.arg2.reset();
+
+                        ssit.insert(second);
                         ++ssit;
+                    } else {
+                        quadruple.op = op;
+                        quadruple.result = call.return1();
+                        quadruple.arg2.reset();
                     }
-
-                    quadruple->op = op;
-                    quadruple->result = call->return1();
-                    quadruple->arg2.reset();
 
                     ++ssit;
 
-                    ssit.insert(goto_);
+                    ssit.insert(std::move(goto_));
 
                     continue;
                 }
@@ -399,7 +391,7 @@ bool can_be_inlined(mtac::Function& function){
     return true;
 }
 
-bool will_inline(mtac::Function& source_function, mtac::Function& target_function, std::shared_ptr<mtac::Quadruple> call, mtac::basic_block_p bb){
+bool will_inline(mtac::Function& source_function, mtac::Function& target_function, mtac::Quadruple& call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function.get_name() == target_function.get_name()){
         return false;
@@ -417,12 +409,12 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
         }
 
         //For inner loop, increase the chances of inlining
-        if(call->depth > 1){
+        if(call.depth > 1){
             return source_size < 500 && target_size < 100;
         }
         
         //For single loop, increase a bit the changes of inlining
-        if(call->depth > 0){
+        if(call.depth > 0){
             return source_size < 300 && target_size < 75;
         }
 
@@ -438,8 +430,8 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
     return false;
 }
 
-bool non_standard_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program& program){
-    auto& target_definition = call->function();
+bool non_standard_target(mtac::Quadruple& call, mtac::Program& program){
+    auto& target_definition = call.function();
 
     for(auto& function : program.functions){
         if(function.definition().mangled_name() == target_definition.mangled_name()){
@@ -450,8 +442,8 @@ bool non_standard_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program& p
     return true;
 }
 
-mtac::Function& get_target(std::shared_ptr<mtac::Quadruple> call, mtac::Program& program){
-    auto& target_definition = call->function();
+mtac::Function& get_target(mtac::Quadruple& call, mtac::Program& program){
+    auto& target_definition = call.function();
 
     for(auto& function : program.functions){
         if(function.definition().mangled_name() == target_definition.mangled_name()){
@@ -472,22 +464,25 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
         auto it = iterate(basic_block->statements);
 
         while(it.has_next()){
-            auto call = *it;
-            if(call->op == mtac::Operator::CALL){
-                if(non_standard_target(call, program)){
+            auto& src_call = *it;
+            if(src_call.op == mtac::Operator::CALL){
+                if(non_standard_target(src_call, program)){
                     ++it;
                     continue;
                 }
 
-                auto& source_function = get_target(call, program);
+                auto& source_function = get_target(src_call, program);
 
                 auto& source_definition = source_function.definition();
                 auto& dest_definition = dest_function.definition();
 
-                if(will_inline(dest_function, source_function, call, basic_block)){
+                if(will_inline(dest_function, source_function, src_call, basic_block)){
+                    auto call = src_call;
+                    auto src_call_uid = src_call.uid();
+
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
-                    basic_block = split_if_necessary(dest_function, basic_block, call);
+                    basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
 
                     //Copy the parameters
                     auto variable_clones = copy_parameters(source_function, dest_function, basic_block);

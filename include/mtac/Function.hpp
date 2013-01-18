@@ -19,6 +19,7 @@
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
 #include "mtac/Loop.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -44,8 +45,20 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string get_name() const;
 
-        void add(std::shared_ptr<mtac::Quadruple> statement);
-        std::vector<std::shared_ptr<mtac::Quadruple>>& get_statements();
+        void add(mtac::Quadruple statement);
+        
+        template< class... Args >
+        void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+        
+        void push_back(mtac::Quadruple&& quadruple){
+            statements.push_back(std::forward<mtac::Quadruple>(quadruple));
+        }
+
+        mtac::Quadruple& find(std::size_t uid);
+
+        std::vector<mtac::Quadruple>& get_statements();
         void release_statements();
 
         void create_entry_bb();
@@ -109,7 +122,7 @@ class Function : public std::enable_shared_from_this<Function> {
         eddic::Function* _definition;
 
         //Before being partitioned, the function has only statement
-        std::vector<std::shared_ptr<mtac::Quadruple>> statements;
+        std::vector<mtac::Quadruple> statements;
 
         bool _pure = false;
         

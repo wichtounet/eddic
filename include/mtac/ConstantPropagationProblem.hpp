@@ -31,15 +31,15 @@ class ConstantPropagationLattice {
         ConstantPropagationLattice(){}; //NAC
         ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
 
-        ConstantValue value(){
+        ConstantValue value() const {
             return *m_value;
         }
 
-        bool constant(){
+        bool constant() const {
             return m_value;
         }
 
-        bool nac(){
+        bool nac() const {
             return !constant();
         }
 
@@ -60,7 +60,7 @@ struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward
     
     void meet(ProblemDomain& in, const ProblemDomain& out) override;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) override;
+    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) override;
     ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
     
     bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
@@ -75,7 +75,7 @@ struct pass_traits<ConstantPropagationProblem> {
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
-std::ostream& operator<<(std::ostream& stream, ConstantPropagationLattice& lattice);
+std::ostream& operator<<(std::ostream& stream, const ConstantPropagationLattice& lattice);
 
 } //end of mtac
 

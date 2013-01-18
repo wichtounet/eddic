@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
+#include <ostream>
 
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"

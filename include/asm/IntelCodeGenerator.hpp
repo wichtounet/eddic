@@ -10,8 +10,6 @@
 
 #include <memory>
 #include <string>
-#include <iostream>
-
 #include "asm/CodeGenerator.hpp"
 
 #include "mtac/forward.hpp"

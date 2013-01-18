@@ -5,9 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <fstream>
-
 #include "ast/DependenciesResolver.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"

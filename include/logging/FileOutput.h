@@ -40,7 +40,7 @@
 #ifndef __FileOutput_h__
 #define __FileOutput_h__
 
-#include <iostream>
+#include <ostream>
 #include <fstream>
 
 namespace logging {

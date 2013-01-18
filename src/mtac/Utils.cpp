@@ -27,7 +27,7 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
         for(auto& quadruple : basic_block->statements){
-            if(quadruple->op == mtac::Operator::CALL && quadruple->function().mangled_name() == function.definition().mangled_name()){
+            if(quadruple.op == mtac::Operator::CALL && quadruple.function().mangled_name() == function.definition().mangled_name()){
                 return true;
             }
         }
@@ -58,12 +58,12 @@ struct VariableUsageCollector {
         }
     }
 
-    void collect(std::shared_ptr<mtac::Quadruple> quadruple){
-        current_depth = quadruple->depth;
+    void collect(mtac::Quadruple& quadruple){
+        current_depth = quadruple.depth;
 
-        inc_usage(quadruple->result);
-        collect_optional(quadruple->arg1);
-        collect_optional(quadruple->arg2);
+        inc_usage(quadruple.result);
+        collect_optional(quadruple.arg1);
+        collect_optional(quadruple.arg2);
     }
 };
 
@@ -72,8 +72,8 @@ struct BasicBlockUsageCollector {
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
-    void collect(std::shared_ptr<mtac::Quadruple> goto_){
-        usage.insert(goto_->block);
+    void collect(mtac::Quadruple& goto_){
+        usage.insert(goto_.block);
     }
 };
 
@@ -124,6 +124,7 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::GOTO
         && op != mtac::Operator::NOP
         && op != mtac::Operator::PARAM
+        && op != mtac::Operator::PPARAM
         && op != mtac::Operator::CALL
         && op != mtac::Operator::LABEL
         && !(op >= mtac::Operator::IF_UNARY && op <= mtac::Operator::IF_FALSE_FL);
@@ -164,8 +165,6 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
     return std::make_pair(offset, member_type);
 }
 
-//TODO Use the copy constructor instead
-
-std::shared_ptr<mtac::Quadruple> mtac::copy(const std::shared_ptr<mtac::Quadruple>& quadruple){
-    return std::make_shared<mtac::Quadruple>(*quadruple);
+mtac::Quadruple mtac::copy(const mtac::Quadruple& quadruple){
+    return quadruple;
 }

@@ -26,7 +26,7 @@ class PointerPropagation {
 
         void clear();
 
-        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
+        void operator()(mtac::Quadruple& quadruple);
 
     private:
         std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<Variable>> aliases;

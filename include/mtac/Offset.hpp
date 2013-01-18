@@ -9,7 +9,7 @@
 #define MTAC_OFFSET_H
 
 #include <memory>
-#include <iostream>
+#include <ostream>
 
 #include <boost/functional/hash.hpp>
 

@@ -30,17 +30,17 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
 
         //First separate the statements into basic blocks
         for(auto& quadruple : function.get_statements()){
-            if(quadruple->op == mtac::Operator::LABEL){
+            if(quadruple.op == mtac::Operator::LABEL){
                 function.append_bb();
 
-                labels[quadruple->label()] = function.current_bb();
+                labels[quadruple.label()] = function.current_bb();
 
                 nextIsLeader = false;
                 continue;
             }
 
-            if(quadruple->op == mtac::Operator::CALL){
-                if(!safe(quadruple->function().mangled_name())){
+            if(quadruple.op == mtac::Operator::CALL){
+                if(!safe(quadruple.function().mangled_name())){
                     function.append_bb();
                     nextIsLeader = false;
                 }
@@ -51,18 +51,18 @@ void mtac::BasicBlockExtractor::extract(mtac::Program& program) const {
                 nextIsLeader = false;
             }
 
-            if(quadruple->is_if() || quadruple->is_if_false() || quadruple->op == mtac::Operator::GOTO || quadruple->op == mtac::Operator::RETURN){
+            if(quadruple.is_if() || quadruple.is_if_false() || quadruple.op == mtac::Operator::GOTO || quadruple.op == mtac::Operator::RETURN){
                 nextIsLeader = true;
             } 
 
-            function.current_bb()->add(quadruple);
+            function.current_bb()->emplace_back(std::move(quadruple));
         }
 
-        //Then, replace all the the labels by reference to basic blocks
+        //Then, replace all the labels by reference to basic blocks
         for(auto& block : function){
             for(auto& quadruple : block->statements){
-                if(quadruple->op == mtac::Operator::GOTO || quadruple->is_if() || quadruple->is_if_false()){
-                    quadruple->block = labels[quadruple->label()];
+                if(quadruple.op == mtac::Operator::GOTO || quadruple.is_if() || quadruple.is_if_false()){
+                    quadruple.block = labels[quadruple.label()];
                 }
             }
         }

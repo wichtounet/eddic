@@ -37,10 +37,10 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
             auto bb = *loop.begin();
 
             if(bb->statements.size() == 2){
-                auto first = bb->statements.front();
+                auto& first = bb->statements.front();
 
                 auto& basic_induction_variables = loop.basic_induction_variables();
-                if(basic_induction_variables.find(first->result) != basic_induction_variables.end()){
+                if(basic_induction_variables.find(first.result) != basic_induction_variables.end()){
                     auto linear_equation = basic_induction_variables.begin()->second;
                     auto initial_value = loop.initial_value();
 
@@ -54,7 +54,7 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
                         bb->statements.clear();
                         loop_removed = true;
 
-                        bb->statements.push_back(std::make_shared<mtac::Quadruple>(first->result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN));
+                        bb->emplace_back(first.result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN);
                     }
 
                     if(loop_removed){

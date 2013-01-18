@@ -68,6 +68,18 @@ bool& mtac::Function::pure(){
     return _pure;
 }
 
+mtac::Quadruple& mtac::Function::find(std::size_t uid){
+    for(auto& block : *this){
+        for(auto& quadruple : block){
+            if(quadruple.uid() == uid){
+                return quadruple;
+            }
+        }
+    }
+
+    eddic_unreachable("The given uid does not exist");
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }
@@ -100,7 +112,7 @@ mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
 }
 
-void mtac::Function::add(std::shared_ptr<mtac::Quadruple> statement){
+void mtac::Function::add(mtac::Quadruple statement){
     statements.push_back(statement);
 }
 
@@ -267,7 +279,7 @@ eddic::Function& mtac::Function::definition(){
     return *_definition;
 }
 
-std::vector<std::shared_ptr<mtac::Quadruple>>& mtac::Function::get_statements(){
+std::vector<mtac::Quadruple>& mtac::Function::get_statements(){
     return statements;
 }
 
