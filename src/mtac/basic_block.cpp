@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
+
 #include "mtac/Function.hpp"
 
 using namespace eddic;
@@ -21,6 +23,16 @@ mtac::basic_block::iterator mtac::basic_block::begin(){
 
 mtac::basic_block::iterator mtac::basic_block::end(){
     return statements.end();
+}
+        
+mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
+    for(auto& quadruple : statements){
+        if(quadruple.uid() == uid){
+            return quadruple;
+        }
+    }
+
+    eddic_unreachable("The uid should exists");
 }
 
 std::ostream& mtac::operator<<(std::ostream& stream, const std::shared_ptr<basic_block>& basic_block){

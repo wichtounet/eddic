@@ -58,6 +58,8 @@ class basic_block {
          */
         void push_back(mtac::Quadruple&& statement);
 
+        mtac::Quadruple& find(std::size_t uid);
+
         template< class... Args >
         void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);

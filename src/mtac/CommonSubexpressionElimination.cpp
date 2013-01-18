@@ -179,6 +179,8 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                                 assign_op = mtac::Operator::FASSIGN;
                             } 
 
+                            std::shared_ptr<Variable> new_result = result;
+
                             if(optimized.find(source_statement.uid()) == optimized.end()){
                                 std::shared_ptr<Variable> temp;
                                 if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
@@ -186,6 +188,8 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                                 } else {
                                     temp = expression.source->context->new_temporary(FLOAT);
                                 } 
+
+                                new_result = temp;
 
                                 auto it = expression.source->statements.begin();
                                 auto end = expression.source->statements.end();
@@ -207,11 +211,13 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                                 }
                             }
 
-                            if(optimized.find(quadruple.uid()) == optimized.end()){
+                            if(optimized.find(quid) == optimized.end()){
                                 auto& quadruple = function.find(quid);
 
+                                eddic_assert(new_result, "Should have been filled");
+
                                 quadruple.op = assign_op;
-                                quadruple.arg1 = result;
+                                quadruple.arg1 = new_result;
                                 quadruple.arg2.reset();
 
                                 optimized.insert(quid);

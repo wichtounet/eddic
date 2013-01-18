@@ -342,14 +342,19 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
                     }
 
                     if(call.return2()){
-                        ssit.insert(mtac::Quadruple(call.return2(), *quadruple.arg2, op));
+                        mtac::Quadruple second(call.return2(), *quadruple.arg2, op);
 
+                        quadruple.op = op;
+                        quadruple.result = call.return1();
+                        quadruple.arg2.reset();
+
+                        ssit.insert(second);
                         ++ssit;
+                    } else {
+                        quadruple.op = op;
+                        quadruple.result = call.return1();
+                        quadruple.arg2.reset();
                     }
-
-                    quadruple.op = op;
-                    quadruple.result = call.return1();
-                    quadruple.arg2.reset();
 
                     ++ssit;
 
