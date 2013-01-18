@@ -8,7 +8,7 @@
 #ifndef LTAC_PRINTER_H
 #define LTAC_PRINTER_H
 
-#include <ostream>
+#include <iostream>
 
 #include "mtac/forward.hpp"
 #include "ltac/forward.hpp"
