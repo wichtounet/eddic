@@ -14,7 +14,6 @@
 #include "mtac/loop_analysis.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
-#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -43,12 +42,16 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 //The comparison is not necessary anymore
                 bb->statements.pop_back();
 
-                auto statements = bb->statements;
+                auto& statements = bb->statements;
+                int limit = bb->statements.size();
+
+                //Save enough space for the new statements
+                statements.reserve(limit * it);
 
                 //Start at 1 because there is already the original body
                 for(int i = 1; i < it; ++i){
-                    for(auto& statement : statements){
-                        bb->statements.push_back(mtac::copy(statement)); 
+                    for(int j = 0; j < limit; ++j){
+                        statements.push_back(statements[j]); 
                     }
                 }
 
