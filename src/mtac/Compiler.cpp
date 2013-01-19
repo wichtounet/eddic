@@ -52,12 +52,12 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
 arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary);
 
 mtac::Argument index_of_array(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::Function& function){
-    mtac::Argument index = moveToArgument(indexValue, function);
+    auto index = moveToArgument(indexValue, function);
     
     auto temp = function.context->new_temporary(INT);
 
-    function.emplace_back(temp, index, mtac::Operator::MUL, array->type()->data_type()->size(function.context->global()->target_platform()));
-    function.emplace_back(temp, temp, mtac::Operator::ADD, INT->size(function.context->global()->target_platform()));
+    function.emplace_back(temp, index, mtac::Operator::MUL, static_cast<int>(array->type()->data_type()->size(function.context->global()->target_platform())));
+    function.emplace_back(temp, temp, mtac::Operator::ADD, static_cast<int>(INT->size(function.context->global()->target_platform())));
    
     return temp;
 }
@@ -165,8 +165,8 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         auto t1 = function.context->new_temporary(INT);
         auto t2 = function.context->new_temporary(INT);
 
-        function.emplace_back(t1, var, mtac::Operator::DOT, offset);
-        function.emplace_back(t2, var, mtac::Operator::DOT, offset + INT->size(platform));
+        function.emplace_back(t1, var, mtac::Operator::DOT, static_cast<int>(offset));
+        function.emplace_back(t2, var, mtac::Operator::DOT, static_cast<int>(offset + INT->size(platform)));
 
         return {t1, t2};
     } else if(member_type->is_array() && !member_type->is_dynamic_array()){
@@ -189,8 +189,8 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                     auto t1 = function.context->new_temporary(INT);
                     auto t2 = function.context->new_temporary(INT);
                     
-                    function.emplace_back(t1, var, mtac::Operator::DOT, index_offset);
-                    function.emplace_back(t2, var, mtac::Operator::DOT, index_offset + INT->size(function.context->global()->target_platform()));
+                    function.emplace_back(t1, var, mtac::Operator::DOT, static_cast<int>(index_offset));
+                    function.emplace_back(t2, var, mtac::Operator::DOT, static_cast<int>(index_offset + INT->size(function.context->global()->target_platform())));
 
                     result.push_back(t1);
                     result.push_back(t2);
@@ -211,9 +211,9 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                     auto temp = function.context->new_temporary(data_type);
 
                     if(data_type == FLOAT){
-                        function.emplace_back(temp, var, mtac::Operator::FDOT, index_offset);
+                        function.emplace_back(temp, var, mtac::Operator::FDOT, static_cast<int>(index_offset));
                     } else if(data_type == INT || data_type == CHAR || data_type == BOOL || data_type->is_pointer()){
-                        function.emplace_back(temp, var, mtac::Operator::DOT, index_offset);
+                        function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(index_offset));
                     }
 
                     result.push_back(temp);
@@ -223,7 +223,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
             }
 
             //The number of elements
-            result.push_back(elements);
+            result.push_back(static_cast<int>(elements));
 
             return result;
         }
@@ -244,9 +244,9 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         }
 
         if(member_type == FLOAT){
-            function.emplace_back(temp, var, mtac::Operator::FDOT, offset);
+            function.emplace_back(temp, var, mtac::Operator::FDOT, static_cast<int>(offset));
         } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer() || member_type->is_dynamic_array()){
-            function.emplace_back(temp, var, mtac::Operator::DOT, offset);
+            function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member
         } else {
@@ -426,7 +426,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                             auto t3 = function.context->new_temporary(INT);
 
                             //Assign the second part of the string
-                            function.emplace_back(t3, index, mtac::Operator::ADD, INT->size(function.context->global()->target_platform()));
+                            function.emplace_back(t3, index, mtac::Operator::ADD, static_cast<int>(INT->size(function.context->global()->target_platform())));
                             function.emplace_back(t2, left[0], mtac::Operator::DOT, t3);
 
                             left = {t1, t2};
@@ -458,7 +458,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function.context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
 
-                    function.emplace_back(temp, variable, mtac::Operator::PDOT, offset);
+                    function.emplace_back(temp, variable, mtac::Operator::PDOT, static_cast<int>(offset));
 
                     left = {temp};
                 } else {
@@ -500,10 +500,10 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     auto t1 = function.context->new_temporary(type->is_pointer() ? type : new_pointer_type(type));
 
                     if(type->is_pointer()){
-                        function.emplace_back(t1, left_value, mtac::Operator::ADD, offset);
+                        function.emplace_back(t1, left_value, mtac::Operator::ADD, static_cast<int>(offset));
                     } else {
                         function.emplace_back(t1, left_value, mtac::Operator::PASSIGN);
-                        function.emplace_back(t1, t1, mtac::Operator::ADD, offset);
+                        function.emplace_back(t1, t1, mtac::Operator::ADD, static_cast<int>(offset));
                     }
 
                     left_value = t1;
@@ -673,7 +673,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(function.context->global()), new_.Content->type);
     
-        function.emplace_back(mtac::Operator::PARAM, type->size(function.context->global()->target_platform()), "a", function.context->global()->getFunction("_F5allocI"));
+        function.emplace_back(mtac::Operator::PARAM, static_cast<int>(type->size(function.context->global()->target_platform())), "a", function.context->global()->getFunction("_F5allocI"));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
@@ -723,9 +723,9 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                     auto variable = boost::get<std::shared_ptr<Variable>>(right[0]);
 
                     if(variable->position().isGlobal()){
-                        return {variable->type()->elements()};
+                        return {static_cast<int>(variable->type()->elements())};
                     } else if((variable->position().is_variable() || variable->position().isStack()) && variable->type()->has_elements()){
-                        return {variable->type()->elements()};
+                        return {static_cast<int>(variable->type()->elements())};
                     } else if(variable->type()->is_dynamic_array() || variable->is_reference() || variable->position().isParameter() || variable->position().isStack() || variable->position().is_variable()){
                         auto t1 = function.context->new_temporary(INT);
 
@@ -843,7 +843,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             return {value.Content->var};
         } else if(type == STRING){
             auto temp = value.Content->context->new_temporary(INT);
-            function.emplace_back(temp, value.Content->var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
+            function.emplace_back(temp, value.Content->var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
 
             return {value.Content->var, temp};
         } else if(type->is_structure()) {
@@ -871,7 +871,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             auto t2 = function.context->new_temporary(INT);
 
             function.emplace_back(t1, variable, mtac::Operator::DOT, 0);
-            function.emplace_back(t2, variable, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
+            function.emplace_back(t2, variable, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
 
             return {t1, t2};
         } else if(type->is_structure()){
@@ -1110,7 +1110,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         } else if(type == STRING){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
-            function.emplace_back(variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
+            function.emplace_back(variable, static_cast<int>(INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
         } else if(type == FLOAT){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::FASSIGN);
@@ -1186,7 +1186,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
 
                 auto temp1 = function.context->new_temporary(INT);
-                function.emplace_back(temp1, index, mtac::Operator::ADD, INT->size(platform));
+                function.emplace_back(temp1, index, mtac::Operator::ADD, static_cast<int>(INT->size(platform)));
                 function.emplace_back(array_variable, temp1, mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(right_type == FLOAT){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_FASSIGN, values[0]);
@@ -1213,14 +1213,14 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             }
             
             if(member_type->is_pointer()){
-                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_PASSIGN, values[0]);
+                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_PASSIGN, values[0]);
             } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
-                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]);
+                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(member_type == STRING){
-                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_ASSIGN, values[0]);
-                function.emplace_back(struct_variable, offset + INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
+                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                function.emplace_back(struct_variable, static_cast<int>(offset + INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(member_type == FLOAT){
-                function.emplace_back(struct_variable, offset, mtac::Operator::DOT_FASSIGN, values[0]);
+                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
             } else {
                 eddic_unreachable("Unhandled value type");
             }
@@ -1248,7 +1248,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
-                function.emplace_back(pointer_variable, INT->size(platform), mtac::Operator::DOT_ASSIGN, values[1]);
+                function.emplace_back(pointer_variable, static_cast<int>(INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
             } else if(right_type == FLOAT){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_FASSIGN, values[0]);
             } else {
@@ -1470,13 +1470,13 @@ class FunctionCompiler : public boost::static_visitor<> {
                     auto t2 = swap.Content->context->new_temporary(INT);
 
                     //t1 = 4(b)
-                    function.emplace_back(t1, rhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
+                    function.emplace_back(t1, rhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
                     //t2 = 4(a)
-                    function.emplace_back(t2, lhs_var, mtac::Operator::DOT, INT->size(function.context->global()->target_platform()));
+                    function.emplace_back(t2, lhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
                     //4(b) = t2
-                    function.emplace_back(rhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t2);
+                    function.emplace_back(rhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t2);
                     //4(a) = t1
-                    function.emplace_back(lhs_var, INT->size(function.context->global()->target_platform()), mtac::Operator::DOT_ASSIGN, t1);
+                    function.emplace_back(lhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t1);
                 }
             } else {
                 eddic_unreachable("Unhandled variable type");

@@ -16,6 +16,7 @@
 #include "Function.hpp"
 
 #include "mtac/Quadruple.hpp"
+#include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp" 
 
 #include "ltac/StatementCompiler.hpp"
@@ -27,6 +28,8 @@
 #include "ltac/PseudoFloatRegister.hpp"
 
 using namespace eddic;
+
+
 
 namespace {
 
@@ -206,17 +209,17 @@ void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argumen
 
 void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::Argument& arg2){
     //Comparisons of constant should have been handled by the optimizer
-    assert(!(isFloat(arg1) && isFloat(arg2))); 
+    assert(!(mtac::isFloat(arg1) && mtac::isFloat(arg2))); 
 
     //If both args are variables
-    if(isVariable(arg1) && isVariable(arg2)){
+    if(mtac::isVariable(arg1) && mtac::isVariable(arg2)){
         auto reg1 = manager.get_pseudo_float_reg(ltac::get_variable(arg1));
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
         
         end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
-    } else if(isVariable(arg1) && isFloat(arg2)){
+    } else if(mtac::isVariable(arg1) && mtac::isFloat(arg2)){
         auto reg1 = manager.get_pseudo_float_reg(ltac::get_variable(arg1));
         auto reg2 = manager.get_free_pseudo_float_reg();
 
@@ -225,7 +228,7 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         end_bb();
 
         ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
-    } else if(isFloat(arg1) && isVariable(arg2)){
+    } else if(mtac::isFloat(arg1) && mtac::isVariable(arg2)){
         auto reg1 = manager.get_free_pseudo_float_reg();
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
 
@@ -717,7 +720,7 @@ void ltac::StatementCompiler::compile_SUB(mtac::Quadruple& quadruple){
 
 void ltac::StatementCompiler::compile_MUL(mtac::Quadruple& quadruple){
     //This case should never happen unless the optimizer has bugs
-    assert(!(isInt(*quadruple.arg1) && isInt(*quadruple.arg2)));
+    assert(!(mtac::isInt(*quadruple.arg1) && mtac::isInt(*quadruple.arg2)));
 
     //Form  x = x * y
     if(*quadruple.arg1 == quadruple.result){
@@ -730,15 +733,15 @@ void ltac::StatementCompiler::compile_MUL(mtac::Quadruple& quadruple){
         ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple.arg1));
     }
     //Form x = y * z (z: immediate)
-    else if(isVariable(*quadruple.arg1) && isInt(*quadruple.arg2)){
+    else if(mtac::isVariable(*quadruple.arg1) && mtac::isInt(*quadruple.arg2)){
         ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg1), to_arg(*quadruple.arg2));
     }
     //Form x = y * z (y: immediate)
-    else if(isInt(*quadruple.arg1) && isVariable(*quadruple.arg2)){
+    else if(mtac::isInt(*quadruple.arg1) && mtac::isVariable(*quadruple.arg2)){
         ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg2), to_arg(*quadruple.arg1));
     }
     //Form x = y * z (both variables)
-    else if(isVariable(*quadruple.arg1) && isVariable(*quadruple.arg2)){
+    else if(mtac::isVariable(*quadruple.arg1) && mtac::isVariable(*quadruple.arg2)){
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
         manager.copy(*quadruple.arg1, reg);
         ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple.arg2));
@@ -750,7 +753,7 @@ void ltac::StatementCompiler::compile_MUL(mtac::Quadruple& quadruple){
 void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
     //This optimization cannot be done in the peephole optimizer
     //Form x = x / y when y is power of two
-    if(*quadruple.arg1 == quadruple.result && isInt(*quadruple.arg2)){
+    if(*quadruple.arg1 == quadruple.result && mtac::isInt(*quadruple.arg2)){
         int constant = boost::get<int>(*quadruple.arg2);
 
         if(isPowerOfTwo(constant)){
@@ -771,7 +774,7 @@ void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
     ltac::add_instruction(bb, ltac::Operator::MOV, d_reg, a_reg);
     ltac::add_instruction(bb, ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
 
-    if(isInt(*quadruple.arg2)){
+    if(mtac::isInt(*quadruple.arg2)){
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple.arg2, reg);
 
@@ -799,7 +802,7 @@ void ltac::StatementCompiler::compile_MOD(mtac::Quadruple& quadruple){
     ltac::add_instruction(bb, ltac::Operator::MOV, d_reg, a_reg);
     ltac::add_instruction(bb, ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
 
-    if(isInt(*quadruple.arg2)){
+    if(mtac::isInt(*quadruple.arg2)){
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple.arg2, reg);
 
@@ -1013,7 +1016,7 @@ void ltac::StatementCompiler::compile_FL(mtac::Quadruple& quadruple){
 
 void ltac::StatementCompiler::compile_MINUS(mtac::Quadruple& quadruple){
     //Constants should have been replaced by the optimizer
-    assert(isVariable(*quadruple.arg1));
+    assert(mtac::isVariable(*quadruple.arg1));
 
     auto var = ltac::get_variable(*quadruple.arg1);
 
@@ -1030,7 +1033,7 @@ void ltac::StatementCompiler::compile_MINUS(mtac::Quadruple& quadruple){
 
 void ltac::StatementCompiler::compile_FMINUS(mtac::Quadruple& quadruple){
     //Constants should have been replaced by the optimizer
-    assert(isVariable(*quadruple.arg1));
+    assert(mtac::isVariable(*quadruple.arg1));
 
     auto reg = manager.get_free_pseudo_float_reg();
     manager.copy(-1.0, reg);
@@ -1042,7 +1045,7 @@ void ltac::StatementCompiler::compile_FMINUS(mtac::Quadruple& quadruple){
 
 void ltac::StatementCompiler::compile_I2F(mtac::Quadruple& quadruple){
     //Constants should have been replaced by the optimizer
-    assert(isVariable(*quadruple.arg1));
+    assert(mtac::isVariable(*quadruple.arg1));
 
     auto reg = manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1));
     auto result_reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
@@ -1054,7 +1057,7 @@ void ltac::StatementCompiler::compile_I2F(mtac::Quadruple& quadruple){
 
 void ltac::StatementCompiler::compile_F2I(mtac::Quadruple& quadruple){
     //Constants should have been replaced by the optimizer
-    assert(isVariable(*quadruple.arg1));
+    assert(mtac::isVariable(*quadruple.arg1));
 
     auto reg = manager.get_pseudo_float_reg(ltac::get_variable(*quadruple.arg1));
     auto result_reg = manager.get_pseudo_reg_no_move(quadruple.result);
@@ -1206,7 +1209,7 @@ void ltac::StatementCompiler::compile_RETURN(mtac::Quadruple& quadruple){
 
     //A return without args is the same as exiting from the function
     if(quadruple.arg1){
-        if(isFloat(*quadruple.arg1)){
+        if(mtac::isFloat(*quadruple.arg1)){
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             manager.move(*quadruple.arg1, return_reg);
             float_uses.push_back(return_reg);
