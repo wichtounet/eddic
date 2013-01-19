@@ -47,11 +47,11 @@ class Function : public std::enable_shared_from_this<Function> {
         std::string get_name() const;
 
         template< class... Args >
-        void emplace_back( Args&&... args ){
+        inline void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);
         }
         
-        void push_back(mtac::Quadruple&& quadruple){
+        inline void push_back(mtac::Quadruple&& quadruple){
             statements.push_back(std::forward<mtac::Quadruple>(quadruple));
         }
 
