@@ -14,7 +14,6 @@
 #include "Variable.hpp"
 #include "logging.hpp"
 #include "Function.hpp"
-#include "mtac/Printer.hpp"
 
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp" 
