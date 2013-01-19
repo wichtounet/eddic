@@ -14,7 +14,6 @@
 #include "mtac/Function.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Printer.hpp"
 
 using namespace eddic;
 

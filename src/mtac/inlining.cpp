@@ -22,7 +22,6 @@
 #include "mtac/VariableReplace.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/Printer.hpp"
 
 using namespace eddic;
 

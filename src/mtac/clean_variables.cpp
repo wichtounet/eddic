@@ -12,7 +12,6 @@
 
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/clean_variables.hpp"
 
 using namespace eddic;

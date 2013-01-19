@@ -75,7 +75,7 @@ void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream)
     }
 }
 
-void mtac::pretty_print(mtac::basic_block_p block, std::ostream& stream){
+void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream){
     std::string sep(25, '-');
 
     stream << sep << std::endl;

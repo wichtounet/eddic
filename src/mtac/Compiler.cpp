@@ -23,7 +23,6 @@
 
 #include "mtac/Compiler.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
 

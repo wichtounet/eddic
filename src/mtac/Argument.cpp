@@ -28,3 +28,7 @@ bool eddic::mtac::operator==(const mtac::Argument& a, const std::string& b){
 bool eddic::mtac::operator==(const mtac::Argument& a, std::shared_ptr<Variable> b){
     return boost::get<std::shared_ptr<Variable>>(&a) && boost::get<std::shared_ptr<Variable>>(a) == b;
 }
+
+std::ostream& eddic::mtac::operator<<(std::ostream& stream, const Argument& argument){
+    return stream << argument.int_ref();
+}

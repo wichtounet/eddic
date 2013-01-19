@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <ostream>
 
 #include "variant.hpp"
 
@@ -85,6 +86,8 @@ bool operator==(const Argument& a, int b);
 bool operator==(const Argument& a, double b);
 bool operator==(const Argument& a, std::shared_ptr<Variable> b);
 bool operator==(const Argument& a, const std::string& b);
+
+std::ostream& operator<<(std::ostream& stream, const Argument&);
 
 } //end of mtac
 
