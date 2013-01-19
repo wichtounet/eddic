@@ -323,11 +323,6 @@ void mtac::Printer::print_inline(const mtac::Quadruple& statement, std::ostream&
    visitor.print(statement);
 }
 
-void mtac::Printer::printStatement(const mtac::Quadruple& statement) const {
-   DebugVisitor visitor;
-   visitor.print(statement);
-}
-
 void mtac::print(mtac::Program& program){
     mtac::Printer printer;
     printer.print(program);
