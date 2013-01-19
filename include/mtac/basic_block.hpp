@@ -101,7 +101,7 @@ std::ostream& operator<<(std::ostream& stream, const basic_block_p& basic_block)
 mtac::basic_block::iterator begin(mtac::basic_block_p function);
 mtac::basic_block::iterator end(mtac::basic_block_p function);
 
-void pretty_print(mtac::basic_block_p block, std::ostream& stream);
+void pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream);
 
 } //end of mtac
 

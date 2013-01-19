@@ -21,11 +21,9 @@ namespace mtac {
  */
 struct Printer {
     void print(mtac::Program& program) const ;
-    void printFunction(mtac::Function& function) const ;
 };
 
 void print(mtac::Program& program);
-void print(mtac::Function& program);
 
 } //end of mtac
 

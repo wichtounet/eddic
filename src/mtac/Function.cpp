@@ -10,6 +10,7 @@
 
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/basic_block.hpp"
 
 using namespace eddic;
 
@@ -65,6 +66,10 @@ bool mtac::Function::is_main() const {
 }
 
 bool& mtac::Function::pure(){
+    return _pure;
+}
+
+bool mtac::Function::pure() const {
     return _pure;
 }
 
@@ -283,6 +288,10 @@ std::vector<mtac::Quadruple>& mtac::Function::get_statements(){
     return statements;
 }
 
+const std::vector<mtac::Quadruple>& mtac::Function::get_statements() const {
+    return statements;
+}
+
 void mtac::Function::release_statements(){
     statements.clear();
     statements.shrink_to_fit();
@@ -360,4 +369,22 @@ std::vector<mtac::Loop>& mtac::Function::loops(){
 
 bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
     return lhs.get_name() == rhs.get_name();
+}
+
+std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Function& function){
+    stream << "Function " << function.get_name() << "(pure:" << function.pure() << ")" << std::endl;
+
+    for(auto& quadruple : function.get_statements()){
+        stream << quadruple << std::endl;
+    }
+
+    for(auto& block : function){
+        pretty_print(block, stream);
+
+        for(auto& quadruple : block->statements){
+            stream << quadruple << std::endl;
+        }
+    }
+
+    return stream << std::endl;
 }

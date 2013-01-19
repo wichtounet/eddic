@@ -38,29 +38,7 @@ struct DebugVisitor {
         stream << "TAC Program " << endl << endl; 
 
         for(auto& function : program.functions){
-            print(function);
-        }
-    }
-
-    void print(mtac::Function& function){
-        stream << "Function " << function.get_name() << "(pure:" << function.pure() << ")" <<endl;
-
-        for(auto& quadruple : function.get_statements()){
-            stream << quadruple << std::endl;
-        }
-
-        for(auto& block : function){
-            print(block);
-        }
-
-        stream << endl;
-    }
-
-    void print(mtac::basic_block_p block){
-        pretty_print(block, stream);
-        
-        for(auto& quadruple : block->statements){
-            stream << quadruple << std::endl;
+            stream << function;
         }
     }
 };
@@ -72,17 +50,7 @@ void mtac::Printer::print(mtac::Program& program) const {
    visitor.print(program);
 }
 
-void mtac::Printer::printFunction(mtac::Function& function) const {
-   DebugVisitor visitor;
-   visitor.print(function); 
-}
-
 void mtac::print(mtac::Program& program){
     mtac::Printer printer;
     printer.print(program);
-}
-
-void mtac::print(mtac::Function& function){
-    mtac::Printer printer;
-    printer.printFunction(function);
 }

@@ -12,6 +12,7 @@
 #include <vector>
 #include <utility>
 #include <set>
+#include <ostream>
 
 #include "iterators.hpp"
 
@@ -59,6 +60,8 @@ class Function : public std::enable_shared_from_this<Function> {
         mtac::Quadruple& find(std::size_t uid);
 
         std::vector<mtac::Quadruple>& get_statements();
+        const std::vector<mtac::Quadruple>& get_statements() const;
+
         void release_statements();
 
         void create_entry_bb();
@@ -113,6 +116,7 @@ class Function : public std::enable_shared_from_this<Function> {
         bool is_main() const;
 
         bool& pure();
+        bool pure() const;
 
         eddic::Function& definition();
 
@@ -147,6 +151,8 @@ class Function : public std::enable_shared_from_this<Function> {
 };
 
 bool operator==(const mtac::Function& lhs, const mtac::Function& rhs);
+
+std::ostream& operator<<(std::ostream& stream, const mtac::Function& function);
 
 } //end of mtac
 
