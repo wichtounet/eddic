@@ -8,6 +8,7 @@
 #include "iterators.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
+#include "logging.hpp"
 
 #include "mtac/Loop.hpp"
 #include "mtac/complete_loop_peeling.hpp"
@@ -37,6 +38,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
 
                 optimized = true;
 
+                LOG<Trace>("Loops") << "Peel completely the loop with " << it << " iterations" << log::endl;
                 function.context->global()->stats().inc_counter("loop_peeled");
                 
                 auto& statements = bb->statements;
