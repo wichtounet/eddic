@@ -22,7 +22,6 @@ namespace mtac {
 struct Printer {
     void print(mtac::Program& program) const ;
     void printFunction(mtac::Function& function) const ;
-    void print_inline(const mtac::Quadruple& quadruple, std::ostream& os) const ;
 };
 
 void print(mtac::Program& program);
