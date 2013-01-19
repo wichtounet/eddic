@@ -46,8 +46,6 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string get_name() const;
 
-        void add(mtac::Quadruple statement);
-        
         template< class... Args >
         void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);

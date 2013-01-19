@@ -117,10 +117,6 @@ mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
 }
 
-void mtac::Function::add(mtac::Quadruple statement){
-    statements.push_back(statement);
-}
-
 mtac::basic_block_p mtac::Function::current_bb(){
     return exit;
 }
