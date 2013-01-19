@@ -13,13 +13,13 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), _definition(&definition) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), _definition(&definition), name(n) {
     //Nothing to do   
 }
         
 mtac::Function::Function(mtac::Function&& rhs) : 
-            _definition(rhs._definition), 
-            context(std::move(rhs.context)), statements(std::move(rhs.statements)), 
+            context(std::move(rhs.context)), _definition(rhs._definition), 
+            statements(std::move(rhs.statements)), 
             count(std::move(rhs.count)), index(std::move(rhs.index)),
             entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
             _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
