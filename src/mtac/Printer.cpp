@@ -328,10 +328,6 @@ void mtac::Printer::printStatement(const mtac::Quadruple& statement) const {
    visitor.print(statement);
 }
 
-void mtac::Printer::printArgument(const mtac::Argument& arg) const {
-    std::cout << arg << std::endl;
-}
-
 void mtac::print(mtac::Program& program){
     mtac::Printer printer;
     printer.print(program);

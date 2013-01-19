@@ -24,7 +24,6 @@ struct Printer {
     void printFunction(mtac::Function& function) const ;
     void printStatement(const mtac::Quadruple& quadruple) const ;
     void print_inline(const mtac::Quadruple& quadruple, std::ostream& os) const ;
-    void printArgument(const mtac::Argument& program) const ;
 };
 
 void print(mtac::Program& program);
