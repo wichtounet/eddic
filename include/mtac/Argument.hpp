@@ -55,7 +55,6 @@ class Variable;
 } //end of eddic
 
 namespace eddi_detail {
-    typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> variant_t;
 
     struct equals_visitor : boost::static_visitor<bool> {
         template <typename T>
@@ -70,6 +69,7 @@ namespace eddi_detail {
     struct variant_equals {
         equals_visitor _helper;
 
+        template<typename variant_t>
         bool operator()(const variant_t& a, const variant_t& b) const
         { return boost::apply_visitor(_helper, a, b); }
     };
@@ -79,42 +79,44 @@ namespace eddic {
 
 namespace mtac {
 
-CUSTOM_STRONG_TYPEDEF(eddi_detail::variant_t, Argument)
-
-bool operator==(const Argument& a, const Argument& b);
-bool operator==(const Argument& a, int b);
-bool operator==(const Argument& a, double b);
-bool operator==(const Argument& a, std::shared_ptr<Variable> b);
-bool operator==(const Argument& a, const std::string& b);
-
-std::ostream& operator<<(std::ostream& stream, const Argument&);
+typedef boost::variant<std::shared_ptr<eddic::Variable>, double, int, std::string> Argument;
 
 } //end of mtac
 
+//Needs to be declared in eddic to be used in ltac as well
+
+inline bool operator==(const mtac::Argument& a, int b){
+    if(auto* ptr = boost::get<int>(&a)){
+        return *ptr == b;
+    }
+
+    return false;
+}
+
+inline bool operator==(const mtac::Argument& a, double b){
+    if(auto* ptr = boost::get<int>(&a)){
+        return *ptr == b;
+    }
+
+    return false;
+}
+
+inline bool operator==(const mtac::Argument& a, const std::shared_ptr<Variable>& b){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&a)){
+        return *ptr == b;
+    }
+
+    return false;
+}
+
+inline bool operator==(const mtac::Argument& a, const std::string& b){
+    if(auto* ptr = boost::get<std::string>(&a)){
+        return *ptr == b;
+    }
+
+    return false;
+}
+
 } //end of eddic
-
-namespace boost {
-
-template<typename T>
-inline T* get(eddic::mtac::Argument* argument){
-    return boost::get<T>(argument->int_ptr());
-}
-
-template<typename T>
-inline const T* get(const eddic::mtac::Argument* argument){
-    return boost::get<T>(argument->int_ptr());
-}
-
-template<typename T>
-inline T& get(eddic::mtac::Argument& argument){
-    return boost::get<T>(argument.int_ref());
-}
-
-template<typename T>
-inline const T& get(const eddic::mtac::Argument& argument){
-    return boost::get<T>(argument.int_ref());
-}
-
-} //end of boost
 
 #endif
