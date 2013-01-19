@@ -261,9 +261,10 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
     //Insert the statements
     if(source->next == block){
-        block->statements.insert(block->statements.begin(), source->statements.begin(), source->statements.end());
+        std::move(block->begin(), block->end(), std::back_inserter(source->statements));
+        block->statements = std::move(source->statements);
     } else {
-        block->statements.insert(block->statements.end(), source->statements.begin(), source->statements.end());
+        std::move(source->begin(), source->end(), std::back_inserter(block->statements));
     }
     
     //Remove the source basic block
