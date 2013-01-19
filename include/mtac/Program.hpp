@@ -9,6 +9,7 @@
 #define MTAC_PROGRAM_H
 
 #include <memory>
+#include <iostream>
 
 #include "mtac/Function.hpp"
 
@@ -34,6 +35,8 @@ struct Program {
     Program(const Program& rhs) = delete;
     Program& operator=(const Program& rhs) = delete;
 };
+
+std::ostream& operator<<(std::ostream& stream, mtac::Program& program);
 
 } //end of mtac
 

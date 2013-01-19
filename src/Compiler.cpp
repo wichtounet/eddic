@@ -27,7 +27,6 @@
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Optimizer.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/RegisterAllocation.hpp"
 #include "mtac/reference_resolver.hpp"
 
@@ -132,8 +131,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
         //If asked by the user, print the Three Address code representation before optimization
         if(configuration->option_defined("mtac-opt")){
-            mtac::Printer printer;
-            printer.print(*program);
+            std::cout << *program << std::endl;
         }
 
         //Optimize MTAC
@@ -147,8 +145,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
         //If asked by the user, print the Three Address code representation
         if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
-            mtac::Printer printer;
-            printer.print(*program);
+            std::cout << *program << std::endl;
         }
     }
 
