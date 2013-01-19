@@ -38,12 +38,13 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 optimized = true;
 
                 function.context->global()->stats().inc_counter("loop_peeled");
+                
+                auto& statements = bb->statements;
 
                 //The comparison is not necessary anymore
-                bb->statements.pop_back();
+                statements.pop_back();
 
-                auto& statements = bb->statements;
-                int limit = bb->statements.size();
+                int limit = statements.size();
 
                 //Save enough space for the new statements
                 statements.reserve(limit * it);
