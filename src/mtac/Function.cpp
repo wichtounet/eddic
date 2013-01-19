@@ -117,10 +117,6 @@ mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
 }
 
-void mtac::Function::add(mtac::Quadruple statement){
-    statements.push_back(statement);
-}
-
 mtac::basic_block_p mtac::Function::current_bb(){
     return exit;
 }
@@ -265,9 +261,10 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
     //Insert the statements
     if(source->next == block){
-        block->statements.insert(block->statements.begin(), source->statements.begin(), source->statements.end());
+        std::move(block->begin(), block->end(), std::back_inserter(source->statements));
+        block->statements = std::move(source->statements);
     } else {
-        block->statements.insert(block->statements.end(), source->statements.begin(), source->statements.end());
+        std::move(source->begin(), source->end(), std::back_inserter(block->statements));
     }
     
     //Remove the source basic block
@@ -333,7 +330,7 @@ void mtac::Function::variable_use(ltac::FloatRegister reg){
     _variable_float_registers.insert(reg);
 }
 
-std::size_t mtac::Function::pseudo_registers(){
+std::size_t mtac::Function::pseudo_registers() const {
     return last_pseudo_registers;
 }
 
@@ -341,7 +338,7 @@ void mtac::Function::set_pseudo_registers(std::size_t pseudo_registers){
     this->last_pseudo_registers = pseudo_registers;
 }
         
-std::size_t mtac::Function::pseudo_float_registers(){
+std::size_t mtac::Function::pseudo_float_registers() const {
     return last_float_pseudo_registers;
 }
 

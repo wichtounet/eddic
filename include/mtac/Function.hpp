@@ -46,14 +46,12 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string get_name() const;
 
-        void add(mtac::Quadruple statement);
-        
         template< class... Args >
-        void emplace_back( Args&&... args ){
+        inline void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);
         }
         
-        void push_back(mtac::Quadruple&& quadruple){
+        inline void push_back(mtac::Quadruple&& quadruple){
             statements.push_back(std::forward<mtac::Quadruple>(quadruple));
         }
 
@@ -95,10 +93,10 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t bb_count() const;
         std::size_t size() const;
         
-        std::size_t pseudo_registers();
+        std::size_t pseudo_registers() const ;
         void set_pseudo_registers(std::size_t pseudo_registers);
         
-        std::size_t pseudo_float_registers();
+        std::size_t pseudo_float_registers() const;
         void set_pseudo_float_registers(std::size_t pseudo_registers);
         
         const std::set<ltac::Register>& use_registers() const;

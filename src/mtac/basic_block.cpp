@@ -13,10 +13,6 @@ using namespace eddic;
 
 mtac::basic_block::basic_block(int i) : index(i), label("") {}
 
-void mtac::basic_block::push_back(mtac::Quadruple&& statement){
-    statements.push_back(std::forward<mtac::Quadruple>(statement));
-}
-
 mtac::basic_block::iterator mtac::basic_block::begin(){
     return statements.begin();
 }

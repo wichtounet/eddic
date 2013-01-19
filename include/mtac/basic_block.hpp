@@ -56,19 +56,21 @@ class basic_block {
          * Add a new statement to the basic block. 
          * \param statement The statement to add. 
          */
-        void push_back(mtac::Quadruple&& statement);
-
-        mtac::Quadruple& find(std::size_t uid);
+        inline void push_back(mtac::Quadruple&& statement){
+            statements.push_back(std::forward<mtac::Quadruple>(statement));
+        }
 
         template< class... Args >
-        void emplace_back( Args&&... args ){
+        inline void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);
         }
         
         template< class... Args >
-        void emplace_back_low( Args&&... args ){
+        inline void emplace_back_low( Args&&... args ){
             l_statements.emplace_back(std::forward<Args>(args)...);
         }
+
+        mtac::Quadruple& find(std::size_t uid);
 
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
