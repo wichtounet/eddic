@@ -329,7 +329,7 @@ void mtac::Function::variable_use(ltac::FloatRegister reg){
     _variable_float_registers.insert(reg);
 }
 
-std::size_t mtac::Function::pseudo_registers(){
+std::size_t mtac::Function::pseudo_registers() const {
     return last_pseudo_registers;
 }
 
@@ -337,7 +337,7 @@ void mtac::Function::set_pseudo_registers(std::size_t pseudo_registers){
     this->last_pseudo_registers = pseudo_registers;
 }
         
-std::size_t mtac::Function::pseudo_float_registers(){
+std::size_t mtac::Function::pseudo_float_registers() const {
     return last_float_pseudo_registers;
 }
 
