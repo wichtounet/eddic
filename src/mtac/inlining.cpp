@@ -404,26 +404,26 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function.definition().parameters().size() == constant_parameters){
-            return target_size < 250;
+            return target_size < 100 && source_size < 300;
         }
 
         //For inner loop, increase the chances of inlining
         if(call.depth > 1){
-            return source_size < 500 && target_size < 100;
+            return source_size < 300 && target_size < 75;
         }
         
         //For single loop, increase a bit the changes of inlining
         if(call.depth > 0){
-            return source_size < 300 && target_size < 75;
+            return source_size < 200 && target_size < 50;
         }
 
         //function called once
         if(target_function.context->global()->referenceCount(target_function.get_name()) == 1){
-            return source_size < 300 && target_size < 100;
+            return source_size < 100 && target_size < 100;
         } 
 
         //Inline little functions
-        return target_size < 15 && source_size < 300;
+        return target_size < 10 && source_size < 200;
     }
 
     return false;
