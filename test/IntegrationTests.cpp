@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE( println ){
 }
 
 BOOST_AUTO_TEST_CASE( prints ){
-    validate("prints.eddi", 111, 0, -111, 0, 1, 999.9899, 1.0089, 0.0, -1.0089, 0.0, -1.0089, -999.9899, "", -0, "asdf", "1234asdf");
+    validate("prints.eddi", 111, 0, -111, 0, 1, 999.9899, 1.0089, 0.0, -1.0089, -999.9899, "", -0, "asdf", "1234asdf");
 }
 
 BOOST_AUTO_TEST_CASE( structures ){
@@ -515,8 +515,7 @@ BOOST_AUTO_TEST_CASE( class_templates ){
 }
 
 BOOST_AUTO_TEST_CASE( function_templates ){
-    assert_output_32("function_templates.eddi", "9|5.5000|9|99|9.8999|100|a|b|9|5.5000|a|9|9|a|a|");
-    assert_output_64("function_templates.eddi", "9|5.5000|9|99|9.9000|100|a|b|9|5.5000|a|9|9|a|a|");
+    validate("function_templates.eddi", 9, 5.55, 9, 99, 9.99, 100, 'a', 'b', 9, 5.5, 'a', 9, 9, 'a', 'a');
 }
 
 BOOST_AUTO_TEST_CASE( member_function_templates ){
