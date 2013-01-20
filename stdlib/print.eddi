@@ -14,9 +14,21 @@ void println(bool a){
 }
 
 void print(int a){
-    string other("");
-    other.append(a);
-    print(other);
+    int n = a;
+
+    if(n < 0){
+        print('-');
+        n = -n;
+    }
+
+    for(int size = digits(a) - 1; size > 0; --size){
+        int power = pow(10, size);
+        int r = n / power;
+        print((char) (r + 48));
+        n = n - (r * power);
+    }
+
+    print((char) (n + 48));
 }
 
 void println(int a){
