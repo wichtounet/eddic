@@ -52,7 +52,18 @@ void print(float a){
     n = n - (float) first;
     n = 10000.0 * n;
 
-    print((int) n);
+    first = (int) n;
+
+    if(first == 0){
+        print('0');
+    } else {
+        while(first < 1000){
+            print('0');
+            first *= 10;
+        }
+
+        print((int) n);
+    }
 }
 
 void println(float a){
