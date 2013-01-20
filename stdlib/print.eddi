@@ -1,5 +1,3 @@
-include <strings>
-
 void print(bool a){
     if(a){
         print('1');
