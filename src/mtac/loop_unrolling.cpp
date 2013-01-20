@@ -12,7 +12,6 @@
 #include "mtac/Function.hpp"
 #include "mtac/Loop.hpp"
 #include "mtac/loop_unrolling.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;

@@ -12,7 +12,6 @@
 
 #include "mtac/Loop.hpp"
 #include "mtac/complete_loop_peeling.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 
