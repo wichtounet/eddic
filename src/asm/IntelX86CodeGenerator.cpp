@@ -450,14 +450,6 @@ void as::IntelX86CodeGenerator::addStandardFunctions(){
         output_function("x86_32_printlnC");
     }
 
-    if(context->referenceCount("_F5printF")){
-        output_function("x86_32_printF");
-    }
-    
-    if(context->referenceCount("_F7printlnF")){
-        output_function("x86_32_printlnF");
-    }
-    
     if(is_enabled_println()){
         output_function("x86_32_println");
     }

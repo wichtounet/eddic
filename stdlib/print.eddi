@@ -35,3 +35,27 @@ void println(int a){
     print(a);
     println();
 }
+
+void print(float a){
+    float n = a;
+
+    if(a < 0.0){
+        print('-');
+        n = -n;
+    }
+
+    int first = (int) n;
+    print(first);
+
+    print('.');
+
+    n = n - (float) first;
+    n = 10000.0 * n;
+
+    print((int) n);
+}
+
+void println(float a){
+    print(a);
+    println();
+}

@@ -222,10 +222,6 @@ void GlobalContext::defineStandardFunctions(){
     addPrintFunction("_F5printC", CHAR);
     addPrintFunction("_F7printlnC", CHAR);
 
-    //print float
-    addPrintFunction("_F5printF", FLOAT);
-    addPrintFunction("_F7printlnF", FLOAT);
-
     auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
     read_char_function.standard() = true;
     
