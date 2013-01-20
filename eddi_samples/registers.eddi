@@ -3,7 +3,7 @@ include<print>
 //Tests for register allocation
 
 void main(){
-   println(max(5, 7));
+   println(my_max(5, 7));
 
    several();
    spills();
@@ -13,7 +13,7 @@ void main(){
 }
 
 //Test that returns are resolved
-int max(int i, int j){
+int my_max(int i, int j){
     if(i > j){
         return i;
     } else {

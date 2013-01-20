@@ -1,5 +1,4 @@
 include<print>
-include<math>
 
 void main(){
     print(pow(0, 10));

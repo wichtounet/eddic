@@ -1,12 +1,12 @@
 include <print>
 
-int a = 7;
+int ga = 7;
 int gb = 77;
 int gc = 99;
 
 void main(){
     int b;
-    if(a == 5){
+    if(ga == 5){
         b = 4;
     } else {
         b = 8;
@@ -16,7 +16,7 @@ void main(){
     print("|");
     
     int c;
-    if(a > 5){
+    if(ga > 5){
         c = 4;
     } else {
         c = 8;
@@ -26,7 +26,7 @@ void main(){
     print("|");
     
     int d;
-    if(a < 5){
+    if(ga < 5){
         d = gb;
     } else {
         d = gc;
@@ -36,7 +36,7 @@ void main(){
     print("|");
     
     int e;
-    if(a > 5){
+    if(ga > 5){
         e = gb;
     } else {
         e = gc;

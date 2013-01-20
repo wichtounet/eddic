@@ -5,7 +5,7 @@ void main(){
     println(sum(4));
     println(sum(5));
 
-    println(factorial(9));
+    println(my_factorial(9));
 }
 
 int sum(int a){
@@ -16,10 +16,10 @@ int sum(int a){
     return a + sum(a - 1);
 }
 
-int factorial(int n){
+int my_factorial(int n){
     if(n == 0){
         return 1;
     }
 
-    return n * factorial(n - 1);
+    return n * my_factorial(n - 1);
 }
