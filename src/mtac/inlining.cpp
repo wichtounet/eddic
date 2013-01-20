@@ -501,7 +501,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     adapt_instructions(variable_clones, bb_clones, call, safe);
 
                     //The target function is called one less time
-                    program.context->removeReference(source_definition.mangled_name());
+                    --source_definition.references();
 
                     //All the iterators are invalidated at this point
                     //The loop will be restarted

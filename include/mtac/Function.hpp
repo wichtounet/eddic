@@ -117,6 +117,7 @@ class Function : public std::enable_shared_from_this<Function> {
         bool pure() const;
 
         eddic::Function& definition();
+        const eddic::Function& definition() const;
 
         std::shared_ptr<FunctionContext> context;
 
