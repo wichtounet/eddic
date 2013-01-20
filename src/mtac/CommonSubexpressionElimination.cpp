@@ -10,6 +10,7 @@
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 #include "iterators.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/CommonSubexpressionElimination.hpp"
 #include "mtac/Utils.hpp"
@@ -182,6 +183,8 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                             std::shared_ptr<Variable> new_result = result;
 
                             if(optimized.find(source_statement.uid()) == optimized.end()){
+                                function.context->global()->stats().inc_counter("common_subexpr_eliminated");
+
                                 std::shared_ptr<Variable> temp;
                                 if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
                                     temp = expression.source->context->new_temporary(INT);
@@ -212,6 +215,8 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                             }
 
                             if(optimized.find(quid) == optimized.end()){
+                                function.context->global()->stats().inc_counter("common_subexpr_eliminated");
+
                                 auto& quadruple = function.find(quid);
 
                                 eddic_assert(new_result, "Should have been filled");
