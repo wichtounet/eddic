@@ -515,7 +515,7 @@ BOOST_AUTO_TEST_CASE( class_templates ){
 }
 
 BOOST_AUTO_TEST_CASE( function_templates ){
-    validate("function_templates.eddi", 9, 5.55, 9, 99, 9.99, 100, 'a', 'b', 9, 5.5, 'a', 9, 9, 'a', 'a');
+    validate("function_templates.eddi", 9, 5.5, 9, 99, 9.9, 100, 'a', 'b', 9, 5.5, 'a', 9, 9, 'a', 'a');
 }
 
 BOOST_AUTO_TEST_CASE( member_function_templates ){
