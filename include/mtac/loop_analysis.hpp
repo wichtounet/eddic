@@ -15,9 +15,6 @@ namespace eddic {
 
 namespace mtac {
 
-void full_loop_analysis(mtac::Program& program);
-void full_loop_analysis(mtac::Function& function);
-
 struct loop_analysis {
     bool operator()(mtac::Function& function);
 };

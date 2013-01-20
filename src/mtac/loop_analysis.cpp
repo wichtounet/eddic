@@ -417,31 +417,14 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
 } //end of anonymous namespace
 
-void mtac::full_loop_analysis(mtac::Program& program){
-    for(auto& function : program.functions){
-        full_loop_analysis(function);
-    }
-}
-
-void mtac::full_loop_analysis(mtac::Function& function){
-    compute_dominators(function);
+bool mtac::loop_analysis::operator()(mtac::Function& function){
+    std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
 
     for(auto& bb : function){
         init_depth(bb);
     }
-
-    //Run the analysis on the function
-    mtac::loop_analysis()(function);
-
-    for(auto& loop : function.loops()){
-        for(auto& bb : loop){
-            increase_depth(bb);
-        }
-    }
-}
-
-bool mtac::loop_analysis::operator()(mtac::Function& function){
-    std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
+    
+    compute_dominators(function);
 
     for(auto& block : function){
         for(auto& succ : block->successors){
@@ -526,6 +509,12 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
                     }
                 }
             }
+        }
+    }
+    
+    for(auto& loop : function.loops()){
+        for(auto& bb : loop){
+            increase_depth(bb);
         }
     }
 
