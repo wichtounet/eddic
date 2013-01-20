@@ -22,17 +22,18 @@ int min(int a, int b){
 
 //Return the nth pow of a
 int pow(int a, int n){
-    //Each power of 0 are 0
-    if(a == 0){
-        return 0;
-    }
-
     //The zeroth power of each number is 1
     if(n == 0){
         return 1;
     }
 
-    return a * pow(a, n -1);
+    int power = a;
+
+    for(int i = 1; i < n; ++i){
+        power *= a;
+    }
+
+    return power;
 }
 
 //Factorial function

@@ -1,3 +1,5 @@
+include<print>
+
 str ga = "4";
 
 int gai[4];

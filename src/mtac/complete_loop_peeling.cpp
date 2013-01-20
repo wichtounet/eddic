@@ -47,6 +47,13 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 statements.pop_back();
 
                 int limit = statements.size();
+                
+                //There are perhaps new references to functions
+                for(auto& statement : statements){
+                    if(statement.op == mtac::Operator::CALL){
+                        statement.function().references() += (it - 1);
+                    }
+                }
 
                 //Save enough space for the new statements
                 statements.reserve(limit * it);

@@ -77,10 +77,7 @@ mtac::Quadruple::Quadruple(const mtac::Quadruple& rhs) :
         m_param(rhs.m_param),
         block(rhs.block)
 {
-    //There is a new reference to the called function
-    if(op == mtac::Operator::CALL){
-        ++m_function->references();
-    }
+    //Nothing
 }
 
 mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
@@ -100,11 +97,6 @@ mtac::Quadruple& mtac::Quadruple::operator=(const mtac::Quadruple& rhs){
     m_function = rhs.m_function;
     m_param = rhs.m_param;
     secondary = rhs.secondary;
-
-    //There is a new reference to the called function
-    if(op == mtac::Operator::CALL){
-        ++m_function->references();
-    }
 
     return *this;
 }

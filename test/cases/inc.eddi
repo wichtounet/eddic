@@ -1,3 +1,5 @@
+include <print>
+
 void main(){
     test_int();
     test_arrays();

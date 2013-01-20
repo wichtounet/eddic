@@ -65,7 +65,7 @@ Function& GlobalContext::add_function(std::shared_ptr<const Type> ret, const std
 }
 
 Function& GlobalContext::getFunction(const std::string& function){
-    eddic_assert(exists(function), "The function must exists");
+    eddic_assert(exists(function), ("The function \"" + function + "\" does not exists").c_str());
 
     return m_functions.at(function);
 }
@@ -211,24 +211,11 @@ void GlobalContext::addPrintFunction(const std::string& function, std::shared_pt
 }
 
 void GlobalContext::defineStandardFunctions(){
-    auto& printLineFunction = add_function(VOID, "print", "_F7println");
-    printLineFunction.standard() = true;
-
     //print string
     addPrintFunction("_F5printS", STRING);
-    addPrintFunction("_F7printlnS", STRING);
-
-    //print integer
-    addPrintFunction("_F5printI", INT);
-    addPrintFunction("_F7printlnI", INT);
 
     //print char
     addPrintFunction("_F5printC", CHAR);
-    addPrintFunction("_F7printlnC", CHAR);
-
-    //print float
-    addPrintFunction("_F5printF", FLOAT);
-    addPrintFunction("_F7printlnF", FLOAT);
 
     auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
     read_char_function.standard() = true;

@@ -1,3 +1,5 @@
+include <print>
+
 //Struct with a copy constructor
 struct With {
     int a;

@@ -420,7 +420,7 @@ void as::IntelX86CodeGenerator::declareStringArray(const std::string& name, unsi
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dd " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dd S3" << '\n';
+    writer.stream() << "dd S1" << '\n';
     writer.stream() << "dd 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }
@@ -442,40 +442,12 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_32_printI");
-    }
-    
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_32_printlnI");
-    }
-    
     if(context->referenceCount("_F5printC")){
         output_function("x86_32_printC");
     }
     
-    if(context->referenceCount("_F7printlnC")){
-        output_function("x86_32_printlnC");
-    }
-
-    if(context->referenceCount("_F5printF")){
-        output_function("x86_32_printF");
-    }
-    
-    if(context->referenceCount("_F7printlnF")){
-        output_function("x86_32_printlnF");
-    }
-    
-    if(is_enabled_println()){
-        output_function("x86_32_println");
-    }
-    
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(context->referenceCount("_F5printS")){ 
         output_function("x86_32_printS");
-    }
-    
-    if(context->referenceCount("_F7printlnS")){ 
-        output_function("x86_32_printlnS");
     }
     
     //Memory management functions are included the three together

@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "logging.hpp"
+#include "Function.hpp"
 
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -281,6 +282,10 @@ eddic::Function& mtac::Function::definition(){
     return *_definition;
 }
 
+const eddic::Function& mtac::Function::definition() const  {
+    return *_definition;
+}
+
 std::vector<mtac::Quadruple>& mtac::Function::get_statements(){
     return statements;
 }
@@ -369,7 +374,7 @@ bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
 }
 
 std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Function& function){
-    stream << "Function " << function.get_name() << "(pure:" << function.pure() << ")" << std::endl;
+    stream << "Function " << function.get_name() << "(count:" << function.definition().references() << ", pure:" << function.pure() << ")" << std::endl;
 
     for(auto& quadruple : function.get_statements()){
         stream << quadruple << std::endl;

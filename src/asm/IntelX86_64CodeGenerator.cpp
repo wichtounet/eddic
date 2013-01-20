@@ -431,7 +431,7 @@ void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, u
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dq " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dq S3" << '\n';
+    writer.stream() << "dq S1" << '\n';
     writer.stream() << "dq 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }
@@ -453,40 +453,12 @@ void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double
 }
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_64_printI");
-    }
-   
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_64_printlnI");
-    }
-    
     if(context->referenceCount("_F5printC")){
         output_function("x86_64_printC");
     }
     
-    if(context->referenceCount("_F7printlnC")){
-        output_function("x86_64_printlnC");
-    }
-    
-    if(context->referenceCount("_F5printF")){
-        output_function("x86_64_printF");
-    }
-    
-    if(context->referenceCount("_F7printlnF")){
-        output_function("x86_64_printlnF");
-    }
-    
-    if(is_enabled_println()){
-        output_function("x86_64_println");
-    }
-    
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(context->referenceCount("_F5printS")){ 
         output_function("x86_64_printS");
-    }
-   
-    if(context->referenceCount("_F7printlnS")){ 
-        output_function("x86_64_printlnS");
     }
     
     //Memory management functions are included the three together

@@ -117,6 +117,7 @@ class Function : public std::enable_shared_from_this<Function> {
         bool pure() const;
 
         eddic::Function& definition();
+        const eddic::Function& definition() const;
 
         std::shared_ptr<FunctionContext> context;
 
@@ -188,7 +189,6 @@ struct Iterators<mtac::Function> {
     /*!
      * \brief Merge the current block into the specified one. 
      * The current block will be removed.
-     * \return an iterator to the merged block 
      */
     void merge_to(mtac::basic_block_p bb){
         it = container.merge_basic_blocks(it, bb);
@@ -198,7 +198,6 @@ struct Iterators<mtac::Function> {
     /*!
      * \brief Merge the specified block into the current one. 
      * The specified block will be removed.
-     * \return an iterator to the merged block 
      */
     void merge_in(mtac::basic_block_p bb){
         it = container.merge_basic_blocks(container.at(bb), *it);

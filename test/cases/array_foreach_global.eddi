@@ -1,3 +1,5 @@
+include<print>
+
 int global[5];
 
 void main(){

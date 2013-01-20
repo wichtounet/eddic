@@ -9,6 +9,8 @@
 #include <iostream>
 #include <memory>
 
+#include <boost/algorithm/string.hpp>
+
 #include "Options.hpp"
 #include "Compiler.hpp"
 #include "Utils.hpp"
@@ -94,7 +96,13 @@ void assert_compilation_error(const std::string& file, const std::string& param1
     remove("./" + param3);
 }
 
-void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
+std::vector<std::string> split(std::string value){
+    std::vector<std::string> parts;
+    boost::split(parts, value, boost::is_any_of("|"));
+    return parts;
+}
+
+std::string get_output(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
     auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
 
     eddic::Compiler compiler;
@@ -103,10 +111,59 @@ void assert_output_equals(const std::string& file, const std::string& output, co
     BOOST_REQUIRE_EQUAL (code, 0);
 
     std::string out = eddic::execCommand("./" + param3); 
+    remove("./" + param3);
+    
+    return out;
+}
+
+template<typename T>
+void validate_output(std::vector<std::string>& parts, int index, T first){
+    auto value = boost::lexical_cast<T>(parts[index]);
+
+    BOOST_CHECK_EQUAL(value, first);
+}
+
+template<>
+void validate_output(std::vector<std::string>& parts, int index, double first){
+    auto value = boost::lexical_cast<double>(parts[index]);
+
+    BOOST_CHECK_CLOSE(value, first, 0.005);
+}
+
+template<>
+void validate_output(std::vector<std::string>& parts, int index, const char* first){
+    auto value = parts[index];
+
+    BOOST_CHECK_EQUAL(value, first);
+}
+
+template<typename First, typename ...T>
+void validate_output(std::vector<std::string>& parts, int index, First first, T... rest){
+    validate_output(parts, index, first);
+    validate_output(parts, index + 1, rest...);
+}
+
+template<typename ...T>
+void validate_output(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3, T... arguments){
+    auto out = get_output(file, param1, param2, param3);
+    auto parts = split(out);
+    validate_output(parts, 0, arguments...);
+}
+
+template<typename ...T>
+void validate(const std::string& file, T... arguments){
+    validate_output(file, "--32", "--O0", file + ".1.out", arguments...);
+    validate_output(file, "--32", "--O1", file + ".2.out", arguments...);
+    validate_output(file, "--32", "--O3", file + ".3.out", arguments...);
+    validate_output(file, "--64", "--O0", file + ".4.out", arguments...);
+    validate_output(file, "--64", "--O1", file + ".5.out", arguments...);
+    validate_output(file, "--64", "--O3", file + ".6.out", arguments...);
+}
+
+void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
+    auto out = get_output(file, param1, param2, param3);
     
     BOOST_CHECK_EQUAL (output, out);
-    
-    remove("./" + param3);
 }
 
 void assert_output_32(const std::string& file, const std::string& output){
@@ -213,8 +270,7 @@ BOOST_AUTO_TEST_CASE( copy_constructors ){
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
-    assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|B|B|90|");
-    assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|B|B|90|");
+    validate("casts.eddi", 5.0, 5, 4, 333, 5.0, 8.33, 'B', 'B', 90);
 }
 
 BOOST_AUTO_TEST_CASE( compound ){
@@ -274,8 +330,7 @@ BOOST_AUTO_TEST_CASE( dynamic_struct ){
 }
 
 BOOST_AUTO_TEST_CASE( float_pointers ){
-    assert_output_32("float_pointers.eddi", "44.4000|44.4000|55.5000|55.5000|66.5999|66.5999|66.5999|");
-    assert_output_64("float_pointers.eddi", "44.3999|44.3999|55.5000|55.5000|66.5999|66.5999|66.5999|");
+    validate("float_pointers.eddi", 44.4, 44.4, 55.5, 55.5, 66.6, 66.6, 66.6);
 }
 
 BOOST_AUTO_TEST_CASE( struct_pointers ){
@@ -307,8 +362,7 @@ BOOST_AUTO_TEST_CASE( pass_member_by_value ){
 }
 
 BOOST_AUTO_TEST_CASE( ternary ){
-    assert_output_32("ternary.eddi", "44|66|44|66|1|0|44.4000|66.5999|");
-    assert_output_64("ternary.eddi", "44|66|44|66|1|0|44.3999|66.5999|");
+    validate("ternary.eddi", 44, 66, 44, 66, 1, 0, 44.4, 66.6);
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
@@ -324,17 +378,11 @@ BOOST_AUTO_TEST_CASE( defaults ){
 }
 
 BOOST_AUTO_TEST_CASE( float_1 ){
-    /* Precision is different regarding to optimizations */
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O0", "float_1.eddi.1.out");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O1", "float_1.eddi.2.out");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5591|14.4927|3.0|8.0|", "--32", "--O2", "float_1.eddi.3.out");
-    
-    assert_output_64("float_1.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|");
+    validate("float_1.eddi", 5.499, 100.0, -100.0, 100.0, 2.0889, 4.2, 3.33, 1.5, 3.0, 5.0, 4.5, 5.75, 1.5, -2.0, 7.5, 2.27, 7.5590, 14.4927, 3.0, 8.0);
 }
 
 BOOST_AUTO_TEST_CASE( float_2 ){
-    assert_output_32("float_2.eddi", "3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|");
-    assert_output_64("float_2.eddi", "3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|");
+    validate("float_2.eddi", 3.0910, 2.0934, 5.1844, 1, 1, 11111, 8.0, 13.75, 2.5, 5.5, 2.5, 5.5, 2.5, 5.5, 2.5, 5.5);
 }
 
 BOOST_AUTO_TEST_CASE( for_ ){
@@ -382,8 +430,7 @@ BOOST_AUTO_TEST_CASE( recursive_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( single_inheritance ){
-    assert_output_32("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.2999|55|B|55|66|57.3999|55|58.4999|55|55|66|77|");
-    assert_output_64("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.3000|55|B|55|66|57.4000|55|58.5000|55|55|66|77|");
+    validate("single_inheritance.eddi", 99, 55, 66, 77, 'B', 55, 66, 55.2, 55, 56.3, 55, 'B', 55, 66, 57.4, 55, 58.5, 55, 55, 66, 77);
 }
 
 BOOST_AUTO_TEST_CASE( math ){
@@ -403,13 +450,11 @@ BOOST_AUTO_TEST_CASE( println ){
 }
 
 BOOST_AUTO_TEST_CASE( prints ){
-    assert_output_32("prints.eddi", "111|0|-111|0|1|999.9899|1.0089|0.0|-1.0089|-999.9899||-0|asdf|1234asdf|");
-    assert_output_64("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
+    validate("prints.eddi", 111, 0, -111, 0, 1, 999.9899, 1.0089, 0.0, -1.0089, -999.9899, "", -0, "asdf", "1234asdf");
 }
 
 BOOST_AUTO_TEST_CASE( structures ){
-    assert_output_32("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3299|1|ertz|333|888|4.3299|1|ertz|");
-    assert_output_64("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
+    validate("structures.eddi", 222, 666, 3.23, 0, "asdf", 333, 888, 4.33, 1, "ertz", 333, 888, 4.33, 1, "ertz");
 }
 
 BOOST_AUTO_TEST_CASE( struct_member_pointers ){
@@ -429,8 +474,7 @@ BOOST_AUTO_TEST_CASE( switch_string ){
 }
 
 BOOST_AUTO_TEST_CASE( nested ){
-    assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
-    assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
+    validate("nested.eddi", 222, 555, 333, 444, 2222, 5555, 3333, 4444, "", 222, 555,333, 444, 2222, 5555, 3333, 4444);
 }
 
 static void test_args(const std::string& arg1, const std::string& arg2, const std::string& arg3){
@@ -471,8 +515,7 @@ BOOST_AUTO_TEST_CASE( class_templates ){
 }
 
 BOOST_AUTO_TEST_CASE( function_templates ){
-    assert_output_32("function_templates.eddi", "9|5.5000|9|99|9.8999|100|a|b|9|5.5000|a|9|9|a|a|");
-    assert_output_64("function_templates.eddi", "9|5.5000|9|99|9.9000|100|a|b|9|5.5000|a|9|9|a|a|");
+    validate("function_templates.eddi", 9, 5.5, 9, 99, 9.9, 100, 'a', 'b', 9, 5.5, 'a', 9, 9, 'a', 'a');
 }
 
 BOOST_AUTO_TEST_CASE( member_function_templates ){
@@ -579,7 +622,7 @@ eddic::statistics& compute_stats(const std::string& file){
 BOOST_AUTO_TEST_CASE( parameter_propagation ){
     auto& stats = compute_stats("parameter_propagation.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
+    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 6);
 }
 
 BOOST_AUTO_TEST_CASE( remove_empty_functions ){

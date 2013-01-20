@@ -92,7 +92,7 @@ struct GlobalContext final : public Context {
         
         /*!
          * Indicates if a structure for the given type exists. 
-         * \param struct_ The structure type to search for. 
+         * \param type The structure type to search for. 
          * \return true if a structure for the given type exists, otherwise false. 
          */
         bool struct_exists(std::shared_ptr<const Type> type) const ;

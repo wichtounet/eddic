@@ -61,7 +61,14 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     auto comparison = statements.back();
                     statements.pop_back();
 
-                    int limit = bb->statements.size();
+                    int limit = statements.size();
+                    
+                    //There are perhaps new references to functions
+                    for(auto& statement : statements){
+                        if(statement.op == mtac::Operator::CALL){
+                            statement.function().references() += (factor - 1);
+                        }
+                    }
 
                     //Save enough space for the new statements
                     statements.reserve(limit * factor + 1);

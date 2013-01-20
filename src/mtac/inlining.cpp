@@ -404,26 +404,26 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function.definition().parameters().size() == constant_parameters){
-            return target_size < 250;
+            return target_size < 100 && source_size < 300;
         }
 
         //For inner loop, increase the chances of inlining
         if(call.depth > 1){
-            return source_size < 500 && target_size < 100;
+            return source_size < 300 && target_size < 75;
         }
         
         //For single loop, increase a bit the changes of inlining
         if(call.depth > 0){
-            return source_size < 300 && target_size < 75;
+            return source_size < 200 && target_size < 50;
         }
 
         //function called once
         if(target_function.context->global()->referenceCount(target_function.get_name()) == 1){
-            return source_size < 300 && target_size < 100;
+            return source_size < 100 && target_size < 100;
         } 
 
         //Inline little functions
-        return target_size < 15 && source_size < 300;
+        return target_size < 10 && source_size < 200;
     }
 
     return false;
@@ -480,6 +480,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     auto src_call_uid = src_call.uid();
 
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
+                    source_function.context->global()->stats().inc_counter("inlined_functions");
 
                     basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
 
@@ -500,7 +501,16 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     adapt_instructions(variable_clones, bb_clones, call, safe);
 
                     //The target function is called one less time
-                    program.context->removeReference(source_definition.mangled_name());
+                    --source_definition.references();
+                    
+                    //There are perhaps new references to functions
+                    for(auto& block : source_function){
+                        for(auto& statement : block){
+                            if(statement.op == mtac::Operator::CALL){
+                                ++statement.function().references();
+                            }
+                        }
+                    }
 
                     //All the iterators are invalidated at this point
                     //The loop will be restarted

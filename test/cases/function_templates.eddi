@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     test<int>(9);
     test<float>(5.5);

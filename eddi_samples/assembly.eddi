@@ -1,3 +1,5 @@
+include<print>
+
 //Global Variables
 int ga = 1000;
 str gb = "Global Variable b"; 

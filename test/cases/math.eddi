@@ -1,37 +1,39 @@
+include<print>
+
 //Variables are global to avoid optimizations
-int a = 111;
-int b = 222;
-int c = -111;
-int d = -222;
-int e = 1000;
+int ga = 111;
+int gb = 222;
+int gc = -111;
+int gd = -222;
+int ge = 1000;
 
 void main(){
-    print(a + b);
+    print(ga + gb);
     print("|");
-    print(b - a);
+    print(gb - ga);
     print("|");
-    print(a - b);
+    print(ga - gb);
     print("|");
-    print(0 * a);
+    print(0 * ga);
     print("|");
-    print(c * d);
+    print(gc * gd);
     print("|");
-    print(b / a);
+    print(gb / ga);
     print("|");
-    print(d / a);
+    print(gd / ga);
     print("|");
-    print(d / b);
+    print(gd / gb);
     print("|");
-    print(d / d);
+    print(gd / gd);
     print("|");
-    print(d / c);
+    print(gd / gc);
     print("|");
-    print(d % c);
+    print(gd % gc);
     print("|");
-    print(c % d);
+    print(gc % gd);
     print("|");
-    print(e % 256);
+    print(ge % 256);
     print("|");
-    print(e % 64);
+    print(ge % 64);
     print("|");
 }

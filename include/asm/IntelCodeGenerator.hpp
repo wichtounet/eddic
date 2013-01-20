@@ -53,9 +53,6 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareFloat(const std::string& label, double value) = 0;
 
         void output_function(const std::string& function);
-
-        bool is_enabled_printI();
-        bool is_enabled_println();
 };
 
 } //end of as

@@ -1034,11 +1034,19 @@ void ltac::StatementCompiler::compile_MINUS(mtac::Quadruple& quadruple){
 void ltac::StatementCompiler::compile_FMINUS(mtac::Quadruple& quadruple){
     //Constants should have been replaced by the optimizer
     assert(mtac::isVariable(*quadruple.arg1));
+    auto var = ltac::get_variable(*quadruple.arg1);
+    auto var_reg = manager.get_pseudo_float_reg(var);
 
     auto reg = manager.get_free_pseudo_float_reg();
     manager.copy(-1.0, reg);
 
-    ltac::add_instruction(bb, ltac::Operator::FMUL, manager.get_pseudo_float_reg(ltac::get_variable(*quadruple.arg1)), reg);
+    if(quadruple.result == var){
+        ltac::add_instruction(bb, ltac::Operator::FMUL, var_reg, reg);
+    } else {
+        auto result_reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
+        ltac::add_instruction(bb, ltac::Operator::FMOV, result_reg, var_reg);
+        ltac::add_instruction(bb, ltac::Operator::FMUL, result_reg, reg);
+    }
 
     manager.set_written(quadruple.result);
 }
