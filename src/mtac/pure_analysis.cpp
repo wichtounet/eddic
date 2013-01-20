@@ -33,6 +33,8 @@ struct hash<std::reference_wrapper<mtac::Function>> {
 
 } //end of namespace std
 
+namespace {
+
 bool has_pointer_parameters(mtac::Function& function){
     for(auto& parameter : function.definition().parameters()){
         if(parameter.type()->is_pointer()){

@@ -131,7 +131,7 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
 
             //Replace the parameter by the constant in each use of the parameter
-            auto& mtac_function program.mtac_function(function);
+            auto& mtac_function = program.mtac_function(function);
             mtac::VariableClones clones;
 
             for(auto& parameter : constant_parameters){
