@@ -76,13 +76,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 if(target_function.standard()){
                     merge = safe(target_function.mangled_name());
                 } else {
-                    merge = false;
-
-                    for(auto& f : program.functions){
-                        if(f.definition() == target_function){
-                            merge = f.pure();
-                        }
-                    }
+                    merge = program.mtac_function(target_function).pure();
                 }
             } else if(!quadruple.is_if() && !quadruple.is_if_false()){
                 merge = true;
@@ -102,14 +96,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                                     continue;
                                 }
                             } else {
-                                auto safe = false;
-
-                                for(auto& f : program.functions){
-                                    if(f.definition() == target_function){
-                                        safe = f.pure();
-                                    }
-                                }
-
+                                auto safe = program.mtac_function(target_function).pure();
                                 if(!safe){
                                     ++it;
                                     continue;

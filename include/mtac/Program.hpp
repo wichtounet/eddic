@@ -15,6 +15,7 @@
 
 namespace eddic {
 
+class Function;
 struct GlobalContext;
 
 namespace mtac {
@@ -34,6 +35,8 @@ struct Program {
     //Program cannot be copied
     Program(const Program& rhs) = delete;
     Program& operator=(const Program& rhs) = delete;
+
+    Function& mtac_function(const eddic::Function& function);
 };
 
 std::ostream& operator<<(std::ostream& stream, mtac::Program& program);
