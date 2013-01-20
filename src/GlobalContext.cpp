@@ -65,7 +65,7 @@ Function& GlobalContext::add_function(std::shared_ptr<const Type> ret, const std
 }
 
 Function& GlobalContext::getFunction(const std::string& function){
-    eddic_assert(exists(function), "The function must exists");
+    eddic_assert(exists(function), ("The function \"" + function + "\" does not exists").c_str());
 
     return m_functions.at(function);
 }
