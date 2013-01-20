@@ -502,6 +502,15 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
 
                     //The target function is called one less time
                     --source_definition.references();
+                    
+                    //There are perhaps new references to functions
+                    for(auto& block : source_function){
+                        for(auto& statement : block){
+                            if(statement.op == mtac::Operator::CALL){
+                                ++statement.function().references();
+                            }
+                        }
+                    }
 
                     //All the iterators are invalidated at this point
                     //The loop will be restarted
