@@ -622,7 +622,7 @@ eddic::statistics& compute_stats(const std::string& file){
 BOOST_AUTO_TEST_CASE( parameter_propagation ){
     auto& stats = compute_stats("parameter_propagation.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
+    BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 6);
 }
 
 BOOST_AUTO_TEST_CASE( remove_empty_functions ){
