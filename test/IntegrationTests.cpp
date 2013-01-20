@@ -9,6 +9,8 @@
 #include <iostream>
 #include <memory>
 
+#include <boost/algorithm/string.hpp>
+
 #include "Options.hpp"
 #include "Compiler.hpp"
 #include "Utils.hpp"
@@ -94,7 +96,13 @@ void assert_compilation_error(const std::string& file, const std::string& param1
     remove("./" + param3);
 }
 
-void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
+std::vector<std::string> split(std::string value){
+    std::vector<std::string> parts;
+    boost::split(parts, value, boost::is_any_of("|"));
+    return parts;
+}
+
+std::string get_output(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
     auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
 
     eddic::Compiler compiler;
@@ -103,10 +111,52 @@ void assert_output_equals(const std::string& file, const std::string& output, co
     BOOST_REQUIRE_EQUAL (code, 0);
 
     std::string out = eddic::execCommand("./" + param3); 
+    remove("./" + param3);
+    
+    return out;
+}
+
+template<typename T>
+void validate_output(std::vector<std::string>& parts, int index, T first){
+    auto value = boost::lexical_cast<T>(parts[index]);
+
+    BOOST_CHECK_EQUAL(value, first);
+}
+
+template<>
+void validate_output(std::vector<std::string>& parts, int index, double first){
+    auto value = boost::lexical_cast<double>(parts[index]);
+
+    BOOST_CHECK_CLOSE(value, first, 0.001);
+}
+
+template<typename First, typename ...T>
+void validate_output(std::vector<std::string>& parts, int index, First first, T... rest){
+    validate_output(parts, index, first);
+    validate_output(parts, index + 1, rest...);
+}
+
+template<typename ...T>
+void validate_output(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3, T... arguments){
+    auto out = get_output(file, param1, param2, param3);
+    auto parts = split(out);
+    validate_output(parts, 0, arguments...);
+}
+
+template<typename ...T>
+void validate(const std::string& file, T... arguments){
+    validate_output(file, "--32", "--O0", file + ".1.out", arguments...);
+    validate_output(file, "--32", "--O1", file + ".2.out", arguments...);
+    validate_output(file, "--32", "--O3", file + ".3.out", arguments...);
+    validate_output(file, "--64", "--O0", file + ".4.out", arguments...);
+    validate_output(file, "--64", "--O1", file + ".5.out", arguments...);
+    validate_output(file, "--64", "--O3", file + ".6.out", arguments...);
+}
+
+void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
+    auto out = get_output(file, param1, param2, param3);
     
     BOOST_CHECK_EQUAL (output, out);
-    
-    remove("./" + param3);
 }
 
 void assert_output_32(const std::string& file, const std::string& output){
@@ -307,8 +357,7 @@ BOOST_AUTO_TEST_CASE( pass_member_by_value ){
 }
 
 BOOST_AUTO_TEST_CASE( ternary ){
-    assert_output_32("ternary.eddi", "44|66|44|66|1|0|44.4000|66.5999|");
-    assert_output_64("ternary.eddi", "44|66|44|66|1|0|44.3999|66.5999|");
+    validate("ternary.eddi", 44, 66, 44, 66, 1, 0, 44.4, 66.6);
 }
 
 BOOST_AUTO_TEST_CASE( while_ ){
