@@ -480,6 +480,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     auto src_call_uid = src_call.uid();
 
                     LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
+                    source_function.context->global()->stats().inc_counter("inlined_functions");
 
                     basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
 
