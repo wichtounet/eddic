@@ -443,14 +443,7 @@ bool non_standard_target(mtac::Quadruple& call, mtac::Program& program){
 
 mtac::Function& get_target(mtac::Quadruple& call, mtac::Program& program){
     auto& target_definition = call.function();
-
-    for(auto& function : program.functions){
-        if(function.definition().mangled_name() == target_definition.mangled_name()){
-            return function;
-        }
-    }
-
-    eddic_unreachable("Should not happen");
+    return program.mtac_function(target_definition);
 }
 
 bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
@@ -543,6 +536,7 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
 
     for(auto& function : program.functions){
         //If the function is never called, no need to optimize it
+        //TODO Should be removed before this step
         if(global_context->referenceCount(function.get_name()) <= 0){
             continue; 
         }

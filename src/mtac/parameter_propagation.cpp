@@ -131,27 +131,22 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
 
             //Replace the parameter by the constant in each use of the parameter
-            for(auto& mtac_function : program.functions){
-                if(mtac_function.definition() == function){
-                    mtac::VariableClones clones;
-                    
-                    for(auto& parameter : constant_parameters){
-                        auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
-                        
-                        log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
-                        mtac_function.context->global()->stats().inc_counter("propagated_parameter");
+            auto& mtac_function program.mtac_function(function);
+            mtac::VariableClones clones;
 
-                        clones[param] = parameter.second;
-                    }
+            for(auto& parameter : constant_parameters){
+                auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
 
-                    VariableReplace replacer(clones);
-                    for(auto& block : mtac_function){
-                        for(auto& quadruple : block){
-                            replacer.replace(quadruple);
-                        }
-                    }
+                log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
+                mtac_function.context->global()->stats().inc_counter("propagated_parameter");
 
-                    break;
+                clones[param] = parameter.second;
+            }
+
+            VariableReplace replacer(clones);
+            for(auto& block : mtac_function){
+                for(auto& quadruple : block){
+                    replacer.replace(quadruple);
                 }
             }
             
