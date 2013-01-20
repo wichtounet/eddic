@@ -127,7 +127,14 @@ template<>
 void validate_output(std::vector<std::string>& parts, int index, double first){
     auto value = boost::lexical_cast<double>(parts[index]);
 
-    BOOST_CHECK_CLOSE(value, first, 0.001);
+    BOOST_CHECK_CLOSE(value, first, 0.005);
+}
+
+template<>
+void validate_output(std::vector<std::string>& parts, int index, const char* first){
+    auto value = parts[index];
+
+    BOOST_CHECK_EQUAL(value, first);
 }
 
 template<typename First, typename ...T>
@@ -263,8 +270,7 @@ BOOST_AUTO_TEST_CASE( copy_constructors ){
 }
 
 BOOST_AUTO_TEST_CASE( casts ){
-    assert_output_32("casts.eddi", "5.0|5|4|333|5.0|8.3299|B|B|90|");
-    assert_output_64("casts.eddi", "5.0|5|4|333|5.0|8.3300|B|B|90|");
+    validate("casts.eddi", 5.0, 5, 4, 333, 5.0, 8.33, 'B', 'B', 90);
 }
 
 BOOST_AUTO_TEST_CASE( compound ){
@@ -324,8 +330,7 @@ BOOST_AUTO_TEST_CASE( dynamic_struct ){
 }
 
 BOOST_AUTO_TEST_CASE( float_pointers ){
-    assert_output_32("float_pointers.eddi", "44.4000|44.4000|55.5000|55.5000|66.5999|66.5999|66.5999|");
-    assert_output_64("float_pointers.eddi", "44.3999|44.3999|55.5000|55.5000|66.5999|66.5999|66.5999|");
+    validate("float_pointers.eddi", 44.4, 44.4, 55.5, 55.5, 66.6, 66.6, 66.6);
 }
 
 BOOST_AUTO_TEST_CASE( struct_pointers ){
@@ -373,17 +378,11 @@ BOOST_AUTO_TEST_CASE( defaults ){
 }
 
 BOOST_AUTO_TEST_CASE( float_1 ){
-    /* Precision is different regarding to optimizations */
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O0", "float_1.eddi.1.out");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5590|14.4927|3.0|8.0|", "--32", "--O1", "float_1.eddi.2.out");
-    assert_output_equals("float_1.eddi", "5.4990|100.0|-100.0|100.0|2.0889|4.1999|3.3299|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2699|7.5591|14.4927|3.0|8.0|", "--32", "--O2", "float_1.eddi.3.out");
-    
-    assert_output_64("float_1.eddi", "5.4989|100.0|-100.0|100.0|2.0889|4.2000|3.3300|1.5000|3.0|5.0|4.5000|5.7500|1.5000|-2.0|7.5000|2.2700|7.5590|14.4927|3.0|8.0|");
+    validate("float_1.eddi", 5.499, 100.0, -100.0, 100.0, 2.0889, 4.2, 3.33, 1.5, 3.0, 5.0, 4.5, 5.75, 1.5, -2.0, 7.5, 2.27, 7.5590, 14.4927, 3.0, 8.0);
 }
 
 BOOST_AUTO_TEST_CASE( float_2 ){
-    assert_output_32("float_2.eddi", "3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|");
-    assert_output_64("float_2.eddi", "3.0910|2.0934|5.1844|1|1|11111|8.0|13.7500|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|2.5000|5.5000|");
+    validate("float_2.eddi", 3.0910, 2.0934, 5.1844, 1, 1, 11111, 8.0, 13.75, 2.5, 5.5, 2.5, 5.5, 2.5, 5.5, 2.5, 5.5);
 }
 
 BOOST_AUTO_TEST_CASE( for_ ){
@@ -431,8 +430,7 @@ BOOST_AUTO_TEST_CASE( recursive_functions ){
 }
 
 BOOST_AUTO_TEST_CASE( single_inheritance ){
-    assert_output_32("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.2999|55|B|55|66|57.3999|55|58.4999|55|55|66|77|");
-    assert_output_64("single_inheritance.eddi", "99|55|66|77|B|55|66|55.2000|55|56.3000|55|B|55|66|57.4000|55|58.5000|55|55|66|77|");
+    validate("single_inheritance.eddi", 99, 55, 66, 77, 'B', 55, 66, 55.2, 55, 56.3, 55, 'B', 55, 66, 57.4, 55, 58.5, 55, 55, 66, 77);
 }
 
 BOOST_AUTO_TEST_CASE( math ){
@@ -452,13 +450,11 @@ BOOST_AUTO_TEST_CASE( println ){
 }
 
 BOOST_AUTO_TEST_CASE( prints ){
-    assert_output_32("prints.eddi", "111|0|-111|0|1|999.9899|1.0089|0.0|-1.0089|-999.9899||-0|asdf|1234asdf|");
-    assert_output_64("prints.eddi", "111|0|-111|0|1|999.9900|1.0089|0.0|-1.0089|-999.9900||-0|asdf|1234asdf|");
+    validate("prints.eddi", 111, 0, -111, 0, 1, 999.9899, 1.0089, 0.0, -1.0089, 0.0, -1.0089, -999.9899, "", -0, "asdf", "1234asdf");
 }
 
 BOOST_AUTO_TEST_CASE( structures ){
-    assert_output_32("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3299|1|ertz|333|888|4.3299|1|ertz|");
-    assert_output_64("structures.eddi", "222|666|3.2300|0|asdf|333|888|4.3300|1|ertz|333|888|4.3300|1|ertz|");
+    validate("structures.eddi", 222, 666, 3.23, 0, "asdf", 333, 888, 4.33, 1, "ertz", 333, 888, 4.33, 1, "ertz");
 }
 
 BOOST_AUTO_TEST_CASE( struct_member_pointers ){
@@ -478,8 +474,7 @@ BOOST_AUTO_TEST_CASE( switch_string ){
 }
 
 BOOST_AUTO_TEST_CASE( nested ){
-    assert_output_32("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
-    assert_output_64("nested.eddi", "222|555|333|444|2222|5555|3333|4444||222|555|333|444|2222|5555|3333|4444|");
+    validate("nested.eddi", 222, 555, 333, 444, 2222, 5555, 3333, 4444, "", 222, 555,333, 444, 2222, 5555, 3333, 4444);
 }
 
 static void test_args(const std::string& arg1, const std::string& arg2, const std::string& arg3){
