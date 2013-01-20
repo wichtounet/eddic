@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     float a = 44.4;
     test(&a);

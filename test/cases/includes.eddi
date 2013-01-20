@@ -1,3 +1,5 @@
+include<print>
+
 include "test/cases/included.eddi"
 
 void main(){

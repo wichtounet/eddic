@@ -1,3 +1,4 @@
+include<print>
 include<math>
 
 void main(){

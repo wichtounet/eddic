@@ -1,4 +1,4 @@
-include<math>
+include<print>
 
 void main(){
     print(factorial(0));

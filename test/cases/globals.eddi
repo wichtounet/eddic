@@ -1,3 +1,5 @@
+include<print>
+
 int a = 1000;
 str b = "a";
 

@@ -1,3 +1,5 @@
+include<print>
+
 const int ga = 22;
 const str gb = "22";
 

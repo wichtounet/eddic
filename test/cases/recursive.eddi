@@ -1,11 +1,13 @@
+include<print>
+
 void main(){
-    print(factorial(9));
+    print(fact(9));
 }
 
-int factorial(int n){
+int fact(int n){
     if(n == 0){
         return 1;
     }
 
-    return n * factorial(n - 1);
+    return n * fact(n - 1);
 }

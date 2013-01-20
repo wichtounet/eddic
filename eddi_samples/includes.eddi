@@ -1,3 +1,4 @@
+include<print>
 include <math>
 
 include "eddi_samples/included.eddi"

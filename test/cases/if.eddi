@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     if(5 > 3){
         print(1);
