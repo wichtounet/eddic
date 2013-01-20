@@ -114,6 +114,7 @@ enum class Operator : unsigned int {
     NOP,            //for optimization purpose
 
     PARAM,          //for parameter passing
+    PPARAM,         //for parameter passing by address
     
     CALL,           //call functions
 

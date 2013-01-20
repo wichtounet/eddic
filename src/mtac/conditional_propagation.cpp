@@ -16,14 +16,14 @@ using namespace eddic;
 
 namespace {
 
-std::shared_ptr<mtac::Quadruple> get_variable_declaration(mtac::basic_block_p basic_block, std::shared_ptr<Variable> variable){
+mtac::Quadruple& get_variable_declaration(mtac::basic_block_p basic_block, std::shared_ptr<Variable> variable){
     for(auto& quadruple : basic_block){
-        if(quadruple->result == variable){
+        if(quadruple.result == variable){
             return quadruple;
         }
     }
 
-    return nullptr;
+    return basic_block->statements.front();
 }
 
 template<bool If>
@@ -98,22 +98,20 @@ mtac::Operator to_binary_operator(mtac::Operator op){
 }
 
 template<bool If, typename Branch>
-bool optimize_branch(std::shared_ptr<Branch> branch, mtac::basic_block_p basic_block, mtac::VariableUsage variable_usage){
-    if(mtac::isVariable(*branch->arg1)){
-        auto variable = boost::get<std::shared_ptr<Variable>>(*branch->arg1);
-
-        auto declaration = get_variable_declaration(basic_block, variable);
+bool optimize_branch(Branch& branch, mtac::basic_block_p basic_block, mtac::VariableUsage variable_usage){
+    if(mtac::isVariable(*branch.arg1)){
+        auto variable = boost::get<std::shared_ptr<Variable>>(*branch.arg1);
 
         if(variable_usage[variable] == 2){
-            auto declaration = get_variable_declaration(basic_block, variable);
+            auto& declaration = get_variable_declaration(basic_block, variable);
 
-            if(declaration){
+            if(declaration.result == variable){
                 if(
-                        (declaration->op >= mtac::Operator::EQUALS && declaration->op <= mtac::Operator::LESS_EQUALS)
-                        ||  (declaration->op >= mtac::Operator::FE && declaration->op <= mtac::Operator::FL)){
-                    branch->arg1 = *declaration->arg1;
-                    branch->arg2 = *declaration->arg2;
-                    branch->op = to_binary_operator<If>(declaration->op);
+                        (declaration.op >= mtac::Operator::EQUALS && declaration.op <= mtac::Operator::LESS_EQUALS)
+                        ||  (declaration.op >= mtac::Operator::FE && declaration.op <= mtac::Operator::FL)){
+                    branch.arg1 = *declaration.arg1;
+                    branch.arg2 = *declaration.arg2;
+                    branch.op = to_binary_operator<If>(declaration.op);
 
                     return true;
                 }
@@ -133,9 +131,9 @@ bool mtac::conditional_propagation::operator()(mtac::Function& function){
 
     for(auto& basic_block : function){
         for(auto& quadruple : basic_block){
-            if(quadruple->op == mtac::Operator::IF_FALSE_UNARY){
+            if(quadruple.op == mtac::Operator::IF_FALSE_UNARY){
                 optimized |= optimize_branch<false>(quadruple, basic_block, variable_usage);
-            } else if(quadruple->op == mtac::Operator::IF_UNARY){
+            } else if(quadruple.op == mtac::Operator::IF_UNARY){
                 optimized |= optimize_branch<true>(quadruple, basic_block, variable_usage);
             }
         }

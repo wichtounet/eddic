@@ -17,8 +17,6 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
     bool optimized_once = false;
 
     do {
-        optimized = false;
-        
         unsigned int before = function.bb_count();
 
         if(before <= 2){

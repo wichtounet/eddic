@@ -18,7 +18,7 @@ namespace mtac {
 struct ReduceInStrength {
     bool optimized = false;
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
+    void operator()(mtac::Quadruple& quadruple);
 };
 
 template<>

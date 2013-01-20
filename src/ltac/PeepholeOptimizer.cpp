@@ -5,7 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 
@@ -613,6 +612,7 @@ void add_escaped_registers(RegisterUsage& usage, mtac::Function& function, Platf
 
     for(auto& var : function.context->stored_variables()){
         if(var->position().is_register() && mtac::is_single_int_register(var->type())){
+            //TODO Check if that can still happens
             usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }
     }

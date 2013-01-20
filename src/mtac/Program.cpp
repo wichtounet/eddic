@@ -12,3 +12,13 @@ using namespace eddic;
 mtac::Program::Program(){
     //Nothing to do
 }
+
+std::ostream& eddic::mtac::operator<<(std::ostream& stream, mtac::Program& program){
+    stream << "TAC Program " << std::endl << std::endl; 
+
+    for(auto& function : program.functions){
+        stream << function;
+    }
+
+    return stream;
+}

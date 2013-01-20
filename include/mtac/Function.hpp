@@ -12,6 +12,7 @@
 #include <vector>
 #include <utility>
 #include <set>
+#include <ostream>
 
 #include "iterators.hpp"
 
@@ -19,6 +20,7 @@
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
 #include "mtac/Loop.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -44,8 +46,20 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::string get_name() const;
 
-        void add(std::shared_ptr<mtac::Quadruple> statement);
-        std::vector<std::shared_ptr<mtac::Quadruple>>& get_statements();
+        template< class... Args >
+        inline void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+        
+        inline void push_back(mtac::Quadruple&& quadruple){
+            statements.push_back(std::forward<mtac::Quadruple>(quadruple));
+        }
+
+        mtac::Quadruple& find(std::size_t uid);
+
+        std::vector<mtac::Quadruple>& get_statements();
+        const std::vector<mtac::Quadruple>& get_statements() const;
+
         void release_statements();
 
         void create_entry_bb();
@@ -79,10 +93,10 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t bb_count() const;
         std::size_t size() const;
         
-        std::size_t pseudo_registers();
+        std::size_t pseudo_registers() const ;
         void set_pseudo_registers(std::size_t pseudo_registers);
         
-        std::size_t pseudo_float_registers();
+        std::size_t pseudo_float_registers() const;
         void set_pseudo_float_registers(std::size_t pseudo_registers);
         
         const std::set<ltac::Register>& use_registers() const;
@@ -100,6 +114,7 @@ class Function : public std::enable_shared_from_this<Function> {
         bool is_main() const;
 
         bool& pure();
+        bool pure() const;
 
         eddic::Function& definition();
 
@@ -109,7 +124,7 @@ class Function : public std::enable_shared_from_this<Function> {
         eddic::Function* _definition;
 
         //Before being partitioned, the function has only statement
-        std::vector<std::shared_ptr<mtac::Quadruple>> statements;
+        std::vector<mtac::Quadruple> statements;
 
         bool _pure = false;
         
@@ -134,6 +149,8 @@ class Function : public std::enable_shared_from_this<Function> {
 };
 
 bool operator==(const mtac::Function& lhs, const mtac::Function& rhs);
+
+std::ostream& operator<<(std::ostream& stream, const mtac::Function& function);
 
 } //end of mtac
 

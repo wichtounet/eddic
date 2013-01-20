@@ -202,7 +202,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         out << std::endl;
     }
 
-    void operator()(const std::shared_ptr<ltac::Jump> jmp){
+    void operator()(const std::shared_ptr<ltac::Jump>& jmp){
         out << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
     }
 

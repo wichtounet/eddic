@@ -28,7 +28,6 @@
 #include "mtac/Pass.hpp"
 #include "mtac/Optimizer.hpp"
 #include "mtac/Program.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Quadruple.hpp"
 
@@ -208,7 +207,7 @@ struct pass_runner {
             auto it = iterate(block->statements);
 
             while(it.has_next()){
-                if((*it)->op == mtac::Operator::NOP){
+                if(it->op == mtac::Operator::NOP){
                     it.erase();
                     continue;
                 }
@@ -302,7 +301,7 @@ struct pass_runner {
             if(log::enabled<Debug>()){
                 LOG<Debug>("Optimizer") << "Start optimizations on " << function.get_name() << log::endl;
 
-                print(function);
+                std::cout << function << std::endl;
             }
 
             boost::mpl::for_each<typename mtac::pass_traits<Pass>::sub_passes>(boost::ref(*this));
@@ -389,7 +388,7 @@ struct pass_runner {
                 LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned true" << log::endl;
 
                 //Print the function
-                print(*function);
+                std::cout << *function << std::endl;
             } else {
                 LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned false" << log::endl;
             }

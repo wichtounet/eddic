@@ -33,8 +33,8 @@ Arguments collect_arguments(mtac::Program& program){
     for(auto& function : program.functions){
         for(auto& block : function){
             for(auto& quadruple : block){
-                if(quadruple->op == mtac::Operator::CALL){
-                    auto& function = quadruple->function();
+                if(quadruple.op == mtac::Operator::CALL){
+                    auto& function = quadruple.function();
 
                     if(!function.standard() && !function.parameters().empty()){
                         std::unordered_map<std::size_t, mtac::Argument> function_arguments;
@@ -61,9 +61,9 @@ Arguments collect_arguments(mtac::Program& program){
                         while(it != end && discovered < parameters){
                             auto& param_quadruple = *it;
 
-                            if(param_quadruple->op == mtac::Operator::PARAM){
-                                if(param_quadruple->param()->type() == INT){
-                                    function_arguments[discovered] = *param_quadruple->arg1;
+                            if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
+                                if(param_quadruple.param()->type() == INT){
+                                    function_arguments[discovered] = *param_quadruple.arg1;
                                 }
 
                                 ++discovered;
@@ -165,8 +165,8 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                 for(auto& mtac_function : program.functions){
                     for(auto& block : mtac_function){
                         for(auto& quadruple : block){
-                            if(quadruple->op == mtac::Operator::CALL){
-                                auto& param_function = quadruple->function();
+                            if(quadruple.op == mtac::Operator::CALL){
+                                auto& param_function = quadruple.function();
 
                                 if(param_function == function){
                                     mtac::basic_block_p param_block;
@@ -192,11 +192,11 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                                     while(it != end && discovered < function.parameters().size()){
                                         auto& param_quadruple = *it;
 
-                                        if(param_quadruple->op == mtac::Operator::PARAM){
+                                        if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
                                             if(discovered == parameter.first){
-                                                param_quadruple->op = mtac::Operator::NOP;
-                                                param_quadruple->arg1.reset();
-                                                param_quadruple->arg2.reset();
+                                                param_quadruple.op = mtac::Operator::NOP;
+                                                param_quadruple.arg1.reset();
+                                                param_quadruple.arg2.reset();
 
                                                 optimized = true;
                                             }

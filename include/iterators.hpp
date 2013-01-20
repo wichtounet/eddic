@@ -8,6 +8,8 @@
 #ifndef ITERATORS_H
 #define ITERATORS_H
 
+#include <utility>
+
 namespace eddic {
     
 template<typename Container>
@@ -21,8 +23,12 @@ struct Iterators {
 
     Iterators(Container& container) : container(container), it(container.begin()), end(container.end()) {}
 
-    auto operator*() -> decltype(*it) {
+    typename Container::value_type& operator*(){
         return *it;
+    }
+    
+    typename Container::value_type* operator->(){
+        return &*it;
     }
 
     void operator++(){
@@ -35,13 +41,13 @@ struct Iterators {
 
     template<typename T>
     void insert(T&& value){
-        it = container.insert(it, value);
+        it = container.insert(it, std::forward<T>(value));
         end = container.end();
     }
 
     template<typename T>
     void insert_no_move(T&& value){
-        it = container.insert(it, value);
+        it = container.insert(it, std::forward<T>(value));
         end = container.end();
         ++it;
     }
@@ -49,7 +55,7 @@ struct Iterators {
     template<typename T>
     void insert_after(T&& value){
         ++it;
-        it = container.insert(it, value);
+        it = container.insert(it, std::forward<T>(value));
         end = container.end();
     }
 

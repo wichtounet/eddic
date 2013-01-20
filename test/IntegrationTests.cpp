@@ -612,4 +612,10 @@ BOOST_AUTO_TEST_CASE( loop_unrolling ){
     BOOST_REQUIRE_EQUAL(stats.counter("loop_unrolled"), 1);
 }
 
+BOOST_AUTO_TEST_CASE( common_subexpr_elimination ){
+    auto& stats = compute_stats("common_subexpr_elim.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("common_subexpr_eliminated"), 4);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

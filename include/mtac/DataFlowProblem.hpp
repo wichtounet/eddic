@@ -24,8 +24,8 @@ struct DataFlowResults {
     std::unordered_map<mtac::basic_block_p, Domain> OUT;
     std::unordered_map<mtac::basic_block_p, Domain> IN;
     
-    std::unordered_map<std::shared_ptr<mtac::Quadruple>, Domain> OUT_S;
-    std::unordered_map<std::shared_ptr<mtac::Quadruple>, Domain> IN_S;
+    std::unordered_map<std::size_t, Domain> OUT_S;
+    std::unordered_map<std::size_t, Domain> IN_S;
     
     std::unordered_map<ltac::Statement, Domain> OUT_LS;
     std::unordered_map<ltac::Statement, Domain> IN_LS;
@@ -52,7 +52,7 @@ struct DataFlowProblem {
      */
     virtual void meet(ProblemDomain& in, const ProblemDomain& out) = 0;
 
-    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, std::shared_ptr<mtac::Quadruple>& statement, ProblemDomain& in) = 0;
+    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) = 0;
     virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
 
     virtual bool optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;

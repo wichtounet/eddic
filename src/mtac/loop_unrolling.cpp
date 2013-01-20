@@ -54,22 +54,27 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     function.context->global()->stats().inc_counter("loop_unrolled");
 
                     optimized = true;
+                    
+                    auto& statements = bb->statements;
 
                     //The comparison is not necessary here anymore
-                    auto comparison = bb->statements.back();
-                    bb->statements.pop_back();
+                    auto comparison = statements.back();
+                    statements.pop_back();
 
-                    auto statements = bb->statements;
+                    int limit = bb->statements.size();
+
+                    //Save enough space for the new statements
+                    statements.reserve(limit * factor + 1);
 
                     //Start at 1 because there is already the original body
                     for(unsigned int i = 1; i < factor; ++i){
-                        for(auto& statement : statements){
-                            bb->statements.push_back(mtac::copy(statement)); 
+                        for(int j = 0; j < limit; ++j){
+                            statements.push_back(statements[j]); 
                         }
                     }
 
                     //Put the comparison again at the end
-                    bb->statements.push_back(comparison);
+                    statements.push_back(comparison);
                 }
             }
         }

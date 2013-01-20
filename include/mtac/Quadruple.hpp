@@ -9,6 +9,7 @@
 #define MTAC_QUADRUPLE_H
 
 #include <memory>
+#include <ostream>
 #include <boost/optional.hpp>
 
 #include "mtac/Operator.hpp"
@@ -32,71 +33,84 @@ enum class Size : char {
 };
 
 struct Quadruple {
-    std::shared_ptr<Variable> result;
-    boost::optional<mtac::Argument> arg1;
-    boost::optional<mtac::Argument> arg2;
-    mtac::Operator op;
-    mtac::Size size = mtac::Size::DEFAULT;
-    bool address = false; //TODO Use PPARAM instead of PARAM + address = true
-    unsigned int depth;
-    
-    std::shared_ptr<Variable> secondary; //For CALL
+    private:
+        std::size_t _uid;
 
-    eddic::Function* m_function; //For PARAM
+    public:
+        std::shared_ptr<Variable> result;
+        boost::optional<mtac::Argument> arg1;
+        boost::optional<mtac::Argument> arg2;
+        mtac::Operator op;
+        mtac::Size size = mtac::Size::DEFAULT;
+        unsigned int depth = 0;
 
-    std::string m_param; //For LABEL, GOTO, PARAM
-    
-    //Filled only in later phase replacing the label
-    std::shared_ptr<mtac::basic_block> block;
+        std::shared_ptr<Variable> secondary; //For CALL
 
-    //Quadruple should never get copied
-    Quadruple(const Quadruple& rhs);
-    Quadruple& operator=(const Quadruple& rhs);
+        eddic::Function* m_function = nullptr; //For PARAM
 
-    //Default constructor
-    Quadruple();
+        std::string m_param; //For LABEL, GOTO, PARAM
 
-    //Quadruples without assign to result and no param
-    Quadruple(mtac::Operator op);
+        //Filled only in later phase replacing the label
+        std::shared_ptr<mtac::basic_block> block;
 
-    //Quadruple for unary operators
-    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op);
+        //Copy constructors
+        Quadruple(const Quadruple& rhs);
+        Quadruple& operator=(const Quadruple& rhs);
+        
+        //Move constructors
+        Quadruple(Quadruple&& rhs) noexcept;
+        Quadruple& operator=(Quadruple&& rhs) noexcept;
 
-    //Quadruple for binary operators
-    Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2);
+        //Default constructor
+        Quadruple();
 
-    //Quadruples without assign to result
-    Quadruple(mtac::Operator op, mtac::Argument arg1);
+        //Quadruples without assign to result and no param
+        Quadruple(mtac::Operator op);
 
-    //Quadruples without assign to result
-    Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
-    
-    //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
-    Quadruple(const std::string& param, mtac::Operator op);
-    
-    //Quadruples for params
-    Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
-    Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
+        //Quadruple for unary operators
+        Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op);
 
-    Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label);
-    
-    //Quadruple for calls
-    Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
+        //Quadruple for binary operators
+        Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2);
 
-    const std::string& label() const;
-    const std::string& std_param() const;
+        //Quadruples without assign to result
+        Quadruple(mtac::Operator op, mtac::Argument arg1);
 
-    std::shared_ptr<Variable> param();
-    std::shared_ptr<Variable> return1();
-    std::shared_ptr<Variable> return2();
+        //Quadruples without assign to result
+        Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
 
-    eddic::Function& function();
+        //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
+        Quadruple(const std::string& param, mtac::Operator op);
 
-    bool is_if();
-    bool is_if_false();
+        //Quadruples for params
+        Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
+        Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
+
+        Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label);
+
+        //Quadruple for calls
+        Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
+
+        const std::string& label() const;
+        const std::string& std_param() const;
+
+        const std::shared_ptr<Variable>& param() const;
+        const std::shared_ptr<Variable>& return1() const;
+        const std::shared_ptr<Variable>& return2() const;
+
+        eddic::Function& function();
+        const eddic::Function& function() const;
+
+        bool is_if();
+        bool is_if_false();
+
+        std::size_t uid() const;
+
+        bool operator==(const mtac::Quadruple& quadruple) const;
+        bool operator!=(const mtac::Quadruple& quadruple) const;
 };
 
-//TODO Define an operator<<
+std::ostream& operator<<(std::ostream& stream, const mtac::Quadruple& quadruple);
 
 } //end of mtac
 

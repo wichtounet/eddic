@@ -32,7 +32,7 @@ struct VariableReplace {
     void update_usage(mtac::Argument& value);
     void update_usage_optional(boost::optional<mtac::Argument>& opt);
     
-    void replace(std::shared_ptr<mtac::Quadruple> quadruple);
+    void replace(mtac::Quadruple& quadruple);
 };
 
 } //end of mtac

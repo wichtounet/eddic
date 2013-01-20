@@ -13,6 +13,7 @@
 #include "variant.hpp"
 
 #include "mtac/forward.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/forward.hpp"
 
@@ -30,8 +31,8 @@ namespace mtac {
  */
 class basic_block {
     public:
-        typedef std::vector<std::shared_ptr<mtac::Quadruple>>::iterator iterator;
-        typedef std::vector<std::shared_ptr<mtac::Quadruple>>::reverse_iterator reverse_iterator;
+        typedef std::vector<mtac::Quadruple>::iterator iterator;
+        typedef std::vector<mtac::Quadruple>::reverse_iterator reverse_iterator;
 
         /*!
          * Create a new basic block with the given index. 
@@ -55,14 +56,28 @@ class basic_block {
          * Add a new statement to the basic block. 
          * \param statement The statement to add. 
          */
-        void add(std::shared_ptr<mtac::Quadruple> statement);
+        inline void push_back(mtac::Quadruple&& statement){
+            statements.push_back(std::forward<mtac::Quadruple>(statement));
+        }
+
+        template< class... Args >
+        inline void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+        
+        template< class... Args >
+        inline void emplace_back_low( Args&&... args ){
+            l_statements.emplace_back(std::forward<Args>(args)...);
+        }
+
+        mtac::Quadruple& find(std::size_t uid);
 
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
         std::string label;  /*!< The label of the block */
         std::shared_ptr<FunctionContext> context = nullptr;     /*!< The context of the enclosing function. */
 
-        std::vector<std::shared_ptr<mtac::Quadruple>> statements;    /*!< The MTAC statements inside the basic block. */
+        std::vector<mtac::Quadruple> statements;    /*!< The MTAC statements inside the basic block. */
         
         std::vector<ltac::Statement> l_statements;  /*!< The LTAC statements inside the basic block. */
 
@@ -82,13 +97,13 @@ class basic_block {
 
 typedef std::shared_ptr<basic_block> basic_block_p;
 
-std::ostream& operator<<(std::ostream& stream, basic_block& basic_block);
-std::ostream& operator<<(std::ostream& stream, basic_block_p& basic_block);
+std::ostream& operator<<(std::ostream& stream, const basic_block& basic_block);
+std::ostream& operator<<(std::ostream& stream, const basic_block_p& basic_block);
 
 mtac::basic_block::iterator begin(mtac::basic_block_p function);
 mtac::basic_block::iterator end(mtac::basic_block_p function);
 
-void pretty_print(mtac::basic_block_p block, std::ostream& stream);
+void pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream);
 
 } //end of mtac
 

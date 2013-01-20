@@ -10,16 +10,17 @@
 
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/basic_block.hpp"
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), name(n), _definition(&definition) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), _definition(&definition), name(n) {
     //Nothing to do   
 }
         
 mtac::Function::Function(mtac::Function&& rhs) : 
-            _definition(rhs._definition), 
-            context(std::move(rhs.context)), statements(std::move(rhs.statements)), 
+            context(std::move(rhs.context)), _definition(rhs._definition), 
+            statements(std::move(rhs.statements)), 
             count(std::move(rhs.count)), index(std::move(rhs.index)),
             entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
             _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
@@ -68,6 +69,22 @@ bool& mtac::Function::pure(){
     return _pure;
 }
 
+bool mtac::Function::pure() const {
+    return _pure;
+}
+
+mtac::Quadruple& mtac::Function::find(std::size_t uid){
+    for(auto& block : *this){
+        for(auto& quadruple : block){
+            if(quadruple.uid() == uid){
+                return quadruple;
+            }
+        }
+    }
+
+    eddic_unreachable("The given uid does not exist");
+}
+
 mtac::basic_block_iterator mtac::Function::begin(){
     return basic_block_iterator(entry, nullptr);
 }
@@ -98,10 +115,6 @@ mtac::basic_block_p mtac::Function::entry_bb(){
 
 mtac::basic_block_p mtac::Function::exit_bb(){
     return exit;
-}
-
-void mtac::Function::add(std::shared_ptr<mtac::Quadruple> statement){
-    statements.push_back(statement);
 }
 
 mtac::basic_block_p mtac::Function::current_bb(){
@@ -248,9 +261,10 @@ mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterat
 
     //Insert the statements
     if(source->next == block){
-        block->statements.insert(block->statements.begin(), source->statements.begin(), source->statements.end());
+        std::move(block->begin(), block->end(), std::back_inserter(source->statements));
+        block->statements = std::move(source->statements);
     } else {
-        block->statements.insert(block->statements.end(), source->statements.begin(), source->statements.end());
+        std::move(source->begin(), source->end(), std::back_inserter(block->statements));
     }
     
     //Remove the source basic block
@@ -267,7 +281,11 @@ eddic::Function& mtac::Function::definition(){
     return *_definition;
 }
 
-std::vector<std::shared_ptr<mtac::Quadruple>>& mtac::Function::get_statements(){
+std::vector<mtac::Quadruple>& mtac::Function::get_statements(){
+    return statements;
+}
+
+const std::vector<mtac::Quadruple>& mtac::Function::get_statements() const {
     return statements;
 }
 
@@ -312,7 +330,7 @@ void mtac::Function::variable_use(ltac::FloatRegister reg){
     _variable_float_registers.insert(reg);
 }
 
-std::size_t mtac::Function::pseudo_registers(){
+std::size_t mtac::Function::pseudo_registers() const {
     return last_pseudo_registers;
 }
 
@@ -320,7 +338,7 @@ void mtac::Function::set_pseudo_registers(std::size_t pseudo_registers){
     this->last_pseudo_registers = pseudo_registers;
 }
         
-std::size_t mtac::Function::pseudo_float_registers(){
+std::size_t mtac::Function::pseudo_float_registers() const {
     return last_float_pseudo_registers;
 }
 
@@ -348,4 +366,22 @@ std::vector<mtac::Loop>& mtac::Function::loops(){
 
 bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
     return lhs.get_name() == rhs.get_name();
+}
+
+std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Function& function){
+    stream << "Function " << function.get_name() << "(pure:" << function.pure() << ")" << std::endl;
+
+    for(auto& quadruple : function.get_statements()){
+        stream << quadruple << std::endl;
+    }
+
+    for(auto& block : function){
+        pretty_print(block, stream);
+
+        for(auto& quadruple : block->statements){
+            stream << quadruple << std::endl;
+        }
+    }
+
+    return stream << std::endl;
 }

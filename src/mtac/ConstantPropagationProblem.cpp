@@ -123,39 +123,37 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, std::shared_ptr<mtac::Quadruple>& quadruple, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
 
     std::shared_ptr<Variable> remove_copies;
 
-    if(quadruple->op == mtac::Operator::NOP){
+    if(quadruple.op == mtac::Operator::NOP){
         return out;
     }
 
-    if(quadruple->op == mtac::Operator::ASSIGN || quadruple->op == mtac::Operator::FASSIGN){
-        ConstantCollector collector(out, quadruple->result);
-        visit(collector, *quadruple->arg1);
+    if(quadruple.op == mtac::Operator::ASSIGN || quadruple.op == mtac::Operator::FASSIGN){
+        ConstantCollector collector(out, quadruple.result);
+        visit(collector, *quadruple.arg1);
 
-        remove_copies = quadruple->result;
+        remove_copies = quadruple.result;
     } 
     //Passing a variable by pointer erases its value
-    else if(quadruple->op == mtac::Operator::PARAM){
-        if(quadruple->address){
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
-                //Impossible to know if the variable is modified or not, consider it modified
-                out[*var_ptr].set_nac();
+    else if(quadruple.op == mtac::Operator::PPARAM){
+        if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            //Impossible to know if the variable is modified or not, consider it modified
+            out[*var_ptr].set_nac();
 
-                remove_copies = *var_ptr;
-            }
+            remove_copies = *var_ptr;
         }
     } else {
-        auto op = quadruple->op;
+        auto op = quadruple.op;
 
         if(mtac::erase_result(op)){
             //The result is not constant at this point
-            out[quadruple->result].set_nac();
+            out[quadruple.result].set_nac();
 
-            remove_copies = quadruple->result;
+            remove_copies = quadruple.result;
         }
     }
 
@@ -210,24 +208,24 @@ struct ConstantOptimizer {
         return false;
     }
 
-    bool optimize(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(quadruple->op == mtac::Operator::PARAM){
-            if(!quadruple->address){
-                changes |= optimize_optional(quadruple->arg1);
-            }
+    bool optimize(mtac::Quadruple& quadruple){
+        if(quadruple.op == mtac::Operator::PPARAM){
+            return changes;
+        } else if(quadruple.op == mtac::Operator::PARAM){
+            changes |= optimize_optional(quadruple.arg1);
 
             return changes;
-        }
+        } 
 
         //If the constant is a string, we can use it in the dot operator
-        if(quadruple->op == mtac::Operator::DOT){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple->arg1)){
+        if(quadruple.op == mtac::Operator::DOT){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
                 if((*ptr)->type() != STRING && results.count(*ptr) && !pointer_escaped->count(*ptr)){
                     if(results[*ptr].constant()){
                         auto arg = results[*ptr].value();
 
                         if(auto* label_ptr = boost::get<std::string>(&arg)){
-                            quadruple->arg1 = *label_ptr;
+                            quadruple.arg1 = *label_ptr;
 
                             changes = true;
                         }
@@ -235,20 +233,20 @@ struct ConstantOptimizer {
                 }
             }
         //Do not replace a variable by a constant when used in offset
-        } else if(quadruple->op != mtac::Operator::PDOT && quadruple->op != mtac::Operator::PASSIGN){
-            changes |= optimize_optional(quadruple->arg1);
+        } else if(quadruple.op != mtac::Operator::PDOT && quadruple.op != mtac::Operator::PASSIGN){
+            changes |= optimize_optional(quadruple.arg1);
         }
         
-        if(quadruple->op != mtac::Operator::DOT_PASSIGN){
-            changes |= optimize_optional(quadruple->arg2);
+        if(quadruple.op != mtac::Operator::DOT_PASSIGN){
+            changes |= optimize_optional(quadruple.arg2);
         }
 
-        if(!mtac::erase_result(quadruple->op) && quadruple->result && quadruple->op != mtac::Operator::DOT_ASSIGN){
-            if(results.find(quadruple->result) != results.end()){
-                if(results[quadruple->result].constant()){
-                    auto lattice_value = results[quadruple->result].value();
+        if(!mtac::erase_result(quadruple.op) && quadruple.result && quadruple.op != mtac::Operator::DOT_ASSIGN){
+            if(results.find(quadruple.result) != results.end()){
+                if(results[quadruple.result].constant()){
+                    auto lattice_value = results[quadruple.result].value();
                     if(mtac::isVariable(lattice_value)){
-                        quadruple->result = boost::get<std::shared_ptr<Variable>>(lattice_value);
+                        quadruple.result = boost::get<std::shared_ptr<Variable>>(lattice_value);
                     }
                 }
             }
@@ -265,11 +263,11 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::s
 
     for(auto& block : function){
         for(auto& statement : block->statements){
-            if(global_results->IN_S[statement].top()){
+            if(global_results->IN_S[statement.uid()].top()){
                 continue;
             }
 
-            ConstantOptimizer optimizer(global_results->IN_S[statement], pointer_escaped);
+            ConstantOptimizer optimizer(global_results->IN_S[statement.uid()], pointer_escaped);
             optimized |= optimizer.optimize(statement);
         }
     }
@@ -277,7 +275,7 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::s
     return optimized;
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, ConstantPropagationLattice& lattice){
+std::ostream& mtac::operator<<(std::ostream& stream, const ConstantPropagationLattice& lattice){
     if(lattice.nac()){
         return stream << "NAC";
     } else {

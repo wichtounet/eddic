@@ -47,7 +47,20 @@ namespace eddic {
 template<typename Visitor, typename Visitable>
 inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
 visit(Visitor&& visitor, Visitable& visitable){
-    return boost::apply_visitor(visitor, visitable);
+    return boost::apply_visitor(std::forward<Visitor>(visitor), visitable);
+}
+
+/*!
+ * Apply the visitor to the given object. 
+ * \param visitor The visitor to apply. 
+ * \param visitable The object to visit. 
+ * \return The result of the visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline typename std::enable_if<!std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type 
+visit(Visitor&& visitor, const Visitable& visitable){
+    //TODO There is a bug in boost that forbid to pass const variant to apply_visitor
+    return boost::apply_visitor(std::forward<Visitor>(visitor), const_cast<Visitable&>(visitable));
 }
 
 /*!
@@ -58,7 +71,19 @@ visit(Visitor&& visitor, Visitable& visitable){
 template<typename Visitor, typename Visitable>
 inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type
 visit(Visitor&& visitor, Visitable& visitable){
-    boost::apply_visitor(visitor, visitable);
+    boost::apply_visitor(std::forward<Visitor>(visitor), visitable);
+}
+
+/*!
+ * Apply the visitor to the given object. 
+ * \param visitor The visitor to apply. 
+ * \param visitable The object to visit. 
+ */
+template<typename Visitor, typename Visitable>
+inline typename std::enable_if<std::is_void<typename Visitor::result_type>::value, typename Visitor::result_type>::type
+visit(Visitor&& visitor, const Visitable& visitable){
+    //TODO There is a bug in boost that forbid to pass const variant to apply_visitor
+    boost::apply_visitor(std::forward<Visitor>(visitor), const_cast<Visitable&>(visitable));
 }
 
 /*!

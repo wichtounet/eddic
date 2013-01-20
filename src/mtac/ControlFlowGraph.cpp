@@ -72,10 +72,10 @@ void mtac::build_control_flow_graph(mtac::Function& function){
         else {
             auto& quadruple = block->statements.back();
 
-            if(quadruple->op == mtac::Operator::GOTO){
-                make_edge(block, quadruple->block);
-            } else if(quadruple->is_if() || quadruple->is_if_false()){ 
-                make_edge(block, quadruple->block);
+            if(quadruple.op == mtac::Operator::GOTO){
+                make_edge(block, quadruple.block);
+            } else if(quadruple.is_if() || quadruple.is_if_false()){ 
+                make_edge(block, quadruple.block);
                 make_edge(block, next);
             } else {
                 make_edge(block, next);

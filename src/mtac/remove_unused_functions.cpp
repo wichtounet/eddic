@@ -20,8 +20,8 @@ namespace {
 void remove_references(mtac::Function& function){
     for(auto& bb : function){
         for(auto& quadruple : bb->statements){
-            if(quadruple->op == mtac::Operator::CALL){
-                --quadruple->function().references();
+            if(quadruple.op == mtac::Operator::CALL){
+                --quadruple.function().references();
             }
         }
     }

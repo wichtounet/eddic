@@ -5,15 +5,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
+
 #include "mtac/Function.hpp"
 
 using namespace eddic;
 
 mtac::basic_block::basic_block(int i) : index(i), label("") {}
-
-void mtac::basic_block::add(std::shared_ptr<mtac::Quadruple> statement){
-    statements.push_back(statement);
-}
 
 mtac::basic_block::iterator mtac::basic_block::begin(){
     return statements.begin();
@@ -22,8 +20,18 @@ mtac::basic_block::iterator mtac::basic_block::begin(){
 mtac::basic_block::iterator mtac::basic_block::end(){
     return statements.end();
 }
+        
+mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
+    for(auto& quadruple : statements){
+        if(quadruple.uid() == uid){
+            return quadruple;
+        }
+    }
 
-std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<basic_block>& basic_block){
+    eddic_unreachable("The uid should exists");
+}
+
+std::ostream& mtac::operator<<(std::ostream& stream, const std::shared_ptr<basic_block>& basic_block){
     if(basic_block){
         return stream << *basic_block;
     } else {
@@ -31,7 +39,7 @@ std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<basic_block
     }
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, basic_block& block){
+std::ostream& mtac::operator<<(std::ostream& stream, const basic_block& block){
     if(block.index == -1){
         return stream << "ENTRY";
     } else if(block.index == -2){
@@ -63,7 +71,7 @@ void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream)
     }
 }
 
-void mtac::pretty_print(mtac::basic_block_p block, std::ostream& stream){
+void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream){
     std::string sep(25, '-');
 
     stream << sep << std::endl;
