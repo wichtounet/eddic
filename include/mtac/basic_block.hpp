@@ -36,7 +36,7 @@ class basic_block {
 
         /*!
          * Create a new basic block with the given index. 
-         * \param The index of the basic block
+         * \param index The index of the basic block
          */
         basic_block(int index);
         
