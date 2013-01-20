@@ -1,3 +1,5 @@
+include <print>
+
 int a = 7;
 int gb = 77;
 int gc = 99;

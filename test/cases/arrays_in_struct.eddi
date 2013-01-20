@@ -1,3 +1,5 @@
+include <print>
+
 struct Complex {
     int a;
     int b[5];

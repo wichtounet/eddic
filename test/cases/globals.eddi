@@ -1,13 +1,13 @@
 include<print>
 
-int a = 1000;
-str b = "a";
+int ga = 1000;
+str gb = "a";
 
 void main(){
-    print(a);
-    print(b);
+    print(ga);
+    print(gb);
 
-    a = a + 1000;
+    ga = ga + 1000;
 
-    print(a);
+    print(ga);
 }

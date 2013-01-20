@@ -1,3 +1,5 @@
+include <print>
+
 int ga = 100;
 
 struct A {
