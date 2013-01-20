@@ -431,7 +431,7 @@ void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, u
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dq " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dq S3" << '\n';
+    writer.stream() << "dq S1" << '\n';
     writer.stream() << "dq 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }

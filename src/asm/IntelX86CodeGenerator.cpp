@@ -420,7 +420,7 @@ void as::IntelX86CodeGenerator::declareStringArray(const std::string& name, unsi
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dd " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dd S3" << '\n';
+    writer.stream() << "dd S1" << '\n';
     writer.stream() << "dd 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }
