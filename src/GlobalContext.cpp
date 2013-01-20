@@ -211,16 +211,11 @@ void GlobalContext::addPrintFunction(const std::string& function, std::shared_pt
 }
 
 void GlobalContext::defineStandardFunctions(){
-    auto& printLineFunction = add_function(VOID, "print", "_F7println");
-    printLineFunction.standard() = true;
-
     //print string
     addPrintFunction("_F5printS", STRING);
-    addPrintFunction("_F7printlnS", STRING);
 
     //print char
     addPrintFunction("_F5printC", CHAR);
-    addPrintFunction("_F7printlnC", CHAR);
 
     auto& read_char_function = add_function(CHAR, "read_char", "_F9read_char");
     read_char_function.standard() = true;

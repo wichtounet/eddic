@@ -1,16 +1,42 @@
 include <strings>
 
+//TODO Once template argument are deduced, replace all the println with a template
+
+void println(){
+    print((char) 10);
+}
+
+void println(int a){
+    print(a);
+    println();
+}
+
+void println(float a){
+    print(a);
+    println();
+}
+
+void println(char a){
+    print(a);
+    println();
+}
+
+void println(bool a){
+    print(a);
+    println();
+}
+
+void println(str a){
+    print(a);
+    println();
+}
+
 void print(bool a){
     if(a){
         print('1');
     } else {
         print('0');
     }
-}
-
-void println(bool a){
-    print(a);
-    println();
 }
 
 void print(int a){
@@ -29,11 +55,6 @@ void print(int a){
     }
 
     print((char) (n + 48));
-}
-
-void println(int a){
-    print(a);
-    println();
 }
 
 void print(float a){
@@ -64,9 +85,4 @@ void print(float a){
 
         print((int) n);
     }
-}
-
-void println(float a){
-    print(a);
-    println();
 }

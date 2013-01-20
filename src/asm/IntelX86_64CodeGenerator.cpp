@@ -457,20 +457,8 @@ void as::IntelX86_64CodeGenerator::addStandardFunctions(){
         output_function("x86_64_printC");
     }
     
-    if(context->referenceCount("_F7printlnC")){
-        output_function("x86_64_printlnC");
-    }
-    
-    if(is_enabled_println()){
-        output_function("x86_64_println");
-    }
-    
-    if(context->referenceCount("_F5printS") || is_enabled_println()){ 
+    if(context->referenceCount("_F5printS")){ 
         output_function("x86_64_printS");
-    }
-   
-    if(context->referenceCount("_F7printlnS")){ 
-        output_function("x86_64_printlnS");
     }
     
     //Memory management functions are included the three together
