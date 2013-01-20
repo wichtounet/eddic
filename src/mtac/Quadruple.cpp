@@ -11,6 +11,7 @@
 #include "assert.hpp"
 #include "Function.hpp"
 #include "Utils.hpp"
+#include "Variable.hpp"
 
 #include "mtac/Quadruple.hpp"
 #include "mtac/basic_block.hpp"

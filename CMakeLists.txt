@@ -233,6 +233,7 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
     OptimizationSuite/loop_unrolling
+    OptimizationSuite/common_subexpr_elimination
     #Unit tests
     toString
     toNumber
