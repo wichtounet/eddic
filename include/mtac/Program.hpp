@@ -12,6 +12,7 @@
 #include <iostream>
 
 #include "mtac/Function.hpp"
+#include "mtac/call_graph.hpp"
 
 namespace eddic {
 
@@ -29,6 +30,8 @@ struct Program {
     std::shared_ptr<GlobalContext> context;
     std::vector<Function> functions;
     Mode mode = Mode::MTAC;
+
+    call_graph call_graph;
 
     Program();
 
