@@ -29,6 +29,7 @@
 #include "mtac/Optimizer.hpp"
 #include "mtac/RegisterAllocation.hpp"
 #include "mtac/reference_resolver.hpp"
+#include "mtac/WarningsEngine.hpp"
 
 using namespace eddic;
 
@@ -74,6 +75,11 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
         //If program is null, it means that the user didn't wanted it
         if(program){
+            //Build the call graph (will be used for each optimization level)
+            mtac::build_call_graph(*program);
+
+            mtac::collect_warnings(*program);
+
             if(!configuration->option_defined("mtac-only")){
                 //Compute the definitive reachable flag for functions
                 program->call_graph.compute_reachable();

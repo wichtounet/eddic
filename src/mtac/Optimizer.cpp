@@ -431,9 +431,6 @@ void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPoo
         mtac::build_control_flow_graph(function);
     }
 
-    //Build the call graph (will be used for code generation as well)
-    mtac::build_call_graph(program);
-
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
         pass_runner runner(program, string_pool, configuration, platform, timing_system);
