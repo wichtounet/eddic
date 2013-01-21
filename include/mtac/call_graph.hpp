@@ -16,14 +16,15 @@
 #include "../Function.hpp"
 
 namespace std {
-    std::hash<std::string> hasher;
-
     template<>
     class hash<std::reference_wrapper<eddic::Function>> {
-    public:
-        size_t operator()(const std::reference_wrapper<eddic::Function>& val) const {
-            return hasher(val.get().mangled_name());
-        }
+        private:
+            std::hash<std::string> hasher;
+
+        public:
+            size_t operator()(const std::reference_wrapper<eddic::Function>& val) const {
+                return hasher(val.get().mangled_name());
+            }
     };
 }
 
