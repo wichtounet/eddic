@@ -47,6 +47,8 @@ struct call_graph_node {
 
 class call_graph {
     public:
+        call_graph_node_p entry = nullptr;
+
         call_graph_node_p node(eddic::Function& function);
 
         void add_edge(eddic::Function& source, eddic::Function& target);
@@ -54,8 +56,6 @@ class call_graph {
 
     private:
         std::unordered_map<std::string, call_graph_node_p> nodes;
-        
-        call_graph_node_p entry = nullptr;
 };
 
 void build_call_graph(mtac::Program& program);
