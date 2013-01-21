@@ -10,10 +10,25 @@
 #include "GlobalContext.hpp"
 
 #include "mtac/remove_unused_functions.hpp"
+#include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
 
 using namespace eddic;
+
+typedef std::unordered_set<std::reference_wrapper<eddic::Function>> Reachable;
+
+namespace std {
+    std::hash<std::string> hasher;
+
+    template<>
+    class hash<std::reference_wrapper<eddic::Function>> {
+    public:
+        size_t operator()(const std::reference_wrapper<eddic::Function>& val) const {
+            return hasher(val.get().mangled_name());
+        }
+    };
+}
 
 namespace {
 
@@ -27,22 +42,31 @@ void remove_references(mtac::Function& function){
     }
 }
 
+void compute_reachable(Reachable reachable, mtac::call_graph_node_p node){
+    if(reachable.find(node->function) == reachable.end()){
+        reachable.insert(node->function);
+
+        for(auto& edge : node->out_edges){
+            compute_reachable(reachable, edge->target);
+        }
+    }
+}
+
 } //end of anonymous namespace
 
 bool mtac::remove_unused_functions::operator()(mtac::Program& program){
+    Reachable reachable;
+
+    compute_reachable(reachable, program.call_graph.entry);
+
     auto it = iterate(program.functions);
 
     while(it.has_next()){
         auto& function = *it;
 
-        if(program.context->referenceCount(function.get_name()) == 0){
-            remove_references(function);
+        if(reachable.find(function.definition()) == reachable.end()){
+            //TODO remove_references(function);
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
-            it.erase();
-            continue;
-        } else if(program.context->referenceCount(function.get_name()) == 1 && mtac::is_recursive(function)){
-            remove_references(function);
-            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function.get_name() << log::endl;
             it.erase();
             continue;
         } 

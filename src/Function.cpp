@@ -103,8 +103,8 @@ unsigned int Function::parameter_position_by_type(const std::string& name) const
     }
 }
 
-bool Function::operator==(const Function& rhs) const {
-    return _mangled_name == rhs._mangled_name;
+bool eddic::operator==(const eddic::Function& lhs, const eddic::Function& rhs){
+    return lhs.mangled_name() == rhs.mangled_name();
 }
 
 std::shared_ptr<FunctionContext>& Function::context(){

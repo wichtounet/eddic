@@ -43,8 +43,6 @@ class Function {
 
         unsigned int parameter_position_by_type(const std::string& name) const;
 
-        bool operator==(const Function& rhs) const;
-
         const std::shared_ptr<const Type>& return_type() const;
         const std::string& name() const;
         const std::string& mangled_name() const;
@@ -73,6 +71,8 @@ class Function {
 
         std::vector<Parameter> _parameters;
 };
+
+bool operator==(const Function& lhs, const Function& rhs);
 
 } //end of eddic
 
