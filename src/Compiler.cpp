@@ -78,7 +78,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             //Build the call graph (will be used for each optimization level)
             mtac::build_call_graph(*program);
 
-            mtac::collect_warnings(*program);
+            mtac::collect_warnings(*program, configuration);
 
             if(!configuration->option_defined("mtac-only")){
                 //Compute the definitive reachable flag for functions

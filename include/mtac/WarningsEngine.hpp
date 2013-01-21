@@ -8,13 +8,17 @@
 #ifndef MTAC_WARNINGS_ENGINE_H
 #define MTAC_WARNINGS_ENGINE_H
 
+#include <memory>
+
 #include "mtac/forward.hpp"
 
 namespace eddic {
 
+struct Configuration;
+
 namespace mtac {
 
-void collect_warnings(mtac::Program& program);
+void collect_warnings(mtac::Program& program, std::shared_ptr<Configuration> configuration);
 
 } //end of mtac
 
