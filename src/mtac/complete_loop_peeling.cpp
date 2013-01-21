@@ -14,6 +14,7 @@
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Program.hpp"
 
 using namespace eddic;
 
