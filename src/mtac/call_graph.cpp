@@ -59,7 +59,9 @@ void compute_reachable(mtac::Reachable& reachable, mtac::call_graph_node_p node)
         reachable.insert(node->function);
 
         for(auto& edge : node->out_edges){
-            compute_reachable(reachable, edge->target);
+            if(edge.count > 0){
+                compute_reachable(reachable, edge->target);
+            }
         }
     }
 }
