@@ -16,45 +16,15 @@
 
 using namespace eddic;
 
-typedef std::unordered_set<std::reference_wrapper<eddic::Function>> Reachable;
-
-namespace std {
-    std::hash<std::string> hasher;
-
-    template<>
-    class hash<std::reference_wrapper<eddic::Function>> {
-    public:
-        size_t operator()(const std::reference_wrapper<eddic::Function>& val) const {
-            return hasher(val.get().mangled_name());
-        }
-    };
-}
-
-namespace {
-
-void compute_reachable(Reachable& reachable, mtac::call_graph_node_p node){
-    if(reachable.find(node->function) == reachable.end()){
-        reachable.insert(node->function);
-
-        for(auto& edge : node->out_edges){
-            compute_reachable(reachable, edge->target);
-        }
-    }
-}
-
-} //end of anonymous namespace
-
 bool mtac::remove_unused_functions::operator()(mtac::Program& program){
-    Reachable reachable;
-
-    compute_reachable(reachable, program.call_graph.entry);
+    program.call_graph.compute_reachable();
 
     auto it = iterate(program.functions);
 
     while(it.has_next()){
         auto& function = *it;
 
-        if(reachable.find(function.definition()) == reachable.end()){
+        if(program.call_graph.is_reachable(function.definition())){
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             it.erase();
             continue;
@@ -62,6 +32,8 @@ bool mtac::remove_unused_functions::operator()(mtac::Program& program){
 
         ++it;
     }
+    
+    program.call_graph.release_reachable();
 
     //Not necessary to restart the other passes
     return false;

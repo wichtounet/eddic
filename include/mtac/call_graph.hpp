@@ -11,12 +11,27 @@
 #include<vector>
 #include<memory>
 #include<unordered_map>
+#include<unordered_set>
+
+namespace std {
+    std::hash<std::string> hasher;
+
+    template<>
+    class hash<std::reference_wrapper<eddic::Function>> {
+    public:
+        size_t operator()(const std::reference_wrapper<eddic::Function>& val) const {
+            return hasher(val.get().mangled_name());
+        }
+    };
+}
 
 namespace eddic {
 
 class Function;
 
 namespace mtac {
+
+typedef std::unordered_set<std::reference_wrapper<eddic::Function>> Reachable;
 
 struct Program;
 
@@ -54,8 +69,14 @@ class call_graph {
         void add_edge(eddic::Function& source, eddic::Function& target);
         call_graph_edge_p edge(eddic::Function& source, eddic::Function& target);
 
+        void compute_reachable();
+        void release_reachable();
+
+        bool is_reachable(eddic::Function& function);
+
     private:
         std::unordered_map<std::string, call_graph_node_p> nodes;
+        Reachable reachable;
 };
 
 void build_call_graph(mtac::Program& program);

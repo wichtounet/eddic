@@ -54,6 +54,30 @@ void mtac::call_graph::add_edge(eddic::Function& source, eddic::Function& target
     ++edge->count;
 }
 
+void compute_reachable(mtac::Reachable& reachable, mtac::call_graph_node_p node){
+    if(reachable.find(node->function) == reachable.end()){
+        reachable.insert(node->function);
+
+        for(auto& edge : node->out_edges){
+            compute_reachable(reachable, edge->target);
+        }
+    }
+}
+
+void mtac::call_graph::compute_reachable(){
+    release_reachable();
+
+    ::compute_reachable(reachable, entry);
+}
+
+void mtac::call_graph::release_reachable(){
+    reachable.clear();
+}
+
+bool mtac::call_graph::is_reachable(eddic::Function& function){
+    return reachable.find(function) != reachable.end();
+}
+
 void mtac::build_call_graph(mtac::Program& program){
     auto& cg = program.call_graph;
 
