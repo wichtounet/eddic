@@ -75,6 +75,9 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
         //If program is null, it means that the user didn't wanted it
         if(program){
             if(!configuration->option_defined("mtac-only")){
+                //Compute the definitive reachable flag for functions
+                program->call_graph.compute_reachable();
+
                 auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
                 back_end->set_string_pool(front_end->get_string_pool());

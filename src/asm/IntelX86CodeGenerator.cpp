@@ -349,7 +349,9 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") 
+            || program.call_graph.is_reachable(context->getFunction("_F4freePI")) 
+            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -442,30 +444,30 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(context->referenceCount("_F5printC")){
+    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_32_printC");
     }
     
-    if(context->referenceCount("_F5printS")){ 
+    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){ 
         output_function("x86_32_printS");
     }
     
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
     }
     
-    if(context->referenceCount("_F4timeAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_32_time");
     }
     
-    if(context->referenceCount("_F8durationAIAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_32_duration");
     }
     
-    if(context->referenceCount("_F9read_char")){
+    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_32_read_char");
     }
 }
