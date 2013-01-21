@@ -42,8 +42,15 @@ template<DataFlowType Type, typename DomainValues>
 struct DataFlowProblem {
     typedef Domain<DomainValues> ProblemDomain;
 
-    virtual ProblemDomain Boundary(mtac::Function& function);
-    virtual ProblemDomain Init(mtac::Function& function);
+    virtual ProblemDomain Boundary(mtac::Function& function){
+        //By default, return the default element
+        return default_element();
+    }
+
+    virtual ProblemDomain Init(mtac::Function& function) {
+        //By default, return the top element
+        return top_element();
+    }
 
     /*!
      * \brief Meet two lattices
@@ -66,18 +73,6 @@ struct DataFlowProblem {
         return ProblemDomain(DomainValues());
     }
 };
-
-template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::Function&/* function*/) -> ProblemDomain {
-    //By default, return the default element
-    return default_element();
-}
-
-template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init(mtac::Function&/* function*/) -> ProblemDomain {
-    //By default, return the top element
-    return top_element();
-}
 
 template<typename ProblemDomain>
 void intersection_meet(ProblemDomain& in, const ProblemDomain& out){
