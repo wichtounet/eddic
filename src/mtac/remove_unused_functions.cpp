@@ -42,7 +42,7 @@ void remove_references(mtac::Function& function){
     }
 }
 
-void compute_reachable(Reachable reachable, mtac::call_graph_node_p node){
+void compute_reachable(Reachable& reachable, mtac::call_graph_node_p node){
     if(reachable.find(node->function) == reachable.end()){
         reachable.insert(node->function);
 
