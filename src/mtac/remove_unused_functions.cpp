@@ -32,16 +32,6 @@ namespace std {
 
 namespace {
 
-void remove_references(mtac::Function& function){
-    for(auto& bb : function){
-        for(auto& quadruple : bb->statements){
-            if(quadruple.op == mtac::Operator::CALL){
-                --quadruple.function().references();
-            }
-        }
-    }
-}
-
 void compute_reachable(Reachable& reachable, mtac::call_graph_node_p node){
     if(reachable.find(node->function) == reachable.end()){
         reachable.insert(node->function);
@@ -65,7 +55,6 @@ bool mtac::remove_unused_functions::operator()(mtac::Program& program){
         auto& function = *it;
 
         if(reachable.find(function.definition()) == reachable.end()){
-            //TODO remove_references(function);
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             it.erase();
             continue;
