@@ -152,6 +152,7 @@ typedef boost::mpl::vector<
         mtac::pure_analysis*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
+        mtac::remove_unused_functions*,
         mtac::inline_functions*,
         mtac::parameter_propagation*
     > ipa_passes;

@@ -535,12 +535,6 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     auto global_context = program.context;
 
     for(auto& function : program.functions){
-        //If the function is never called, no need to optimize it
-        //TODO Should be removed before this step
-        if(global_context->referenceCount(function.get_name()) <= 0){
-            continue; 
-        }
-
         bool local = false;
         do {
             local = call_site_inlining(function, program);
