@@ -24,7 +24,7 @@
 
 using namespace eddic;
 
-as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
+as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, program, context) {}
 
 namespace {
     
