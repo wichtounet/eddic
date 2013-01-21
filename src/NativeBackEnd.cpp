@@ -89,7 +89,7 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
             auto generator = factory.get(platform, writer, program, program.context);
 
             //Generate the code from the LTAC Program
-            generator->generate(program, get_string_pool(), float_pool);
+            generator->generate(get_string_pool(), float_pool);
 
             //writer's destructor flushes the file
         }
