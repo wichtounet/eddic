@@ -104,7 +104,9 @@ struct Quadruple {
         bool is_if();
         bool is_if_false();
 
-        std::size_t uid() const;
+        std::size_t uid() const {
+            return _uid;
+        }
 
         bool operator==(const mtac::Quadruple& quadruple) const;
         bool operator!=(const mtac::Quadruple& quadruple) const;
