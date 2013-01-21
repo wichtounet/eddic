@@ -54,7 +54,7 @@ void mtac::call_graph::add_edge(eddic::Function& source, eddic::Function& target
     ++edge->count;
 }
 
-void build_call_graph(mtac::Program& program){
+void mtac::build_call_graph(mtac::Program& program){
     auto& cg = program.call_graph;
 
     for(auto& function : program.functions){
