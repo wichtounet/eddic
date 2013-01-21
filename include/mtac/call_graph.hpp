@@ -10,8 +10,11 @@
 
 #include<vector>
 #include<memory>
+#include<unordered_map>
 
 namespace eddic {
+
+class Function;
 
 namespace mtac {
 
@@ -21,9 +24,13 @@ struct call_graph_node;
 typedef std::shared_ptr<call_graph_node> call_graph_node_p;
 
 struct call_graph_edge {
-    call_graph_node_p source = nullptr;
-    call_graph_node_p target = nullptr;
-    std::size_t count = 0;
+    call_graph_node_p source;
+    call_graph_node_p target;
+    std::size_t count;
+
+    call_graph_edge(call_graph_node_p source, call_graph_node_p target) : source(source), target(target), count(0){
+        //Nothing to init
+    }
 };
 
 typedef std::shared_ptr<call_graph_edge> call_graph_edge_p;
@@ -32,10 +39,23 @@ struct call_graph_node {
     eddic::Function& function;
     std::vector<call_graph_edge_p> out_edges;
     std::vector<call_graph_edge_p> in_edges;
+
+    call_graph_node(eddic::Function& function) : function(function){
+        //Nothing to init
+    }
 };
 
-struct call_graph {
-    call_graph_node_p entry = nullptr;
+class call_graph {
+    public:
+        call_graph_node_p node(eddic::Function& function);
+
+        void add_edge(eddic::Function& source, eddic::Function& target);
+        call_graph_edge_p edge(eddic::Function& source, eddic::Function& target);
+
+    private:
+        std::unordered_map<std::string, call_graph_node_p> nodes;
+        
+        call_graph_node_p entry = nullptr;
 };
 
 void build_call_graph(mtac::Program& program);
