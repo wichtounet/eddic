@@ -106,25 +106,6 @@ struct GlobalContext final : public Context {
 
         const FunctionMap& functions() const;
 
-        /*!
-         * Add a reference to the function with the given name. 
-         * \param function The function to add a reference to. 
-         */
-        void addReference(const std::string& function);
-
-        /*!
-         * Remove a reference to the function with the given name. 
-         * \param function The function to remove a reference from. 
-         */
-        void removeReference(const std::string& function);
-
-        /*!
-         * Get the reference counter of the given function. 
-         * \param function The function to add a reference to. 
-         * \return The reference counter of the given function. 
-         */
-        int referenceCount(const std::string& function);
-
         Platform target_platform() const;
 
         statistics& stats();

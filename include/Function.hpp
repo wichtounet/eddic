@@ -52,9 +52,6 @@ class Function {
 
         std::shared_ptr<const Type>& struct_type();
 
-        int references() const;
-        int& references();
-
         bool standard() const;
         bool& standard();
     
@@ -66,7 +63,6 @@ class Function {
         std::string _name;
         std::string _mangled_name;
 
-        int _references = 0;
         bool _standard = false;
 
         std::vector<Parameter> _parameters;

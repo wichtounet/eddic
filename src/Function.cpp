@@ -21,11 +21,10 @@ Function::Function(std::shared_ptr<const Type> return_type, const std::string& n
 Function::Function(Function&& rhs) : 
         _struct_type(std::move(rhs._struct_type)), _return_type(std::move(rhs._return_type)),  
         _name(std::move(rhs._name)), _mangled_name(std::move(rhs._mangled_name)),
-        _references(std::move(rhs._references)), _standard(std::move(rhs._standard)),
+        _standard(std::move(rhs._standard)),
         _parameters(std::move(rhs._parameters)) {
 
    //Reset rhs
-   rhs._references = 0;
    rhs._standard = false;
 }
 
@@ -34,12 +33,10 @@ Function& Function::operator=(Function&& rhs){
     _return_type = std::move(rhs._return_type);
     _name = std::move(rhs._name);
     _mangled_name = std::move(rhs._mangled_name);
-    _references = std::move(rhs._references);
     _standard = std::move(rhs._standard);
     _parameters = std::move(rhs._parameters);
 
    //Reset rhs
-   rhs._references = 0;
    rhs._standard = false;
 
    return *this;
@@ -117,14 +114,6 @@ const std::shared_ptr<FunctionContext>& Function::context() const {
 
 std::shared_ptr<const Type>& Function::struct_type(){
     return _struct_type;
-}
-
-int Function::references() const {
-   return _references; 
-}
-
-int& Function::references(){
-   return _references; 
 }
 
 bool Function::standard() const {
