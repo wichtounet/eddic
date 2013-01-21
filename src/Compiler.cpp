@@ -75,8 +75,6 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
         //If program is null, it means that the user didn't wanted it
         if(program){
-            //Build the call graph (will be used for each optimization level)
-            mtac::build_call_graph(*program);
 
             mtac::collect_warnings(*program, configuration);
 
@@ -142,6 +140,9 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
         if(configuration->option_defined("mtac-opt")){
             std::cout << *program << std::endl;
         }
+            
+        //Build the call graph (will be used for each optimization level)
+        mtac::build_call_graph(*program);
 
         //Optimize MTAC
         mtac::Optimizer optimizer;

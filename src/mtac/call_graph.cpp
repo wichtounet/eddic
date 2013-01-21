@@ -5,6 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "assert.hpp"
 #include "Function.hpp"
 
 #include "mtac/call_graph.hpp"
@@ -67,6 +68,8 @@ void compute_reachable(mtac::Reachable& reachable, mtac::call_graph_node_p node)
 }
 
 void mtac::call_graph::compute_reachable(){
+    eddic_assert(entry, "The call graph must be built before computing reachable");
+
     release_reachable();
 
     ::compute_reachable(reachable, entry);
