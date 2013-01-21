@@ -53,18 +53,39 @@ class ConstantPropagationLattice {
 
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantPropagationLattice> ConstantPropagationValues;
 
-struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
-    mtac::EscapedVariables pointer_escaped;
-    
-    ProblemDomain Boundary(mtac::Function& function) override;
-    
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+class ConstantPropagationProblem {
+    public:
+        //The type of data managed
+        typedef Domain<ConstantPropagationValues> ProblemDomain;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
+        //The direction
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
     
-    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
+        ProblemDomain Init(mtac::Function& function) {
+            //By default, return the top element
+            return top_element();
+        }
+
+        ProblemDomain Boundary(mtac::Function& function);
+
+        void meet(ProblemDomain& in, const ProblemDomain& out);
+
+        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+        ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&){ eddic_unreachable("Not LTAC"); };
+
+        bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+        bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>){ eddic_unreachable("Not LTAC"); };
+
+        ProblemDomain top_element(){
+            return ProblemDomain();
+        }
+
+        ProblemDomain default_element(){
+            return ProblemDomain(ProblemDomain::Values());
+        }
+    
+    private:
+        mtac::EscapedVariables pointer_escaped;
 };
 
 template<>

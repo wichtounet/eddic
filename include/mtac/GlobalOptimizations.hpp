@@ -95,9 +95,9 @@ inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, 
     }
 }
 
-template<bool Low, DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> forward_data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
-    typedef mtac::Domain<DomainValues> Domain;
+template<bool Low, typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_flow(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
     
@@ -218,9 +218,9 @@ inline typename std::enable_if<!Low, void>::type backward_statements(P& problem,
     }
 }
 
-template<bool Low, DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
-    typedef mtac::Domain<DomainValues> Domain;
+template<bool Low, typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_flow(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
 
     auto results = std::make_shared<DataFlowResults<Domain>>();
     
@@ -267,18 +267,17 @@ std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> backward_data_flow(
     return results;
 }
 
-template<DataFlowType Type, typename DomainValues>
-std::shared_ptr<DataFlowResults<mtac::Domain<DomainValues>>> data_flow(mtac::Function& function, DataFlowProblem<Type, DomainValues>& problem){
-    if(Type == DataFlowType::Forward){
-        return forward_data_flow<false>(function, problem);
-    } else if(Type == DataFlowType::Backward){
-        return backward_data_flow<false>(function, problem);
-    } else if(Type == DataFlowType::Low_Forward){
-        return forward_data_flow<true>(function, problem);
-    } else if(Type == DataFlowType::Low_Backward){
-        return backward_data_flow<true>(function, problem);
-    } else {
-        eddic_unreachable("This data-flow type is not handled");
+template<typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> data_flow(mtac::Function& function, Problem& problem){
+    switch(Problem::Type){
+        case DataFlowType::Forward:
+            return forward_data_flow<false>(function, problem);
+        case DataFlowType::Backward:
+            return backward_data_flow<false>(function, problem);
+        case DataFlowType::Low_Forward:
+            return forward_data_flow<true>(function, problem);
+        case DataFlowType::Low_Backward:
+            return backward_data_flow<true>(function, problem);
     }
 }
 
