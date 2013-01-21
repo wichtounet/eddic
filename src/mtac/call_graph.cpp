@@ -65,5 +65,9 @@ void build_call_graph(mtac::Program& program){
                 }
             }
         }
+
+        if(function.is_main()){
+            cg.entry = node(function.definition());
+        }
     }
 }
