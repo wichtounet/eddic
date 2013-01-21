@@ -30,17 +30,18 @@ class CodeGenerator {
          * Constructs a CodeGenerator. 
          * \param The AssemblyFileWriter to use to output code to. 
          */
-        CodeGenerator(AssemblyFileWriter& writer);
+        CodeGenerator(AssemblyFileWriter& writer, mtac::Program& program);
         
         /*!
          * Generates codes from the LTAC Program. 
          * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
          */
-        virtual void generate(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
+        virtual void generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;
+        mtac::Program& program; 
 };
 
 } //end of as

@@ -12,7 +12,6 @@
 
 #include "mtac/Loop.hpp"
 #include "mtac/remove_empty_loops.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Utils.hpp"

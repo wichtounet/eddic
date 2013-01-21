@@ -10,45 +10,30 @@
 #include "GlobalContext.hpp"
 
 #include "mtac/remove_unused_functions.hpp"
+#include "mtac/Program.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
-namespace {
-
-void remove_references(mtac::Function& function){
-    for(auto& bb : function){
-        for(auto& quadruple : bb->statements){
-            if(quadruple.op == mtac::Operator::CALL){
-                --quadruple.function().references();
-            }
-        }
-    }
-}
-
-} //end of anonymous namespace
-
 bool mtac::remove_unused_functions::operator()(mtac::Program& program){
+    program.call_graph.compute_reachable();
+
     auto it = iterate(program.functions);
 
     while(it.has_next()){
         auto& function = *it;
 
-        if(program.context->referenceCount(function.get_name()) == 0){
-            remove_references(function);
+        if(!program.call_graph.is_reachable(function.definition())){
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
-            it.erase();
-            continue;
-        } else if(program.context->referenceCount(function.get_name()) == 1 && mtac::is_recursive(function)){
-            remove_references(function);
-            LOG<Debug>("Optimizer") << "Remove unused recursive function " << function.get_name() << log::endl;
             it.erase();
             continue;
         } 
 
         ++it;
     }
+    
+    program.call_graph.release_reachable();
 
     //Not necessary to restart the other passes
     return false;

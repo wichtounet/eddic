@@ -61,13 +61,25 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, assignment.Content->value);
     }
 
-    template<typename Function>
-    void visit_function(Function& declaration){
-        //Add all the parameters to the function context
+    void visit_function(ast::FunctionDeclaration& declaration){
+        template_engine->check_type(declaration.Content->returnType, declaration.Content->position);
+
         for(auto& parameter : declaration.Content->parameters){
             template_engine->check_type(parameter.parameterType, declaration.Content->position);
         }
 
+        visit_each(*this, declaration.Content->instructions);
+    }
+    
+    void visit_function(ast::Constructor& declaration){
+        for(auto& parameter : declaration.Content->parameters){
+            template_engine->check_type(parameter.parameterType, declaration.Content->position);
+        }
+
+        visit_each(*this, declaration.Content->instructions);
+    }
+    
+    void visit_function(ast::Destructor& declaration){
         visit_each(*this, declaration.Content->instructions);
     }
 

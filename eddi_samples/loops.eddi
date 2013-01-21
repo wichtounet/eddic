@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     int x = 5;
     for(; x < 100; x += 9){

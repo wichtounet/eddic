@@ -488,8 +488,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             first_condition.Content->values.push_back(switch_.Content->value);
             first_condition.Content->values.push_back(cases[0].value);
     
-            switch_.Content->context->global()->addReference("_F10str_equalsSS");
-            
             ast::If if_;
             if_.Content->context = switch_.Content->context;
             if_.Content->condition = first_condition;
@@ -506,8 +504,6 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 condition.Content->values.push_back(switch_.Content->value);
                 condition.Content->values.push_back(case_.value);
                 
-                switch_.Content->context->global()->addReference("_F10str_equalsSS");
-
                 ast::ElseIf else_if;
                 else_if.context = case_.context;
                 else_if.condition = condition;

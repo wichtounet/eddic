@@ -142,9 +142,8 @@ struct has_gate {
     static bool const value = sizeof(chk<T>(0)) == sizeof(yes);     
 };
 
-//TODO Find a more elegant way than using pointers
-
 typedef boost::mpl::vector<
+        mtac::remove_unused_functions*,
         mtac::all_basic_optimizations*
     > ipa_basic_passes;
 
@@ -153,6 +152,7 @@ typedef boost::mpl::vector<
         mtac::pure_analysis*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
+        mtac::remove_unused_functions*,
         mtac::inline_functions*,
         mtac::parameter_propagation*
     > ipa_passes;

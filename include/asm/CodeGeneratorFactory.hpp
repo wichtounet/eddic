@@ -31,7 +31,7 @@ struct CodeGeneratorFactory {
      * \param writer The assembly file writer to use. 
      * \return A pointer to the code generator corresponding to the platform. 
      */
-    std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
+    std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer, mtac::Program& program, std::shared_ptr<GlobalContext> context);
 };
 
 } //end of as

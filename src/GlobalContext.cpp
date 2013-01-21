@@ -192,18 +192,6 @@ bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_)
     return is_recursively_nested(struct_, 100);
 }
 
-void GlobalContext::addReference(const std::string& function){
-    ++(getFunction(function).references());
-}
-
-void GlobalContext::removeReference(const std::string& function){
-    --(getFunction(function).references());
-}
-
-int GlobalContext::referenceCount(const std::string& function){
-    return getFunction(function).references();
-}
-
 void GlobalContext::addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType){
     auto& printFunction = add_function(VOID, "print", function);
     printFunction.standard() = true;

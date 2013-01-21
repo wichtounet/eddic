@@ -6,3 +6,7 @@ void main(){
 
     print(a[5]);
 }
+
+void test(){
+    print("I'm useless");
+}

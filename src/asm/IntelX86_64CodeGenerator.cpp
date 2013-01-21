@@ -24,7 +24,8 @@
 
 using namespace eddic;
 
-as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
+as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : 
+    IntelCodeGenerator(w, program, context) {}
 
 namespace {
         
@@ -355,7 +356,7 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -453,30 +454,32 @@ void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double
 }
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-    if(context->referenceCount("_F5printC")){
+    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_64_printC");
     }
     
-    if(context->referenceCount("_F5printS")){ 
+    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){ 
         output_function("x86_64_printS");
     }
     
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") 
+            || program.call_graph.is_reachable(context->getFunction("_F4freePI")) 
+            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_64_alloc");
         output_function("x86_64_init");
         output_function("x86_64_free");
     }
     
-    if(context->referenceCount("_F4timeAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_64_time");
     }
     
-    if(context->referenceCount("_F8durationAIAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_64_duration");
     }
     
-    if(context->referenceCount("_F9read_char")){
+    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_64_read_char");
     }
 }

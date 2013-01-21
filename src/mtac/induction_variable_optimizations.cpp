@@ -14,7 +14,6 @@
 
 #include "mtac/Loop.hpp"
 #include "mtac/induction_variable_optimizations.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"

@@ -12,9 +12,9 @@
 
 #include "mtac/Loop.hpp"
 #include "mtac/complete_loop_peeling.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Program.hpp"
 
 using namespace eddic;
 
@@ -51,7 +51,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 //There are perhaps new references to functions
                 for(auto& statement : statements){
                     if(statement.op == mtac::Operator::CALL){
-                        statement.function().references() += (it - 1);
+                        program.call_graph.edge(function.definition(), statement.function())->count += (it - 1);
                     }
                 }
 

@@ -20,9 +20,9 @@
 
 using namespace eddic;
 
-as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
+as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : CodeGenerator(w, program), context(context) {}
 
-void as::IntelCodeGenerator::generate(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 

@@ -43,8 +43,6 @@ class Function {
 
         unsigned int parameter_position_by_type(const std::string& name) const;
 
-        bool operator==(const Function& rhs) const;
-
         const std::shared_ptr<const Type>& return_type() const;
         const std::string& name() const;
         const std::string& mangled_name() const;
@@ -53,9 +51,6 @@ class Function {
         const std::shared_ptr<FunctionContext>& context() const;
 
         std::shared_ptr<const Type>& struct_type();
-
-        int references() const;
-        int& references();
 
         bool standard() const;
         bool& standard();
@@ -68,11 +63,12 @@ class Function {
         std::string _name;
         std::string _mangled_name;
 
-        int _references = 0;
         bool _standard = false;
 
         std::vector<Parameter> _parameters;
 };
+
+bool operator==(const Function& lhs, const Function& rhs);
 
 } //end of eddic
 

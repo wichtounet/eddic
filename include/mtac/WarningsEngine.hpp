@@ -5,10 +5,23 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "asm/CodeGenerator.hpp"
+#ifndef MTAC_WARNINGS_ENGINE_H
+#define MTAC_WARNINGS_ENGINE_H
 
-using namespace eddic;
+#include <memory>
 
-as::CodeGenerator::CodeGenerator(AssemblyFileWriter& w, mtac::Program& program) : writer(w), program(program) {
-    //Nothing to init
-}
+#include "mtac/forward.hpp"
+
+namespace eddic {
+
+struct Configuration;
+
+namespace mtac {
+
+void collect_warnings(mtac::Program& program, std::shared_ptr<Configuration> configuration);
+
+} //end of mtac
+
+} //end of eddic
+
+#endif

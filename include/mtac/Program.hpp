@@ -12,9 +12,11 @@
 #include <iostream>
 
 #include "mtac/Function.hpp"
+#include "mtac/call_graph.hpp"
 
 namespace eddic {
 
+class Function;
 struct GlobalContext;
 
 namespace mtac {
@@ -29,11 +31,15 @@ struct Program {
     std::vector<Function> functions;
     Mode mode = Mode::MTAC;
 
+    call_graph call_graph;
+
     Program();
 
     //Program cannot be copied
     Program(const Program& rhs) = delete;
     Program& operator=(const Program& rhs) = delete;
+
+    Function& mtac_function(const eddic::Function& function);
 };
 
 std::ostream& operator<<(std::ostream& stream, mtac::Program& program);

@@ -35,16 +35,6 @@ struct hash<std::reference_wrapper<mtac::Function>> {
 
 namespace {
 
-mtac::Function& get_function(mtac::Program& program, const Function& function){
-    for(auto& f : program.functions){
-        if(f.definition() == function){
-            return f;
-        }
-    }
-
-    eddic_unreachable("There should an MTAC function corresponding to the definition");
-}
-
 bool has_pointer_parameters(mtac::Function& function){
     for(auto& parameter : function.definition().parameters()){
         if(parameter.type()->is_pointer()){
@@ -76,7 +66,7 @@ bool call_unpure_function(mtac::Program& program, mtac::Function& function, Func
         for(auto& quadruple : block->statements){
             if(quadruple.op == mtac::Operator::CALL){
                 if(!quadruple.function().standard()){
-                    auto& target_function = get_function(program, quadruple.function());
+                    auto& target_function = program.mtac_function(quadruple.function());
                     if(!target_function.pure() && analyzed.find(target_function) != analyzed.end()){
                         return true;
                     }
@@ -97,7 +87,7 @@ bool call_not_analyzed_function(mtac::Program& program, mtac::Function& function
         for(auto& quadruple : block->statements){
             if(quadruple.op == mtac::Operator::CALL){
                 if(!quadruple.function().standard()){
-                    if(analyzed.find(get_function(program, quadruple.function())) == analyzed.end()){
+                    if(analyzed.find(program.mtac_function(quadruple.function())) == analyzed.end()){
                         return true;
                     }
                 }

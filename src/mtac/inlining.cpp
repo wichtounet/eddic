@@ -390,7 +390,7 @@ bool can_be_inlined(mtac::Function& function){
     return true;
 }
 
-bool will_inline(mtac::Function& source_function, mtac::Function& target_function, mtac::Quadruple& call, mtac::basic_block_p bb){
+bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::Function& target_function, mtac::Quadruple& call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function.get_name() == target_function.get_name()){
         return false;
@@ -418,7 +418,7 @@ bool will_inline(mtac::Function& source_function, mtac::Function& target_functio
         }
 
         //function called once
-        if(target_function.context->global()->referenceCount(target_function.get_name()) == 1){
+        if(program.call_graph.node(target_function.definition())->in_edges.size() == 1){
             return source_size < 100 && target_size < 100;
         } 
 
@@ -443,14 +443,7 @@ bool non_standard_target(mtac::Quadruple& call, mtac::Program& program){
 
 mtac::Function& get_target(mtac::Quadruple& call, mtac::Program& program){
     auto& target_definition = call.function();
-
-    for(auto& function : program.functions){
-        if(function.definition().mangled_name() == target_definition.mangled_name()){
-            return function;
-        }
-    }
-
-    eddic_unreachable("Should not happen");
+    return program.mtac_function(target_definition);
 }
 
 bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
@@ -475,7 +468,7 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                 auto& source_definition = source_function.definition();
                 auto& dest_definition = dest_function.definition();
 
-                if(will_inline(dest_function, source_function, src_call, basic_block)){
+                if(will_inline(program, dest_function, source_function, src_call, basic_block)){
                     auto call = src_call;
                     auto src_call_uid = src_call.uid();
 
@@ -501,13 +494,13 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     adapt_instructions(variable_clones, bb_clones, call, safe);
 
                     //The target function is called one less time
-                    --source_definition.references();
-                    
+                    --program.call_graph.edge(dest_definition, source_definition)->count;
+
                     //There are perhaps new references to functions
                     for(auto& block : source_function){
                         for(auto& statement : block){
                             if(statement.op == mtac::Operator::CALL){
-                                ++statement.function().references();
+                                program.call_graph.add_edge(dest_definition, statement.function());
                             }
                         }
                     }
@@ -542,11 +535,6 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     auto global_context = program.context;
 
     for(auto& function : program.functions){
-        //If the function is never called, no need to optimize it
-        if(global_context->referenceCount(function.get_name()) <= 0){
-            continue; 
-        }
-
         bool local = false;
         do {
             local = call_site_inlining(function, program);
