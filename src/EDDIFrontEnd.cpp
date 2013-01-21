@@ -90,11 +90,7 @@ void generate_program(ast::SourceFile& source, std::shared_ptr<Configuration> co
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){
-    if(context->exists("_F4main")){
-        context->addReference("_F4main");
-    } else if (context->exists("_F4mainAS")){
-        context->addReference("_F4mainAS");
-    } else {
+    if(!context->exists("_F4main") && !context->exists("_F4mainAS")){
         throw SemanticalException("The program does not contain a valid main function"); 
     }
 }

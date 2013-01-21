@@ -87,7 +87,6 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     function.emplace_back(mtac::Operator::PPARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
 
     //Call the constructor
-    global_context->addReference(ctor_name);
     function.emplace_back(mtac::Operator::CALL, ctor_function); 
 }
 
@@ -110,7 +109,6 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
 
     function.emplace_back(mtac::Operator::PPARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
 
-    global_context->addReference(ctor_name);
     function.emplace_back(mtac::Operator::CALL, ctor_function); 
 }
 
@@ -124,7 +122,6 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     function.emplace_back(mtac::Operator::PPARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
 
-    global_context->addReference(dtor_name);
     function.emplace_back(mtac::Operator::CALL, dtor_function); 
 }
 
@@ -677,7 +674,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
-        function.context->global()->addReference("_F5allocI");
         function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
             
         //If structure type, call the constructor
@@ -703,7 +699,6 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
-        function.context->global()->addReference("_F5allocI");
         function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
         
         function.emplace_back(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp);
@@ -1527,7 +1522,6 @@ class FunctionCompiler : public boost::static_visitor<> {
 
             function.emplace_back(mtac::Operator::PARAM, arg, "a", free_function);
 
-            program.context->addReference(free_name);
             function.emplace_back(mtac::Operator::CALL, free_function); 
         }
        
@@ -1628,27 +1622,23 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
 
     for(auto& block : source.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            if(ptr->Content->functionName == "main" || program.context->referenceCount(ptr->Content->mangledName) > 0){
-                program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-                auto& function = program.functions.back();
+            program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+            auto& function = program.functions.back();
 
-                FunctionCompiler compiler(program, function);
+            FunctionCompiler compiler(program, function);
 
-                visit_each(compiler, ptr->Content->instructions);
-                compiler.issue_destructors(ptr->Content->context);
-            }
+            visit_each(compiler, ptr->Content->instructions);
+            compiler.issue_destructors(ptr->Content->context);
         } else if(auto* ptr = boost::get<ast::Struct>(&block)){
             for(auto& struct_block : ptr->Content->blocks){
                 if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
-                    if(program.context->referenceCount(ptr->Content->mangledName) > 0){
-                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-                        auto& function = program.functions.back();
+                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                    auto& function = program.functions.back();
 
-                        FunctionCompiler compiler(program, function);
+                    FunctionCompiler compiler(program, function);
 
-                        visit_each(compiler, ptr->Content->instructions);
-                        compiler.issue_destructors(ptr->Content->context);
-                    }
+                    visit_each(compiler, ptr->Content->instructions);
+                    compiler.issue_destructors(ptr->Content->context);
                 } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
                     program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
                     auto& function = program.functions.back();
