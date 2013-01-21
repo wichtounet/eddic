@@ -13,6 +13,8 @@
 #include<unordered_map>
 #include<unordered_set>
 
+#include "../Function.hpp"
+
 namespace std {
     std::hash<std::string> hasher;
 

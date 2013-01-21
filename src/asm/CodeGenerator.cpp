@@ -9,4 +9,6 @@
 
 using namespace eddic;
 
-as::CodeGenerator::CodeGenerator(AssemblyFileWriter& w) : writer(w){}
+as::CodeGenerator::CodeGenerator(AssemblyFileWriter& w, mtac::Program& program) : writer(w, program){
+    //Nothing to init
+}
