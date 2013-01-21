@@ -24,7 +24,7 @@ bool mtac::remove_unused_functions::operator()(mtac::Program& program){
     while(it.has_next()){
         auto& function = *it;
 
-        if(program.call_graph.is_reachable(function.definition())){
+        if(!program.call_graph.is_reachable(function.definition())){
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             it.erase();
             continue;
