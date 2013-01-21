@@ -9,6 +9,7 @@
 
 #include "mtac/remove_dead_basic_blocks.hpp"
 #include "mtac/Function.hpp"
+#include "mtac/Program.hpp"
 
 using namespace eddic;
 
@@ -44,6 +45,14 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
             auto& block = *it;
 
             if(live_basic_blocks.find(block) == live_basic_blocks.end()){
+                //Update the call graph if necessary
+                for(auto& statement : block){
+                    if(statement.op == mtac::Operator::CALL){
+                        --program.call_graph.edge(function.definition(), statement.function())->count;
+                    }
+                }
+
+                //Remove the basic block
                 it.erase();
             } else {
                 ++it;
