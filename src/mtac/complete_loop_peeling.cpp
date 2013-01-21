@@ -50,7 +50,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 //There are perhaps new references to functions
                 for(auto& statement : statements){
                     if(statement.op == mtac::Operator::CALL){
-                        statement.function().references() += (it - 1);
+                        program.call_graph.edge(function.definition(), statement.function())->count += (it - 1);
                     }
                 }
 

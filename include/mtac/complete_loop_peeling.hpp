@@ -18,6 +18,10 @@ namespace eddic {
 namespace mtac {
 
 struct complete_loop_peeling {
+    mtac::Program& program;
+
+    complete_loop_peeling(mtac::Program& program) : program(program){}
+
     bool operator()(mtac::Function& function);
 };
 
@@ -25,7 +29,7 @@ template<>
 struct pass_traits<complete_loop_peeling> {
     STATIC_CONSTANT(pass_type, type, pass_type::CUSTOM);
     STATIC_STRING(name, "complete_loop_peeling");
-    STATIC_CONSTANT(unsigned int, property_flags, 0);
+    STATIC_CONSTANT(unsigned int, property_flags, PROPERTY_PROGRAM);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 

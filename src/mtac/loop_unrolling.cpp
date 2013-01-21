@@ -65,7 +65,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     //There are perhaps new references to functions
                     for(auto& statement : statements){
                         if(statement.op == mtac::Operator::CALL){
-                            statement.function().references() += (factor - 1);
+                            program.call_graph.edge(function.definition(), statement.function())->count += (factor - 1);
                         }
                     }
 
