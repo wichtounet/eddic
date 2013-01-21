@@ -71,11 +71,10 @@ class ConstantPropagationProblem {
         void meet(ProblemDomain& in, const ProblemDomain& out);
 
         ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
-        ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&){ eddic_unreachable("Not LTAC"); };
 
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-        bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>){ eddic_unreachable("Not LTAC"); };
-
+    
+    private:
         ProblemDomain top_element(){
             return ProblemDomain();
         }
@@ -83,8 +82,7 @@ class ConstantPropagationProblem {
         ProblemDomain default_element(){
             return ProblemDomain(ProblemDomain::Values());
         }
-    
-    private:
+
         mtac::EscapedVariables pointer_escaped;
 };
 
