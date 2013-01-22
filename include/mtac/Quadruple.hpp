@@ -23,6 +23,7 @@ class Variable;
 namespace mtac {
 
 class basic_block;
+typedef std::shared_ptr<basic_block> basic_block_p;
 
 enum class Size : char {
     DEFAULT,
@@ -51,7 +52,7 @@ struct Quadruple {
         std::string m_param; //For LABEL, GOTO, PARAM
 
         //Filled only in later phase replacing the label
-        std::shared_ptr<mtac::basic_block> block;
+        mtac::basic_block_p block;
 
         //Copy constructors
         Quadruple(const Quadruple& rhs);
