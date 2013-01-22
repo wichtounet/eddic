@@ -140,10 +140,6 @@ mtac::Quadruple& mtac::Quadruple::operator=(mtac::Quadruple&& rhs) noexcept {
     return *this;
 }
 
-std::size_t mtac::Quadruple::uid() const {
-    return _uid;
-}
-
 const std::string& mtac::Quadruple::label() const {
     return m_param;
 }
