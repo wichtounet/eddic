@@ -12,14 +12,6 @@
 using namespace eddic;
 
 mtac::basic_block::basic_block(int i) : index(i), label("") {}
-
-mtac::basic_block::iterator mtac::basic_block::begin(){
-    return statements.begin();
-}
-
-mtac::basic_block::iterator mtac::basic_block::end(){
-    return statements.end();
-}
         
 mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
     for(auto& quadruple : statements){

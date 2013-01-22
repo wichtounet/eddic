@@ -44,13 +44,17 @@ class basic_block {
          * Return an iterator to the first statement. 
          * \return an iterator to the first statement.
          */
-        iterator begin();
+        iterator begin(){
+            return statements.begin();
+        }
         
         /*!
          * Return an iterator one past the last statement. 
          * \return an iterator one past the last statement.
          */
-        iterator end();
+        iterator end(){
+            return statements.end();
+        }
 
         /*!
          * Add a new statement to the basic block. 
