@@ -92,25 +92,33 @@ class Function : public std::enable_shared_from_this<Function> {
          * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
          * \return iterator to the beginning of the doubly-linked list of basic blocks. 
          */
-        basic_block_iterator begin();
-        
+        basic_block_iterator begin(){
+            return basic_block_iterator(entry, nullptr);
+        }
+
         /*!
          * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
          * \return iterator to the end of the doubly-linked list of basic blocks. 
          */
-        basic_block_iterator end();
-        
+        basic_block_iterator end(){
+            return basic_block_iterator(nullptr, exit);    
+        }
+
         /*!
          * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
          * \return iterator to the beginning of the doubly-linked list of basic blocks. 
          */
-        basic_block_const_iterator begin() const ;
-        
+        basic_block_const_iterator begin() const {
+            return basic_block_const_iterator(entry, nullptr);
+        }
+
         /*!
          * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
          * \return iterator to the end of the doubly-linked list of basic blocks. 
          */
-        basic_block_const_iterator end() const ;
+        basic_block_const_iterator end() const {
+            return basic_block_const_iterator(nullptr, exit);
+        }
         
         basic_block_iterator at(basic_block_p bb);
 

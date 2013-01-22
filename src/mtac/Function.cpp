@@ -104,22 +104,6 @@ mtac::Quadruple& mtac::Function::find(std::size_t uid){
     eddic_unreachable("The given uid does not exist");
 }
 
-mtac::basic_block_iterator mtac::Function::begin(){
-    return basic_block_iterator(entry, nullptr);
-}
-
-mtac::basic_block_iterator mtac::Function::end(){
-    return basic_block_iterator(nullptr, exit);    
-}
-
-mtac::basic_block_const_iterator mtac::Function::begin() const {
-    return basic_block_const_iterator(entry, nullptr);
-}
-
-mtac::basic_block_const_iterator mtac::Function::end() const {
-    return basic_block_const_iterator(nullptr, exit);
-}
-
 mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
     if(bb){
         return basic_block_iterator(bb, bb->prev);
