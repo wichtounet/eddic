@@ -44,6 +44,8 @@ class Function : public std::enable_shared_from_this<Function> {
         Function(Function&& rhs);
         Function& operator=(Function&& rhs);
 
+        ~Function();
+
         std::string get_name() const;
 
         template< class... Args >

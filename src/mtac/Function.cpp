@@ -62,6 +62,22 @@ mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
     return *this;
 }
 
+mtac::Function::~Function(){
+    auto block = exit;
+
+    while(block){
+        auto next = block->prev;
+
+        block->next = nullptr;
+        block->prev = nullptr;
+        block->successors.clear();
+        block->predecessors.clear();
+        block->dominator = nullptr;
+
+        block = next;
+    }
+}
+
 bool mtac::Function::is_main() const {
     return name == "_F4main" || name == "_F4mainAS";
 }
@@ -226,14 +242,16 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
         }
     }
 
-    block->successors.clear();
-    block->predecessors.clear();
-
+    //Relink the list
     block->prev->next = next;
     next->prev = block->prev;
 
+    //Make sure the removed block do not hold any more references to other blocks
     block->prev = nullptr;
     block->next = nullptr;
+    block->dominator = nullptr;
+    block->successors.clear();
+    block->predecessors.clear();
 
     return at(next);
 }
