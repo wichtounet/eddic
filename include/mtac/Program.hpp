@@ -26,6 +26,15 @@ enum class Mode : unsigned int {
     LTAC
 };
 
+/*!
+ * \struct Program
+ * \brief Represent an EDDI program in its intermediate representation. 
+ *
+ * This structure to represent both MTAC and LTAC programs. It contains a list
+ * of functions that form the whole program. 
+ *
+ * \see eddic::mtac::Function
+ */
 struct Program {
     std::shared_ptr<GlobalContext> context;
     std::vector<Function> functions;
@@ -40,6 +49,14 @@ struct Program {
     Program& operator=(const Program& rhs) = delete;
 
     Function& mtac_function(const eddic::Function& function);
+
+    std::vector<Function>::iterator begin(){
+        return functions.begin();
+    }
+
+    std::vector<Function>::iterator end(){
+        return functions.end();
+    }
 };
 
 std::ostream& operator<<(std::ostream& stream, mtac::Program& program);
