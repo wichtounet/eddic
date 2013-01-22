@@ -57,18 +57,26 @@ class basic_block {
         }
 
         /*!
-         * Add a new statement to the basic block. 
+         * Add a new statement to the back of the basic block. 
          * \param statement The statement to add. 
          */
         inline void push_back(mtac::Quadruple&& statement){
             statements.push_back(std::forward<mtac::Quadruple>(statement));
         }
 
+        /*!
+         * Add a new statement to the back of the basic block. The statements will be created in place.
+         * \param args The args to to create the new statement. 
+         */
         template< class... Args >
         inline void emplace_back( Args&&... args ){
             statements.emplace_back(std::forward<Args>(args)...);
         }
         
+        /*!
+         * Add a new LTAC statement to the back of the basic block. The statements will be created in place.
+         * \param args The args to to create the new statement. 
+         */
         template< class... Args >
         inline void emplace_back_low( Args&&... args ){
             l_statements.emplace_back(std::forward<Args>(args)...);
