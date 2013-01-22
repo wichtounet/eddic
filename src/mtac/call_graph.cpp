@@ -13,6 +13,25 @@
 #include "mtac/Function.hpp"
 
 using namespace eddic;
+        
+mtac::call_graph::~call_graph(){
+    for(auto& node_key : nodes){
+        auto& node = node_key.second;
+
+        for(auto& edge : node->in_edges){
+            edge->source = nullptr;
+            edge->target = nullptr;
+        }
+        
+        for(auto& edge : node->out_edges){
+            edge->source = nullptr;
+            edge->target = nullptr;
+        }
+
+        node->in_edges.clear();
+        node->out_edges.clear();
+    }
+}
 
 mtac::call_graph_node_p mtac::call_graph::node(eddic::Function& function){
     auto it = nodes.find(function.mangled_name());

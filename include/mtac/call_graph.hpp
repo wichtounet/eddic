@@ -65,6 +65,8 @@ struct call_graph_node {
 
 class call_graph {
     public:
+        ~call_graph();
+
         call_graph_node_p entry = nullptr;
 
         call_graph_node_p node(eddic::Function& function);
