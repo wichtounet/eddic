@@ -210,7 +210,7 @@ int compute(mtac::Operator op, int lhs, int rhs){
             return lhs * rhs;
         case mtac::Operator::DIV:
             return lhs / rhs;
-        case mtac::Operator::DIV:
+        case mtac::Operator::MOD:
             return lhs % rhs;
         default:
             eddic_unreachable("Invalid operator");
