@@ -210,6 +210,8 @@ int compute(mtac::Operator op, int lhs, int rhs){
             return lhs * rhs;
         case mtac::Operator::DIV:
             return lhs / rhs;
+        case mtac::Operator::DIV:
+            return lhs % rhs;
         default:
             eddic_unreachable("Invalid operator");
     }
@@ -219,27 +221,28 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
     auto out = in;
 
     std::shared_ptr<Variable> remove_copies;
+    auto op = quadruple.op;
 
-    if(quadruple.op == mtac::Operator::NOP){
+    if(op == mtac::Operator::NOP){
         return out;
     }
 
-    if(quadruple.op == mtac::Operator::ASSIGN || quadruple.op == mtac::Operator::FASSIGN){
+    if(op == mtac::Operator::ASSIGN || op == mtac::Operator::FASSIGN){
         ConstantCollector collector(out, quadruple.result);
         visit(collector, *quadruple.arg1);
 
         remove_copies = quadruple.result;
-    } else if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::DIV){
+    } else if(op >= mtac::Operator::ADD && op <= mtac::Operator::DIV){
         if(auto* lhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
             if(in[*lhs].constant() && boost::get<int>(&in[*lhs].value())){
                 if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
                     if(in[*rhs].constant() && boost::get<int>(&in[*rhs].value())){
-                        out[quadruple.result] = {compute(quadruple.op, boost::get<int>(in[*lhs].value()), boost::get<int>(in[*rhs].value()))};
+                        out[quadruple.result] = {compute(op, boost::get<int>(in[*lhs].value()), boost::get<int>(in[*rhs].value()))};
                     } else {
                         out[quadruple.result].set_nac();
                     }
                 } else if(auto* rhs = boost::get<int>(&*quadruple.arg2)){
-                    out[quadruple.result] = {compute(quadruple.op, boost::get<int>(in[*lhs].value()), *rhs)};
+                    out[quadruple.result] = {compute(op, boost::get<int>(in[*lhs].value()), *rhs)};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -249,7 +252,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
         } else if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             if(in[*rhs].constant() && boost::get<int>(&in[*rhs].value())){
                 if(auto* lhs = boost::get<int>(&*quadruple.arg1)){
-                    out[quadruple.result] = {compute(quadruple.op, *lhs, boost::get<int>(in[*rhs].value()))};
+                    out[quadruple.result] = {compute(op, *lhs, boost::get<int>(in[*rhs].value()))};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -263,7 +266,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
         remove_copies = quadruple.result;
     }
     //Passing a variable by pointer erases its value
-    else if(quadruple.op == mtac::Operator::PPARAM){
+    else if(op == mtac::Operator::PPARAM){
         if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
             //Impossible to know if the variable is modified or not, consider it modified
             out[*var_ptr].set_nac();
@@ -271,8 +274,6 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
             remove_copies = *var_ptr;
         }
     } else {
-        auto op = quadruple.op;
-
         if(mtac::erase_result(op)){
             //The result is not constant at this point
             out[quadruple.result].set_nac();
