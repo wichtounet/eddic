@@ -38,42 +38,6 @@ enum class DataFlowType : unsigned int {
     Low_Backward    //Common backward data-flow problem in LTAC
 };
 
-template<DataFlowType Type, typename DomainValues>
-struct DataFlowProblem {
-    typedef Domain<DomainValues> ProblemDomain;
-
-    virtual ProblemDomain Boundary(mtac::Function& function){
-        //By default, return the default element
-        return default_element();
-    }
-
-    virtual ProblemDomain Init(mtac::Function& function) {
-        //By default, return the top element
-        return top_element();
-    }
-
-    /*!
-     * \brief Meet two lattices
-     * \param in The result lattice
-     * \param out The met lattice.
-     */
-    virtual void meet(ProblemDomain& in, const ProblemDomain& out) = 0;
-
-    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) = 0;
-    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
-
-    virtual bool optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
-    virtual bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
-
-    ProblemDomain top_element(){
-        return ProblemDomain();
-    }
-
-    ProblemDomain default_element(){
-        return ProblemDomain(DomainValues());
-    }
-};
-
 template<typename ProblemDomain>
 void intersection_meet(ProblemDomain& in, const ProblemDomain& out){
     //eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
