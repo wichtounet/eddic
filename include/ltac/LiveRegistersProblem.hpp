@@ -85,20 +85,16 @@ struct LiveRegistersProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Quadruple&, ProblemDomain&) { eddic_unreachable("Not MTAC"); };
-    
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
-    bool optimize(mtac::Function&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) { eddic_unreachable("Not MTAC"); };
 
-        ProblemDomain top_element(){
-            return ProblemDomain();
-        }
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
 
-        ProblemDomain default_element(){
-            return ProblemDomain(ProblemDomain::Values());
-        }
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 //Liveness analysis on Pseudo Registers
@@ -114,20 +110,16 @@ struct LivePseudoRegistersProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-
     ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Quadruple&, ProblemDomain&) { eddic_unreachable("Not MTAC"); };
-    
     bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
-    bool optimize(mtac::Function&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) { eddic_unreachable("Not MTAC"); };
 
-        ProblemDomain top_element(){
-            return ProblemDomain();
-        }
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
 
-        ProblemDomain default_element(){
-            return ProblemDomain(ProblemDomain::Values());
-        }
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 template<typename Reg, typename FloatReg>

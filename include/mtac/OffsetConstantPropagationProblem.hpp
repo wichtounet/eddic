@@ -49,7 +49,8 @@ class OffsetConstantPropagationProblem {
         void set_platform(Platform platform);
 
         ProblemDomain Boundary(mtac::Function& function);
-        ProblemDomain Init(mtac::Function& function) {
+        
+        ProblemDomain Init(mtac::Function&){
             //By default, return the top element
             return top_element();
         }

@@ -124,7 +124,7 @@ struct ConstantOptimizer {
     
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::Init(mtac::Function& function) {
+ProblemDomain mtac::ConstantPropagationProblem::Init(mtac::Function&) {
     //By default, return the top element
     return top_element();
 }
@@ -232,7 +232,7 @@ double compute(mtac::Operator op, double lhs, double rhs){
     }
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in){
+ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
 
     std::shared_ptr<Variable> remove_copies;
