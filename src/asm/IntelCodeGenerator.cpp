@@ -27,7 +27,7 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::sha
 
     writeRuntimeSupport(); 
 
-    for(auto& function : program.functions){
+    for(auto& function : program){
         compile(function);
     }
 

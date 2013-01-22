@@ -105,7 +105,7 @@ bool mtac::call_graph::is_reachable(eddic::Function& function){
 void mtac::build_call_graph(mtac::Program& program){
     auto& cg = program.call_graph;
 
-    for(auto& function : program.functions){
+    for(auto& function : program){
         for(auto& block : function){
             for(auto& quadruple : block){
                 if(quadruple.op == mtac::Operator::CALL){
