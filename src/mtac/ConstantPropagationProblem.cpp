@@ -217,6 +217,21 @@ int compute(mtac::Operator op, int lhs, int rhs){
     }
 }
 
+double compute(mtac::Operator op, double lhs, double rhs){
+    switch(op){
+        case mtac::Operator::FADD:
+            return lhs + rhs;
+        case mtac::Operator::FSUB:
+            return lhs - rhs;
+        case mtac::Operator::FMUL:
+            return lhs * rhs;
+        case mtac::Operator::FDIV:
+            return lhs / rhs;
+        default:
+            eddic_unreachable("Invalid operator");
+    }
+}
+
 ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
 
@@ -232,7 +247,7 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
         visit(collector, *quadruple.arg1);
 
         remove_copies = quadruple.result;
-    } else if(op >= mtac::Operator::ADD && op <= mtac::Operator::DIV){
+    } else if(op >= mtac::Operator::ADD && op <= mtac::Operator::MOD){
         if(auto* lhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
             if(in[*lhs].constant() && boost::get<int>(&in[*lhs].value())){
                 if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
@@ -253,6 +268,38 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p bas
             if(in[*rhs].constant() && boost::get<int>(&in[*rhs].value())){
                 if(auto* lhs = boost::get<int>(&*quadruple.arg1)){
                     out[quadruple.result] = {compute(op, *lhs, boost::get<int>(in[*rhs].value()))};
+                } else {
+                    out[quadruple.result].set_nac();
+                }
+            } else {
+                out[quadruple.result].set_nac();
+            }
+        } else {
+            out[quadruple.result].set_nac();
+        }
+
+        remove_copies = quadruple.result;
+    } else if(op >= mtac::Operator::FADD && op <= mtac::Operator::FDIV){
+        if(auto* lhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            if(in[*lhs].constant() && boost::get<double>(&in[*lhs].value())){
+                if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+                    if(in[*rhs].constant() && boost::get<double>(&in[*rhs].value())){
+                        out[quadruple.result] = {compute(op, boost::get<double>(in[*lhs].value()), boost::get<double>(in[*rhs].value()))};
+                    } else {
+                        out[quadruple.result].set_nac();
+                    }
+                } else if(auto* rhs = boost::get<double>(&*quadruple.arg2)){
+                    out[quadruple.result] = {compute(op, boost::get<double>(in[*lhs].value()), *rhs)};
+                } else {
+                    out[quadruple.result].set_nac();
+                }
+            } else {
+                out[quadruple.result].set_nac();
+            }
+        } else if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+            if(in[*rhs].constant() && boost::get<double>(&in[*rhs].value())){
+                if(auto* lhs = boost::get<double>(&*quadruple.arg1)){
+                    out[quadruple.result] = {compute(op, *lhs, boost::get<double>(in[*rhs].value()))};
                 } else {
                     out[quadruple.result].set_nac();
                 }
