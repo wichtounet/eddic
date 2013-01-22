@@ -73,6 +73,8 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
            compiler.compile(quadruple); 
         }
 
+        block->statements.clear();
+
         compiler.end_bb();
     }
 
