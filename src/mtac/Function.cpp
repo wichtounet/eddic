@@ -73,6 +73,8 @@ mtac::Function::~Function(){
         block->successors.clear();
         block->predecessors.clear();
         block->dominator = nullptr;
+        block->statements.clear();
+        block->l_statements.clear();
 
         block = next;
     }
@@ -252,6 +254,8 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     block->dominator = nullptr;
     block->successors.clear();
     block->predecessors.clear();
+    block->statements.clear();
+    block->l_statements.clear();
 
     return at(next);
 }
