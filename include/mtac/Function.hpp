@@ -32,6 +32,20 @@ class FunctionContext;
 
 namespace mtac {
 
+/*!
+ * \class Function
+ * \brief A function of an EDDI program represented in intermediate representation. 
+ *
+ * A Function can hold either MTAC of LTAC statements. Before basic block extraction, 
+ * the Function can directly contains statements. After that, only the basic blocks have
+ * statements.
+ *
+ * The basic_block of the Function are stored in a doubly-linked list. The entry and exit basic
+ * blocks can be obtained with the entry_bb() and exit_bb() functions. The basic blocks can be
+ * iterated using begin() and end() iterators. 
+ *
+ * \see mtac::basic_block
+ */
 class Function : public std::enable_shared_from_this<Function> {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
@@ -74,10 +88,28 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_p entry_bb();
         basic_block_p exit_bb();
 
+        /*!
+         * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
+         * \return iterator to the beginning of the doubly-linked list of basic blocks. 
+         */
         basic_block_iterator begin();
+        
+        /*!
+         * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
+         * \return iterator to the end of the doubly-linked list of basic blocks. 
+         */
         basic_block_iterator end();
         
+        /*!
+         * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
+         * \return iterator to the beginning of the doubly-linked list of basic blocks. 
+         */
         basic_block_const_iterator begin() const ;
+        
+        /*!
+         * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
+         * \return iterator to the end of the doubly-linked list of basic blocks. 
+         */
         basic_block_const_iterator end() const ;
         
         basic_block_iterator at(basic_block_p bb);

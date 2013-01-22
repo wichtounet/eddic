@@ -21,6 +21,10 @@ struct GlobalContext;
 
 namespace mtac {
 
+/*!
+ * Define the current mode of the Program. Indicate the Intermediate
+ * Representation currently used.
+ */
 enum class Mode : unsigned int {
     MTAC,
     LTAC
@@ -33,6 +37,8 @@ enum class Mode : unsigned int {
  * This structure to represent both MTAC and LTAC programs. It contains a list
  * of functions that form the whole program. 
  *
+ * Only one instance of Program should be instantiated at the same time. 
+ *
  * \see eddic::mtac::Function
  */
 struct Program {
@@ -42,6 +48,9 @@ struct Program {
 
     call_graph call_graph;
 
+    /*!
+     * Create a new Program
+     */
     Program();
 
     //Program cannot be copied
@@ -50,10 +59,18 @@ struct Program {
 
     Function& mtac_function(const eddic::Function& function);
 
+    /*!
+     * Returns an iterator to the beginning of the functions. 
+     * \return An iterator to the beginning of the functions.
+     */
     std::vector<Function>::iterator begin(){
         return functions.begin();
     }
 
+    /*!
+     * Returns an iterator to the end of the functions. 
+     * \return An iterator to the end of the functions. 
+     */
     std::vector<Function>::iterator end(){
         return functions.end();
     }
