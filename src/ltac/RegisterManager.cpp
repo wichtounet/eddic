@@ -73,8 +73,11 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
                 ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
-        auto label = float_pool->label(boost::get<double>(argument));
+        auto label = float_pool->label(static_cast<double>(boost::get<int>(argument)));
         ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }

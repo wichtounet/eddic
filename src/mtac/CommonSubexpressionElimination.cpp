@@ -248,3 +248,11 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
 
     return changes;
 }
+
+ProblemDomain mtac::CommonSubexpressionElimination::top_element(){
+    return ProblemDomain();
+}
+
+ProblemDomain mtac::CommonSubexpressionElimination::default_element(){
+    return ProblemDomain(ProblemDomain::Values());
+}

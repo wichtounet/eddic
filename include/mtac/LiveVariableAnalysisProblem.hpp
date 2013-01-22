@@ -63,7 +63,7 @@ struct LiveVariableAnalysisProblem {
     typedef Domain<LiveVariableValues> ProblemDomain;
 
     //The direction
-    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
 
     mtac::EscapedVariables pointer_escaped;
     
@@ -78,13 +78,13 @@ struct LiveVariableAnalysisProblem {
     bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
     bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>){ eddic_unreachable("Not LTAC"); };
 
-        ProblemDomain top_element(){
-            return ProblemDomain();
-        }
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
 
-        ProblemDomain default_element(){
-            return ProblemDomain(ProblemDomain::Values());
-        }
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 } //end of mtac

@@ -12,6 +12,10 @@
 #include <unordered_set>
 #include <list>
 
+#include <boost/utility.hpp>
+
+#define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
+
 #include "assert.hpp"
 
 #include "mtac/pass_traits.hpp"
@@ -32,22 +36,29 @@ std::ostream& operator<<(std::ostream& stream, const Expression& expression);
 
 typedef std::vector<Expression> Expressions;
 
-struct CommonSubexpressionElimination : public DataFlowProblem<DataFlowType::Forward, Expressions> {
-    std::unordered_set<std::size_t> optimized;
-    mtac::Function* function;
+class CommonSubexpressionElimination {
+    public:
+        //The type of data managed
+        typedef Domain<Expressions> ProblemDomain;
 
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+        //The direction
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
-    
-    ProblemDomain Init(mtac::Function& function) override;
-    ProblemDomain Boundary(mtac::Function& function) override;
-    
-    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
+        ProblemDomain Init(mtac::Function& function);
+        ProblemDomain Boundary(mtac::Function& function);
 
-    boost::optional<Expressions> init;
+        void meet(ProblemDomain& in, const ProblemDomain& out);
+        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+        bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+
+        boost::optional<Expressions> init;
+
+    private:
+        ProblemDomain top_element();
+        ProblemDomain default_element();
+        
+        std::unordered_set<std::size_t> optimized;
+        mtac::Function* function;
 };
 
 template<>

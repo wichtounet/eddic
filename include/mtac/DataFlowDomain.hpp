@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
+#include <map>
 
 #include "Variable.hpp"
 
@@ -46,9 +47,9 @@ struct Domain {
     }
 };
 
-template<typename Key, typename Value, typename Hasher>
-struct Domain<std::unordered_map<Key, Value, Hasher>> {
-    typedef std::unordered_map<Key, Value, Hasher> Values;
+template<typename Key, typename Value, typename Hasher, typename Equals>
+struct Domain<std::unordered_map<Key, Value, Hasher, Equals>> {
+    typedef std::unordered_map<Key, Value, Hasher, Equals> Values;
     
     boost::optional<Values> int_values;
 
@@ -58,6 +59,20 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
 
     Domain(Values values) : int_values(values){
         //Nothing to init
+    }
+
+    Domain(const Domain& rhs) : int_values(rhs.int_values) {}
+    Domain& operator=(const Domain& rhs){
+        int_values = rhs.int_values;
+
+        return *this;
+    }
+
+    Domain(Domain&& rhs) : int_values(std::move(rhs.int_values)) {}
+    Domain& operator=(Domain&& rhs){
+        int_values = std::move(rhs.int_values);
+
+        return *this;
     }
 
     Values& values(){

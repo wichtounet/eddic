@@ -247,3 +247,11 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
 
     return optimized;
 }
+
+ProblemDomain mtac::OffsetConstantPropagationProblem::top_element(){
+    return ProblemDomain();
+}
+
+ProblemDomain mtac::OffsetConstantPropagationProblem::default_element(){
+    return ProblemDomain(ProblemDomain::Values());
+}
