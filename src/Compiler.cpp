@@ -75,7 +75,6 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
         //If program is null, it means that the user didn't wanted it
         if(program){
-
             mtac::collect_warnings(*program, configuration);
 
             if(!configuration->option_defined("mtac-only")){
