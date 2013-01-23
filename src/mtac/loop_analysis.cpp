@@ -431,10 +431,8 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
             //A node dominates itself
             if(block == succ){
                 back_edges.emplace_back(block, succ);
-            } else {
-                if(block->dominator == succ){
-                    back_edges.emplace_back(block, succ);
-                }
+            } else if(block->dominator == succ){
+                back_edges.emplace_back(block, succ);
             }
         }
     }
@@ -446,7 +444,7 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
         std::set<mtac::basic_block_p> natural_loop;
 
         auto n = back_edge.first;
-        auto d = back_edge.first;
+        auto d = back_edge.second;
 
         natural_loop.insert(d);
         natural_loop.insert(n);
