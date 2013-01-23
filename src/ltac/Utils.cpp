@@ -98,26 +98,11 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
             } else {
                 reg = manager.get_pseudo_float_reg(variable);
             }
-
-            if(manager.is_escaped(variable)){
-                manager.remove_from_pseudo_float_reg(variable);
-            }
-
+            
             return reg;
         } else {
-            auto reg = to_register(variable, manager);
-
-            if(manager.is_escaped(variable)){
-                manager.remove_from_pseudo_reg(variable);
-            }
-
-            return reg;
+            return to_register(variable, manager);
         }
-    }
-
-    template<typename T>
-    ltac::Argument operator()(T&) const {
-        eddic_unreachable("Unhandled arg type");
     }
 };
 
