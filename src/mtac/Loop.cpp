@@ -7,6 +7,8 @@
 
 #include "mtac/Loop.hpp"
 #include "mtac/basic_block.hpp"
+#include "mtac/ControlFlowGraph.hpp"
+#include "mtac/Function.hpp"
 
 using namespace eddic;
 
@@ -45,3 +47,21 @@ mtac::InductionVariables& mtac::Loop::basic_induction_variables(){
 mtac::InductionVariables& mtac::Loop::dependent_induction_variables(){
     return div;
 }
+
+mtac::basic_block_p mtac::create_pre_header(mtac::Loop& loop, mtac::Function& function){
+    auto first_bb = *loop.blocks().begin();
+
+    //Remove the fall through edge
+    mtac::remove_edge(first_bb->prev, first_bb);
+    
+    auto pre_header = function.new_bb();
+    
+    function.insert_before(function.at(first_bb), pre_header);
+
+    //Create the fall through edge
+    mtac::make_edge(pre_header, pre_header->next);
+    mtac::make_edge(pre_header->prev, pre_header);
+    
+    return pre_header;
+}
+

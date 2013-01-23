@@ -56,23 +56,6 @@ bool is_invariant(mtac::Quadruple& quadruple, mtac::Usage& usage){
     return false;
 }
 
-mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function){
-    auto first_bb = *loop.begin();
-
-    //Remove the fall through edge
-    mtac::remove_edge(first_bb->prev, first_bb);
-    
-    auto pre_header = function.new_bb();
-    
-    function.insert_before(function.at(first_bb), pre_header);
-
-    //Create the fall through edge
-    mtac::make_edge(pre_header, pre_header->next);
-    mtac::make_edge(pre_header->prev, pre_header);
-    
-    return pre_header;
-}
-
 /*!
  * \brief Test if an invariant is valid or not. 
  * An invariant defining v is valid if: 
@@ -135,7 +118,7 @@ bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
                 if(is_valid_invariant(bb, statement, loop)){
                     //Create the preheader if necessary
                     if(!pre_header){
-                        pre_header = create_pre_header(loop, function);
+                        pre_header = mtac::create_pre_header(loop, function);
                     }
 
                     function.context->global()->stats().inc_counter("invariant_moved");

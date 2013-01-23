@@ -25,23 +25,6 @@ using namespace eddic;
 
 namespace {
 
-mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function){
-    auto first_bb = *loop.blocks().begin();
-
-    //Remove the fall through edge
-    mtac::remove_edge(first_bb->prev, first_bb);
-    
-    auto pre_header = function.new_bb();
-    
-    function.insert_before(function.at(first_bb), pre_header);
-
-    //Create the fall through edge
-    mtac::make_edge(pre_header, pre_header->next);
-    mtac::make_edge(pre_header->prev, pre_header);
-    
-    return pre_header;
-}
-
 bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
     auto& dependent_induction_variables = loop.dependent_induction_variables();
 
@@ -103,7 +86,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
 
             //Create the preheader if necessary
             if(!pre_header){
-                pre_header = create_pre_header(loop, function);
+                pre_header = mtac::create_pre_header(loop, function);
             }
 
             pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);

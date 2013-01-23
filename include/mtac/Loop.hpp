@@ -58,6 +58,8 @@ class Loop {
         long m_initial;
 };
 
+mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function);
+
 } //end of mtac
 
 } //end of eddic
