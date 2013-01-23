@@ -69,7 +69,7 @@ void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ost
     stream << sep << std::endl;
     stream << *block;
 
-    stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
+    stream << " prev: " << block->prev << ", next: " << block->next << ", dom: " << block->dominator << std::endl;
     stream << "successors "; ::pretty_print(block->successors, stream); stream << std::endl;;
     stream << "predecessors "; ::pretty_print(block->predecessors, stream); stream << std::endl;;
 
