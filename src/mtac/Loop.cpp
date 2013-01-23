@@ -5,6 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include "logging.hpp"
+#include "assert.hpp"
+
 #include "mtac/Loop.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -46,6 +49,20 @@ mtac::InductionVariables& mtac::Loop::basic_induction_variables(){
 
 mtac::InductionVariables& mtac::Loop::dependent_induction_variables(){
     return div;
+}
+
+mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
+    for(auto& block : loop.blocks()){
+        for(auto& pred : block->predecessors){
+            if(loop.blocks().find(pred) == loop.blocks().end()){
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as entry of loop" << log::endl;
+
+                return block;
+            }
+        }
+    }
+
+    eddic_unreachable("Every loop should have a single entry");
 }
 
 mtac::basic_block_p mtac::create_pre_header(mtac::Loop& loop, mtac::Function& function){
