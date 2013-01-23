@@ -71,7 +71,7 @@ mtac::basic_block_p find_entry(mtac::Loop& loop);
  * \param function The function the loop is located in
  * \return The preheader basic block of the Loop
  */
-mtac::basic_block_p create_pre_header(mtac::Loop& loop, mtac::Function& function);
+mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function);
 
 } //end of mtac
 

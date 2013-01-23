@@ -65,7 +65,7 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
     eddic_unreachable("Every loop should have a single entry");
 }
 
-mtac::basic_block_p mtac::create_pre_header(mtac::Loop& loop, mtac::Function& function){
+mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& function){
     auto first_bb = find_entry(loop);
 
     //Step 1: Try to find if there is already a preheader
@@ -75,6 +75,8 @@ mtac::basic_block_p mtac::create_pre_header(mtac::Loop& loop, mtac::Function& fu
 
         //It must be the only successor and a fall through edge
         if(pred->successors.size() == 1 && pred->next == first_bb){
+            LOG<Trace>("Control-Flow") << "Found " << *pred << " as preheader of loop" << log::endl;
+
             return pred;
         }
     }
