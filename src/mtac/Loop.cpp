@@ -66,18 +66,45 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
 }
 
 mtac::basic_block_p mtac::create_pre_header(mtac::Loop& loop, mtac::Function& function){
-    auto first_bb = *loop.blocks().begin();
+    auto first_bb = find_entry(loop);
 
-    //Remove the fall through edge
-    mtac::remove_edge(first_bb->prev, first_bb);
-    
+    //Step 1: Try to find if there is already a preheader
+
+    if(first_bb->predecessors.size() == 1){
+        auto& pred = first_bb->predecessors.front();
+
+        //It must be the only successor and a fall through edge
+        if(pred->successors.size() == 1 && pred->next == first_bb){
+            return pred;
+        }
+    }
+
+    //Step 2: If not found, create a new preheader
+
     auto pre_header = function.new_bb();
-    
+
+    //Redispatch all the predecessors
+
+    auto predecessors = first_bb->predecessors;
+    for(auto& pred : predecessors){
+        if(loop.blocks().find(pred) == loop.blocks().end()){
+            mtac::remove_edge(pred, first_bb);
+            mtac::make_edge(pred, pre_header);
+
+            auto& quadruple = pred->statements.back();
+
+            if(quadruple.block == first_bb){
+                quadruple.block = pre_header;
+            }
+        }
+    }
+
     function.insert_before(function.at(first_bb), pre_header);
 
     //Create the fall through edge
-    mtac::make_edge(pre_header, pre_header->next);
-    mtac::make_edge(pre_header->prev, pre_header);
+    mtac::make_edge(pre_header, first_bb);
+                
+    LOG<Trace>("Control-Flow") << "Create " << *pre_header << " as preheader of loop" << log::endl;
     
     return pre_header;
 }
