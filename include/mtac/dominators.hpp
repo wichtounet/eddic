@@ -16,6 +16,15 @@ namespace eddic {
 
 namespace mtac {
 
+/*!
+ * \brief Compute the direct dominator of each basic_block.
+ *
+ * The computation is made with the Lengauer and Tarjan algorithm. The algorithm runs
+ * in O(ma(m, n)) time where a(m, n) is the inverse of the Ackermann's function. 
+ *
+ * Reference: A Fast Algorithm for finding dominators in a Flowgraph by Thomas Lengauer
+ * and Roberrt Endre Tarjan
+ */
 void compute_dominators(mtac::Function& function);
 
 } //end of mtac

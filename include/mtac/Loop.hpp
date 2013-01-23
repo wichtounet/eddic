@@ -58,6 +58,21 @@ class Loop {
         long m_initial;
 };
 
+/*!
+ * \brief Find the basic block that is the entry to the Loop
+ * \param loop The loop to find the entry of. 
+ * \return The entry basic block. 
+ */
+mtac::basic_block_p find_entry(mtac::Loop& loop);
+
+/*!
+ * \brief Find or create a preheader for the given loop. 
+ * \param loop The loop to find the preheader for
+ * \param function The function the loop is located in
+ * \return The preheader basic block of the Loop
+ */
+mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function);
+
 } //end of mtac
 
 } //end of eddic
