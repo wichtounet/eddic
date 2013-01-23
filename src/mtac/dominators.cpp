@@ -198,7 +198,6 @@ struct dominators {
                 block->dominator = nullptr;
             }
 
-            //TODO Not sure if not necessary to use another array
             block->dominator = blocks[dom[number]]; 
         }
     }
