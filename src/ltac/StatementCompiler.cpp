@@ -29,8 +29,6 @@
 
 using namespace eddic;
 
-
-
 namespace {
 
 ltac::Address stack_address(int offset){

@@ -56,6 +56,7 @@ std::shared_ptr<ltac::Instruction> add_instruction(mtac::basic_block_p bb, ltac:
 std::shared_ptr<ltac::Instruction> add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3);
 
 ltac::PseudoRegister to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
+ltac::PseudoFloatRegister to_float_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
 ltac::Argument to_arg(mtac::Argument argument, ltac::RegisterManager& manager);
 
 } //end of ltac

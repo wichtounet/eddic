@@ -70,6 +70,14 @@ ltac::PseudoRegister eddic::ltac::to_register(std::shared_ptr<Variable> var, lta
     }
 }
 
+ltac::PseudoFloatRegister eddic::ltac::to_float_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
+    if(var->position().is_temporary()){
+        return manager.get_pseudo_float_reg_no_move(var);
+    } else {
+        return manager.get_pseudo_float_reg(var);
+    }
+}
+
 namespace {
 
 struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
@@ -91,15 +99,7 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
 
     ltac::Argument operator()(std::shared_ptr<Variable> variable) const {
         if(ltac::is_float_var(variable)){
-            ltac::PseudoFloatRegister reg;
-
-            if(variable->position().is_temporary()){
-                reg = manager.get_pseudo_float_reg_no_move(variable);
-            } else {
-                reg = manager.get_pseudo_float_reg(variable);
-            }
-            
-            return reg;
+            return to_float_register(variable, manager);
         } else {
             return to_register(variable, manager);
         }
