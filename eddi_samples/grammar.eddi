@@ -1,0 +1,47 @@
+
+struct B {
+    int a;
+
+    int test(){
+
+    }
+}
+
+struct A {
+    B a;
+
+    B test(){
+        return a;
+    }
+
+    B test(int b){
+        return test();
+    }
+}
+
+void test(int a){
+
+}
+
+int clear(){
+    return 0;
+}
+
+A* test_ptr(){
+
+}
+
+void main(){
+    A a;
+
+    str asdf;
+
+    A array[5];
+
+    array[a.test(array[0].a.a).a.a + ++a.test(length(asdf) * a.a.a).test()--].a.a = 9;
+    
+    test(clear());
+
+    *test_ptr() = a;
+
+}
