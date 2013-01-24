@@ -8,7 +8,6 @@
 #ifndef TRANSFORMER_ENGINE_H
 #define TRANSFORMER_ENGINE_H
 
-#include "ast/source_def.hpp"
 #include "ast/Pass.hpp"
 
 namespace eddic {

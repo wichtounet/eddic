@@ -8,7 +8,6 @@
 #ifndef TEMPLATE_COLLECTION_PASS_H
 #define TEMPLATE_COLLECTION_PASS_H
 
-#include "ast/source_def.hpp"
 #include "ast/Pass.hpp"
 
 namespace eddic {

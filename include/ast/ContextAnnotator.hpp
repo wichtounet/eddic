@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "ast/source_def.hpp"
 #include "ast/Pass.hpp"
 
 namespace eddic {

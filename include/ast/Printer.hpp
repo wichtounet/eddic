@@ -8,7 +8,7 @@
 #ifndef AST_PRINTER_H
 #define AST_PRINTER_H
 
-#include "ast/SourceFile.hpp"
+#include "ast/source_def.hpp"
 
 namespace eddic {
 

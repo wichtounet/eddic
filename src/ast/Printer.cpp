@@ -13,6 +13,7 @@
 #include "Variable.hpp"
 
 #include "ast/Printer.hpp"
+#include "ast/SourceFile.hpp"
 #include "ast/Operator.hpp"
 
 using namespace eddic;
