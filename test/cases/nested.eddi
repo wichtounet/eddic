@@ -3,22 +3,43 @@ include<print>
 struct A {
     int first;
     int second;
+
+    this(A* rhs){
+        first = rhs.first;
+        second = rhs.second;
+    }
 }
 
 struct B {
     int first;
     int second;
+
+    this(B* rhs){
+        first = rhs.first;
+        second = rhs.second;
+    }
 }
 
 struct D {
     A a;
     B b;
+
+    this(D* rhs){
+        a = rhs.a;
+        b = rhs.b;
+    }
 }
 
 struct C {
     A a;
     B b;
     D d;
+
+    this(C* rhs){
+        a = rhs.a;
+        b = rhs.b;
+        d = rhs.d;
+    }
 }
 
 void main(){
