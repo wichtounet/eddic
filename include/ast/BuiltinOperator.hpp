@@ -8,8 +8,8 @@
 #ifndef AST_BUILTIN_OPERATOR_H
 #define AST_BUILTIN_OPERATOR_H
 
-#include <vector>
 #include <memory>
+#include <ostream>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 

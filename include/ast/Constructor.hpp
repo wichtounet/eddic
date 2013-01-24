@@ -8,6 +8,10 @@
 #ifndef AST_CONSTRUCTOR_H
 #define AST_CONSTRUCTOR_H
 
+#include <string>
+#include <memory>
+#include <vector>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/FunctionParameter.hpp"

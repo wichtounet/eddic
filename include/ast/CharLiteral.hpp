@@ -8,6 +8,8 @@
 #ifndef AST_CHAR_LITERAL_H
 #define AST_CHAR_LITERAL_H
 
+#include<string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 namespace eddic {

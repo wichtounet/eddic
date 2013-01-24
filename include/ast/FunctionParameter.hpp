@@ -8,6 +8,8 @@
 #ifndef AST_FUNCTION_PARAMETER_H
 #define AST_FUNCTION_PARAMETER_H
 
+#include <string>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/VariableType.hpp"

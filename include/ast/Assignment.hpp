@@ -9,8 +9,6 @@
 #define AST_ASSIGNMENT_H
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
