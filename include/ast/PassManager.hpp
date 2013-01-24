@@ -14,7 +14,6 @@
 #include "Platform.hpp"
 
 #include "ast/source_def.hpp"
-#include "ast/VariableType.hpp"
 #include "ast/TemplateEngine.hpp"
 
 namespace eddic {

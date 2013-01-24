@@ -8,10 +8,15 @@
 #ifndef AST_DESTRUCTOR_H
 #define AST_DESTRUCTOR_H
 
+#include <string>
+#include <memory>
+#include <vector>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Instruction.hpp"
 #include "ast/Position.hpp"
+#include "ast/FunctionParameter.hpp"
 
 namespace eddic {
 

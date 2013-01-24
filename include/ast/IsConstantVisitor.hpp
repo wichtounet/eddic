@@ -8,8 +8,6 @@
 #ifndef IS_CONSTANT_VISITOR_H
 #define IS_CONSTANT_VISITOR_H
 
-#include <type_traits>
-
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/contains.hpp>
 

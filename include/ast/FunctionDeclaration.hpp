@@ -8,6 +8,10 @@
 #ifndef AST_FUNCTION_DECLARATION_H
 #define AST_FUNCTION_DECLARATION_H
 
+#include <string>
+#include <memory>
+#include <vector>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/FunctionParameter.hpp"
@@ -18,6 +22,7 @@
 namespace eddic {
 
 class FunctionContext;
+class Type;
 
 namespace ast {
 

@@ -8,7 +8,6 @@
 #ifndef AST_ARRAY_TYPE_H
 #define AST_ARRAY_TYPE_H
 
-#include <string>
 #include <ostream>
 
 #include <boost/fusion/include/adapt_struct.hpp>

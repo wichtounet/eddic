@@ -17,6 +17,7 @@
 namespace eddic {
 
 class Variable;
+class Type;
 
 namespace ast {
 
