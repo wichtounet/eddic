@@ -1601,7 +1601,15 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             if(param->type()->is_pointer()){
                 args = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), first);
             } else {
-                args = visit(ToArgumentsVisitor<>(function), first);
+                if(param->type()->is_custom_type()){
+                    auto new_temporary = function.context->generate_variable("tmp_", param->type());
+                    
+                    copy_construct(function, param->type(), new_temporary, first);
+
+                    args = {new_temporary};
+                } else {
+                    args = visit(ToArgumentsVisitor<>(function), first);
+                }
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){
