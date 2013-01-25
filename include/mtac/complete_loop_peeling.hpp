@@ -22,6 +22,7 @@ struct complete_loop_peeling {
 
     complete_loop_peeling(mtac::Program& program) : program(program){}
 
+    bool gate(std::shared_ptr<Configuration> configuration);
     bool operator()(mtac::Function& function);
 };
 

@@ -98,6 +98,7 @@ void init_descriptions(){
         ("finline-functions", "Enable inlining")
         ("fno-inline-functions", "Disable inlining")
         ("funroll-loops", "Enable Loop Unrolling")
+        ("fcomplete-peel-loops", "Enable Complete Loop Peeling")
         ;
     
     po::options_description backend("Backend options");
@@ -119,7 +120,7 @@ void init_descriptions(){
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
     add_trigger("__2", {"fglobal-optimization", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
-    add_trigger("__3", {"funroll-loops"});
+    add_trigger("__3", {"funroll-loops", "fcomplete-peel-loops"});
 }
 
 inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){
