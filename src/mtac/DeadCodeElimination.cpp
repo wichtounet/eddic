@@ -47,7 +47,10 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         }
     }
 
+    //TODO Review or remove this optimization, this is quite unsafe
+
     std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
+    std::unordered_set<std::shared_ptr<Variable>> invalidated_offsets;
 
     for(auto& block : function){
         for(auto& quadruple : block->statements){
@@ -56,6 +59,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                     if(auto* offset_ptr = boost::get<int>(&*quadruple.arg2)){
                         mtac::Offset offset(*var_ptr, *offset_ptr);
                         used_offsets.insert(offset);
+                    } else {
+                        invalidated_offsets.insert(*var_ptr);
                     }
                 }
             }
@@ -69,25 +74,27 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
             auto& quadruple = *it;
 
             if(quadruple.op == mtac::Operator::DOT_ASSIGN || quadruple.op == mtac::Operator::DOT_FASSIGN || quadruple.op == mtac::Operator::DOT_PASSIGN){
-                //Arrays are a problem because they are not considered as escaped after being passed in parameters
-                if(!quadruple.result->type()->is_pointer() && !quadruple.result->type()->is_array()){
-                    if(auto* offset_ptr = boost::get<int>(&*quadruple.arg1)){
-                        if(quadruple.result->type()->is_custom_type() || quadruple.result->type()->is_template_type()){
-                            auto struct_type = function.context->global()->get_struct(quadruple.result->type()->mangle());
-                            auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
+                if(invalidated_offsets.find(quadruple.result) == invalidated_offsets.end()){
+                    //Arrays are a problem because they are not considered as escaped after being passed in parameters
+                    if(!quadruple.result->type()->is_pointer() && !quadruple.result->type()->is_array()){
+                        if(auto* offset_ptr = boost::get<int>(&*quadruple.arg1)){
+                            if(quadruple.result->type()->is_custom_type() || quadruple.result->type()->is_template_type()){
+                                auto struct_type = function.context->global()->get_struct(quadruple.result->type()->mangle());
+                                auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
-                            if(member_type->is_pointer()){
-                                ++it;
+                                if(member_type->is_pointer()){
+                                    ++it;
+                                    continue;
+                                }
+                            }
+
+                            mtac::Offset offset(quadruple.result, *offset_ptr);
+
+                            if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
+                                it.erase();
+                                optimized=true;
                                 continue;
                             }
-                        }
-
-                        mtac::Offset offset(quadruple.result, *offset_ptr);
-
-                        if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                            it.erase();
-                            optimized=true;
-                            continue;
                         }
                     }
                 }
