@@ -89,6 +89,8 @@ std::ostream& eddic::operator<<(std::ostream& stream, const Variable& variable){
         } else {
             type = "s";
         }
+    } else if(variable.type()->is_dynamic_array()){
+        type = "da";
     } else if(variable.type()->is_array()){
         type = "a";
     } else if(variable.type()->is_template_type()){
