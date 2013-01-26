@@ -110,6 +110,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     auto& dependent_induction_variables = loop.dependent_induction_variables();
     
     mtac::Usage usage = compute_read_usage(loop);
+    mtac::Usage function_usage = compute_read_usage(function);
 
     //Remove generated copy when useless
     for(auto& bb : loop){
@@ -117,14 +118,15 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
 
         while(it.has_next()){
             auto& quadruple = *it;
+            auto op = quadruple.op;
 
-            if(quadruple.op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
+            if(op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
                 auto j = quadruple.result;
                 auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
 
                 //If j = tj generated in strength reduction phase
-                if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj) && dependent_induction_variables[tj].generated){
-                    if(!usage.read.count(j)){
+                if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj)){
+                    if(dependent_induction_variables[tj].generated && usage.read[j] == 0){
                         LOG<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
 
                         //There is one less read of tj
@@ -135,6 +137,25 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
                         it.erase();
                         continue;
                     }
+                }
+            }
+
+            //Remove statements generated during strength reduction that are not necessary
+            if(op == mtac::Operator::ADD && mtac::isVariable(*quadruple.arg1)){
+                auto j = quadruple.result;
+                auto tj = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
+
+                if(j == tj && usage.read[j] == 1 && function_usage.read[j] == 1){
+                    //If it is a dependent induction variable, remove it
+                    if(dependent_induction_variables.count(j)){
+                        dependent_induction_variables.erase(j);
+                    }
+
+                    //There is one less read of j
+                    --usage.read[j];
+
+                    it.erase();
+                    continue;
                 }
             }
 
