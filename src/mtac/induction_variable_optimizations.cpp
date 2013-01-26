@@ -229,7 +229,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
         LOG<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
        
         auto div_equation = dependent_induction_variables[div];
-        auto new_end = div_equation.e * end + div_equation.d;
+        auto new_end = div_equation.e * (end-1) + div_equation.d;
 
         usage.read[biv] = 0;
     
@@ -281,10 +281,10 @@ bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& fun
     }
 
     //2. Removal of dependent induction variables
-//    induction_variable_removal(function, loop);
+    induction_variable_removal(function, loop);
 
     //3. Replace basic induction variable with another dependent variable
-//    induction_variable_replace(function, loop);
+    induction_variable_replace(function, loop);
 
     return optimized;
 }
