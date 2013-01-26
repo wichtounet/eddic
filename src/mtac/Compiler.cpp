@@ -455,7 +455,11 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function.context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
 
-                    function.emplace_back(temp, variable, mtac::Operator::PDOT, static_cast<int>(offset));
+                    if(member_type->is_dynamic_array() || member_type->is_pointer()){
+                        function.emplace_back(temp, variable, mtac::Operator::DOT, static_cast<int>(offset));
+                    } else {
+                        function.emplace_back(temp, variable, mtac::Operator::PDOT, static_cast<int>(offset));
+                    }
 
                     left = {temp};
                 } else {
@@ -889,7 +893,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 eddic_assert(mtac::isVariable(left[0]), "The visitor should return a temporary variable");
 
                 auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-                return dereference_variable(variable, type->data_type());
+
+                if(T == ArgumentType::ADDRESS){
+                    return {variable}; 
+                } else {
+                    return dereference_variable(variable, type->data_type());
+                }
             }
             
             case ast::Operator::ADDRESS:
