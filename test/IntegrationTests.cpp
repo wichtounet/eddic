@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE( std_lib_string ){
 }
 
 BOOST_AUTO_TEST_CASE( std_lib_string_concat ){
-    assert_output("stdlib_string_concat.eddi", "asdf1234|1234|asdf1234|1234asdf1234|asdf1234|1234asdf1234|you1234asdf1234|");
+    assert_output("stdlib_string_concat.eddi", "asdf|1234|you|asdf1234|1234|you|asdf1234|1234asdf1234|you|asdf1234|1234asdf1234|you1234asdf1234|");
 }
 
 BOOST_AUTO_TEST_CASE( std_lib_string_concat_int ){
