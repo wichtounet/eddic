@@ -10,6 +10,14 @@ struct string {
             data[i] = raw[i];
         }
     }
+   
+    this(string* rhs){
+        data = new char[rhs.size()];
+        
+        for(int i = 0; i < size(); ++i){
+            data[i] = rhs.data[i];
+        }
+    }
     
     ~this(){
         delete data;

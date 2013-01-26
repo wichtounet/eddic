@@ -41,7 +41,7 @@ void mtac::resolve_references(mtac::Program& program){
             auto op = quadruple.op;
 
             //x = (r)z => x = (ref(r))(z+offset(r))
-            if((op == mtac::Operator::DOT || op == mtac::Operator::FDOT) && mtac::optional_is<std::shared_ptr<Variable>>(quadruple.arg1)){
+            if((op == mtac::Operator::DOT || op == mtac::Operator::FDOT || op == mtac::Operator::PDOT) && mtac::optional_is<std::shared_ptr<Variable>>(quadruple.arg1)){
                 auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
 
                 if(var->is_reference()){

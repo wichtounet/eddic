@@ -1,0 +1,39 @@
+include<print>
+
+struct A {
+    int a;
+    int b;
+
+    this(){
+        print("C1");
+        print("|");
+    }
+
+    this(A* rhs){
+        print("C2");
+        print("|");
+
+        a = rhs.a;
+        b = rhs.b;
+    }
+}
+
+void main(){
+    A a;
+    a.a = 1;
+    a.b = 2;
+
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+
+    test(a);
+}
+
+void test(A a){
+    print(a.a);
+    print("|");
+    print(a.b);
+    print("|");
+}

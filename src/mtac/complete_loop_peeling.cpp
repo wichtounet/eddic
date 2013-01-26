@@ -18,6 +18,10 @@
 
 using namespace eddic;
 
+bool mtac::complete_loop_peeling::gate(std::shared_ptr<Configuration> configuration){
+    return configuration->option_defined("fcomplete-peel-loops");
+}
+
 bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
     if(function.loops().empty()){
         return false;

@@ -17,6 +17,7 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Quadruple.hpp"
+#include "mtac/Utils.hpp"
 
 #include "ltac/Statement.hpp"
 
@@ -181,6 +182,22 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
             ++it;
         } else {
             it = out.values().erase(it);
+        }
+    }
+
+    if(mtac::erase_result(quadruple.op)){
+        //Cancel the copy of the variable erased
+        for(auto it = std::begin(out.values()); it != std::end(out.values());){
+            auto value = it->second;
+
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&value)){
+                if(*ptr == quadruple.result){
+                    it = out.values().erase(it);
+                    continue;
+                }
+            }
+
+            ++it;
         }
     }
 

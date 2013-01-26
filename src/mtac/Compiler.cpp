@@ -455,7 +455,11 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 if(T == ArgumentType::ADDRESS){
                     auto temp = function.context->new_temporary(member_type->is_pointer() ? member_type : new_pointer_type(member_type));
 
-                    function.emplace_back(temp, variable, mtac::Operator::PDOT, static_cast<int>(offset));
+                    if(member_type->is_dynamic_array() || member_type->is_pointer()){
+                        function.emplace_back(temp, variable, mtac::Operator::DOT, static_cast<int>(offset));
+                    } else {
+                        function.emplace_back(temp, variable, mtac::Operator::PDOT, static_cast<int>(offset));
+                    }
 
                     left = {temp};
                 } else {
@@ -804,19 +808,15 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(std::shared_ptr<Variable> var) const {
-        return {var};
-    }
-
-    result_type operator()(ast::VariableValue& value) const {
         if(T == ArgumentType::ADDRESS || T == ArgumentType::REFERENCE){
-            return {value.Content->var};
+            return {var};
         }
 
-        auto type = value.Content->var->type();
+        auto type = var->type();
 
         //If it's a const, we just have to replace it by its constant value
         if(type->is_const()){
-            auto val = value.Content->var->val();
+            auto val = var->val();
             auto nc_type = type;//->non_const();
 
             if(nc_type == INT || nc_type == BOOL){
@@ -833,19 +833,23 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             eddic_unreachable("void is not a type");
         } else if(type->is_array() || type->is_pointer()){
-            return {value.Content->var};
+            return {var};
         } else  if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
-            return {value.Content->var};
+            return {var};
         } else if(type == STRING){
-            auto temp = value.Content->context->new_temporary(INT);
-            function.emplace_back(temp, value.Content->var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
+            auto temp = function.context->new_temporary(INT);
+            function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
 
-            return {value.Content->var, temp};
+            return {var, temp};
         } else if(type->is_structure()) {
-            return struct_to_arguments(function, type, value.Content->var, 0);
+            return struct_to_arguments(function, type, var, 0);
         } 
     
         eddic_unreachable("Unhandled type");
+    }
+
+    result_type operator()(ast::VariableValue& value) const {
+        return (*this)(value.Content->var);
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
@@ -889,7 +893,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 eddic_assert(mtac::isVariable(left[0]), "The visitor should return a temporary variable");
 
                 auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-                return dereference_variable(variable, type->data_type());
+
+                if(T == ArgumentType::ADDRESS){
+                    return {variable}; 
+                } else {
+                    return dereference_variable(variable, type->data_type());
+                }
             }
             
             case ast::Operator::ADDRESS:
@@ -1199,25 +1208,33 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;
             boost::tie(offset, member_type) = mtac::compute_member(function.context->global(), struct_variable->type(), member);
-            
-            arguments values;
-            if(member_type->is_pointer()){
-                values = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), right_value);
+
+            if(member_type->is_structure()){
+                auto this_ptr = function.context->new_temporary(new_pointer_type(member_type));
+
+                function.emplace_back(this_ptr, struct_variable, mtac::Operator::PDOT, static_cast<int>(offset));
+
+                copy_construct(function, member_type, this_ptr, right_value);
             } else {
-                values = visit(ToArgumentsVisitor<>(function), right_value);
-            }
-            
-            if(member_type->is_pointer()){
-                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_PASSIGN, values[0]);
-            } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
-                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
-            } else if(member_type == STRING){
-                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
-                function.emplace_back(struct_variable, static_cast<int>(offset + INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
-            } else if(member_type == FLOAT){
-                function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
-            } else {
-                eddic_unreachable("Unhandled value type");
+                arguments values;
+                if(member_type->is_pointer()){
+                    values = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), right_value);
+                } else {
+                    values = visit(ToArgumentsVisitor<>(function), right_value);
+                }
+
+                if(member_type->is_pointer()){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_PASSIGN, values[0]);
+                } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                } else if(member_type == STRING){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                    function.emplace_back(struct_variable, static_cast<int>(offset + INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
+                } else if(member_type == FLOAT){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
+                } else {
+                    eddic_unreachable("Unhandled value type");
+                }
             }
         } else {
             eddic_unreachable("This postfix operator does not result in a left value");
@@ -1601,7 +1618,15 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             if(param->type()->is_pointer()){
                 args = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), first);
             } else {
-                args = visit(ToArgumentsVisitor<>(function), first);
+                if(param->type()->is_custom_type()){
+                    auto new_temporary = function.context->generate_variable("tmp_", param->type());
+                    
+                    copy_construct(function, param->type(), new_temporary, first);
+
+                    args = visit_non_variant(ToArgumentsVisitor<>(function), new_temporary);
+                } else {
+                    args = visit(ToArgumentsVisitor<>(function), first);
+                }
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){

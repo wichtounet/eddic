@@ -1148,12 +1148,12 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
 
         if(mtac::is<int>(*quadruple.arg2)){
             int offset = boost::get<int>(*quadruple.arg2);
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ptr_reg, offset));
+            ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
         } else {
             assert(ltac::is_variable(*quadruple.arg2));
 
             auto offset = manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg2));
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ptr_reg, offset));
+            ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
         }
     } else {
         if(mtac::is<int>(*quadruple.arg2)){
