@@ -66,20 +66,47 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
     auto op = quadruple.op;
 
     if(mtac::is_expression(op)){
-        bool exists = false;
-        for(auto& expression : out.values()){
-            if(are_equivalent(quadruple, function->find(expression.expression))){
-                exists = true;
-                break;
+        bool valid = true;
+        if(op == mtac::Operator::DOT){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                if((*ptr)->type()->is_pointer()){
+                    valid = false;
+                }
             }
         }
 
-        if(!exists){
-            out.values().push_back({quadruple.uid(), basic_block});
+        if(valid){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                if(pointer_escaped->find(*ptr) != pointer_escaped->end()){
+                    valid = false;
+                }
+            }
+        }
+
+        if(valid){
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+                if(pointer_escaped->find(*ptr) != pointer_escaped->end()){
+                    valid = false;
+                }
+            }
+        }
+
+        if(valid){
+            bool exists = false;
+            for(auto& expression : out.values()){
+                if(are_equivalent(quadruple, function->find(expression.expression))){
+                    exists = true;
+                    break;
+                }
+            }
+
+            if(!exists){
+                out.values().push_back({quadruple.uid(), basic_block});
+            }
         }
     }
 
-    if(mtac::erase_result(op)){
+    if(mtac::erase_result(op) || op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN || op == mtac::Operator::DOT_PASSIGN){
         auto it = iterate(out.values());
 
         while(it.has_next()){
@@ -110,7 +137,9 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& /*function*/){
+ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& function){
+    pointer_escaped = mtac::escape_analysis(function);
+
     return default_element();
 }
 
@@ -174,7 +203,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
 
                         if(are_equivalent(source_statement, quadruple)){
                             mtac::Operator assign_op;
-                            if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
+                            if((quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD) || quadruple.op == mtac::Operator::DOT){
                                 assign_op = mtac::Operator::ASSIGN;
                             } else {
                                 assign_op = mtac::Operator::FASSIGN;
@@ -186,11 +215,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                                 function.context->global()->stats().inc_counter("common_subexpr_eliminated");
 
                                 std::shared_ptr<Variable> temp;
-                                if(quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD){
-                                    temp = expression.source->context->new_temporary(INT);
-                                } else {
-                                    temp = expression.source->context->new_temporary(FLOAT);
-                                } 
+                                temp = expression.source->context->new_temporary(result->type());
 
                                 new_result = temp;
 

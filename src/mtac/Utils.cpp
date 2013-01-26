@@ -132,7 +132,7 @@ bool eddic::mtac::is_distributive(mtac::Operator op){
 }
 
 bool eddic::mtac::is_expression(mtac::Operator op){
-    return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
+    return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
 }
 
 unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){
