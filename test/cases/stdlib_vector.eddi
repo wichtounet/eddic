@@ -42,6 +42,8 @@ void main(){
     v.push_back(99);
     v.push_back(111);
     debug<int>(&v);
+
+    v.remove(2);
     
     print("{");
 
