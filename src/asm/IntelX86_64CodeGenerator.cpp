@@ -144,11 +144,24 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "push rcx" << '\n';
                 writer.stream() << "push rax" << '\n';
                 writer.stream() << "push rdi" << '\n';
+                
                 writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
                 writer.stream() << "xor rax, rax" << '\n';
                 writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
-                writer.stream() << "add rdi, 24" << '\n'; //Because of the pushs...
+                
+                //Because of the pushs...
+                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
+                    if(ptr->base_register){
+                        if(auto* reg_ptr = boost::get<ltac::Register>(&*ptr->base_register)){
+                            if(*reg_ptr == ltac::SP){
+                                writer.stream() << "add rdi, 24" << '\n';
+                            }
+                        }
+                    }
+                }
+                
                 writer.stream() << "rep stosq" << '\n';
+
                 writer.stream() << "pop rdi" << '\n';
                 writer.stream() << "pop rax" << '\n';
                 writer.stream() << "pop rcx" << '\n';
