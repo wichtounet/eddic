@@ -22,6 +22,7 @@
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/forward.hpp"
 #include "mtac/Quadruple.hpp"
+#include "mtac/EscapeAnalysis.hpp"
 
 namespace eddic {
 
@@ -43,6 +44,8 @@ class CommonSubexpressionElimination {
 
         //The direction
         STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        
+        mtac::EscapedVariables pointer_escaped;
 
         ProblemDomain Init(mtac::Function& function);
         ProblemDomain Boundary(mtac::Function& function);
