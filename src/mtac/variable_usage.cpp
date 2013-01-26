@@ -66,9 +66,8 @@ struct UsageCollector {
     }
 };
 
-} //end of anonymous namespace
-
-mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
+template<typename Container>
+mtac::Usage compute_read_usage(Container& loop){
     mtac::Usage usage;
     VariableReadCollector collector(usage);
 
@@ -81,11 +80,12 @@ mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
     return usage;
 }
 
-mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
+template<typename Container>
+mtac::Usage compute_write_usage(Container& loop){
     mtac::Usage usage;
 
     for(auto& bb : loop){
-        for(auto& quadruple : bb->statements){
+        for(auto& quadruple : bb){
             if(mtac::erase_result(quadruple.op)){
                 ++(usage.written[quadruple.result]);
                 ++(usage.written[quadruple.secondary]);
@@ -94,6 +94,24 @@ mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
     }
 
     return usage;
+}
+
+} //end of anonymous namespace
+
+mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
+    return ::compute_read_usage(loop);
+}
+
+mtac::Usage mtac::compute_read_usage(mtac::Function& function){
+    return ::compute_read_usage(function);
+}
+
+mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
+    return ::compute_write_usage(loop);
+}
+
+mtac::Usage mtac::compute_write_usage(mtac::Function& function){
+    return ::compute_write_usage(function);
 }
 
 bool mtac::use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var){

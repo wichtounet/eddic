@@ -24,7 +24,10 @@ struct Usage {
 };
 
 Usage compute_read_usage(mtac::Loop& loop);
+Usage compute_read_usage(mtac::Function& function);
+
 Usage compute_write_usage(mtac::Loop& loop);
+Usage compute_write_usage(mtac::Function& function);
 
 bool use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var);
 
