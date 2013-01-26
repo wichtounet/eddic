@@ -141,10 +141,16 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
                 break;
             case ltac::Operator::MEMSET:
+                writer.stream() << "push rcx" << '\n';
+                writer.stream() << "push rax" << '\n';
+                writer.stream() << "push rdi" << '\n';
                 writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
                 writer.stream() << "xor rax, rax" << '\n';
                 writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
                 writer.stream() << "rep stosq" << '\n';
+                writer.stream() << "pop rdi" << '\n';
+                writer.stream() << "pop rax" << '\n';
+                writer.stream() << "pop rcx" << '\n';
 
                 break;
             case ltac::Operator::ENTER:
