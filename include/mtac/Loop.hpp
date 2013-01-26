@@ -26,6 +26,15 @@ struct LinearEquation {
     int e;
     int d;
     bool generated;
+    bool div;
+
+    LinearEquation() : def(0), i(nullptr), e(0), d(0), generated(false), div(false){
+        //Nothing to init
+    }
+
+    LinearEquation(std::size_t def, std::shared_ptr<Variable> i, int e, int d, bool generated, bool div = false) : def(def), i(i), e(e), d(d), generated(generated), div(div) {
+        //Nothing
+    }
 };
 
 typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
