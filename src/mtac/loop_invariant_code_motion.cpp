@@ -39,11 +39,6 @@ bool is_invariant(boost::optional<mtac::Argument>& argument, mtac::Usage& usage)
 }
 
 bool is_invariant(mtac::Quadruple& quadruple, mtac::Usage& usage){
-    //TODO Relax this rule by making a more powerful memory analysis
-    if(quadruple.op == mtac::Operator::DOT || quadruple.op == mtac::Operator::FDOT || quadruple.op == mtac::Operator::PDOT){
-        return false;
-    }
-
     if(mtac::erase_result(quadruple.op)){
         //If there are more than one write to this variable, the computation is not invariant
         if(usage.written[quadruple.result] > 1){
