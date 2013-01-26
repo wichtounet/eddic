@@ -55,6 +55,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
 
             for(auto& bb : loop){
                 auto it = iterate(bb->statements);
+                bool here = false;
 
                 while(it.has_next()){
                     auto& quadruple = *it;
@@ -62,15 +63,10 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                     //To avoid replacing j by tj
                     if(quadruple.uid() == equation.def){
                         ++it;
+                        continue;
                     } 
-                    //After an assignment to a basic induction variable, insert addition for tj
                     else if(quadruple.uid() == basic_equation.def){
-                        ++it;
-                        it.insert(mtac::Quadruple(tj, tj, mtac::Operator::ADD, db));
-
-                        new_induction_variables[tj] = {it->uid(), i, equation.e, equation.d, true};
-
-                        //To avoid replacing j by tj
+                        here = true;
                         ++it;
                     }
 
@@ -81,6 +77,13 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
                     replacer.replace(*it);
 
                     ++it;
+                }
+
+                if(here){
+                    auto sit = bb->statements.end();
+                    --sit;
+
+                    bb->statements.insert(sit, mtac::Quadruple(tj, tj, mtac::Operator::ADD, db));
                 }
             }
 
@@ -226,7 +229,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
         LOG<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
        
         auto div_equation = dependent_induction_variables[div];
-        auto new_end = div_equation.e * end + div_equation.d;
+        auto new_end = div_equation.e * (end-1) + div_equation.d;
 
         usage.read[biv] = 0;
     
@@ -263,7 +266,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
 
 bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& function){
     bool optimized = false;
-
+    
     //1. Strength reduction on each dependent induction variables
     for(auto& basic : loop.basic_induction_variables()){
         optimized |= strength_reduce(loop, basic.second, function);

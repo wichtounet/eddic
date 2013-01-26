@@ -590,7 +590,7 @@ BOOST_AUTO_TEST_CASE( std_linked_list ){
 }
 
 BOOST_AUTO_TEST_CASE( std_vector ){
-    assert_output("stdlib_vector.eddi", "0|0||1|1|55|55|2|2|55|66|3|4|55|77|66|2|4|55|66|5|8|55|111|{55|66|88|99|111|}");
+    assert_output("stdlib_vector.eddi", "0|0||1|1|55|55|2|2|55|66|3|4|55|77|66|2|4|55|66|5|8|55|111|{55|66|99|111|}{55|66|10|99|111|}");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
