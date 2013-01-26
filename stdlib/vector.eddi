@@ -40,10 +40,13 @@ struct vector {
         return data[index];
     }
 
-    void push_back(T value){
-        if(capacity() == 0){
+    //Ensure capacity for one more element
+    void ensure_capacity(){
+        int current = capacity();
+        
+        if(current == 0){
             data = new T[1];
-        } else if(size == capacity()){
+        } else if(size == current){
             T[] new_data = new T[capacity() * 2];
 
             for(int i = 0; i < size; ++i){
@@ -53,8 +56,24 @@ struct vector {
             delete data;
             data = new_data;
         }
+    }
+
+    void push_back(T value){
+        ensure_capacity();
 
         data[size] = value;
+        ++size;
+    }
+
+    void insert(int index, T value){
+        ensure_capacity();
+        
+        for(int i = size - 1; i > index; --i){
+            data[i] = data[i-1];
+        }
+
+        data[index] = value;
+
         ++size;
     }
 
