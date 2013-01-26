@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -21,11 +21,10 @@ Function::Function(std::shared_ptr<const Type> return_type, const std::string& n
 Function::Function(Function&& rhs) : 
         _struct_type(std::move(rhs._struct_type)), _return_type(std::move(rhs._return_type)),  
         _name(std::move(rhs._name)), _mangled_name(std::move(rhs._mangled_name)),
-        _references(std::move(rhs._references)), _standard(std::move(rhs._standard)),
+        _standard(std::move(rhs._standard)),
         _parameters(std::move(rhs._parameters)) {
 
    //Reset rhs
-   rhs._references = 0;
    rhs._standard = false;
 }
 
@@ -34,28 +33,14 @@ Function& Function::operator=(Function&& rhs){
     _return_type = std::move(rhs._return_type);
     _name = std::move(rhs._name);
     _mangled_name = std::move(rhs._mangled_name);
-    _references = std::move(rhs._references);
     _standard = std::move(rhs._standard);
     _parameters = std::move(rhs._parameters);
 
    //Reset rhs
-   rhs._references = 0;
    rhs._standard = false;
 
    return *this;
 }
-        
-std::shared_ptr<FunctionContext> _context;
-        std::shared_ptr<const Type> _struct_type = nullptr;
-
-        std::shared_ptr<const Type> _return_type;
-        std::string _name;
-        std::string _mangled_name;
-
-        int _references = 0;
-        bool _standard = false;
-
-        std::vector<Parameter> _parameters;
         
 const Parameter& Function::parameter(std::size_t i) const {
     return _parameters.at(i);
@@ -68,7 +53,7 @@ const Parameter& Function::parameter(const std::string& name) const {
         }
     }
 
-    eddic_unreachable("This parameter does not exists in the given function");
+    eddic_unreachable(("There are no \"" + name + "\" parameter in the function").c_str());
 }
 
 std::vector<Parameter>& Function::parameters(){
@@ -115,8 +100,8 @@ unsigned int Function::parameter_position_by_type(const std::string& name) const
     }
 }
 
-bool Function::operator==(const Function& rhs) const {
-    return _mangled_name == rhs._mangled_name;
+bool eddic::operator==(const eddic::Function& lhs, const eddic::Function& rhs){
+    return lhs.mangled_name() == rhs.mangled_name();
 }
 
 std::shared_ptr<FunctionContext>& Function::context(){
@@ -131,14 +116,6 @@ std::shared_ptr<const Type>& Function::struct_type(){
     return _struct_type;
 }
 
-int Function::references() const {
-   return _references; 
-}
-
-int& Function::references(){
-   return _references; 
-}
-
 bool Function::standard() const {
     return _standard;
 }
@@ -151,10 +128,10 @@ const std::shared_ptr<const Type>& Function::return_type() const {
     return _return_type;
 }
 
-const std::string& Function::name(){
+const std::string& Function::name() const {
     return _name;
 }
 
-const std::string& Function::mangled_name(){
+const std::string& Function::mangled_name() const {
     return _mangled_name;
 }

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,7 +12,7 @@
 #include "Variable.hpp"
 
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -26,11 +26,9 @@ bool mtac::is_single_float_register(std::shared_ptr<const Type> type){
 
 bool mtac::is_recursive(mtac::Function& function){
     for(auto& basic_block : function){
-        for(auto& statement : basic_block->statements){
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                if((*ptr)->functionDefinition.mangled_name() == function.definition().mangled_name()){
-                    return true;
-                }
+        for(auto& quadruple : basic_block->statements){
+            if(quadruple.op == mtac::Operator::CALL && quadruple.function().mangled_name() == function.definition().mangled_name()){
+                return true;
             }
         }
     }
@@ -40,7 +38,7 @@ bool mtac::is_recursive(mtac::Function& function){
 
 namespace {
 
-struct VariableUsageCollector : public boost::static_visitor<> {
+struct VariableUsageCollector {
     mtac::VariableUsage& usage;
     int depth_factor;
     int current_depth;
@@ -52,73 +50,30 @@ struct VariableUsageCollector : public boost::static_visitor<> {
     }
 
     template<typename T>
-    void collect(T& arg){
-        if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            inc_usage(*variablePtr);
-        }
-    }
-
-    template<typename T>
     void collect_optional(T& opt){
         if(opt){
-            collect(*opt);
+            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
+                inc_usage(*variablePtr);
+            }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        current_depth = quadruple->depth;
+    void collect(mtac::Quadruple& quadruple){
+        current_depth = quadruple.depth;
 
-        inc_usage(quadruple->result);
-        collect_optional(quadruple->arg1);
-        collect_optional(quadruple->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::Param> param){
-        current_depth = param->depth;
-
-        collect(param->arg);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        current_depth = if_->depth;
-
-        collect(if_->arg1);
-        collect_optional(if_->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        current_depth = if_false->depth;
-
-        collect(if_false->arg1);
-        collect_optional(if_false->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
+        inc_usage(quadruple.result);
+        collect_optional(quadruple.arg1);
+        collect_optional(quadruple.arg2);
     }
 };
 
-struct BasicBlockUsageCollector : public boost::static_visitor<> {
+struct BasicBlockUsageCollector {
     std::unordered_set<mtac::basic_block_p>& usage;
 
     BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
 
-    void operator()(std::shared_ptr<mtac::Goto> goto_){
-        usage.insert(goto_->block);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        usage.insert(if_->block);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        usage.insert(if_false->block);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //NOP
+    void collect(mtac::Quadruple& goto_){
+        usage.insert(goto_.block);
     }
 };
 
@@ -133,7 +88,11 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& func
 
     VariableUsageCollector collector(usage, factor);
 
-    visit_all_statements(collector, function);
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            collector.collect(quadruple);
+        }
+    }
 
     return usage;
 }
@@ -141,21 +100,16 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& func
 void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);
 
-    visit_all_statements(collector, function);
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            collector.collect(quadruple);
+        }
+    }
 }
 
 bool eddic::mtac::safe(const std::string& function){
     //These functions are considered as safe because they save/restore all the registers and does not return anything 
-    return 
-        function == "_F5printI" || function == "_F5printF" || function == "_F5printS" || function == "_F5printC" ||
-        function == "_F7printlnI" || function == "_F7printlnF" || function == "_F7printlnS" || function == "_F7printlnC" || 
-        function == "_F7println"; 
-}
-
-bool eddic::mtac::safe(std::shared_ptr<mtac::Call> call){
-    auto function = call->function;
-
-    return safe(function);
+    return function == "_F5printS" || function == "_F5printC"; 
 }
 
 bool eddic::mtac::erase_result(mtac::Operator op){
@@ -163,7 +117,14 @@ bool eddic::mtac::erase_result(mtac::Operator op){
            op != mtac::Operator::DOT_ASSIGN 
         && op != mtac::Operator::DOT_FASSIGN 
         && op != mtac::Operator::DOT_PASSIGN 
-        && op != mtac::Operator::RETURN; 
+        && op != mtac::Operator::RETURN
+        && op != mtac::Operator::GOTO
+        && op != mtac::Operator::NOP
+        && op != mtac::Operator::PARAM
+        && op != mtac::Operator::PPARAM
+        && op != mtac::Operator::CALL
+        && op != mtac::Operator::LABEL
+        && !(op >= mtac::Operator::IF_UNARY && op <= mtac::Operator::IF_FALSE_FL);
 }
 
 bool eddic::mtac::is_distributive(mtac::Operator op){
@@ -171,7 +132,7 @@ bool eddic::mtac::is_distributive(mtac::Operator op){
 }
 
 bool eddic::mtac::is_expression(mtac::Operator op){
-    return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
+    return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
 }
 
 unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){
@@ -201,89 +162,6 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
     return std::make_pair(offset, member_type);
 }
 
-namespace {
-
-struct StatementClone : public boost::static_visitor<mtac::Statement> {
-    std::shared_ptr<GlobalContext> global_context;
-
-    StatementClone(std::shared_ptr<GlobalContext> global_context) : global_context(global_context) {}
-
-    mtac::Statement operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        auto copy = std::make_shared<mtac::Quadruple>();
-
-        copy->result = quadruple->result;
-        copy->arg1 = quadruple->arg1;
-        copy->arg2 = quadruple->arg2;
-        copy->op = quadruple->op;
-        copy->size = quadruple->size;
-        
-        return copy;
-    }
-    
-    mtac::Statement operator()(std::shared_ptr<mtac::Param> param){
-        if(param->param){
-            auto copy = std::make_shared<mtac::Param>(param->arg, param->param, param->function);
-
-            copy->address = param->address;
-        
-            return copy;
-        } else {
-            auto copy = std::make_shared<mtac::Param>(param->arg, param->std_param, param->function);
-
-            copy->address = param->address;
-        
-            return copy;
-        }
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::IfFalse> if_){
-        auto copy = std::make_shared<mtac::IfFalse>();
-
-        copy->op = if_->op;
-        copy->arg1 = if_->arg1;
-        copy->arg2 = if_->arg2;
-        copy->label = if_->label;
-        copy->block = if_->block;
-
-        return copy;
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::If> if_){
-        auto copy = std::make_shared<mtac::If>();
-
-        copy->op = if_->op;
-        copy->arg1 = if_->arg1;
-        copy->arg2 = if_->arg2;
-        copy->label = if_->label;
-        copy->block = if_->block;
-
-        return copy;
-    }
-    
-    mtac::Statement operator()(std::shared_ptr<mtac::Call> call){
-        global_context->addReference(call->function);
-
-        return std::make_shared<mtac::Call>(call->function, call->functionDefinition, call->return_, call->return2_);
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::Goto> goto_){
-        auto copy = std::make_shared<mtac::Goto>(goto_->label);
-        copy->block = goto_->block;
-        return copy;
-    }
-
-    mtac::Statement operator()(std::shared_ptr<mtac::NoOp>){
-        return std::make_shared<mtac::NoOp>();
-    }
-
-    mtac::Statement operator()(const std::string& str){
-        return str;
-    }
-};
-
-}
-
-mtac::Statement mtac::copy(const mtac::Statement& statement, std::shared_ptr<GlobalContext> context){
-    StatementClone cloner(context);
-    return visit(cloner, statement);
+mtac::Quadruple mtac::copy(const mtac::Quadruple& quadruple){
+    return quadruple;
 }

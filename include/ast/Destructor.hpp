@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -8,10 +8,15 @@
 #ifndef AST_DESTRUCTOR_H
 #define AST_DESTRUCTOR_H
 
+#include <string>
+#include <memory>
+#include <vector>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Instruction.hpp"
 #include "ast/Position.hpp"
+#include "ast/FunctionParameter.hpp"
 
 namespace eddic {
 

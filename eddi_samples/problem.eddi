@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     int a = 2 + 99 + 9999 * 222 * 222 + 99 % 90 / 4562;
     print(a);

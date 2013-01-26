@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,8 +9,12 @@
 #define MTAC_LIVE_REGISTERS_PROBLEM_H
 
 #include <memory>
-#include <iostream>
+#include <ostream>
 #include <unordered_set>
+
+#include <boost/utility.hpp>
+
+#define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
 
 #include "assert.hpp"
 
@@ -70,32 +74,52 @@ struct LiveRegisterValues {
 
 //Liveness analysis on Hard Registers
 
-struct LiveRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::Register, ltac::FloatRegister>> {
-    ProblemDomain Boundary(mtac::Function& function) override;
-    ProblemDomain Init(mtac::Function& function) override;
-   
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+struct LiveRegistersProblem {
+    //The type of data managed
+    typedef mtac::Domain<LiveRegisterValues<ltac::Register, ltac::FloatRegister>> ProblemDomain;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
-    
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
-    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };
+    //The direction
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+
+    ProblemDomain Boundary(mtac::Function& function);
+    ProblemDomain Init(mtac::Function& function);
+   
+    void meet(ProblemDomain& in, const ProblemDomain& out);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
+    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
+
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 //Liveness analysis on Pseudo Registers
 
-struct LivePseudoRegistersProblem : public mtac::DataFlowProblem<mtac::DataFlowType::Low_Backward, LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> {
-    ProblemDomain Boundary(mtac::Function& function) override;
-    ProblemDomain Init(mtac::Function& function) override;
-   
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+struct LivePseudoRegistersProblem {
+    //The type of data managed
+    typedef mtac::Domain<LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> ProblemDomain;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, mtac::Statement&, ProblemDomain&) override { eddic_unreachable("Not MTAC"); };
-    
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) override;
-    bool optimize(mtac::Statement&, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> ) override { eddic_unreachable("Not MTAC"); };
+    //The direction
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+
+    ProblemDomain Boundary(mtac::Function& function);
+    ProblemDomain Init(mtac::Function& function);
+   
+    void meet(ProblemDomain& in, const ProblemDomain& out);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
+    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
+
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 template<typename Reg, typename FloatReg>

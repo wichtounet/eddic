@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -20,14 +20,14 @@
 
 using namespace eddic;
 
-as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : CodeGenerator(w), context(context) {}
+as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : CodeGenerator(w, program), context(context) {}
 
-void as::IntelCodeGenerator::generate(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
 
-    for(auto& function : program.functions){
+    for(auto& function : program){
         compile(function);
     }
 
@@ -96,20 +96,3 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
     
     writer.stream() << '\n';
 }
-
-
-bool as::IntelCodeGenerator::is_enabled_printI(){
-    return context->referenceCount("_F5printI") || 
-            context->referenceCount("_F5printF") || 
-            context->referenceCount("_F7printlnF") ||
-            context->referenceCount("_F8durationAIAI");
-}
-
-bool as::IntelCodeGenerator::is_enabled_println(){
-    return context->referenceCount("_F7println") || 
-            context->referenceCount("_F7printlnS") || 
-            context->referenceCount("_F7printlnI") || 
-            context->referenceCount("_F7printlnC") || 
-            context->referenceCount("_F7printlnF");
-}
-

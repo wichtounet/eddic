@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,6 @@
 #include "mtac/forward.hpp"
 #include "mtac/Argument.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/BinaryOperator.hpp"
 
 #include "ltac/forward.hpp"
 #include "ltac/Operator.hpp"
@@ -26,7 +25,6 @@ namespace ltac {
 
 class RegisterManager;
 
-bool is_float_operator(mtac::BinaryOperator op);
 bool is_float_var(std::shared_ptr<Variable> variable);
 bool is_int_var(std::shared_ptr<Variable> variable);
 
@@ -58,6 +56,7 @@ std::shared_ptr<ltac::Instruction> add_instruction(mtac::basic_block_p bb, ltac:
 std::shared_ptr<ltac::Instruction> add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3);
 
 ltac::PseudoRegister to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
+ltac::PseudoFloatRegister to_float_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager);
 ltac::Argument to_arg(mtac::Argument argument, ltac::RegisterManager& manager);
 
 } //end of ltac

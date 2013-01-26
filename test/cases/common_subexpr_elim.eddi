@@ -1,0 +1,10 @@
+include<print>
+
+int ga = 99;
+
+void main(){
+    print(ga * 100);
+    print(ga * 100);
+    print(ga * 100);
+    print(ga * 100);
+}

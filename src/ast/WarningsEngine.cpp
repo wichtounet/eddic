@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -138,15 +138,7 @@ struct Inspector : public boost::static_visitor<> {
 
         void check_header(const std::string& file, const ast::Position& position){
             for(auto& block : program.Content->blocks){
-                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                    if(ptr->Content->header == file){
-                        int references = context->referenceCount(ptr->Content->mangledName);
-
-                        if(references > 0){
-                            return;
-                        }
-                    }
-                } else if(auto* ptr = boost::get<ast::Struct>(&block)){
+                if(auto* ptr = boost::get<ast::Struct>(&block)){
                     if(ptr->Content->header == file){
                         auto struct_ = context->get_struct(ptr->Content->struct_type->mangle());
 
@@ -198,16 +190,6 @@ struct Inspector : public boost::static_visitor<> {
             check(declaration.Content->context);
             
             if(!declaration.Content->standard && !standard){
-                if(configuration->option_defined("warning-unused")){
-                    int references = context->referenceCount(declaration.Content->mangledName);
-
-                    if(references == 0){
-                        if(declaration.Content->functionName != "main"){
-                            warn(declaration.Content->position, "unused function '" + declaration.Content->functionName + "'");
-                        }
-                    }
-                }
-
                 check_each(declaration.Content->instructions);
             }
         }

@@ -1,11 +1,11 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
+#include <ostream>
 
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
@@ -24,7 +24,8 @@
 
 using namespace eddic;
 
-as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
+as::IntelX86_64CodeGenerator::IntelX86_64CodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : 
+    IntelCodeGenerator(w, program, context) {}
 
 namespace {
         
@@ -140,10 +141,30 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
 
                 break;
             case ltac::Operator::MEMSET:
+                writer.stream() << "push rcx" << '\n';
+                writer.stream() << "push rax" << '\n';
+                writer.stream() << "push rdi" << '\n';
+                
                 writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
                 writer.stream() << "xor rax, rax" << '\n';
                 writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
+                
+                //Because of the pushs...
+                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
+                    if(ptr->base_register){
+                        if(auto* reg_ptr = boost::get<ltac::Register>(&*ptr->base_register)){
+                            if(*reg_ptr == ltac::SP){
+                                writer.stream() << "add rdi, 24" << '\n';
+                            }
+                        }
+                    }
+                }
+                
                 writer.stream() << "rep stosq" << '\n';
+
+                writer.stream() << "pop rdi" << '\n';
+                writer.stream() << "pop rax" << '\n';
+                writer.stream() << "pop rcx" << '\n';
 
                 break;
             case ltac::Operator::ENTER:
@@ -274,7 +295,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 //Nothing to output for a nop
                 break;
             default:
-                eddic_unreachable("The instruction operator is not supported");
+                eddic_unreachable("The operator is not supported");
         }
     }
 
@@ -355,7 +376,7 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -431,7 +452,7 @@ void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, u
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dq " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dq S3" << '\n';
+    writer.stream() << "dq S1" << '\n';
     writer.stream() << "dq 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }
@@ -453,58 +474,32 @@ void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double
 }
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_64_printI");
-    }
-   
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_64_printlnI");
-    }
-    
-    if(context->referenceCount("_F5printC")){
+    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_64_printC");
     }
     
-    if(context->referenceCount("_F7printlnC")){
-        output_function("x86_64_printlnC");
-    }
-    
-    if(context->referenceCount("_F5printF")){
-        output_function("x86_64_printF");
-    }
-    
-    if(context->referenceCount("_F7printlnF")){
-        output_function("x86_64_printlnF");
-    }
-    
-    if(is_enabled_println()){
-        output_function("x86_64_println");
-    }
-    
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){ 
         output_function("x86_64_printS");
-    }
-   
-    if(context->referenceCount("_F7printlnS")){ 
-        output_function("x86_64_printlnS");
     }
     
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") 
+            || program.call_graph.is_reachable(context->getFunction("_F4freePI")) 
+            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_64_alloc");
         output_function("x86_64_init");
         output_function("x86_64_free");
     }
     
-    if(context->referenceCount("_F4timeAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_64_time");
     }
     
-    if(context->referenceCount("_F8durationAIAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_64_duration");
     }
     
-    if(context->referenceCount("_F9read_char")){
+    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_64_read_char");
     }
 }

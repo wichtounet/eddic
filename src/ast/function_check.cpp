@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -128,8 +128,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 auto original_mangled = mangled;
 
                 if(context->exists(mangled)){
-                    context->addReference(mangled);
-
                     functionCall.Content->mangled_name = mangled;
                 } else {
                     auto local_context = functionCall.Content->context->function();
@@ -141,8 +139,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             mangled = mangle(name, types, struct_type);
 
                             if(context->exists(mangled)){
-                                context->addReference(mangled);
-
                                 ast::Cast cast_value;
                                 cast_value.Content->resolved_type = new_pointer_type(struct_type);
                                 cast_value.Content->value = this_variable(functionCall.Content->context, functionCall.Content->position);
@@ -494,8 +490,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         mangled = mangle(name, types, struct_type);
 
                         if(context->exists(mangled)){
-                            context->addReference(mangled);
-
                             call_value.mangled_name = mangled;
 
                             if(parent){

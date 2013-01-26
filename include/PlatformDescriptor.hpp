@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -30,11 +30,7 @@ struct PlatformDescriptor {
     virtual unsigned short a_register() const = 0;
     virtual unsigned short d_register() const = 0;
 
-    virtual unsigned int number_of_variable_registers() const = 0;  
-    virtual unsigned int number_of_float_variable_registers() const = 0;  
-    
     virtual unsigned short int_variable_register(unsigned int position) const = 0;
-    virtual unsigned short float_variable_register(unsigned int position) const = 0;
     
     virtual unsigned int numberOfIntParamRegisters() const = 0;  
     virtual unsigned int numberOfFloatParamRegisters() const = 0;  

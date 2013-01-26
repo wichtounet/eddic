@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,17 +15,10 @@ namespace eddic {
 
 namespace mtac {
 
-struct ConstantFolding : public boost::static_visitor<void> {
+struct ConstantFolding {
     bool optimized = false;
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-    void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
-    void operator()(std::shared_ptr<mtac::If> if_);
-
-    template<typename T>
-    void operator()(T&) const { 
-        //Nothing to optimize
-    }
+    void operator()(mtac::Quadruple& quadruple);
 };
 
 template<>

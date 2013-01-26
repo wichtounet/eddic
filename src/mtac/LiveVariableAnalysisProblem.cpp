@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,13 +12,13 @@
 
 #include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, mtac::LiveVariableValues& value){
+std::ostream& mtac::operator<<(std::ostream& stream, const mtac::LiveVariableValues& value){
     stream << "set{";
 
     for(auto& v : value){
@@ -60,70 +60,46 @@ void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDo
 
 namespace {
 
-struct LivenessCollector : public boost::static_visitor<> {
+struct LivenessCollector {
     ProblemDomain& in;
 
     LivenessCollector(ProblemDomain& in) : in(in) {}
 
     template<typename Arg>
-    inline void update(Arg& arg){
-        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(in.top()){
-                ProblemDomain::Values values;
-                in.int_values = values;
-            }
-
-            in.values().insert(*ptr);
-        }
-    }
-
-    template<typename Arg>
     inline void update_optional(Arg& arg){
         if(arg){
-            update(*arg);
+            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
+                if(in.top()){
+                    ProblemDomain::Values values;
+                    in.int_values = values;
+                }
+
+                in.values().insert(*ptr);
+            }
         }
     }
 
-    void operator()(std::shared_ptr<mtac::Quadruple> quadruple){
-        if(quadruple->op != mtac::Operator::NOP){
-            if(mtac::erase_result(quadruple->op)){
-                in.values().erase(quadruple->result);
+    void collect(mtac::Quadruple& quadruple){
+        if(quadruple.op != mtac::Operator::NOP){
+            if(mtac::erase_result(quadruple.op)){
+                in.values().erase(quadruple.result);
             } else {
-                in.values().insert(quadruple->result);
+                in.values().insert(quadruple.result);
             }
 
-            update_optional(quadruple->arg1);
-            update_optional(quadruple->arg2);
+            update_optional(quadruple.arg1);
+            update_optional(quadruple.arg2);
         }
-    }
-    
-    void operator()(std::shared_ptr<mtac::Param> param){
-        update(param->arg);
-    }
-    
-    void operator()(std::shared_ptr<mtac::IfFalse> if_false){
-        update(if_false->arg1);
-        update_optional(if_false->arg2);
-    }
-    
-    void operator()(std::shared_ptr<mtac::If> if_){
-        update(if_->arg1);
-        update_optional(if_->arg2);
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //Nothing to do
     }
 };
 
 } //End of anonymous namespace
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Statement& statement, ProblemDomain& out){
+ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& out){
     auto in = out;
     
     LivenessCollector collector(in);
-    visit(collector, statement);
+    collector.collect(statement);
 
     for(auto& escaped_var : *pointer_escaped){
         in.values().insert(escaped_var);
@@ -132,7 +108,7 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* 
     return in;
 }
 
-bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Statement& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
+bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Function& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
     //This analysis is only made to gather information, not to optimize anything
     throw "Unimplemented";
 }

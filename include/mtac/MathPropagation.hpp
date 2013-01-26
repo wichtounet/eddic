@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -16,34 +16,25 @@
 #include "mtac/pass_traits.hpp"
 #include "mtac/Pass.hpp"
 #include "mtac/Quadruple.hpp"
-#include "mtac/IfFalse.hpp"
-#include "mtac/If.hpp"
 
 namespace eddic {
 
 namespace mtac {
 
-class MathPropagation : public boost::static_visitor<void> {
+class MathPropagation {
     public:
         bool optimized = false;
         Pass pass;
         
         void clear();
 
-        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-        void operator()(std::shared_ptr<mtac::IfFalse> ifFalse);
-        void operator()(std::shared_ptr<mtac::If> if_);
-
-        template<typename T>
-        void operator()(T&) const { 
-            //Nothing to optimize here
-        }
+        void operator()(mtac::Quadruple& quadruple);
     
         void collect(mtac::Argument* arg);
         void collect(boost::optional<mtac::Argument>& arg);
 
     private:
-        std::unordered_map<std::shared_ptr<Variable>, std::shared_ptr<mtac::Quadruple>> assigns;
+        std::unordered_map<std::shared_ptr<Variable>, std::reference_wrapper<mtac::Quadruple>> assigns;
         std::unordered_map<std::shared_ptr<Variable>, int> usage;
 };
 

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,10 +12,13 @@
 #include "mtac/Function.hpp"
 #include "mtac/Loop.hpp"
 #include "mtac/loop_unrolling.hpp"
-#include "mtac/loop_analysis.hpp"
 #include "mtac/Utils.hpp"
 
 using namespace eddic;
+
+bool mtac::loop_unrolling::gate(std::shared_ptr<Configuration> configuration){
+    return configuration->option_defined("funroll-loops");
+}
 
 bool mtac::loop_unrolling::operator()(mtac::Function& function){
     if(function.loops().empty()){
@@ -25,11 +28,11 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        if(loop->has_estimate()){
-            auto it = loop->estimate();
+        if(loop.has_estimate()){
+            auto it = loop.estimate();
 
             if(it > 100){
-                auto bb = *loop->begin();
+                auto bb = *loop.begin();
 
                 //Do not increase too much the size of the body
                 if(bb->statements.size() < 20){
@@ -50,22 +53,34 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     function.context->global()->stats().inc_counter("loop_unrolled");
 
                     optimized = true;
+                    
+                    auto& statements = bb->statements;
 
                     //The comparison is not necessary here anymore
-                    auto comparison = bb->statements.back();
-                    bb->statements.pop_back();
+                    auto comparison = statements.back();
+                    statements.pop_back();
 
-                    auto statements = bb->statements;
+                    int limit = statements.size();
+                    
+                    //There are perhaps new references to functions
+                    for(auto& statement : statements){
+                        if(statement.op == mtac::Operator::CALL){
+                            program.call_graph.edge(function.definition(), statement.function())->count += (factor - 1);
+                        }
+                    }
+
+                    //Save enough space for the new statements
+                    statements.reserve(limit * factor + 1);
 
                     //Start at 1 because there is already the original body
                     for(unsigned int i = 1; i < factor; ++i){
-                        for(auto& statement : statements){
-                            bb->statements.push_back(mtac::copy(statement, function.context->global())); 
+                        for(int j = 0; j < limit; ++j){
+                            statements.push_back(statements[j]); 
                         }
                     }
 
                     //Put the comparison again at the end
-                    bb->statements.push_back(comparison);
+                    statements.push_back(comparison);
                 }
             }
         }

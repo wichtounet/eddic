@@ -1,11 +1,11 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
+#include <ostream>
 
 #include "assert.hpp"
 #include "AssemblyFileWriter.hpp"
@@ -24,7 +24,7 @@
 
 using namespace eddic;
 
-as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, context) {}
+as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, program, context) {}
 
 namespace {
     
@@ -134,10 +134,30 @@ struct X86StatementCompiler : public boost::static_visitor<> {
 
                 break;
             case ltac::Operator::MEMSET:
+                writer.stream() << "push ecx" << '\n';
+                writer.stream() << "push eax" << '\n';
+                writer.stream() << "push edi" << '\n';
+                
                 writer.stream() << "mov ecx, " << *instruction->arg2 << '\n';
                 writer.stream() << "xor eax, eax" << '\n';
                 writer.stream() << "lea edi, " << *instruction->arg1 << '\n';
+                
+                //Because of the pushs...
+                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
+                    if(ptr->base_register){
+                        if(auto* reg_ptr = boost::get<ltac::Register>(&*ptr->base_register)){
+                            if(*reg_ptr == ltac::SP){
+                                writer.stream() << "add edi, 12" << '\n';
+                            }
+                        }
+                    }
+                }
+                
                 writer.stream() << "rep stosw" << '\n';
+                
+                writer.stream() << "pop edi" << '\n';
+                writer.stream() << "pop eax" << '\n';
+                writer.stream() << "pop ecx" << '\n';
 
                 break;
             case ltac::Operator::ENTER:
@@ -349,7 +369,9 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
     
     //If necessary init memory manager 
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") 
+            || program.call_graph.is_reachable(context->getFunction("_F4freePI")) 
+            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         writer.stream() << "call _F4init" << '\n'; 
     }
 
@@ -420,7 +442,7 @@ void as::IntelX86CodeGenerator::declareStringArray(const std::string& name, unsi
     writer.stream() << "V" << name << ":" <<'\n';
     writer.stream() << "dd " << size << '\n';
     writer.stream() << "%rep " << size << '\n';
-    writer.stream() << "dd S3" << '\n';
+    writer.stream() << "dd S1" << '\n';
     writer.stream() << "dd 0" << '\n';
     writer.stream() << "%endrep" << '\n';
 }
@@ -442,58 +464,30 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(is_enabled_printI()){
-        output_function("x86_32_printI");
-    }
-    
-    if(context->referenceCount("_F7printlnI")){
-        output_function("x86_32_printlnI");
-    }
-    
-    if(context->referenceCount("_F5printC")){
+    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_32_printC");
     }
     
-    if(context->referenceCount("_F7printlnC")){
-        output_function("x86_32_printlnC");
-    }
-
-    if(context->referenceCount("_F5printF")){
-        output_function("x86_32_printF");
-    }
-    
-    if(context->referenceCount("_F7printlnF")){
-        output_function("x86_32_printlnF");
-    }
-    
-    if(is_enabled_println()){
-        output_function("x86_32_println");
-    }
-    
-    if(context->referenceCount("_F5printS") || is_enabled_printI() || is_enabled_println()){ 
+    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){ 
         output_function("x86_32_printS");
     }
     
-    if(context->referenceCount("_F7printlnS")){ 
-        output_function("x86_32_printlnS");
-    }
-    
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || context->referenceCount("_F4freePI") || context->referenceCount("_F5allocI")){
+    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
     }
     
-    if(context->referenceCount("_F4timeAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_32_time");
     }
     
-    if(context->referenceCount("_F8durationAIAI")){
+    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_32_duration");
     }
     
-    if(context->referenceCount("_F9read_char")){
+    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_32_read_char");
     }
 }

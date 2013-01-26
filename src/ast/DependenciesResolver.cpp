@@ -1,12 +1,12 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
-#include <fstream>
+#include<string>
+#include<unordered_set>
 
 #include "ast/DependenciesResolver.hpp"
 #include "ast/SourceFile.hpp"
@@ -23,21 +23,23 @@ using namespace eddic;
 class DependencyVisitor : public boost::static_visitor<> {
     private:
         parser::SpiritParser& parser;
-        ast::SourceFile& source;
-        std::vector<ast::SourceFileBlock> blocks;
+
+        std::unordered_set<std::string> imported;
 
     public:
-        DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& s) : parser(p), source(s) {}
+        DependencyVisitor(parser::SpiritParser& p) : parser(p) {}
+        
+        std::vector<ast::SourceFileBlock> blocks;
 
-        void operator()(ast::SourceFile& program){
-            visit_each(*this, program.Content->blocks);
-
-            for(ast::SourceFileBlock& block : blocks){
-                source.Content->blocks.push_back(block);
-            }
-        }
+        AUTO_RECURSE_PROGRAM()
     
         void operator()(ast::StandardImport& import){
+            if(imported.find(import.header) != imported.end()){
+                return;
+            }
+
+            imported.insert(import.header);
+
             auto headerFile = "stdlib/" + import.header + ".eddi";
             
             if(!file_exists(headerFile)){
@@ -46,7 +48,7 @@ class DependencyVisitor : public boost::static_visitor<> {
            
             ast::SourceFile dependency; 
             if(parser.parse(headerFile, dependency)){
-                resolveDependencies(dependency, parser); 
+                (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
@@ -75,7 +77,7 @@ class DependencyVisitor : public boost::static_visitor<> {
            
             ast::SourceFile dependency; 
             if(parser.parse(file, dependency)){
-                resolveDependencies(dependency, parser); 
+                (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
@@ -95,6 +97,10 @@ class DependencyVisitor : public boost::static_visitor<> {
 };
 
 void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
-    DependencyVisitor visitor(parser, program);
+    DependencyVisitor visitor(parser);
     visitor(program);
+
+    for(auto& block : visitor.blocks){
+       program.Content->blocks.push_back(block);
+    }
 }

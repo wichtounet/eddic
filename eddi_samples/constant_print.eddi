@@ -1,0 +1,5 @@
+include<print>
+
+void main(){
+    print(123);
+}

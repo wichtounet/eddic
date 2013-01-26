@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/basic_block.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
         
@@ -45,6 +45,7 @@ void mtac::remove_edge(mtac::basic_block_p from, mtac::basic_block_p to){
 
 void mtac::build_control_flow_graph(mtac::Function& function){
     //Destroy the CFG
+    //TODO Normally, this should not be necessary
     for(auto& block : function){
         block->successors.clear();
         block->predecessors.clear();
@@ -69,22 +70,14 @@ void mtac::build_control_flow_graph(mtac::Function& function){
         }
         //Standard block
         else {
-            auto& last_statement = block->statements.back();
+            auto& quadruple = block->statements.back();
 
-            //If and IfFalse have two possible successors
-            if(auto* ptr = boost::get<std::shared_ptr<mtac::If>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
+            if(quadruple.op == mtac::Operator::GOTO){
+                make_edge(block, quadruple.block);
+            } else if(quadruple.is_if() || quadruple.is_if_false()){ 
+                make_edge(block, quadruple.block);
                 make_edge(block, next);
-            } else if(auto* ptr = boost::get<std::shared_ptr<mtac::IfFalse>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
-                make_edge(block, next);
-            } 
-            //Goto has one possible successor
-            else if(auto* ptr = boost::get<std::shared_ptr<mtac::Goto>>(&last_statement)){
-                make_edge(block, (*ptr)->block);
-            }
-            //All the other statements have only the fall through successor
-            else {
+            } else {
                 make_edge(block, next);
             }
         }

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,12 +12,15 @@
 #include <vector>
 #include <utility>
 #include <set>
+#include <ostream>
 
 #include "iterators.hpp"
 
 #include "mtac/forward.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
+#include "mtac/Loop.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -29,8 +32,20 @@ class FunctionContext;
 
 namespace mtac {
 
-class Loop;
-
+/*!
+ * \class Function
+ * \brief A function of an EDDI program represented in intermediate representation. 
+ *
+ * A Function can hold either MTAC of LTAC statements. Before basic block extraction, 
+ * the Function can directly contains statements. After that, only the basic blocks have
+ * statements.
+ *
+ * The basic_block of the Function are stored in a doubly-linked list. The entry and exit basic
+ * blocks can be obtained with the entry_bb() and exit_bb() functions. The basic blocks can be
+ * iterated using begin() and end() iterators. 
+ *
+ * \see mtac::basic_block
+ */
 class Function : public std::enable_shared_from_this<Function> {
     public:
         Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
@@ -43,10 +58,24 @@ class Function : public std::enable_shared_from_this<Function> {
         Function(Function&& rhs);
         Function& operator=(Function&& rhs);
 
+        ~Function();
+
         std::string get_name() const;
 
-        void add(Statement statement);
-        std::vector<Statement>& get_statements();
+        template< class... Args >
+        inline void emplace_back( Args&&... args ){
+            statements.emplace_back(std::forward<Args>(args)...);
+        }
+        
+        inline void push_back(mtac::Quadruple&& quadruple){
+            statements.push_back(std::forward<mtac::Quadruple>(quadruple));
+        }
+
+        mtac::Quadruple& find(std::size_t uid);
+
+        std::vector<mtac::Quadruple>& get_statements();
+        const std::vector<mtac::Quadruple>& get_statements() const;
+
         void release_statements();
 
         void create_entry_bb();
@@ -59,30 +88,57 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_p entry_bb();
         basic_block_p exit_bb();
 
-        basic_block_iterator begin();
-        basic_block_iterator end();
-        
-        basic_block_const_iterator begin() const ;
-        basic_block_const_iterator end() const ;
+        /*!
+         * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
+         * \return iterator to the beginning of the doubly-linked list of basic blocks. 
+         */
+        basic_block_iterator begin(){
+            return basic_block_iterator(entry, nullptr);
+        }
+
+        /*!
+         * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
+         * \return iterator to the end of the doubly-linked list of basic blocks. 
+         */
+        basic_block_iterator end(){
+            return basic_block_iterator(nullptr, exit);    
+        }
+
+        /*!
+         * \brief Return an iterator to the beginning of the doubly-linked list of basic blocks. 
+         * \return iterator to the beginning of the doubly-linked list of basic blocks. 
+         */
+        basic_block_const_iterator begin() const {
+            return basic_block_const_iterator(entry, nullptr);
+        }
+
+        /*!
+         * \brief Return an iterator to the end of the doubly-linked list of basic blocks. 
+         * \return iterator to the end of the doubly-linked list of basic blocks. 
+         */
+        basic_block_const_iterator end() const {
+            return basic_block_const_iterator(nullptr, exit);
+        }
         
         basic_block_iterator at(basic_block_p bb);
 
         basic_block_iterator insert_before(basic_block_iterator it, basic_block_p block);
+        basic_block_iterator insert_after(basic_block_iterator it, basic_block_p block);
         basic_block_iterator merge_basic_blocks(basic_block_iterator it, basic_block_p block);
         basic_block_iterator remove(basic_block_iterator it);
         basic_block_iterator remove(basic_block_p bb);
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
-        std::vector<std::shared_ptr<Loop>>& loops();
+        std::vector<mtac::Loop>& loops();
 
         std::size_t bb_count() const;
         std::size_t size() const;
         
-        std::size_t pseudo_registers();
+        std::size_t pseudo_registers() const ;
         void set_pseudo_registers(std::size_t pseudo_registers);
         
-        std::size_t pseudo_float_registers();
+        std::size_t pseudo_float_registers() const;
         void set_pseudo_float_registers(std::size_t pseudo_registers);
         
         const std::set<ltac::Register>& use_registers() const;
@@ -99,7 +155,11 @@ class Function : public std::enable_shared_from_this<Function> {
 
         bool is_main() const;
 
+        bool& pure();
+        bool pure() const;
+
         eddic::Function& definition();
+        const eddic::Function& definition() const;
 
         std::shared_ptr<FunctionContext> context;
 
@@ -107,7 +167,9 @@ class Function : public std::enable_shared_from_this<Function> {
         eddic::Function* _definition;
 
         //Before being partitioned, the function has only statement
-        std::vector<Statement> statements;
+        std::vector<mtac::Quadruple> statements;
+
+        bool _pure = false;
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;
@@ -124,10 +186,14 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t last_pseudo_registers = 0;
         std::size_t last_float_pseudo_registers = 0;
 
-        std::vector<std::shared_ptr<mtac::Loop>> m_loops;
+        std::vector<mtac::Loop> m_loops;
 
         std::string name;
 };
+
+bool operator==(const mtac::Function& lhs, const mtac::Function& rhs);
+
+std::ostream& operator<<(std::ostream& stream, const mtac::Function& function);
 
 } //end of mtac
 
@@ -165,7 +231,6 @@ struct Iterators<mtac::Function> {
     /*!
      * \brief Merge the current block into the specified one. 
      * The current block will be removed.
-     * \return an iterator to the merged block 
      */
     void merge_to(mtac::basic_block_p bb){
         it = container.merge_basic_blocks(it, bb);
@@ -175,7 +240,6 @@ struct Iterators<mtac::Function> {
     /*!
      * \brief Merge the specified block into the current one. 
      * The specified block will be removed.
-     * \return an iterator to the merged block 
      */
     void merge_in(mtac::basic_block_p bb){
         it = container.merge_basic_blocks(container.at(bb), *it);

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -20,7 +20,7 @@ namespace as {
  */
 class IntelX86_64CodeGenerator : public IntelCodeGenerator {
     public:
-        IntelX86_64CodeGenerator(AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
+        IntelX86_64CodeGenerator(AssemblyFileWriter& writer, mtac::Program& program, std::shared_ptr<GlobalContext> context);
         
     protected:        
         void writeRuntimeSupport();

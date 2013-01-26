@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -16,10 +16,8 @@
 
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/Program.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Function.hpp"
-#include "mtac/Call.hpp"
-#include "mtac/Argument.hpp"
-#include "mtac/Param.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Utils.hpp"
 
@@ -34,27 +32,38 @@ Arguments collect_arguments(mtac::Program& program){
 
     for(auto& function : program.functions){
         for(auto& block : function){
-            for(auto& statement : block){
-                if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                    auto& function = (*ptr)->functionDefinition;
+            for(auto& quadruple : block){
+                if(quadruple.op == mtac::Operator::CALL){
+                    auto& function = quadruple.function();
 
                     if(!function.standard() && !function.parameters().empty()){
                         std::unordered_map<std::size_t, mtac::Argument> function_arguments;
 
                         auto parameters = function.parameters().size();
-                        auto param_block = block->prev;
 
-                        auto it = param_block->statements.rbegin();
-                        auto end = param_block->statements.rend();
+                        mtac::basic_block::reverse_iterator it;
+                        mtac::basic_block::reverse_iterator end;
+
+                        if(block->statements.front() == quadruple){
+                            it = block->prev->statements.rbegin();
+                            end = block->prev->statements.rend();
+                        } else {
+                            it = block->statements.rbegin();
+                            end = block->statements.rend();
+
+                            while(*it != quadruple){
+                                ++it;
+                            }
+                        }
 
                         std::size_t discovered = 0;
 
                         while(it != end && discovered < parameters){
-                            auto& param_statement = *it;
+                            auto& param_quadruple = *it;
 
-                            if(auto* param_ptr = boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
-                                if((*param_ptr)->param->type() == INT){
-                                    function_arguments[discovered] = (*param_ptr)->arg;
+                            if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
+                                if(param_quadruple.param()->type() == INT){
+                                    function_arguments[discovered] = *param_quadruple.arg1;
                                 }
 
                                 ++discovered;
@@ -62,7 +71,7 @@ Arguments collect_arguments(mtac::Program& program){
 
                             ++it;
                         }
-                        
+
                         arguments[function.mangled_name()].push_back(std::move(function_arguments));
                     }
                 }
@@ -122,23 +131,22 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                     [](const std::pair<int, int>& p1, const std::pair<int, int>& p2){ return p1.first > p2.first; });
 
             //Replace the parameter by the constant in each use of the parameter
-            for(auto& mtac_function : program.functions){
-                if(mtac_function.definition() == function){
-                    mtac::VariableClones clones;
-                    
-                    for(auto& parameter : constant_parameters){
-                        auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
-                        
-                        log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
-                        mtac_function.context->global()->stats().inc_counter("propagated_parameter");
+            auto& mtac_function = program.mtac_function(function);
+            mtac::VariableClones clones;
 
-                        clones[param] = parameter.second;
-                    }
+            for(auto& parameter : constant_parameters){
+                auto param = mtac_function.context->getVariable(function.parameter(parameter.first).name());
 
-                    VariableReplace replacer(clones);
-                    mtac::visit_all_statements(replacer, mtac_function);
+                log::emit<Debug>("Optimizer") << "Propagate " << param->name() << " by " << parameter.second  << " in function " << function.name() << log::endl;
+                mtac_function.context->global()->stats().inc_counter("propagated_parameter");
 
-                    break;
+                clones[param] = parameter.second;
+            }
+
+            VariableReplace replacer(clones);
+            for(auto& block : mtac_function){
+                for(auto& quadruple : block){
+                    replacer.replace(quadruple);
                 }
             }
             
@@ -151,26 +159,41 @@ bool mtac::parameter_propagation::operator()(mtac::Program& program){
                 //Remove the parameter passing for each call to the function
                 for(auto& mtac_function : program.functions){
                     for(auto& block : mtac_function){
-                        for(auto& statement : block){
-                            if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                                auto& param_function = (*ptr)->functionDefinition;
+                        for(auto& quadruple : block){
+                            if(quadruple.op == mtac::Operator::CALL){
+                                auto& param_function = quadruple.function();
 
                                 if(param_function == function){
-                                    auto param_block = block->prev;
+                                    mtac::basic_block_p param_block;
+                                    mtac::basic_block::reverse_iterator it;
+                                    mtac::basic_block::reverse_iterator end;
 
-                                    auto it = param_block->statements.rbegin();
-                                    auto end = param_block->statements.rend();
+                                    if(block->statements.front() == quadruple){
+                                        param_block = block->prev;
+                                        it = block->prev->statements.rbegin();
+                                        end = block->prev->statements.rend();
+                                    } else {
+                                        param_block = block;
+                                        it = block->statements.rbegin();
+                                        end = block->statements.rend();
+
+                                        while(*it != quadruple){
+                                            ++it;
+                                        }
+                                    }
 
                                     std::size_t discovered = 0;
 
                                     while(it != end && discovered < function.parameters().size()){
-                                        auto& param_statement = *it;
+                                        auto& param_quadruple = *it;
 
-                                        if(boost::get<std::shared_ptr<mtac::Param>>(&param_statement)){
+                                        if(param_quadruple.op == mtac::Operator::PARAM || param_quadruple.op == mtac::Operator::PPARAM){
                                             if(discovered == parameter.first){
-                                                param_block->statements.erase(--(it.base()));
-                                                --it;
-                                                end = param_block->statements.rend();
+                                                param_quadruple.op = mtac::Operator::NOP;
+                                                param_quadruple.arg1.reset();
+                                                param_quadruple.arg2.reset();
+
+                                                optimized = true;
                                             }
 
                                             ++discovered;

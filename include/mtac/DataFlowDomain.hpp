@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
+#include <map>
 
 #include "Variable.hpp"
 
@@ -46,9 +47,9 @@ struct Domain {
     }
 };
 
-template<typename Key, typename Value, typename Hasher>
-struct Domain<std::unordered_map<Key, Value, Hasher>> {
-    typedef std::unordered_map<Key, Value, Hasher> Values;
+template<typename Key, typename Value, typename Hasher, typename Equals>
+struct Domain<std::unordered_map<Key, Value, Hasher, Equals>> {
+    typedef std::unordered_map<Key, Value, Hasher, Equals> Values;
     
     boost::optional<Values> int_values;
 
@@ -60,7 +61,25 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
         //Nothing to init
     }
 
+    Domain(const Domain& rhs) : int_values(rhs.int_values) {}
+    Domain& operator=(const Domain& rhs){
+        int_values = rhs.int_values;
+
+        return *this;
+    }
+
+    Domain(Domain&& rhs) : int_values(std::move(rhs.int_values)) {}
+    Domain& operator=(Domain&& rhs){
+        int_values = std::move(rhs.int_values);
+
+        return *this;
+    }
+
     Values& values(){
+        return *int_values;
+    }
+    
+    const Values& values() const {
         return *int_values;
     }
 
@@ -130,7 +149,7 @@ struct Domain<std::unordered_map<Key, Value, Hasher>> {
 };
 
 template<typename T>
-std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
+std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values){
     stream << "vector{";
 
     for(auto& value : values){
@@ -141,7 +160,7 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T>& values){
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& stream, std::list<T>& values){
+std::ostream& operator<<(std::ostream& stream, const std::list<T>& values){
     stream << "list{";
 
     for(auto& value : values){
@@ -152,7 +171,7 @@ std::ostream& operator<<(std::ostream& stream, std::list<T>& values){
 }
 
 template<typename Key, typename Value, typename Hasher>
-std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Hasher>& values){
+std::ostream& operator<<(std::ostream& stream, const std::unordered_map<Key, Value, Hasher>& values){
     stream << "map{";
 
     for(auto& value : values){
@@ -163,7 +182,7 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_map<Key, Value, Ha
 }
 
 template<typename Value, typename Hasher>
-std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>& values){
+std::ostream& operator<<(std::ostream& stream, const std::unordered_set<Value, Hasher>& values){
     stream << "set{";
 
     for(auto& value : values){
@@ -174,7 +193,7 @@ std::ostream& operator<<(std::ostream& stream, std::unordered_set<Value, Hasher>
 }
 
 template<typename DomainValues>
-std::ostream& operator<<(std::ostream& stream, Domain<DomainValues>& domain){
+std::ostream& operator<<(std::ostream& stream, const Domain<DomainValues>& domain){
     if(domain.top()){
         return stream << "top";
     }

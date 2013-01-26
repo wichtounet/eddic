@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -86,12 +86,11 @@ VariableUsage compute_variable_usage_with_depth(mtac::Function& function, int fa
 bool is_recursive(mtac::Function& function);
 
 bool safe(const std::string& call);
-bool safe(std::shared_ptr<mtac::Call> call);
 bool erase_result(mtac::Operator op);
 bool is_distributive(mtac::Operator op);
 bool is_expression(mtac::Operator op);
 
-mtac::Statement copy(const mtac::Statement& statement, std::shared_ptr<GlobalContext> context);
+mtac::Quadruple copy(const mtac::Quadruple& statement);
 
 } //end of mtac
 

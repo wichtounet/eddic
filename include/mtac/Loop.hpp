@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -21,11 +21,20 @@ class Variable;
 namespace mtac {
 
 struct LinearEquation {
-    std::shared_ptr<mtac::Quadruple> def;
+    std::size_t def;
     std::shared_ptr<Variable> i;
     int e;
     int d;
     bool generated;
+    bool div;
+
+    LinearEquation() : def(0), i(nullptr), e(0), d(0), generated(false), div(false){
+        //Nothing to init
+    }
+
+    LinearEquation(std::size_t def, std::shared_ptr<Variable> i, int e, int d, bool generated, bool div = false) : def(def), i(i), e(e), d(d), generated(generated), div(div) {
+        //Nothing
+    }
 };
 
 typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
@@ -58,8 +67,20 @@ class Loop {
         long m_initial;
 };
 
-Loop::iterator begin(std::shared_ptr<mtac::Loop> loop);
-Loop::iterator end(std::shared_ptr<mtac::Loop> loop);
+/*!
+ * \brief Find the basic block that is the entry to the Loop
+ * \param loop The loop to find the entry of. 
+ * \return The entry basic block. 
+ */
+mtac::basic_block_p find_entry(mtac::Loop& loop);
+
+/*!
+ * \brief Find or create a preheader for the given loop. 
+ * \param loop The loop to find the preheader for
+ * \param function The function the loop is located in
+ * \return The preheader basic block of the Loop
+ */
+mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function);
 
 } //end of mtac
 

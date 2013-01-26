@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -16,8 +16,6 @@
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Statement.hpp"
-
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
@@ -28,7 +26,6 @@
 #include "ltac/PseudoFloatRegister.hpp"
 
 #include "mtac/Utils.hpp"
-#include "mtac/Printer.hpp"
 
 using namespace eddic;
 
@@ -76,8 +73,11 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
                 ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
+    } else if(auto* ptr = boost::get<double>(&argument)){
+        auto label = float_pool->label(*ptr);
+        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
-        auto label = float_pool->label(boost::get<double>(argument));
+        auto label = float_pool->label(static_cast<double>(boost::get<int>(argument)));
         ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }

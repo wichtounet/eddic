@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -18,6 +18,10 @@
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
+//For hashing
+//TODO Find a way to to not use any ltac if in mtac mode
+#include "ltac/Statement.hpp"
+
 namespace eddic {
 
 class Variable;
@@ -30,16 +34,34 @@ class ConstantPropagationLattice {
     public:
         ConstantPropagationLattice(){}; //NAC
         ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
+        
+        ConstantPropagationLattice(const ConstantPropagationLattice& rhs) : m_value(rhs.m_value) {}
+        ConstantPropagationLattice& operator=(const ConstantPropagationLattice& rhs){
+            m_value = rhs.m_value;
 
-        ConstantValue value(){
+            return *this;
+        }
+
+        ConstantPropagationLattice(ConstantPropagationLattice&& rhs) : m_value(std::move(rhs.m_value)) {}
+        ConstantPropagationLattice& operator=(ConstantPropagationLattice&& rhs){
+            m_value = std::move(rhs.m_value);
+
+            return *this;
+        }
+
+        ConstantValue& value(){
+            return *m_value;
+        }
+        
+        ConstantValue value() const { 
             return *m_value;
         }
 
-        bool constant(){
+        bool constant() const {
             return m_value;
         }
 
-        bool nac(){
+        bool nac() const {
             return !constant();
         }
 
@@ -53,18 +75,27 @@ class ConstantPropagationLattice {
 
 typedef std::unordered_map<std::shared_ptr<Variable>, ConstantPropagationLattice> ConstantPropagationValues;
 
-struct ConstantPropagationProblem : public DataFlowProblem<DataFlowType::Forward, ConstantPropagationValues> {
-    mtac::EscapedVariables pointer_escaped;
-    
-    ProblemDomain Boundary(mtac::Function& function) override;
-    
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+class ConstantPropagationProblem {
+    public:
+        //The type of data managed
+        typedef Domain<ConstantPropagationValues> ProblemDomain;
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
+        //The direction
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+
+        ProblemDomain Init(mtac::Function& function);
+        ProblemDomain Boundary(mtac::Function& function);
+
+        void meet(ProblemDomain& in, const ProblemDomain& out);
+
+        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in);
+        bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> global_results);
     
-    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
+    private:
+        ProblemDomain top_element();
+        ProblemDomain default_element();
+
+        mtac::EscapedVariables pointer_escaped;
 };
 
 template<>
@@ -75,7 +106,7 @@ struct pass_traits<ConstantPropagationProblem> {
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
-std::ostream& operator<<(std::ostream& stream, ConstantPropagationLattice& lattice);
+std::ostream& operator<<(std::ostream& stream, const ConstantPropagationLattice& lattice);
 
 } //end of mtac
 

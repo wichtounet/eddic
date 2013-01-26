@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -42,26 +42,12 @@ struct X86Descriptor : public PlatformDescriptor {
     std::vector<unsigned short> symbolic_float_registers() const {
         return {0, 1, 2, 3, 4, 5, 6, 7};
     }
-
-    unsigned int number_of_variable_registers() const {
-        return 0;
-    }
-
-    unsigned int number_of_float_variable_registers() const {
-        return 1;
-    }
     
     unsigned short int_variable_register(unsigned int /*position*/) const {
         eddic_unreachable("No int variable register");
 
         return 0;
     }
-
-    unsigned short float_variable_register(unsigned int position) const {
-        assert(position == 1);
-
-        return 6; //xmm6
-    };
 
     unsigned short int_param_register(unsigned int position) const {
         assert(position == 1);
@@ -129,25 +115,11 @@ struct X86_64Descriptor : public PlatformDescriptor {
         return {0, 1, 2, 3, 4, 5, 6, 7};
     }
     
-    unsigned int number_of_variable_registers() const {
-        return 2;
-    }
-
-    unsigned int number_of_float_variable_registers() const {
-        return 1;
-    }
-    
     unsigned short int_variable_register(unsigned int position) const {
         assert(position == 1 || position == 2);
 
         return position == 1 ? 10 : 11; //r12 and r13
     }
-
-    unsigned short float_variable_register(unsigned int position) const {
-        assert(position == 1);
-
-        return 6; //xmm6
-    };
 
     unsigned short int_param_register(unsigned int position) const {
         assert(position == 1 || position == 2);

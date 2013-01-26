@@ -1,11 +1,10 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <iostream>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 
@@ -22,7 +21,7 @@
 #include "Variable.hpp"
 
 #include "mtac/GlobalOptimizations.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 #include "ltac/PeepholeOptimizer.hpp"
 #include "ltac/Statement.hpp"
@@ -613,6 +612,7 @@ void add_escaped_registers(RegisterUsage& usage, mtac::Function& function, Platf
 
     for(auto& var : function.context->stored_variables()){
         if(var->position().is_register() && mtac::is_single_int_register(var->type())){
+            //TODO Check if that can still happens
             usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
         }
     }

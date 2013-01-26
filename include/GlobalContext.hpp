@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -92,7 +92,7 @@ struct GlobalContext final : public Context {
         
         /*!
          * Indicates if a structure for the given type exists. 
-         * \param struct_ The structure type to search for. 
+         * \param type The structure type to search for. 
          * \return true if a structure for the given type exists, otherwise false. 
          */
         bool struct_exists(std::shared_ptr<const Type> type) const ;
@@ -105,25 +105,6 @@ struct GlobalContext final : public Context {
         bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
 
         const FunctionMap& functions() const;
-
-        /*!
-         * Add a reference to the function with the given name. 
-         * \param function The function to add a reference to. 
-         */
-        void addReference(const std::string& function);
-
-        /*!
-         * Remove a reference to the function with the given name. 
-         * \param function The function to remove a reference from. 
-         */
-        void removeReference(const std::string& function);
-
-        /*!
-         * Get the reference counter of the given function. 
-         * \param function The function to add a reference to. 
-         * \return The reference counter of the given function. 
-         */
-        int referenceCount(const std::string& function);
 
         Platform target_platform() const;
 

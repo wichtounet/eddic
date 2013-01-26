@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -38,7 +38,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
                 } else if(type == STRING){
                     ast::Literal literal;
                     literal.value = "\"\"";
-                    literal.label = "S3";
+                    literal.label = "S1";
 
                     declaration.Content->value = literal;
                 } else if(type == FLOAT){

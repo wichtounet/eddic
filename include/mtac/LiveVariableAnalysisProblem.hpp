@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,10 @@
 
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
+
+#include <boost/utility.hpp>
+
+#define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
 
 namespace eddic {
 
@@ -52,21 +56,31 @@ struct LiveVariableValues {
     }
 };
 
-std::ostream& operator<<(std::ostream& stream, LiveVariableValues& expression);
+std::ostream& operator<<(std::ostream& stream, const LiveVariableValues& expression);
 
-struct LiveVariableAnalysisProblem : public DataFlowProblem<DataFlowType::Backward, LiveVariableValues> {
+struct LiveVariableAnalysisProblem {
+    //The type of data managed
+    typedef Domain<LiveVariableValues> ProblemDomain;
+
+    //The direction
+    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
+
     mtac::EscapedVariables pointer_escaped;
     
-    ProblemDomain Boundary(mtac::Function& function) override;
-    ProblemDomain Init(mtac::Function& function) override;
+    ProblemDomain Boundary(mtac::Function& function);
+    ProblemDomain Init(mtac::Function& function);
    
-    void meet(ProblemDomain& in, const ProblemDomain& out) override;
+    void meet(ProblemDomain& in, const ProblemDomain& out);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) override;
-    ProblemDomain transfer(mtac::basic_block_p, ltac::Statement&, ProblemDomain&) override { eddic_unreachable("Not LTAC"); };
-    
-    bool optimize(mtac::Statement& statement, std::shared_ptr<DataFlowResults<ProblemDomain>> results) override;
-    bool optimize(ltac::Statement&, std::shared_ptr<DataFlowResults<ProblemDomain>>) override { eddic_unreachable("Not LTAC"); };
+    ProblemDomain top_element(){
+        return ProblemDomain();
+    }
+
+    ProblemDomain default_element(){
+        return ProblemDomain(ProblemDomain::Values());
+    }
 };
 
 } //end of mtac

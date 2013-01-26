@@ -1,14 +1,88 @@
 include <strings>
 
-void print(bool a){
-    if(a){
-        print(1);
-    } else {
-        print(0);
-    }
+//TODO Once template argument are deduced, replace all the println with a template
+
+void println(){
+    print((char) 10);
+}
+
+void println(int a){
+    print(a);
+    println();
+}
+
+void println(float a){
+    print(a);
+    println();
+}
+
+void println(char a){
+    print(a);
+    println();
 }
 
 void println(bool a){
     print(a);
     println();
+}
+
+void println(str a){
+    print(a);
+    println();
+}
+
+void print(bool a){
+    if(a){
+        print('1');
+    } else {
+        print('0');
+    }
+}
+
+void print(int a){
+    int n = a;
+
+    if(n < 0){
+        print('-');
+        n = -n;
+    }
+
+    for(int size = digits(a) - 1; size > 0; --size){
+        int power = pow(10, size);
+        int r = n / power;
+        print((char) (r + 48));
+        n = n - (r * power);
+    }
+
+    print((char) (n + 48));
+}
+
+void print(float a){
+    float n = a;
+
+    if(a < 0.0){
+        print('-');
+        n = -n;
+    }
+
+    int first = (int) n;
+    print(first);
+
+    print('.');
+
+    n = n - (float) first;
+    n = 10000.0 * n;
+
+    first = (int) n;
+
+    if(first == 0){
+        print('0');
+    } else {
+        while(first < 1000){
+            print('0');
+            first *= 10;
+        }
+
+        print((int) n);
+    }
 }

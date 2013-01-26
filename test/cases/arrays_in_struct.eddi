@@ -1,6 +1,19 @@
+include <print>
+
 struct Complex {
     int a;
     int b[5];
+
+    this(){
+        //Nothing
+    }
+
+    this(Complex* rhs){
+        a = rhs.a;
+        for(int i = 0; i < 5; ++i){
+            b[i] = rhs.b[i];
+        }
+    }
 }
 
 void main(){

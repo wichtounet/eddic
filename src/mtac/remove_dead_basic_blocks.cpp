@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,7 @@
 
 #include "mtac/remove_dead_basic_blocks.hpp"
 #include "mtac/Function.hpp"
+#include "mtac/Program.hpp"
 
 using namespace eddic;
 
@@ -17,8 +18,6 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
     bool optimized_once = false;
 
     do {
-        optimized = false;
-        
         unsigned int before = function.bb_count();
 
         if(before <= 2){
@@ -46,6 +45,14 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
             auto& block = *it;
 
             if(live_basic_blocks.find(block) == live_basic_blocks.end()){
+                //Update the call graph if necessary
+                for(auto& statement : block){
+                    if(statement.op == mtac::Operator::CALL){
+                        --program.call_graph.edge(function.definition(), statement.function())->count;
+                    }
+                }
+
+                //Remove the basic block
                 it.erase();
             } else {
                 ++it;

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,7 +13,7 @@
 
 #include "mtac/remove_empty_functions.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
@@ -25,7 +25,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     while(it.has_next()){
         auto& function = *it;
 
-        if(function.get_name() == "_F4main" || function.get_name() == "_F4mainAS"){
+        if(function.is_main()){
             ++it;
             continue;
         }
@@ -48,13 +48,13 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                 auto fit = block->statements.begin();
 
                 while(fit != block->statements.end()){
-                    auto statement = *fit;
+                    auto& quadruple = *fit;
 
-                    if(auto* ptr = boost::get<std::shared_ptr<mtac::Call>>(&statement)){
-                        auto function = (*ptr)->function;
+                    if(quadruple.op == mtac::Operator::CALL){
+                        auto function = quadruple.function().mangled_name();
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
-                            int parameters = (*ptr)->functionDefinition.parameters().size();
+                            int parameters = quadruple.function().parameters().size();
 
                             if(parameters > 0){
                                 //The parameters are in the previous block

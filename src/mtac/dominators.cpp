@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -18,6 +18,8 @@ using namespace eddic;
 
 struct dominators {
     const std::size_t cn;
+    unsigned int n = 0;
+
     mtac::Function& function;
 
     std::vector<unsigned int> parent;
@@ -36,14 +38,12 @@ struct dominators {
     std::unordered_map<mtac::basic_block_p, unsigned int> numbers;
     std::unordered_map<unsigned int, mtac::basic_block_p> blocks;
 
-    dominators(std::size_t cn, mtac::Function& function) : cn(cn), function(function), 
+    dominators(std::size_t cn, mtac::Function& function) : cn(cn), n(cn), function(function), 
             parent(cn+1), semi(cn+1), vertex(cn+1), dom(cn+1), size(cn+1), child(cn+1), label(cn+1), ancestor(cn+1),
             succ(cn+1), pred(cn+1), bucket(cn+1) {
 
         //Nothing to init
     }
-
-    unsigned int n = 0;
 
     void dfs(unsigned int v){
         semi[v] = ++n;
@@ -140,7 +140,7 @@ struct dominators {
             semi[v] = 0;
         }
     
-        unsigned int n = 0;
+        n = 0;
 
         dfs(1);
 
@@ -198,7 +198,6 @@ struct dominators {
                 block->dominator = nullptr;
             }
 
-            //TODO Not sure if not necessary to use another array
             block->dominator = blocks[dom[number]]; 
         }
     }

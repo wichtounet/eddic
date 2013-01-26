@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -86,10 +86,10 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
             AssemblyFileWriter writer(asm_file_name);
 
             as::CodeGeneratorFactory factory;
-            auto generator = factory.get(platform, writer, program.context);
+            auto generator = factory.get(platform, writer, program, program.context);
 
             //Generate the code from the LTAC Program
-            generator->generate(program, get_string_pool(), float_pool);
+            generator->generate(get_string_pool(), float_pool);
 
             //writer's destructor flushes the file
         }

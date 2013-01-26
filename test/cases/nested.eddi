@@ -1,3 +1,5 @@
+include<print>
+
 struct A {
     int first;
     int second;
@@ -11,12 +13,31 @@ struct B {
 struct D {
     A a;
     B b;
+
+    this(){
+        //Nothing
+    }
+
+    this(D* rhs){
+        a = rhs.a;
+        b = rhs.b;
+    }
 }
 
 struct C {
     A a;
     B b;
     D d;
+    
+    this(){
+        //Nothing
+    }
+
+    this(C* rhs){
+        a = rhs.a;
+        b = rhs.b;
+        d = rhs.d;
+    }
 }
 
 void main(){

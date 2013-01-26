@@ -1,3 +1,20 @@
+eddic 1.2.2 - 2013.01.26
+
+* Language: When structures are passed by value, they are copy constructed
+* Language: Inclusion of several times the same header is now handled correctly
+* Standard Library: New functions into vector
+* Standard Library: printI and printF have been rewritten in EDDI
+* Optimizer: Loops with more than one basic block are now correctly discovered
+* Optimizer: Analysis of functions to avoid creating new basic blocks when not necessary
+* Optimizer: Management of a call graph, used to remove unused functions
+* Optimizer: Aggressivity of the inliner has been reduced
+* Optimizer: Loop Invariant Code Motion can now move read to memory (DOT)
+* Optimizer: Common Subexpression Elimination can now group reads to memory (DOT)
+* Options: New optimization level, O3, performs loop unrolling and complete loop peeling
+* Compiler: All mtac::Statement merged into mtac::Quadruple and stored directly into a vector
+* Compiler: Several memory leaks have been fixed
+* Compiler: Performances of constant propagation have been improved
+
 eddic 1.2.1 - 2012.12.31
 
 * Language: string is renamed to str

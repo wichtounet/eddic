@@ -1,29 +1,29 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
+
+#include "assert.hpp"
 
 #include "mtac/Function.hpp"
 
 using namespace eddic;
 
 mtac::basic_block::basic_block(int i) : index(i), label("") {}
+        
+mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
+    for(auto& quadruple : statements){
+        if(quadruple.uid() == uid){
+            return quadruple;
+        }
+    }
 
-void mtac::basic_block::add(mtac::Statement statement){
-    statements.push_back(statement);
+    eddic_unreachable("The uid should exists");
 }
 
-mtac::basic_block::iterator mtac::basic_block::begin(){
-    return statements.begin();
-}
-
-mtac::basic_block::iterator mtac::basic_block::end(){
-    return statements.end();
-}
-
-std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<basic_block>& basic_block){
+std::ostream& mtac::operator<<(std::ostream& stream, const std::shared_ptr<basic_block>& basic_block){
     if(basic_block){
         return stream << *basic_block;
     } else {
@@ -31,7 +31,7 @@ std::ostream& mtac::operator<<(std::ostream& stream, std::shared_ptr<basic_block
     }
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, basic_block& block){
+std::ostream& mtac::operator<<(std::ostream& stream, const basic_block& block){
     if(block.index == -1){
         return stream << "ENTRY";
     } else if(block.index == -2){
@@ -63,13 +63,13 @@ void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream)
     }
 }
 
-void mtac::pretty_print(mtac::basic_block_p block, std::ostream& stream){
+void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream){
     std::string sep(25, '-');
 
     stream << sep << std::endl;
-    stream << block;
+    stream << *block;
 
-    stream << " prev: " << block->prev << ", next: " << block->next << std::endl;
+    stream << " prev: " << block->prev << ", next: " << block->next << ", dom: " << block->dominator << std::endl;
     stream << "successors "; ::pretty_print(block->successors, stream); stream << std::endl;;
     stream << "predecessors "; ::pretty_print(block->predecessors, stream); stream << std::endl;;
 

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,6 +7,10 @@
 
 #ifndef AST_FUNCTION_DECLARATION_H
 #define AST_FUNCTION_DECLARATION_H
+
+#include <string>
+#include <memory>
+#include <vector>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -18,6 +22,7 @@
 namespace eddic {
 
 class FunctionContext;
+class Type;
 
 namespace ast {
 

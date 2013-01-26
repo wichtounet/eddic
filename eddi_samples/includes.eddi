@@ -1,4 +1,4 @@
-include <math>
+include<print>
 
 include "eddi_samples/included.eddi"
 

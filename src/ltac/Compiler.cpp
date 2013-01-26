@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,13 +12,14 @@
 #include "Type.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
+#include "logging.hpp"
 
 #include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
 
-#include "mtac/Statement.hpp"
+#include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
@@ -34,6 +35,8 @@ void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> f
 
 void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool> float_pool){
     PerfsTimer timer("LTAC Compilation");
+
+    log::emit<Trace>("Compiler") << "Compile LTAC for function " << function.get_name() << log::endl;
     
     //Compute the block usage (in order to know if we have to output the label)
     mtac::computeBlockUsage(function, block_usage);
@@ -62,10 +65,15 @@ void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool
 
         //If necessary add a label for the block
         if(block_usage.find(block) != block_usage.end()){
-            compiler(block->label);
+            mtac::Quadruple fake_label(block->label, mtac::Operator::LABEL);
+            compiler.compile(fake_label);
         }
 
-        visit_each(compiler, block->statements);
+        for(auto& quadruple : block->statements){
+           compiler.compile(quadruple); 
+        }
+
+        block->statements.clear();
 
         compiler.end_bb();
     }

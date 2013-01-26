@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -13,7 +13,6 @@
 #include "GlobalContext.hpp"
 #include "Type.hpp"
 
-#include "mtac/Statement.hpp"
 #include "mtac/GlobalOptimizations.hpp"
 
 #include "ltac/Statement.hpp"
@@ -416,7 +415,13 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::Fun
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            auto& live_registers = get_live_results<Pseudo>(live_results->OUT_LS[statement].values());
+            auto results = live_results->OUT_LS[statement];
+
+            if(results.top()){
+               continue; 
+            }
+
+            auto& live_registers = get_live_results<Pseudo>(results.values());
 
             if(live_registers.size() > 1){
                 auto it = live_registers.begin();

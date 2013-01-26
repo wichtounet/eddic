@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 2)
-set(VERSION_PATCH 1)
+set(VERSION_PATCH 2)
 
 #Boost is necessary
 FIND_PACKAGE(Boost REQUIRED) 
@@ -26,8 +26,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS           "-std=c++11 -Qunused-arguments")
-    set(CMAKE_CXX_FLAGS_DEBUG     "-g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self")
-    set(CMAKE_CXX_FLAGS_RELEASE   "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
+    set(CMAKE_CXX_FLAGS_DEBUG     "-g -pedantic -Wuninitialized -Wsometimes-uninitialized -Wall -Wextra -Wno-long-long -Winit-self -Wdocumentation")
+    set(CMAKE_CXX_FLAGS_RELEASE   "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fno-omit-frame-pointer -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic can only be compiled on gcc and clang for now")
 endif()
@@ -233,6 +233,7 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
     OptimizationSuite/loop_unrolling
+    OptimizationSuite/common_subexpr_elimination
     #Unit tests
     toString
     toNumber

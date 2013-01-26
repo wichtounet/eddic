@@ -52,7 +52,7 @@ namespace logging {
     class StdOutput {
         public:
             template<typename T>
-            StdOutput & operator<<(T value) {
+            StdOutput & operator<<(const T& value) {
                 stream << value;
                 return *this;
             }

@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     int local[5];
     local[0] = 4;

@@ -45,7 +45,7 @@ void main(){
     println(c.i[3]);
     println(c.i[1]);
 
-    test(c);
+    test(&c);
 
     if(c.b){
         println(c.imag);
@@ -54,7 +54,7 @@ void main(){
     }
 }
 
-void test(Complex a){
+void test(Complex* a){
     println(a.imag);
     println(a.real);
     println(a.d);

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -33,13 +33,53 @@ enum class Operator : unsigned int {
     FMUL,
     FDIV,
 
-    /* relational operators */
+    /* relational operators for expressions */
     EQUALS,
     NOT_EQUALS,
     GREATER,
     GREATER_EQUALS,
     LESS,
     LESS_EQUALS,
+    
+    /* Operators for If */
+
+    IF_UNARY,
+
+    /* relational operators */
+    IF_EQUALS,
+    IF_NOT_EQUALS,
+    IF_GREATER,
+    IF_GREATER_EQUALS,
+    IF_LESS,
+    IF_LESS_EQUALS,
+    
+    /* float relational operators */
+    IF_FE,
+    IF_FNE,
+    IF_FG,
+    IF_FGE,
+    IF_FLE,
+    IF_FL,
+
+    /* Operators for IfFalse */
+    
+    IF_FALSE_UNARY,
+
+    /* relational operators */
+    IF_FALSE_EQUALS,
+    IF_FALSE_NOT_EQUALS,
+    IF_FALSE_GREATER,
+    IF_FALSE_GREATER_EQUALS,
+    IF_FALSE_LESS,
+    IF_FALSE_LESS_EQUALS,
+    
+    /* float relational operators */
+    IF_FALSE_FE,
+    IF_FALSE_FNE,
+    IF_FALSE_FG,
+    IF_FALSE_FGE,
+    IF_FALSE_FLE,
+    IF_FALSE_FL,
 
     /* boolean operators */
     NOT,
@@ -67,9 +107,18 @@ enum class Operator : unsigned int {
     DOT_FASSIGN,    //result+arg1=arg2
     DOT_PASSIGN,    //result+arg1=arg2
     
+    GOTO,           //jump to a basic block (label in arg1)
+
     RETURN,         //return from a function
 
-    NOP             //for optimization purpose
+    NOP,            //for optimization purpose
+
+    PARAM,          //for parameter passing
+    PPARAM,         //for parameter passing by address
+    
+    CALL,           //call functions
+
+    LABEL           //label in arg1
 };
 
 mtac::Operator toOperator(ast::Operator op);

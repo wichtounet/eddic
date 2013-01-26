@@ -1,12 +1,12 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_GOTO_H
-#define MTAC_GOTO_H
+#ifndef MTAC_WARNINGS_ENGINE_H
+#define MTAC_WARNINGS_ENGINE_H
 
 #include <memory>
 
@@ -14,18 +14,11 @@
 
 namespace eddic {
 
+struct Configuration;
+
 namespace mtac {
 
-struct Goto {
-    std::string label;
-    unsigned int depth;
-    
-    //Filled only in later phase replacing the label
-    basic_block_p block;
-
-    Goto();
-    Goto(const std::string& label);
-};
+void collect_warnings(mtac::Program& program, std::shared_ptr<Configuration> configuration);
 
 } //end of mtac
 

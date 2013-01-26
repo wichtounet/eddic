@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -23,7 +23,7 @@ namespace eddic {
 
 namespace ltac {
 
-class StatementCompiler : public boost::static_visitor<> {
+class StatementCompiler {
     public:
         const PlatformDescriptor* descriptor;
         Platform platform;
@@ -47,14 +47,7 @@ class StatementCompiler : public boost::static_visitor<> {
 
         bool ended = false;
 
-        void operator()(std::shared_ptr<mtac::IfFalse> if_false);
-        void operator()(std::shared_ptr<mtac::If> if_);
-        void operator()(std::shared_ptr<mtac::Goto> goto_);
-        void operator()(std::shared_ptr<mtac::Param> param);
-        void operator()(std::shared_ptr<mtac::Call> call);
-        void operator()(std::shared_ptr<mtac::Quadruple> quadruple);
-        void operator()(std::shared_ptr<mtac::NoOp>);
-        void operator()(std::string& str);
+        void compile(mtac::Quadruple& quadruple);
 
         void push(ltac::Argument arg);
         void pop(ltac::Argument arg);
@@ -79,7 +72,7 @@ class StatementCompiler : public boost::static_visitor<> {
         void compare_float_binary(mtac::Argument& arg1, mtac::Argument& arg2);
         void compare_unary(mtac::Argument arg1);
 
-        void set_if_cc(ltac::Operator set, std::shared_ptr<mtac::Quadruple> quadruple, bool floats);
+        void set_if_cc(ltac::Operator set, mtac::Quadruple& quadruple, bool floats);
         
         ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
         
@@ -89,44 +82,50 @@ class StatementCompiler : public boost::static_visitor<> {
         ltac::Argument to_arg(mtac::Argument argument);
         
         ltac::Address address(std::shared_ptr<Variable> var, mtac::Argument offset);
+
+        std::tuple<std::shared_ptr<const Type>, bool, unsigned int> common_param(mtac::Quadruple& param);
     
-        void compile_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_ADD(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_SUB(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_MUL(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_DIV(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_MOD(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FADD(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FSUB(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FMUL(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FDIV(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_NOT_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_GREATER(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_GREATER_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_LESS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_LESS_EQUALS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FE(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FNE(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FG(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FGE(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FLE(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FL(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_MINUS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FMINUS(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_I2F(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_F2I(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_DOT(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_FDOT(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_PDOT(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_DOT_ASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_DOT_FASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_DOT_PASSIGN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_RETURN(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_NOT(std::shared_ptr<mtac::Quadruple> quadruple);
-        void compile_AND(std::shared_ptr<mtac::Quadruple> quadruple);
+        void compile_ASSIGN(mtac::Quadruple& quadruple);
+        void compile_PASSIGN(mtac::Quadruple& quadruple);
+        void compile_FASSIGN(mtac::Quadruple& quadruple);
+        void compile_ADD(mtac::Quadruple& quadruple);
+        void compile_SUB(mtac::Quadruple& quadruple);
+        void compile_MUL(mtac::Quadruple& quadruple);
+        void compile_DIV(mtac::Quadruple& quadruple);
+        void compile_MOD(mtac::Quadruple& quadruple);
+        void compile_FADD(mtac::Quadruple& quadruple);
+        void compile_FSUB(mtac::Quadruple& quadruple);
+        void compile_FMUL(mtac::Quadruple& quadruple);
+        void compile_FDIV(mtac::Quadruple& quadruple);
+        void compile_EQUALS(mtac::Quadruple& quadruple);
+        void compile_NOT_EQUALS(mtac::Quadruple& quadruple);
+        void compile_GREATER(mtac::Quadruple& quadruple);
+        void compile_GREATER_EQUALS(mtac::Quadruple& quadruple);
+        void compile_LESS(mtac::Quadruple& quadruple);
+        void compile_LESS_EQUALS(mtac::Quadruple& quadruple);
+        void compile_FE(mtac::Quadruple& quadruple);
+        void compile_FNE(mtac::Quadruple& quadruple);
+        void compile_FG(mtac::Quadruple& quadruple);
+        void compile_FGE(mtac::Quadruple& quadruple);
+        void compile_FLE(mtac::Quadruple& quadruple);
+        void compile_FL(mtac::Quadruple& quadruple);
+        void compile_MINUS(mtac::Quadruple& quadruple);
+        void compile_FMINUS(mtac::Quadruple& quadruple);
+        void compile_I2F(mtac::Quadruple& quadruple);
+        void compile_F2I(mtac::Quadruple& quadruple);
+        void compile_DOT(mtac::Quadruple& quadruple);
+        void compile_FDOT(mtac::Quadruple& quadruple);
+        void compile_PDOT(mtac::Quadruple& quadruple);
+        void compile_DOT_ASSIGN(mtac::Quadruple& quadruple);
+        void compile_DOT_FASSIGN(mtac::Quadruple& quadruple);
+        void compile_DOT_PASSIGN(mtac::Quadruple& quadruple);
+        void compile_RETURN(mtac::Quadruple& quadruple);
+        void compile_NOT(mtac::Quadruple& quadruple);
+        void compile_AND(mtac::Quadruple& quadruple);
+        void compile_GOTO(mtac::Quadruple& quadruple);
+        void compile_PARAM(mtac::Quadruple& quadruple);
+        void compile_PPARAM(mtac::Quadruple& quadruple);
+        void compile_CALL(mtac::Quadruple& quadruple);
 };
 
 } //end of ltac

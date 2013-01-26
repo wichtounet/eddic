@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -31,7 +31,7 @@ struct CodeGeneratorFactory {
      * \param writer The assembly file writer to use. 
      * \return A pointer to the code generator corresponding to the platform. 
      */
-    std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer, std::shared_ptr<GlobalContext> context);
+    std::shared_ptr<CodeGenerator> get(Platform platform, AssemblyFileWriter& writer, mtac::Program& program, std::shared_ptr<GlobalContext> context);
 };
 
 } //end of as

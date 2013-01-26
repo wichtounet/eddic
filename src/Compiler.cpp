@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -27,9 +27,9 @@
 #include "mtac/Program.hpp"
 #include "mtac/BasicBlockExtractor.hpp"
 #include "mtac/Optimizer.hpp"
-#include "mtac/Printer.hpp"
 #include "mtac/RegisterAllocation.hpp"
 #include "mtac/reference_resolver.hpp"
+#include "mtac/WarningsEngine.hpp"
 
 using namespace eddic;
 
@@ -75,7 +75,12 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 
         //If program is null, it means that the user didn't wanted it
         if(program){
+            mtac::collect_warnings(*program, configuration);
+
             if(!configuration->option_defined("mtac-only")){
+                //Compute the definitive reachable flag for functions
+                program->call_graph.compute_reachable();
+
                 auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
                 back_end->set_string_pool(front_end->get_string_pool());
@@ -132,9 +137,11 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
         //If asked by the user, print the Three Address code representation before optimization
         if(configuration->option_defined("mtac-opt")){
-            mtac::Printer printer;
-            printer.print(*program);
+            std::cout << *program << std::endl;
         }
+            
+        //Build the call graph (will be used for each optimization level)
+        mtac::build_call_graph(*program);
 
         //Optimize MTAC
         mtac::Optimizer optimizer;
@@ -147,8 +154,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
         //If asked by the user, print the Three Address code representation
         if(configuration->option_defined("mtac") || configuration->option_defined("mtac-only")){
-            mtac::Printer printer;
-            printer.print(*program);
+            std::cout << *program << std::endl;
         }
     }
 

@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@
 #include <utility>
 #include <string>
 #include <memory>
-#include <iostream>
+#include <ostream>
 
 #include "variant.hpp"
 #include "Position.hpp"
@@ -70,8 +70,8 @@ class Variable {
         Offset reference_offset() const;
 };
 
-std::ostream& operator<<(std::ostream& stream, Variable& variable);
-std::ostream& operator<<(std::ostream& stream, std::shared_ptr<Variable>& variable);
+std::ostream& operator<<(std::ostream& stream, const Variable& variable);
+std::ostream& operator<<(std::ostream& stream, const std::shared_ptr<Variable>& variable);
 
 } //end of eddic
 

@@ -1,3 +1,5 @@
+include<print>
+
 void main(){
     int a = 55;
 	int b = 66;

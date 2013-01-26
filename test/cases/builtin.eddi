@@ -1,3 +1,5 @@
+include<print>
+
 int globalArray[10];
 str globalArrayB[11];
 

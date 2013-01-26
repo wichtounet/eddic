@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -24,8 +24,8 @@ struct DataFlowResults {
     std::unordered_map<mtac::basic_block_p, Domain> OUT;
     std::unordered_map<mtac::basic_block_p, Domain> IN;
     
-    std::unordered_map<mtac::Statement, Domain> OUT_S;
-    std::unordered_map<mtac::Statement, Domain> IN_S;
+    std::unordered_map<std::size_t, Domain> OUT_S;
+    std::unordered_map<std::size_t, Domain> IN_S;
     
     std::unordered_map<ltac::Statement, Domain> OUT_LS;
     std::unordered_map<ltac::Statement, Domain> IN_LS;
@@ -37,47 +37,6 @@ enum class DataFlowType : unsigned int {
     Low_Forward,    //Common forward data-flow problem in LTAC
     Low_Backward    //Common backward data-flow problem in LTAC
 };
-
-template<DataFlowType Type, typename DomainValues>
-struct DataFlowProblem {
-    typedef Domain<DomainValues> ProblemDomain;
-
-    virtual ProblemDomain Boundary(mtac::Function& function);
-    virtual ProblemDomain Init(mtac::Function& function);
-
-    /*!
-     * \brief Meet two lattices
-     * \param in The result lattice
-     * \param out The met lattice.
-     */
-    virtual void meet(ProblemDomain& in, const ProblemDomain& out) = 0;
-
-    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Statement& statement, ProblemDomain& in) = 0;
-    virtual ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in) = 0;
-
-    virtual bool optimize(mtac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
-    virtual bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results) = 0;
-
-    ProblemDomain top_element(){
-        return ProblemDomain();
-    }
-
-    ProblemDomain default_element(){
-        return ProblemDomain(DomainValues());
-    }
-};
-
-template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Boundary(mtac::Function&/* function*/) -> ProblemDomain {
-    //By default, return the default element
-    return default_element();
-}
-
-template<DataFlowType Type, typename DomainValues>
-auto DataFlowProblem<Type, DomainValues>::Init(mtac::Function&/* function*/) -> ProblemDomain {
-    //By default, return the top element
-    return top_element();
-}
 
 template<typename ProblemDomain>
 void intersection_meet(ProblemDomain& in, const ProblemDomain& out){

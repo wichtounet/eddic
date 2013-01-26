@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright Baptiste Wicht 2011-2012.
+// Copyright Baptiste Wicht 2011-2013.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -17,10 +17,6 @@
 #include "ltac/Instruction.hpp"
 
 using namespace eddic;
-
-bool eddic::ltac::is_float_operator(mtac::BinaryOperator op){
-    return op >= mtac::BinaryOperator::FE && op <= mtac::BinaryOperator::FL;
-}
 
 bool eddic::ltac::is_float_var(std::shared_ptr<Variable> variable){
     return variable->type() == FLOAT;
@@ -74,6 +70,14 @@ ltac::PseudoRegister eddic::ltac::to_register(std::shared_ptr<Variable> var, lta
     }
 }
 
+ltac::PseudoFloatRegister eddic::ltac::to_float_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){
+    if(var->position().is_temporary()){
+        return manager.get_pseudo_float_reg_no_move(var);
+    } else {
+        return manager.get_pseudo_float_reg(var);
+    }
+}
+
 namespace {
 
 struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
@@ -95,33 +99,10 @@ struct ToArgVisitor : public boost::static_visitor<ltac::Argument> {
 
     ltac::Argument operator()(std::shared_ptr<Variable> variable) const {
         if(ltac::is_float_var(variable)){
-            ltac::PseudoFloatRegister reg;
-
-            if(variable->position().is_temporary()){
-                reg = manager.get_pseudo_float_reg_no_move(variable);
-            } else {
-                reg = manager.get_pseudo_float_reg(variable);
-            }
-
-            if(manager.is_escaped(variable)){
-                manager.remove_from_pseudo_float_reg(variable);
-            }
-
-            return reg;
+            return to_float_register(variable, manager);
         } else {
-            auto reg = to_register(variable, manager);
-
-            if(manager.is_escaped(variable)){
-                manager.remove_from_pseudo_reg(variable);
-            }
-
-            return reg;
+            return to_register(variable, manager);
         }
-    }
-
-    template<typename T>
-    ltac::Argument operator()(T&) const {
-        eddic_unreachable("Unhandled arg type");
     }
 };
 

@@ -78,7 +78,7 @@ namespace logging {
             }
 
             template<typename T>
-            OutputStream& operator << (T& value){
+            OutputStream& operator << (const T& value){
                 Base::operator<<(value);
                 return *this;
             }
