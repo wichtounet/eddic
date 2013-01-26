@@ -172,6 +172,8 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                 arg1 = *quadruple.arg1;
             }
 
+            bool valid = false;
+
             if(quadruple.op == mtac::Operator::MUL){
                 auto arg2 = *quadruple.arg2;
 
@@ -182,11 +184,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, e, 0, false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e * e, equation.d * e, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
@@ -196,11 +198,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, e, 0, false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e * e, equation.d * e, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 } 
@@ -214,11 +216,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, 1, boost::get<int>(arg1), false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e, equation.d + e, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
@@ -228,11 +230,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, 1, boost::get<int>(arg2), false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e, equation.d + e, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 } else if(mtac::isVariable(arg1) && mtac::isVariable(arg2)){
@@ -242,11 +244,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(var1 == var2 && var1 != var){
                         if(loop.basic_induction_variables().count(var1)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), var1, 2, 0, false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[var1].i){
                             auto equation = loop.dependent_induction_variables()[var1];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e * 2, equation.d * 2, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 }
@@ -260,11 +262,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, -1, -1 * e, false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, -1 * equation.e, e - equation.d, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
@@ -274,11 +276,11 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, 1, -1 * boost::get<int>(arg2), false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, equation.e, equation.d - e, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 }
@@ -289,21 +291,75 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
                     if(variable != var){
                         if(loop.basic_induction_variables().count(variable)){
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, -1, 0, false}; 
-                            continue;
+                            valid = true;
                         } else if(loop.dependent_induction_variables()[variable].i){
                             auto equation = loop.dependent_induction_variables()[variable];
                             loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, -1 * equation.e, -1 * equation.d, false}; 
-                            continue;
+                            valid = true;
                         }
                     }
                 }
             }
 
-            loop.dependent_induction_variables().erase(var);
+            if(valid){
+                auto& equation = loop.dependent_induction_variables()[var];
+                auto source = equation.i;
+
+                std::size_t source_uid = 0;
+
+                for(auto& quadruple : bb){
+                    if(quadruple.result == source){
+                        source_uid = quadruple.uid();
+                        break;
+                    }
+                }
+
+                //The declaration of the source variable must be in the same block
+                if(source_uid == 0){
+                    loop.dependent_induction_variables().erase(var);
+                } 
+            } else {
+                loop.dependent_induction_variables().erase(var);
+            }
         }
     }
 
     clean_defaults(loop.dependent_induction_variables());
+
+    for(auto& bb : function){
+        for(auto& quadruple : bb){
+            if(loop.dependent_induction_variables().find(quadruple.result) != loop.dependent_induction_variables().end()){
+                auto& equation = loop.dependent_induction_variables()[quadruple.result];
+                auto source = equation.i;
+
+                auto iv_it = bb->begin();
+                auto source_it = bb->begin();
+                
+                std::size_t source_uid = 0;
+
+                for(auto& quadruple : bb){
+                    if(quadruple.result == source){
+                        source_uid = quadruple.uid();
+                        break;
+                    }
+                }
+
+                //Find both iterators
+                while(iv_it->uid() != quadruple.uid() && iv_it != bb->end()){++iv_it;}
+                while(source_it->uid() != source_uid && source_it != bb->end()){++source_it;}
+
+                eddic_assert(iv_it != bb->end(), "The iterator should be found");
+                eddic_assert(source_it != bb->end(), "The iterator should be found");
+
+                //If the source is before the induction variable, the DIV refers to the next BIV
+                if(source_it < iv_it){
+                    auto& source_equation = loop.basic_induction_variables()[source];
+
+                    equation.d += equation.e * source_equation.d;
+                } 
+            }
+        }
+    }
 }
 
 std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
