@@ -147,6 +147,7 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
                 writer.stream() << "xor rax, rax" << '\n';
                 writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
+                writer.stream() << "add rdi, 24" << '\n'; //Because of the pushs...
                 writer.stream() << "rep stosq" << '\n';
                 writer.stream() << "pop rdi" << '\n';
                 writer.stream() << "pop rax" << '\n';
