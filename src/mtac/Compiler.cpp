@@ -1641,7 +1641,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
 } //end of anonymous namespace
 
 void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool>, mtac::Program& program) const {
-    PerfsTimer timer("MTAC Compilation");
+    timing_timer timer(source.Content->context->timing(), "mtac_compilation");
 
     program.context = source.Content->context;
 
