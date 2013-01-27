@@ -423,7 +423,7 @@ struct pass_runner {
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
-    PerfsTimer timer("Whole optimizations");
+    timing_timer timer(program.context->timing(), "whole_optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
     for(auto& function : program.functions){
