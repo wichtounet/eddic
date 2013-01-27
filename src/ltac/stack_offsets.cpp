@@ -66,38 +66,39 @@ void ltac::fix_stack_offsets(mtac::Program& program, Platform platform){
         for(auto& bb : function){
             for(auto& statement : bb->l_statements){
                 if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                    auto instruction = *ptr;
+                    auto& instruction = *ptr;
 
-                    change_address(instruction->arg1, bp_offset);
-                    change_address(instruction->arg2, bp_offset);
-                    change_address(instruction->arg3, bp_offset);
+                    if(instruction->is_jump()){
+                        if(instruction->op != ltac::Operator::CALL && instruction->op != ltac::Operator::ALWAYS){
+                            offset_labels[instruction->label] = bp_offset;
+                        }
+                    } else {
+                        change_address(instruction->arg1, bp_offset);
+                        change_address(instruction->arg2, bp_offset);
+                        change_address(instruction->arg3, bp_offset);
 
-                    if(opt_variant_equals(instruction->arg1, ltac::SP)){
-                        if(instruction->op == ltac::Operator::ADD){
-                            bp_offset -= boost::get<int>(*instruction->arg2);
+                        if(opt_variant_equals(instruction->arg1, ltac::SP)){
+                            if(instruction->op == ltac::Operator::ADD){
+                                bp_offset -= boost::get<int>(*instruction->arg2);
+                            }
+
+                            if(instruction->op == ltac::Operator::SUB){
+                                bp_offset += boost::get<int>(*instruction->arg2);
+                            }
                         }
 
-                        if(instruction->op == ltac::Operator::SUB){
-                            bp_offset += boost::get<int>(*instruction->arg2);
+                        if(instruction->op == ltac::Operator::PUSH){
+                            bp_offset += INT->size(platform);
                         }
-                    }
 
-                    if(instruction->op == ltac::Operator::PUSH){
-                        bp_offset += INT->size(platform);
-                    }
-
-                    if(instruction->op == ltac::Operator::POP){
-                        bp_offset -= INT->size(platform);
+                        if(instruction->op == ltac::Operator::POP){
+                            bp_offset -= INT->size(platform);
+                        }
                     }
                 } else if(auto* ptr = boost::get<std::string>(&statement)){
                     if(offset_labels.count(*ptr)){
                         bp_offset = offset_labels[*ptr];
                         offset_labels.erase(*ptr);
-                    }
-                } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                    auto jump = *ptr;
-                    if(jump->type != ltac::JumpType::CALL && jump->type != ltac::JumpType::ALWAYS){
-                        offset_labels[jump->label] = bp_offset;
                     }
                 }
             }

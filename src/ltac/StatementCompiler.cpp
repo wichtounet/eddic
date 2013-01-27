@@ -328,7 +328,7 @@ void ltac::StatementCompiler::compile_GOTO(mtac::Quadruple& quadruple){
 
     end_bb();
 
-    bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::ALWAYS));
+    bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::ALWAYS));
 }
 
 ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset){
@@ -508,7 +508,7 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
 
     first_param = true;
 
-    auto call_instruction = std::make_shared<ltac::Jump>(call.function().mangled_name(), ltac::JumpType::CALL);
+    auto call_instruction = std::make_shared<ltac::Instruction>(call.function().mangled_name(), ltac::Operator::CALL);
     call_instruction->target_function = &call.function();
     call_instruction->uses = uses;
     call_instruction->float_uses = float_uses;
@@ -1379,119 +1379,119 @@ void ltac::StatementCompiler::compile(mtac::Quadruple& quadruple){
             break;
         case mtac::Operator::IF_FALSE_UNARY:
             compare_unary(*quadruple.arg1);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::Z));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::Z));
             break;
         case mtac::Operator::IF_FALSE_FE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_FNE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_FL:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::AE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::AE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_FLE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::A));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::A));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_FG:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::BE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::BE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_FGE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::B));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::B));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FALSE_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::NE));
             break;
         case mtac::Operator::IF_FALSE_NOT_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::E));
             break;
         case mtac::Operator::IF_FALSE_LESS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::GE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::GE));
             break;
         case mtac::Operator::IF_FALSE_LESS_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::G));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::G));
             break;
         case mtac::Operator::IF_FALSE_GREATER:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::LE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::LE));
             break;
         case mtac::Operator::IF_FALSE_GREATER_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::L));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::L));
             break;
         case mtac::Operator::IF_UNARY:
             compare_unary(*quadruple.arg1);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NZ));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::NZ));
             break;
         case mtac::Operator::IF_FE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FNE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FL:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::B));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::B));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FLE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::BE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::BE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FG:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::A));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::A));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_FGE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::AE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::AE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::P));
             break;
         case mtac::Operator::IF_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::E));
             break;
         case mtac::Operator::IF_NOT_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::NE));
             break;
         case mtac::Operator::IF_LESS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::L));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::L));
             break;
         case mtac::Operator::IF_LESS_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::LE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::LE));
             break;
         case mtac::Operator::IF_GREATER:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::G));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::G));
             break;
         case mtac::Operator::IF_GREATER_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::GE));
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.block->label, ltac::Operator::GE));
             break;
         case mtac::Operator::NOP:
             //No code necessary

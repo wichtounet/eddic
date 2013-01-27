@@ -114,45 +114,38 @@ std::string to_string(ltac::Operator op){
             return "XORPS"; 
         case ltac::Operator::MOVDQU:
             return "MOVDQU"; 
-        default:
-            eddic_unreachable("The instruction operator is not supported");
-    }
-}
-
-std::string to_string(ltac::JumpType type){
-    switch(type){
-        case ltac::JumpType::CALL:
+        case ltac::Operator::CALL:
             return "call";
-        case ltac::JumpType::ALWAYS:
+        case ltac::Operator::ALWAYS:
             return "always";
-        case ltac::JumpType::NE:
+        case ltac::Operator::NE:
             return "ne";
-        case ltac::JumpType::E:
+        case ltac::Operator::E:
             return "e";
-        case ltac::JumpType::GE:
+        case ltac::Operator::GE:
             return "ge";
-        case ltac::JumpType::G:
+        case ltac::Operator::G:
             return "g";
-        case ltac::JumpType::LE:
+        case ltac::Operator::LE:
             return "le";
-        case ltac::JumpType::L:
+        case ltac::Operator::L:
             return "l";
-        case ltac::JumpType::AE:
+        case ltac::Operator::AE:
             return "ae";
-        case ltac::JumpType::A:
+        case ltac::Operator::A:
             return "a";
-        case ltac::JumpType::BE:
+        case ltac::Operator::BE:
             return "be";
-        case ltac::JumpType::B:
+        case ltac::Operator::B:
             return "b";
-        case ltac::JumpType::P:
+        case ltac::Operator::P:
             return "p";
-        case ltac::JumpType::Z:
+        case ltac::Operator::Z:
             return "z";
-        case ltac::JumpType::NZ:
+        case ltac::Operator::NZ:
             return "nz";
         default:
-            eddic_unreachable("The jump type is not supported");
+            eddic_unreachable("The instruction operator is not supported");
     }
 }
 
@@ -188,25 +181,27 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        out << "\t" << std::setw(3) << std::setfill('0') << quadruple->uid() << ": " << to_string(quadruple->op);
+        out << "\t" << std::setw(3) << std::setfill('0') << quadruple->uid() << ": ";
 
-        if(quadruple->arg1){
-            out << " " << *quadruple->arg1;
-            
-            if(quadruple->arg2){
-                out << ", " << *quadruple->arg2;
+        if(quadruple->is_jump()){
+            out << "jmp (" << to_string(quadruple->op) << ") " << quadruple->label << std::endl;
+        } else {
+            out << to_string(quadruple->op);
 
-                if(quadruple->arg3){
-                    out << ", " << *quadruple->arg3;
+            if(quadruple->arg1){
+                out << " " << *quadruple->arg1;
+
+                if(quadruple->arg2){
+                    out << ", " << *quadruple->arg2;
+
+                    if(quadruple->arg3){
+                        out << ", " << *quadruple->arg3;
+                    }
                 }
             }
+
+            out << std::endl;
         }
-
-        out << std::endl;
-    }
-
-    void operator()(const std::shared_ptr<ltac::Jump>& jmp){
-        out << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
     }
 
     void operator()(const std::string& label){

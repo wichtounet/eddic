@@ -69,15 +69,11 @@ void update_uses(ltac::Statement& statement, std::unordered_map<ltac::PseudoRegi
         for(auto& reg : (*ptr)->uses){
             (*ptr)->hard_uses.push_back(register_allocation[reg]);
         }
-    } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-        for(auto& reg : (*ptr)->uses){
-            (*ptr)->hard_uses.push_back(register_allocation[reg]);
-        }
         
         for(auto& reg : (*ptr)->kills){
             (*ptr)->hard_kills.push_back(register_allocation[reg]);
         }
-    }
+    } 
 }
 
 template<typename Source, typename Target, typename Opt>
@@ -267,12 +263,12 @@ void find_local_registers(mtac::Function& function, local_reg<Pseudo>& local_pse
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
             if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                find_reg((*ptr)->arg1, pseudo_registers[bb]);
-                find_reg((*ptr)->arg2, pseudo_registers[bb]);
-                find_reg((*ptr)->arg3, pseudo_registers[bb]);
+                if(!(*ptr)->is_jump()){
+                    find_reg((*ptr)->arg1, pseudo_registers[bb]);
+                    find_reg((*ptr)->arg2, pseudo_registers[bb]);
+                    find_reg((*ptr)->arg3, pseudo_registers[bb]);
+                }
 
-                get_special_uses(*ptr, pseudo_registers[bb]);
-            } else if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
                 get_special_uses(*ptr, pseudo_registers[bb]);
             }
         }

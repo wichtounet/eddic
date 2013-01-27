@@ -273,60 +273,53 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::NOP:
                 //Nothing to output for a nop
                 break;
-            default:
-                eddic_unreachable("The operator is not supported");
-        }
-    }
-
-    void operator()(std::shared_ptr<ltac::Jump> jump){
-        switch(jump->type){
-            case ltac::JumpType::CALL:
-                writer.stream() << "call " << jump->label << '\n';
+            case ltac::Operator::CALL:
+                writer.stream() << "call " << instruction->label << '\n';
                 break;
-            case ltac::JumpType::ALWAYS:
-                writer.stream() << "jmp " << "." << jump->label << '\n';
+            case ltac::Operator::ALWAYS:
+                writer.stream() << "jmp " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::NE:
-                writer.stream() << "jne " << "." << jump->label << '\n';
+            case ltac::Operator::NE:
+                writer.stream() << "jne " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::E:
-                writer.stream() << "je " << "." << jump->label << '\n';
+            case ltac::Operator::E:
+                writer.stream() << "je " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::GE:
-                writer.stream() << "jge " << "." << jump->label << '\n';
+            case ltac::Operator::GE:
+                writer.stream() << "jge " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::G:
-                writer.stream() << "jg " << "." << jump->label << '\n';
+            case ltac::Operator::G:
+                writer.stream() << "jg " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::LE:
-                writer.stream() << "jle " << "." << jump->label << '\n';
+            case ltac::Operator::LE:
+                writer.stream() << "jle " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::L:
-                writer.stream() << "jl " << "." << jump->label << '\n';
+            case ltac::Operator::L:
+                writer.stream() << "jl " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::AE:
-                writer.stream() << "jae " << "." << jump->label << '\n';
+            case ltac::Operator::AE:
+                writer.stream() << "jae " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::A:
-                writer.stream() << "ja" << "." << jump->label << '\n';
+            case ltac::Operator::A:
+                writer.stream() << "ja" << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::BE:
-                writer.stream() << "jbe " << "." << jump->label << '\n';
+            case ltac::Operator::BE:
+                writer.stream() << "jbe " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::B:
-                writer.stream() << "jb " << "." << jump->label << '\n';
+            case ltac::Operator::B:
+                writer.stream() << "jb " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::P:
-                writer.stream() << "jp " << "." << jump->label << '\n';
+            case ltac::Operator::P:
+                writer.stream() << "jp " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::Z:
-                writer.stream() << "jz " << "." << jump->label << '\n';
+            case ltac::Operator::Z:
+                writer.stream() << "jz " << "." << instruction->label << '\n';
                 break;
-            case ltac::JumpType::NZ:
-                writer.stream() << "jnz " << "." << jump->label << '\n';
+            case ltac::Operator::NZ:
+                writer.stream() << "jnz " << "." << instruction->label << '\n';
                 break;
             default:
-                eddic_unreachable("The jump type is not supported");
+                eddic_unreachable(("The operator " + std::to_string(static_cast<int>(instruction->op)) + " is not supported").c_str());
         }
     }
 

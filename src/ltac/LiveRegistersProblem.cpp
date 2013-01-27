@@ -18,7 +18,7 @@ typedef ltac::LivePseudoRegistersProblem::ProblemDomain PseudoProblemDomain;
 namespace {
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
-typename std::enable_if<std::is_same<Reg, ltac::PseudoRegister>::value, void>::type collect_jump(std::shared_ptr<ltac::Jump> instruction, ProblemDomain& in){
+typename std::enable_if<std::is_same<Reg, ltac::PseudoRegister>::value, void>::type collect_jump(std::shared_ptr<ltac::Instruction> instruction, ProblemDomain& in){
     for(auto& reg : instruction->uses){
         in.values().insert(reg);
     }
@@ -37,7 +37,7 @@ typename std::enable_if<std::is_same<Reg, ltac::PseudoRegister>::value, void>::t
 }
 
 template<typename Reg, typename FloatReg, typename ProblemDomain>
-typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_jump(std::shared_ptr<ltac::Jump> instruction, ProblemDomain& in){
+typename std::enable_if<std::is_same<Reg, ltac::Register>::value, void>::type collect_jump(std::shared_ptr<ltac::Instruction> instruction, ProblemDomain& in){
     for(auto& reg : instruction->hard_uses){
         in.values().insert(reg);
     }
@@ -112,27 +112,27 @@ struct LivenessCollector : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> instruction){
-        if(instruction->op != ltac::Operator::NOP){
-            if(ltac::erase_result_complete(instruction->op)){
-                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
-                    set_live_opt(ptr->base_register);
-                    set_live_opt(ptr->scaled_register);
+        if(instruction->is_jump()){
+            collect_jump<Reg, FloatReg, ProblemDomain>(instruction, in);
+        } else {
+            if(instruction->op != ltac::Operator::NOP){
+                if(ltac::erase_result_complete(instruction->op)){
+                    if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
+                        set_live_opt(ptr->base_register);
+                        set_live_opt(ptr->scaled_register);
+                    } else {
+                        set_dead(*instruction->arg1);
+                    }
                 } else {
-                    set_dead(*instruction->arg1);
+                    set_live_opt(instruction->arg1);
                 }
-            } else {
-                set_live_opt(instruction->arg1);
+
+                set_live_opt(instruction->arg2);
+                set_live_opt(instruction->arg3);
             }
 
-            set_live_opt(instruction->arg2);
-            set_live_opt(instruction->arg3);
+            collect_instruction<Reg, FloatReg, ProblemDomain>(instruction, in);
         }
-
-        collect_instruction<Reg, FloatReg, ProblemDomain>(instruction, in);
-    }
-    
-    void operator()(std::shared_ptr<ltac::Jump> instruction){
-        collect_jump<Reg, FloatReg, ProblemDomain>(instruction, in);
     }
 
     template<typename T>

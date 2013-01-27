@@ -32,7 +32,6 @@
 #include "ltac/Utils.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
 #include "ltac/Instruction.hpp"
-#include "ltac/Jump.hpp"
 
 using namespace eddic;
 
@@ -724,27 +723,27 @@ bool dead_code_elimination(mtac::Function& function){
     return optimized;
 }
 
-ltac::Operator get_cmov_op(ltac::JumpType op){
+ltac::Operator get_cmov_op(ltac::Operator op){
     switch(op){
-        case ltac::JumpType::NE:
+        case ltac::Operator::NE:
             return ltac::Operator::CMOVNE;
-        case ltac::JumpType::E:
+        case ltac::Operator::E:
             return ltac::Operator::CMOVE;
-        case ltac::JumpType::GE:
+        case ltac::Operator::GE:
             return ltac::Operator::CMOVGE;
-        case ltac::JumpType::G:
+        case ltac::Operator::G:
             return ltac::Operator::CMOVG;
-        case ltac::JumpType::LE:
+        case ltac::Operator::LE:
             return ltac::Operator::CMOVLE;
-        case ltac::JumpType::L:
+        case ltac::Operator::L:
             return ltac::Operator::CMOVL;
-        case ltac::JumpType::B:
+        case ltac::Operator::B:
             return ltac::Operator::CMOVB;
-        case ltac::JumpType::BE:
+        case ltac::Operator::BE:
             return ltac::Operator::CMOVBE;
-        case ltac::JumpType::A:
+        case ltac::Operator::A:
             return ltac::Operator::CMOVA;
-        case ltac::JumpType::AE:
+        case ltac::Operator::AE:
             return ltac::Operator::CMOVAE;
         default:
             eddic_unreachable("No cmov equivalent");
@@ -827,53 +826,38 @@ bool conditional_move(mtac::Function& function, Platform platform){
                 return optimized;
             }
 
-            if(auto* jump_1_ptr = boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
-                if(!move_forward(temp_bit, bend, temp_it, temp_end)){
-                    return optimized;
-                }
-
-                if(auto* mov_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
-                    if((*mov_1_ptr)->op != ltac::Operator::MOV){
-                        if(!move_forward(bit, bend, it, end)){
-                            return optimized;
-                        }
-
-                        continue;
-                    }
-
+            if(auto* jump_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                if((*jump_1_ptr)->is_jump()){
                     if(!move_forward(temp_bit, bend, temp_it, temp_end)){
                         return optimized;
                     }
 
-                    if(boost::get<std::shared_ptr<ltac::Jump>>(&*temp_it)){
+                    if(auto* mov_1_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                        if((*mov_1_ptr)->op != ltac::Operator::MOV){
+                            if(!move_forward(bit, bend, it, end)){
+                                return optimized;
+                            }
+
+                            continue;
+                        }
+
                         if(!move_forward(temp_bit, bend, temp_it, temp_end)){
                             return optimized;
                         }
 
-                        if(boost::get<std::string>(&*temp_it)){
-                            if(!move_forward(temp_bit, bend, temp_it, temp_end)){
-                                return optimized;
-                            }
-
-                            if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
-                                if((*mov_2_ptr)->op != ltac::Operator::MOV){
-                                    if(!move_forward(bit, bend, it, end)){
-                                        return optimized;
-                                    }
-
-                                    continue;
-                                }
-
+                        if(auto* jump_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                            if((*jump_2_ptr)->is_jump()){
                                 if(!move_forward(temp_bit, bend, temp_it, temp_end)){
                                     return optimized;
                                 }
 
                                 if(boost::get<std::string>(&*temp_it)){
-                                    if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
-                                        auto& reg1 = boost::get<ltac::Register>(*(*mov_1_ptr)->arg1); 
-                                        auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
+                                    if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                                        return optimized;
+                                    }
 
-                                        if(reg1 != reg2){
+                                    if(auto* mov_2_ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*temp_it)){
+                                        if((*mov_2_ptr)->op != ltac::Operator::MOV){
                                             if(!move_forward(bit, bend, it, end)){
                                                 return optimized;
                                             }
@@ -881,24 +865,43 @@ bool conditional_move(mtac::Function& function, Platform platform){
                                             continue;
                                         }
 
-                                        auto cmov_op = get_cmov_op((*jump_1_ptr)->type);
+                                        if(!move_forward(temp_bit, bend, temp_it, temp_end)){
+                                            return optimized;
+                                        }
 
-                                        move_forward(bit, bend, it, end);
-                                        *it = *mov_1_ptr;
-                                        move_forward(bit, bend, it, end);
-                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
-                                        move_forward(bit, bend, it, end);
-                                        *it = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
-                                        move_forward(bit, bend, it, end);
-                                        
-                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
-                                        move_forward(bit, bend, it, end);
-                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
-                                        move_forward(bit, bend, it, end);
-                                        *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
-                                        move_forward(bit, bend, it, end);
+                                        if(boost::get<std::string>(&*temp_it)){
+                                            if(ltac::is_reg(*(*mov_1_ptr)->arg1) && ltac::is_reg(*(*mov_2_ptr)->arg1)){
+                                                auto& reg1 = boost::get<ltac::Register>(*(*mov_1_ptr)->arg1); 
+                                                auto& reg2 = boost::get<ltac::Register>(*(*mov_2_ptr)->arg1); 
 
-                                        optimized = true;
+                                                if(reg1 != reg2){
+                                                    if(!move_forward(bit, bend, it, end)){
+                                                        return optimized;
+                                                    }
+
+                                                    continue;
+                                                }
+
+                                                auto cmov_op = get_cmov_op((*jump_1_ptr)->op);
+
+                                                move_forward(bit, bend, it, end);
+                                                *it = *mov_1_ptr;
+                                                move_forward(bit, bend, it, end);
+                                                *it = std::make_shared<ltac::Instruction>(ltac::Operator::MOV, free_reg, *(*mov_2_ptr)->arg2);
+                                                move_forward(bit, bend, it, end);
+                                                *it = std::make_shared<ltac::Instruction>(cmov_op, reg1, free_reg);
+                                                move_forward(bit, bend, it, end);
+
+                                                *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                                move_forward(bit, bend, it, end);
+                                                *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                                move_forward(bit, bend, it, end);
+                                                *it = std::make_shared<ltac::Instruction>(ltac::Operator::NOP);
+                                                move_forward(bit, bend, it, end);
+
+                                                optimized = true;
+                                            }
+                                        }
                                     }
                                 }
                             }

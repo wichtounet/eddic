@@ -12,12 +12,11 @@
 #include "Type.hpp"
 #include "Variable.hpp"
 
-#include "ltac/prologue.hpp"
 #include "ltac/Utils.hpp"
 #include "ltac/Printer.hpp"
 #include "ltac/Address.hpp"
 #include "ltac/Instruction.hpp"
-#include "ltac/Jump.hpp"
+#include "ltac/prologue.hpp"
 
 using namespace eddic;
 
@@ -212,7 +211,7 @@ template<typename It>
 void caller_save_registers(mtac::Function& function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
     auto pre_it = it.it;
 
-    auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
+    auto call = boost::get<std::shared_ptr<ltac::Instruction>>(*it);
 
     while(true){
         while(pre_it != bb->l_statements.begin()){
@@ -262,7 +261,7 @@ void find(It& it, const Type& value){
 
 template<typename It>
 void caller_cleanup(mtac::Function& function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto call = boost::get<std::shared_ptr<ltac::Jump>>(*it);
+    auto call = boost::get<std::shared_ptr<ltac::Instruction>>(*it);
 
     caller_save_registers(function, target_function, bb, it, platform, configuration);
 
@@ -385,8 +384,8 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
             while(it.has_next()){
                 auto statement = *it;
 
-                if(auto* ptr = boost::get<std::shared_ptr<ltac::Jump>>(&statement)){
-                    if((*ptr)->type == ltac::JumpType::CALL){
+                if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
+                    if((*ptr)->op == ltac::Operator::CALL){
                         caller_cleanup(function, *(*ptr)->target_function, bb, it, platform, configuration);
 
                         //The iterator is invalidated by the cleanup, necessary to find the call again
