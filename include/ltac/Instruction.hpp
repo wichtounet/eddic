@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 #include <boost/optional.hpp>
 
@@ -22,6 +23,8 @@
 #include "ltac/Argument.hpp"
 
 namespace eddic {
+
+class Function;
 
 namespace ltac {
 
@@ -43,12 +46,21 @@ struct Instruction {
         boost::optional<Argument> arg2;
         boost::optional<Argument> arg3;
         ltac::Size size = ltac::Size::DEFAULT;
+    
+        std::string label;                      //Only if jump
+        eddic::Function* target_function;       //Only if a call
 
         std::vector<ltac::PseudoRegister> uses;
         std::vector<ltac::PseudoFloatRegister> float_uses;
 
         std::vector<ltac::Register> hard_uses;
         std::vector<ltac::FloatRegister> hard_float_uses;
+    
+        std::vector<ltac::PseudoRegister> kills;
+        std::vector<ltac::PseudoFloatRegister> float_kills;
+
+        std::vector<ltac::Register> hard_kills;
+        std::vector<ltac::FloatRegister> hard_float_kills;
 
         //Instruction should never get copied
         Instruction(const Instruction& rhs) = delete;
