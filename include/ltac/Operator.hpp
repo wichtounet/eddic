@@ -17,9 +17,6 @@ enum class Operator : unsigned int {
     FMOV,
     MUL3,
 
-    //Set the memory to 0
-    MEMSET,
-
     //Enter stack frame
     ENTER,
 

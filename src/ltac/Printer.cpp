@@ -30,8 +30,6 @@ std::string to_string(ltac::Operator op){
             return "ENTER"; 
         case ltac::Operator::FMOV:
             return "FMOV"; 
-        case ltac::Operator::MEMSET:
-            return "MEMSET"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
         case ltac::Operator::RET:
