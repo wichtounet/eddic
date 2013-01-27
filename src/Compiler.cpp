@@ -107,6 +107,11 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             std::cout << "\t" << counter.first << ":" << counter.second << std::endl;
         }
     }
+    
+    //Display timings if necessary
+    if(program && configuration->option_defined("time")){
+        program->context->timing().display();
+    }
 
     return code;
 }

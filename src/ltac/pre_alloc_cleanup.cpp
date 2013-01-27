@@ -5,11 +5,12 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "ltac/pre_alloc_cleanup.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/Program.hpp"
 
 #include "ltac/Statement.hpp"
+#include "ltac/pre_alloc_cleanup.hpp"
 
 using namespace eddic;
 
@@ -24,6 +25,8 @@ bool is_float_pseudo_reg(Variant& var){
 }
 
 void ltac::pre_alloc_cleanup(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "pre_alloc_cleanup");
+
     for(auto& function : program.functions){
         for(auto& bb : function){
             auto it = iterate(bb->l_statements);

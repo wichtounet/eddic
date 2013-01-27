@@ -17,6 +17,7 @@
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
 #include "Function.hpp"
 #include "Variable.hpp"
 
@@ -934,7 +935,7 @@ bool debug(const std::string& name, bool b, mtac::Function& function){
 } //end of anonymous namespace
 
 void eddic::ltac::optimize(mtac::Program& program, Platform platform){
-    PerfsTimer timer("Peephole optimizations");
+    timing_timer timer(program.context->timing(), "peephole_optimization");
 
     for(auto& function : program.functions){
         if(log::enabled<Debug>()){

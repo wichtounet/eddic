@@ -307,6 +307,8 @@ void caller_cleanup(mtac::Function& function, eddic::Function& target_function, 
 } //End of anonymous
 
 void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Configuration> configuration){
+    timing_timer timer(program.context->timing(), "prologue_generation");
+
     bool omit_fp = configuration->option_defined("fomit-frame-pointer");
     auto platform = program.context->target_platform();
 

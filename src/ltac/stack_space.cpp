@@ -49,6 +49,8 @@ void optimize_ranges(std::vector<std::pair<int, int>>& memset_ranges){
 } //end of anonymous namespace
 
 void ltac::alloc_stack_space(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "stack_space");
+
     auto platform = program.context->target_platform();
 
     for(auto& function : program.functions){

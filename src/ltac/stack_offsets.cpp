@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "Type.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/Program.hpp"
 
@@ -56,6 +57,8 @@ void change_address(Arg& arg, int bp_offset){
 }
 
 void ltac::fix_stack_offsets(mtac::Program& program, Platform platform){
+    timing_timer timer(program.context->timing(), "stack_offsets");
+
     for(auto& function : program.functions){
         std::unordered_map<std::string, int> offset_labels;
         int bp_offset = 0;
