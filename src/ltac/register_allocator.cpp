@@ -897,7 +897,7 @@ void register_allocation(mtac::Function& function, Platform platform){
 } //end of anonymous namespace
 
 void ltac::register_allocation(mtac::Program& program, Platform platform){
-    PerfsTimer timer("Register allocation");
+    timing_timer timer(program.context->timing(), "register_allocation");
 
     for(auto& function : program.functions){
         LOG<Trace>("registers") << "Allocate integer registers for function " << function.get_name() << log::endl;
