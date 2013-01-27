@@ -400,14 +400,9 @@ struct pass_runner {
         auto pass = make_pass<Pass>();
 
         if(has_to_be_run(pass)){
-            bool local = false;
-            {
-                PerfsTimer perfs_timer(mtac::pass_traits<Pass>::name());
-                timing_timer timer(system, mtac::pass_traits<Pass>::name());
+            timing_timer timer(system, mtac::pass_traits<Pass>::name());
 
-                local = apply<Pass>(pass);
-            }
-
+            bool local = local = apply<Pass>(pass);
             if(local){
                 program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
                 apply_todo<Pass>();
