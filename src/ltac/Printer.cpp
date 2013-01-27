@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <iostream>
+#include <iomanip>
 #include <memory>
 
 #include "assert.hpp"
@@ -187,7 +188,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        out << "\t" << to_string(quadruple->op);
+        out << "\t" << std::setw(3) << std::setfill('0') << quadruple->uid() << ": " << to_string(quadruple->op);
 
         if(quadruple->arg1){
             out << " " << *quadruple->arg1;

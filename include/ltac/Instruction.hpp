@@ -34,36 +34,44 @@ enum class Size : char {
 };
 
 struct Instruction {
-    ltac::Operator op;
-    boost::optional<Argument> arg1;
-    boost::optional<Argument> arg2;
-    boost::optional<Argument> arg3;
-    ltac::Size size = ltac::Size::DEFAULT;
+    private:
+        std::size_t _uid;
 
-    std::vector<ltac::PseudoRegister> uses;
-    std::vector<ltac::PseudoFloatRegister> float_uses;
+    public:
+        ltac::Operator op;
+        boost::optional<Argument> arg1;
+        boost::optional<Argument> arg2;
+        boost::optional<Argument> arg3;
+        ltac::Size size = ltac::Size::DEFAULT;
 
-    std::vector<ltac::Register> hard_uses;
-    std::vector<ltac::FloatRegister> hard_float_uses;
+        std::vector<ltac::PseudoRegister> uses;
+        std::vector<ltac::PseudoFloatRegister> float_uses;
 
-    //Instruction should never get copied
-    Instruction(const Instruction& rhs) = delete;
-    Instruction& operator=(const Instruction& rhs) = delete;
+        std::vector<ltac::Register> hard_uses;
+        std::vector<ltac::FloatRegister> hard_float_uses;
 
-    //Default constructor
-    Instruction();
+        //Instruction should never get copied
+        Instruction(const Instruction& rhs) = delete;
+        Instruction& operator=(const Instruction& rhs) = delete;
 
-    //Instructions no param
-    Instruction(Operator op);
+        //Default constructor
+        Instruction();
 
-    //Instructions with unary operator
-    Instruction(Operator op, Argument arg1);
+        //Instructions no param
+        Instruction(Operator op);
 
-    //Instructions with binary operator
-    Instruction(Operator op, Argument arg1, Argument arg2);
+        //Instructions with unary operator
+        Instruction(Operator op, Argument arg1);
 
-    //Instructions with ternary operator
-    Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3);
+        //Instructions with binary operator
+        Instruction(Operator op, Argument arg1, Argument arg2);
+
+        //Instructions with ternary operator
+        Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3);
+
+        std::size_t uid() const {
+            return _uid;
+        }
 };
 
 } //end of ltac
