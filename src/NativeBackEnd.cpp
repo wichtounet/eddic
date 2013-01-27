@@ -11,6 +11,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
 #include "FloatPool.hpp"
+#include "GlobalContext.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -87,6 +88,8 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
         auto object_file_name = input_file_name + ".o";
 
         {
+            timing_timer timer(program.context->timing(), "assembly_generation");
+
             //Generate assembly from TAC
             AssemblyFileWriter writer(asm_file_name);
 
@@ -101,6 +104,8 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
 
         //If it's necessary, assemble and link the assembly
         if(!configuration->option_defined("assembly")){
+            timing_timer timer(program.context->timing(), "assemble");
+
             assemble(platform, asm_file_name, object_file_name, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
             //Remove temporary files
