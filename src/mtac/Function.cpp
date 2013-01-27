@@ -22,6 +22,7 @@ mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& 
 mtac::Function::Function(mtac::Function&& rhs) : 
             context(std::move(rhs.context)), _definition(rhs._definition), 
             statements(std::move(rhs.statements)), 
+            _pure(std::move(rhs._pure)), _standard(std::move(rhs._standard)),
             count(std::move(rhs.count)), index(std::move(rhs.index)),
             entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
             _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
@@ -40,6 +41,8 @@ mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
     _definition = rhs._definition;
     context = std::move(rhs.context); 
     statements = std::move(rhs.statements); 
+    _pure = std::move(rhs._pure);
+    _standard = std::move(rhs._standard);
     count = std::move(rhs.count); 
     index = std::move(rhs.index);
     entry = std::move(rhs.entry); 
@@ -90,6 +93,14 @@ bool& mtac::Function::pure(){
 
 bool mtac::Function::pure() const {
     return _pure;
+}
+
+bool& mtac::Function::standard(){
+    return _standard;
+}
+
+bool mtac::Function::standard() const {
+    return _standard;
 }
 
 mtac::Quadruple& mtac::Function::find(std::size_t uid){

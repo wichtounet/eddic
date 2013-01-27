@@ -158,6 +158,9 @@ class Function : public std::enable_shared_from_this<Function> {
         bool& pure();
         bool pure() const;
 
+        bool& standard();
+        bool standard() const;
+
         eddic::Function& definition();
         const eddic::Function& definition() const;
 
@@ -170,6 +173,7 @@ class Function : public std::enable_shared_from_this<Function> {
         std::vector<mtac::Quadruple> statements;
 
         bool _pure = false;
+        bool _standard = false;
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;
