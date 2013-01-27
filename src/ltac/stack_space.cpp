@@ -97,8 +97,8 @@ void ltac::alloc_stack_space(mtac::Program& program){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
                 }
 
-                for(int i = 0; i < size; i += int_in_sse){
-                    ltac::add_instruction(bb, ltac::Operator::MOVDQA, ltac::Address(ltac::BP, range.first + (i +    normal) * int_size), reg);
+                for(int i = 0; i < size - normal; i += int_in_sse){
+                    ltac::add_instruction(bb, ltac::Operator::MOVDQU, ltac::Address(ltac::BP, range.first + (i +    normal) * int_size), reg);
                 }
             }
         }

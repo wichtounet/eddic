@@ -119,16 +119,16 @@ void callee_save_registers(mtac::Function& function, mtac::basic_block_p bb, Pla
 
         for(auto& reg : function.use_registers()){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
                 ++it;
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                 ++it;
-                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
                 ++it;
             }
         }
