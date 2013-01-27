@@ -294,6 +294,33 @@ void caller_cleanup(mtac::Function& function, eddic::Function& target_function, 
     }
 }
 
+void optimize_ranges(std::vector<std::pair<int, int>>& memset_ranges){
+    std::sort(memset_ranges.begin(), memset_ranges.end(), [](const std::pair<int, int>& lhs, const std::pair<int, int>& rhs){ return lhs.first < rhs.first; });
+
+    auto it = memset_ranges.begin();
+
+    while(it != memset_ranges.end()){
+        auto& range = *it;
+
+        auto second_it = it;
+        ++second_it;
+
+        while(second_it != memset_ranges.end()){
+            auto& second_range = *second_it;
+
+            if(second_range.first == range.first + range.second){
+                range.second += second_range.second;
+
+                second_it = memset_ranges.erase(second_it);
+            } else {
+                break;
+            }
+        }
+
+        it = second_it;
+    }
+}
+
 } //End of anonymous
 
 void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Configuration> configuration){
@@ -315,27 +342,45 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
         //Allocate stack space for locals
         ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, size);
 
-        auto iter = function.context->begin();
-        auto end = function.context->end();
+        auto int_size = INT->size(platform);
 
-        //Clear stack variables
-        for(; iter != end; iter++){
-            auto var = iter->second;
+        //Clear the stack variables
 
-            //Only stack variables needs to be cleared
+        std::vector<std::pair<int, int>> memset_ranges;
+
+        for(auto& var_pair : *function.context){
+            auto& var = var_pair.second;
+
             if(var->position().isStack()){
                 auto type = var->type();
                 int position = var->position().offset();
 
-                auto int_size = INT->size(platform);
+                if(type->is_array() && type->has_elements()){
+                    memset_ranges.emplace_back(position + int_size, type->data_type()->size(platform) * type->elements());
+                } else if(type->is_custom_type()){
+                    memset_ranges.emplace_back(position, type->size(platform));
+                }
+            }
+        }
+
+        optimize_ranges(memset_ranges);
+
+        for(auto& range : memset_ranges){
+            ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, range.first), static_cast<int>(range.second / int_size));
+        }
+
+        //Set the sizes of arrays
+
+        for(auto& var_pair : *function.context){
+            auto& var = var_pair.second;
+
+            if(var->position().isStack()){
+                auto type = var->type();
+                int position = var->position().offset();
 
                 if(type->is_array() && type->has_elements()){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(type->elements()));
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position + int_size), 
-                            static_cast<int>((type->data_type()->size(platform) / int_size * type->elements())));
                 } else if(type->is_custom_type()){
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position), static_cast<int>(type->size(platform) / int_size));
-
                     //Set lengths of arrays inside structures
                     auto struct_type = function.context->global()->get_struct(type);
                     auto offset = 0;
