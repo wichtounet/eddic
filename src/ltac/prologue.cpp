@@ -110,16 +110,26 @@ bool callee_save(eddic::Function& definition, ltac::FloatRegister reg, Platform 
 void callee_save_registers(mtac::Function& function, mtac::basic_block_p bb, Platform platform, std::shared_ptr<Configuration> configuration){
     //Save registers for all other functions than main
     if(!function.is_main()){
+        bool omit_fp = configuration->option_defined("fomit-frame-pointer");
+
+        auto it = bb->l_statements.begin()+1;
+        if(!omit_fp){
+            ++it;
+        }
+
         for(auto& reg : function.use_registers()){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                ++it;
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
-                ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                ++it;
+                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                ++it;
             }
         }
     }
@@ -309,50 +319,16 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
     
         //Enter stack frame
         if(!omit_fp){
-            ltac::add_instruction(bb, ltac::Operator::ENTER);
-        }
-
-        //Allocate stack space for locals
-        ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, size);
-
-        auto iter = function.context->begin();
-        auto end = function.context->end();
-
-        //Clear stack variables
-        for(; iter != end; iter++){
-            auto var = iter->second;
-
-            //Only stack variables needs to be cleared
-            if(var->position().isStack()){
-                auto type = var->type();
-                int position = var->position().offset();
-
-                auto int_size = INT->size(platform);
-
-                if(type->is_array() && type->has_elements()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(type->elements()));
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position + int_size), 
-                            static_cast<int>((type->data_type()->size(platform) / int_size * type->elements())));
-                } else if(type->is_custom_type()){
-                    ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, position), static_cast<int>(type->size(platform) / int_size));
-
-                    //Set lengths of arrays inside structures
-                    auto struct_type = function.context->global()->get_struct(type);
-                    auto offset = 0;
-
-                    while(struct_type){
-                        for(auto& member : struct_type->members){
-                            if(member->type->is_array() && !member->type->is_dynamic_array()){
-                                ltac::add_instruction(bb, ltac::Operator::MOV, 
-                                        ltac::Address(ltac::BP, position + offset + function.context->global()->member_offset(struct_type, member->name)),
-                                        static_cast<int>(member->type->elements()));
-                            }
-                        }
-
-                        struct_type = function.context->global()->get_struct(struct_type->parent_type);
-                    }
-                }
-            }
+            bb->l_statements.insert(bb->l_statements.begin(), 
+                    std::make_shared<ltac::Instruction>(ltac::Operator::ENTER));
+            
+            //Allocate stack space for locals
+            bb->l_statements.insert(bb->l_statements.begin()+1, 
+                    std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, size));
+        } else {
+            //Allocate stack space for locals
+            bb->l_statements.insert(bb->l_statements.begin(), 
+                    std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, size));
         }
 
         callee_save_registers(function, bb, platform, configuration);

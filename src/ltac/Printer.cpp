@@ -30,8 +30,6 @@ std::string to_string(ltac::Operator op){
             return "ENTER"; 
         case ltac::Operator::FMOV:
             return "FMOV"; 
-        case ltac::Operator::MEMSET:
-            return "MEMSET"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
         case ltac::Operator::RET:
@@ -111,6 +109,10 @@ std::string to_string(ltac::Operator op){
             return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
+        case ltac::Operator::XORPS:
+            return "XORPS"; 
+        case ltac::Operator::MOVDQU:
+            return "MOVDQU"; 
         default:
             eddic_unreachable("The instruction operator is not supported");
     }

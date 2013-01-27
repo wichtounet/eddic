@@ -140,33 +140,6 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 }
 
                 break;
-            case ltac::Operator::MEMSET:
-                writer.stream() << "push rcx" << '\n';
-                writer.stream() << "push rax" << '\n';
-                writer.stream() << "push rdi" << '\n';
-                
-                writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
-                writer.stream() << "xor rax, rax" << '\n';
-                writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
-                
-                //Because of the pushs...
-                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
-                    if(ptr->base_register){
-                        if(auto* reg_ptr = boost::get<ltac::Register>(&*ptr->base_register)){
-                            if(*reg_ptr == ltac::SP){
-                                writer.stream() << "add rdi, 24" << '\n';
-                            }
-                        }
-                    }
-                }
-                
-                writer.stream() << "rep stosq" << '\n';
-
-                writer.stream() << "pop rdi" << '\n';
-                writer.stream() << "pop rax" << '\n';
-                writer.stream() << "pop rcx" << '\n';
-
-                break;
             case ltac::Operator::ENTER:
                 writer.stream() << "push rbp" << '\n';
                 writer.stream() << "mov rbp, rsp" << '\n';
@@ -290,6 +263,12 @@ struct X86_64StatementCompiler : public boost::static_visitor<> {
                 break;
             case ltac::Operator::CMOVLE:
                 writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
+                break;
+            case ltac::Operator::XORPS:
+                writer.stream() << "xorps " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
+                break;
+            case ltac::Operator::MOVDQU:
+                writer.stream() << "movdqu " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
                 break;
             case ltac::Operator::NOP:
                 //Nothing to output for a nop

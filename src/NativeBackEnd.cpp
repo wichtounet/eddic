@@ -19,6 +19,7 @@
 #include "ltac/aggregates.hpp"
 #include "ltac/prologue.hpp"
 #include "ltac/stack_offsets.hpp"
+#include "ltac/stack_space.hpp"
 #include "ltac/register_allocator.hpp"
 #include "ltac/pre_alloc_cleanup.hpp"
 
@@ -50,6 +51,10 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
         ltac::Printer printer;
         printer.print(program);
     }
+
+    //Init the structures and arrays
+    //Must be done before register allocation to profit from it
+    ltac::alloc_stack_space(program);
 
     //Allocate pseudo registers into hard registers
     ltac::register_allocation(program, platform);
