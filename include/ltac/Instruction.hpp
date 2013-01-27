@@ -62,10 +62,6 @@ struct Instruction {
         std::vector<ltac::Register> hard_kills;
         std::vector<ltac::FloatRegister> hard_float_kills;
 
-        //Instruction should never get copied
-        Instruction(const Instruction& rhs) = delete;
-        Instruction& operator=(const Instruction& rhs) = delete;
-
         //Default constructor
         Instruction();
 
@@ -83,6 +79,13 @@ struct Instruction {
         
         //Jump, calls and labels
         Instruction(std::string label, Operator op);
+
+        //Instruction should never get copied
+        Instruction(const Instruction& rhs) = default;
+        Instruction& operator=(const Instruction& rhs) = default;
+        
+        Instruction(Instruction&& rhs) = default;
+        Instruction& operator=(Instruction&& rhs) = default;
 
         std::size_t uid() const {
             return _uid;
