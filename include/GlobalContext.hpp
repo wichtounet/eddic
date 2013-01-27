@@ -15,6 +15,7 @@
 #include "Struct.hpp"
 #include "Platform.hpp"
 #include "statistics.hpp"
+#include "timing.hpp"
 
 namespace eddic {
 
@@ -109,11 +110,13 @@ struct GlobalContext final : public Context {
         Platform target_platform() const;
 
         statistics& stats();
+        timing_system& timing();
     
     private:
         FunctionMap m_functions;
         StructMap m_structs;
         statistics m_statistics;
+        timing_system m_timing;
         Platform platform;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);

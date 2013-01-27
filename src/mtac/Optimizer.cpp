@@ -423,7 +423,6 @@ struct pass_runner {
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
-    timing_system timing_system(configuration);    
     PerfsTimer timer("Whole optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
@@ -433,14 +432,14 @@ void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPoo
 
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
-        pass_runner runner(program, string_pool, configuration, platform, timing_system);
+        pass_runner runner(program, string_pool, configuration, platform, program.context->timing());
         do{
             runner.optimized = false;
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        pass_runner runner(program, string_pool, configuration, platform, timing_system);
+        pass_runner runner(program, string_pool, configuration, platform, program.context->timing());
         boost::mpl::for_each<ipa_basic_passes>(boost::ref(runner));
     }
 }

@@ -17,14 +17,11 @@ namespace eddic {
 
 class timing_system {
     public:
-        timing_system(std::shared_ptr<Configuration> configuration);
-        ~timing_system();
-
         void register_timing(std::string name, double time);
+        void display();
 
     private:
         std::unordered_map<std::string, double> timings;
-        std::shared_ptr<Configuration> configuration;
 };
 
 class timing_timer {
