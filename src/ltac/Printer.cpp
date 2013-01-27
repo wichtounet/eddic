@@ -111,6 +111,10 @@ std::string to_string(ltac::Operator op){
             return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
+        case ltac::Operator::XORPS:
+            return "XORPS"; 
+        case ltac::Operator::MOVDQA:
+            return "MOVDQA"; 
         default:
             eddic_unreachable("The instruction operator is not supported");
     }

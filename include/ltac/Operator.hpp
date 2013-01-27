@@ -84,7 +84,10 @@ enum class Operator : unsigned int {
     //Special placeholders to indicate the start of parameter passing
     PRE_PARAM,
 
-    NOP
+    NOP,
+
+    XORPS,
+    MOVDQA
 };
 
 bool erase_result(ltac::Operator op);
