@@ -12,7 +12,6 @@
 #include "variant_hash.hpp"
 
 #include "ltac/Instruction.hpp"
-#include "ltac/Jump.hpp"
 
 namespace eddic {
 
@@ -20,7 +19,6 @@ namespace ltac {
 
 typedef boost::variant<
         std::shared_ptr<ltac::Instruction>,        //Basic quadruples
-        std::shared_ptr<ltac::Jump>,             //Jumps
         std::string                             //For labels
     > Statement;
 
