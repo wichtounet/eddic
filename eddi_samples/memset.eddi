@@ -11,6 +11,11 @@ struct B {
     int d;
 }
 
+struct Small {
+    int a;
+    int b;
+}
+
 void main(){
     A a1;
     B b1;
@@ -22,4 +27,10 @@ void main(){
     A a3;
     A a4;
     A a5;
+
+    test_small();
+}
+
+void test_small(){
+    Small small;
 }
