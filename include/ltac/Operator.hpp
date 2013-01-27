@@ -87,7 +87,7 @@ enum class Operator : unsigned int {
     NOP,
 
     XORPS,
-    MOVDQA
+    MOVDQU
 };
 
 bool erase_result(ltac::Operator op);

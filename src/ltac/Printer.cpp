@@ -113,8 +113,8 @@ std::string to_string(ltac::Operator op){
             return "NOP"; 
         case ltac::Operator::XORPS:
             return "XORPS"; 
-        case ltac::Operator::MOVDQA:
-            return "MOVDQA"; 
+        case ltac::Operator::MOVDQU:
+            return "MOVDQU"; 
         default:
             eddic_unreachable("The instruction operator is not supported");
     }
