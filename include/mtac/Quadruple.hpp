@@ -81,13 +81,13 @@ struct Quadruple {
         Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
 
         //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
-        Quadruple(const std::string& param, mtac::Operator op);
+        Quadruple(std::string param, mtac::Operator op);
 
         //Quadruples for params
         Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
-        Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function);
+        Quadruple(mtac::Operator op, mtac::Argument arg, std::string param, eddic::Function& function);
 
-        Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label);
+        Quadruple(mtac::Operator op, mtac::Argument arg, std::string label);
 
         //Quadruple for calls
         Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
