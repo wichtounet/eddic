@@ -366,7 +366,15 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
         optimize_ranges(memset_ranges);
 
         for(auto& range : memset_ranges){
-            ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, range.first), static_cast<int>(range.second / int_size));
+            int size = range.second / int_size;
+
+            if(size <= 4){
+                for(int i = 0; i < size; ++i){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
+                }
+            } else {
+                ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, range.first), size);
+            }
         }
 
         //Set the sizes of arrays
