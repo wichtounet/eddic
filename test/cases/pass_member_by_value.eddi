@@ -7,11 +7,6 @@ struct A {
 struct B {
     float z;
     A a;
-
-    this(B* rhs){
-        z = rhs.z;
-        a = rhs.a;
-    }
 }
 
 struct C {
