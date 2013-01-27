@@ -80,6 +80,9 @@ struct Instruction {
 
         //Instructions with ternary operator
         Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3);
+        
+        //Jump or calls
+        Instruction(std::string label, Operator op);
 
         std::size_t uid() const {
             return _uid;
