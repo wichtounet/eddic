@@ -19,8 +19,12 @@ timing_timer::~timing_timer(){
     system.register_timing(name, timer.elapsed());
 }
 
+bool is_aggregate(const std::string& name){
+    return name == "whole_optimizations" || name == "all_optimizations";
+}
+
 void timing_system::display(){
-    std::cout << "Timings" << std::endl;
+    std::cout << "Timers" << std::endl;
 
     typedef std::pair<std::string, double> timer;
     std::vector<timer> timers;
@@ -30,8 +34,22 @@ void timing_system::display(){
 
     std::sort(timers.begin(), timers.end(), [](const timer& lhs, const timer& rhs){ return lhs.second > rhs.second; });
 
+    double total = 0.0;
+
     for(auto& timing : timers){
-        std::cout << "    " << timing.first << ":" << timing.second << "ms" << std::endl;
+        if(!is_aggregate(timing.first)){
+            std::cout << "    " << timing.first << ":" << timing.second << "ms" << std::endl;
+            total += timing.second;
+        }
+    }
+    
+    std::cout << "Aggregate Timers" << std::endl;
+    std::cout << "    " << "Total:" << total << "ms" << std::endl;
+    
+    for(auto& timing : timers){
+        if(is_aggregate(timing.first)){
+            std::cout << "    " << timing.first << ":" << timing.second << "ms" << std::endl;
+        }
     }
 }
 
