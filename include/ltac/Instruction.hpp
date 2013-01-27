@@ -80,12 +80,13 @@ struct Instruction {
         //Jump, calls and labels
         Instruction(std::string label, Operator op);
 
-        //Instruction should never get copied
-        Instruction(const Instruction& rhs) = default;
-        Instruction& operator=(const Instruction& rhs) = default;
+        //Copy constructors
+        Instruction(const Instruction& rhs);
+        Instruction& operator=(const Instruction& rhs);
         
-        Instruction(Instruction&& rhs) = default;
-        Instruction& operator=(Instruction&& rhs) = default;
+        //Move constructrs
+        Instruction(Instruction&& rhs) noexcept;
+        Instruction& operator=(Instruction&& rhs) noexcept;
 
         std::size_t uid() const {
             return _uid;
