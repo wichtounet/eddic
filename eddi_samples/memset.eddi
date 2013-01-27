@@ -16,6 +16,10 @@ struct Small {
     int b;
 }
 
+struct D {
+    int z;
+}
+
 void main(){
     A a1;
     B b1;
@@ -29,8 +33,18 @@ void main(){
     A a5;
 
     test_small();
+    test_middle();
 }
 
 void test_small(){
     Small small;
+}
+
+void test_middle(){
+    Small s1;
+    Small s2;
+    Small s3;
+    Small s4;
+    Small s5;
+    D d;
 }
