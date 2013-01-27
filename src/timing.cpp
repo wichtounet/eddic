@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <iostream>
+#include <iomanip>
 
 #include "timing.hpp"
 
@@ -35,11 +36,18 @@ void timing_system::display(){
     std::sort(timers.begin(), timers.end(), [](const timer& lhs, const timer& rhs){ return lhs.second > rhs.second; });
 
     double total = 0.0;
+    
+    for(auto& timing : timers){
+        if(!is_aggregate(timing.first)){
+            total += timing.second;
+        }
+    }
 
     for(auto& timing : timers){
         if(!is_aggregate(timing.first)){
-            std::cout << "    " << timing.first << ":" << timing.second << "ms" << std::endl;
-            total += timing.second;
+            size_t save_prec = std::cout.precision();
+            std::cout << "    " << timing.first << ":" << timing.second << "ms (" << std::setprecision(2) << ((timing.second / total) * 100) << "%)"<< std::endl;
+            std::cout.precision(save_prec);
         }
     }
     
