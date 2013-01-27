@@ -33,3 +33,7 @@ ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Arg
 ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3) : _uid(++uid_counter), op(op), arg1(arg1), arg2(arg2), arg3(arg3) {
     //Nothing to init
 }
+        
+bool ltac::Instruction::is_jump() const {
+    return op >= ltac::Operator::ALWAYS && op <= ltac::Operator::NZ;
+}

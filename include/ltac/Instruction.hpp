@@ -84,6 +84,8 @@ struct Instruction {
         std::size_t uid() const {
             return _uid;
         }
+
+        bool is_jump() const;
 };
 
 } //end of ltac

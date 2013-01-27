@@ -84,7 +84,31 @@ enum class Operator : unsigned int {
     NOP,
 
     XORPS,
-    MOVDQU
+    MOVDQU,
+
+    ALWAYS,
+
+    CALL,
+
+    //Egality
+    NE,
+    E,
+    
+    //signed comparisons
+    GE,
+    G,
+    LE,
+    L,
+
+    //unsigned comparisons
+    B,
+    BE,
+    A,
+    AE,
+
+    P,      //Parity
+    Z,      //Zero
+    NZ      //Not zero
 };
 
 bool erase_result(ltac::Operator op);
