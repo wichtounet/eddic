@@ -110,8 +110,6 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
     
     //Display timings if necessary
     if(program && configuration->option_defined("time")){
-        std::cout << "Timings" << std::endl;
-
         program->context->timing().display();
     }
 

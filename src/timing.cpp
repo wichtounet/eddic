@@ -20,8 +20,18 @@ timing_timer::~timing_timer(){
 }
 
 void timing_system::display(){
+    std::cout << "Timings" << std::endl;
+
+    typedef std::pair<std::string, double> timer;
+    std::vector<timer> timers;
     for(auto& timing : timings){
-        std::cout << timing.first << ":" << timing.second << "ms" << std::endl;
+        timers.emplace_back(timing.first, timing.second);
+    }
+
+    std::sort(timers.begin(), timers.end(), [](const timer& lhs, const timer& rhs){ return lhs.second > rhs.second; });
+
+    for(auto& timing : timers){
+        std::cout << "    " << timing.first << ":" << timing.second << "ms" << std::endl;
     }
 }
 
