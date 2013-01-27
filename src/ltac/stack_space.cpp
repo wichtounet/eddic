@@ -79,12 +79,27 @@ void ltac::alloc_stack_space(mtac::Program& program){
         for(auto& range : memset_ranges){
             int size = range.second / int_size;
 
-            if(size <= 4){
+            if(size < 8){
                 for(int i = 0; i < size; ++i){
                     ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
                 }
             } else {
-                ltac::add_instruction(bb, ltac::Operator::MEMSET, ltac::Address(ltac::BP, range.first), size);
+                int int_in_sse = 16 / int_size;
+
+                ltac::PseudoFloatRegister reg(function.pseudo_float_registers());
+                function.set_pseudo_float_registers(function.pseudo_float_registers() + 1);
+
+                ltac::add_instruction(bb, ltac::Operator::XORPS, reg, reg);
+
+                int normal = size % int_in_sse; 
+
+                for(int i = 0; i < normal; ++i){
+                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
+                }
+
+                for(int i = 0; i < size; i += int_in_sse){
+                    ltac::add_instruction(bb, ltac::Operator::MOVDQA, ltac::Address(ltac::BP, range.first + (i +    normal) * int_size), reg);
+                }
             }
         }
 
