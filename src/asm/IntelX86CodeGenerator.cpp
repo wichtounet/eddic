@@ -284,6 +284,12 @@ struct X86StatementCompiler : public boost::static_visitor<> {
             case ltac::Operator::CMOVLE:
                 writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
                 break;
+            case ltac::Operator::XORPS:
+                writer.stream() << "xorps " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
+                break;
+            case ltac::Operator::MOVDQU:
+                writer.stream() << "movdqu " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
+                break;
             case ltac::Operator::NOP:
                 //Nothing to output for a nop
                 break;
