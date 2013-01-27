@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Function.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/call_graph.hpp"
 #include "mtac/Program.hpp"
@@ -103,6 +104,8 @@ bool mtac::call_graph::is_reachable(eddic::Function& function){
 }
 
 void mtac::build_call_graph(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "build_cg");
+
     auto& cg = program.call_graph;
 
     for(auto& function : program){
