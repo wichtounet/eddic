@@ -11,7 +11,6 @@
 
 #include "assert.hpp"
 #include "variant.hpp"
-#include "VisitorUtils.hpp"
 #include "Utils.hpp"
 
 #include "mtac/Program.hpp"
@@ -149,7 +148,7 @@ std::string to_string(ltac::Operator op){
     }
 }
 
-struct DebugVisitor : public boost::static_visitor<> {
+struct DebugVisitor {
     std::ostream& out;
 
     DebugVisitor(std::ostream& out) : out(out) {}
@@ -157,14 +156,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(mtac::Program& program){
         out << "LTAC Program " << std::endl << std::endl; 
 
-        visit_each_non_variant(*this, program.functions);
+        for(auto& function : program){
+            (*this)(function);
+        }
     }
 
     void operator()(mtac::Function& function){
         out << "Function " << function.get_name() << std::endl;
 
         for(auto& bb : function){
-            visit_non_variant(*this, bb);
+            (*this)(bb);
         }
 
         out << std::endl;
@@ -173,11 +174,9 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(mtac::basic_block_p bb){
         pretty_print(bb, out);
 
-        visit_each(*this, bb->l_statements);
-    }
-
-    void operator()(const ltac::Statement& statement){
-        visit(*this, statement);
+        for(auto& statement : bb->l_statements){
+            (*this)(statement);
+        }
     }
 
     void operator()(std::shared_ptr<ltac::Instruction> quadruple){
@@ -185,6 +184,8 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         if(quadruple->is_jump()){
             out << "jmp (" << to_string(quadruple->op) << ") " << quadruple->label << std::endl;
+        } else if(quadruple->is_label()){
+            out << quadruple->label << ":" << std::endl;
         } else {
             out << to_string(quadruple->op);
 
@@ -203,17 +204,13 @@ struct DebugVisitor : public boost::static_visitor<> {
             out << std::endl;
         }
     }
-
-    void operator()(const std::string& label){
-        out << "\t" << label << ":" << std::endl;
-    }
 };
 
 } //end of anonymous namespace
 
 void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
    DebugVisitor visitor(out);
-   visit(visitor, statement); 
+   visitor(statement); 
 }
 
 void ltac::Printer::print(mtac::Program& program) const {
@@ -228,5 +225,5 @@ void ltac::Printer::print(mtac::Function& function) const {
 
 void ltac::Printer::print(ltac::Statement& statement) const {
    DebugVisitor visitor(std::cout);
-   visit(visitor, statement); 
+   visitor(statement); 
 }

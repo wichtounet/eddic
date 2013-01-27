@@ -27,6 +27,8 @@ enum class Operator : unsigned int {
     RET,
     PRE_RET,
 
+    LABEL,
+
     //Comparisons
     CMP_INT,
     CMP_FLOAT,

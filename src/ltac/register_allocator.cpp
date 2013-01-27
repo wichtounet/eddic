@@ -65,15 +65,13 @@ void update_uses(ltac::Statement&, std::unordered_map<Source, Target>&){
 
 template<>
 void update_uses(ltac::Statement& statement, std::unordered_map<ltac::PseudoRegister, ltac::Register>& register_allocation){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        for(auto& reg : (*ptr)->uses){
-            (*ptr)->hard_uses.push_back(register_allocation[reg]);
-        }
-        
-        for(auto& reg : (*ptr)->kills){
-            (*ptr)->hard_kills.push_back(register_allocation[reg]);
-        }
-    } 
+    for(auto& reg : statement->uses){
+        statement->hard_uses.push_back(register_allocation[reg]);
+    }
+
+    for(auto& reg : statement->kills){
+        statement->hard_kills.push_back(register_allocation[reg]);
+    }
 }
 
 template<typename Source, typename Target, typename Opt>
@@ -105,11 +103,9 @@ template<typename Source, typename Target>
 void replace_registers(mtac::Function& function, std::unordered_map<Source, Target>& register_allocation){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                update((*ptr)->arg1, register_allocation);
-                update((*ptr)->arg2, register_allocation);
-                update((*ptr)->arg3, register_allocation);
-            }
+            update(statement->arg1, register_allocation);
+            update(statement->arg2, register_allocation);
+            update(statement->arg3, register_allocation);
 
             update_uses(statement, register_allocation);
         }
@@ -145,22 +141,16 @@ bool contains_reg(Opt& arg, Pseudo reg){
 
 template<typename Pseudo>
 bool is_load(ltac::Statement& statement, const Pseudo& reg){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        return contains_reg((*ptr)->arg1, reg) 
-            || contains_reg((*ptr)->arg2, reg)
-            || contains_reg((*ptr)->arg3, reg);
-    }
-
-    return false;
+    return contains_reg(statement->arg1, reg) 
+        || contains_reg(statement->arg2, reg)
+        || contains_reg(statement->arg3, reg);
 }
 
 template<typename Pseudo>
 bool is_store_complete(ltac::Statement& statement, const Pseudo& reg){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        if(ltac::erase_result_complete((*ptr)->op)){
-            if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
-                return *reg_ptr == reg;
-            }
+    if(ltac::erase_result_complete(statement->op)){
+        if(auto* reg_ptr = boost::get<Pseudo>(&*statement->arg1)){
+            return *reg_ptr == reg;
         }
     }
 
@@ -169,11 +159,9 @@ bool is_store_complete(ltac::Statement& statement, const Pseudo& reg){
 
 template<typename Pseudo>
 bool is_store(ltac::Statement& statement, Pseudo reg){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        if(ltac::erase_result((*ptr)->op)){
-            if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
-                return *reg_ptr == reg;
-            }
+    if(ltac::erase_result(statement->op)){
+        if(auto* reg_ptr = boost::get<Pseudo>(&*statement->arg1)){
+            return *reg_ptr == reg;
         }
     }
 
@@ -207,11 +195,9 @@ void replace_register(boost::optional<ltac::Argument>& arg, Pseudo source, Pseud
 
 template<typename Pseudo>
 void replace_register(ltac::Statement& statement, Pseudo source, Pseudo target){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        replace_register((*ptr)->arg1, source, target);
-        replace_register((*ptr)->arg2, source, target);
-        replace_register((*ptr)->arg3, source, target);
-    }
+    replace_register(statement->arg1, source, target);
+    replace_register(statement->arg2, source, target);
+    replace_register(statement->arg3, source, target);
 }
 
 //1. Renumber
@@ -262,15 +248,13 @@ void find_local_registers(mtac::Function& function, local_reg<Pseudo>& local_pse
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                if(!(*ptr)->is_jump()){
-                    find_reg((*ptr)->arg1, pseudo_registers[bb]);
-                    find_reg((*ptr)->arg2, pseudo_registers[bb]);
-                    find_reg((*ptr)->arg3, pseudo_registers[bb]);
-                }
-
-                get_special_uses(*ptr, pseudo_registers[bb]);
+            if(!statement->is_jump() && !statement->is_label()){
+                find_reg(statement->arg1, pseudo_registers[bb]);
+                find_reg(statement->arg2, pseudo_registers[bb]);
+                find_reg(statement->arg3, pseudo_registers[bb]);
             }
+
+            get_special_uses(statement, pseudo_registers[bb]);
         }
     }
 
@@ -332,8 +316,7 @@ void renumber(mtac::Function& function){
                         start = true;
 
                         //Make sure to replace only the first argument
-                        auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
-                        instruction->arg1 = target;
+                        statement->arg1 = target;
                     } else {
                         if(start){
                             replace_register(statement, reg, target);
@@ -374,11 +357,9 @@ template<typename Pseudo>
 void gather_pseudo_regs(mtac::Function& function, ltac::interference_graph<Pseudo>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                gather((*ptr)->arg1, graph);
-                gather((*ptr)->arg2, graph);
-                gather((*ptr)->arg3, graph);
-            }
+            gather(statement->arg1, graph);
+            gather(statement->arg2, graph);
+            gather(statement->arg3, graph);
         }
     }
 
@@ -446,24 +427,16 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::Fun
 
 template<typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoRegister>::value, bool>::type is_copy(ltac::Statement& statement){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        return (*ptr)->op == ltac::Operator::MOV 
-            && boost::get<Pseudo>(&*(*ptr)->arg1) 
-            && boost::get<Pseudo>(&*(*ptr)->arg2);
-    }
-
-    return false;
+    return statement->op == ltac::Operator::MOV 
+        && boost::get<Pseudo>(&*statement->arg1) 
+        && boost::get<Pseudo>(&*statement->arg2);
 }
 
 template<typename Pseudo>
 typename std::enable_if<std::is_same<Pseudo, ltac::PseudoFloatRegister>::value, bool>::type is_copy(ltac::Statement& statement){
-    if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-        return (*ptr)->op == ltac::Operator::FMOV 
-            && boost::get<Pseudo>(&*(*ptr)->arg1) 
-            && boost::get<Pseudo>(&*(*ptr)->arg2);
-    }
-
-    return false;
+    return statement->op == ltac::Operator::FMOV 
+        && boost::get<Pseudo>(&*statement->arg1) 
+        && boost::get<Pseudo>(&*statement->arg2);
 }
 
 template<typename Pseudo>
@@ -478,9 +451,8 @@ bool coalesce(ltac::interference_graph<Pseudo>& graph, mtac::Function& function)
     //and continue to avoid too many rebuilding of the graph
 
     for(auto& bb : function){
-        for(auto& statement : bb->l_statements){
-            if(is_copy<Pseudo>(statement)){
-                auto instruction = boost::get<std::shared_ptr<ltac::Instruction>>(statement);
+        for(auto& instruction : bb->l_statements){
+            if(is_copy<Pseudo>(instruction)){
                 auto reg1 = boost::get<Pseudo>(*instruction->arg1);
                 auto reg2 = boost::get<Pseudo>(*instruction->arg2);
 
@@ -550,18 +522,16 @@ template<typename Pseudo>
 void estimate_spill_costs(mtac::Function& function, ltac::interference_graph<Pseudo>& graph){
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                if(ltac::erase_result((*ptr)->op)){
-                    if(auto* reg_ptr = boost::get<Pseudo>(&*(*ptr)->arg1)){
-                        graph.spill_cost(graph.convert(*reg_ptr)) += store_cost * depth_cost(bb->depth);
-                    }
-                } else {
-                    update_cost((*ptr)->arg1, graph, bb->depth);
+            if(ltac::erase_result(statement->op)){
+                if(auto* reg_ptr = boost::get<Pseudo>(&*statement->arg1)){
+                    graph.spill_cost(graph.convert(*reg_ptr)) += store_cost * depth_cost(bb->depth);
                 }
-
-                update_cost((*ptr)->arg2, graph, bb->depth);
-                update_cost((*ptr)->arg3, graph, bb->depth);
+            } else {
+                update_cost(statement->arg1, graph, bb->depth);
             }
+
+            update_cost(statement->arg2, graph, bb->depth);
+            update_cost(statement->arg3, graph, bb->depth);
         }
     }
 }

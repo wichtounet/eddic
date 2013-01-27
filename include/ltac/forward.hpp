@@ -9,7 +9,6 @@
 #define LTAC_FORWARD_DECLARATIONS_H
 
 #include <memory>
-#include <string>
 
 #include "variant.hpp"
 
@@ -24,10 +23,9 @@ struct FloatRegister;
 struct PseudoRegister;
 struct PseudoFloatRegister;
 
-typedef boost::variant<
-        std::shared_ptr<ltac::Instruction>,         //Basic quadruples
-        std::string                                 //For labels
-    > Statement;
+typedef 
+        std::shared_ptr<ltac::Instruction>         //Basic quadruples
+     Statement;
 
 typedef boost::variant<
             ltac::Register, 

@@ -211,33 +211,29 @@ template<typename It>
 void caller_save_registers(mtac::Function& function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
     auto pre_it = it.it;
 
-    auto call = boost::get<std::shared_ptr<ltac::Instruction>>(*it);
-
     while(true){
         while(pre_it != bb->l_statements.begin()){
             --pre_it;
             
             auto statement = *pre_it;
 
-            if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                if((*ptr)->op == ltac::Operator::PRE_PARAM){
-                    (*ptr)->op = ltac::Operator::NOP;
+            if(statement->op == ltac::Operator::PRE_PARAM){
+                statement->op = ltac::Operator::NOP;
 
-                    for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
-                        if(caller_save(function, target_function, float_reg, platform, configuration)){
-                            pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
-                            pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
-                        }
+                for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
+                    if(caller_save(function, target_function, float_reg, platform, configuration)){
+                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                     }
-                    
-                    for(auto& reg : boost::adaptors::reverse(function.use_registers())){
-                        if(caller_save(function, target_function, reg, platform, configuration)){
-                            pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
-                        }
-                    }
-
-                    return;
                 }
+
+                for(auto& reg : boost::adaptors::reverse(function.use_registers())){
+                    if(caller_save(function, target_function, reg, platform, configuration)){
+                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                    }
+                }
+
+                return;
             }
         }
 
@@ -249,10 +245,8 @@ void caller_save_registers(mtac::Function& function, eddic::Function& target_fun
 template<typename It, typename Type>
 void find(It& it, const Type& value){
     while(true){
-        if(auto* ptr = boost::get<Type>(&*it)){
-            if(*ptr == value){
-                return;
-            }
+        if(*it == value){
+            return;
         }
 
         ++it;
@@ -261,7 +255,7 @@ void find(It& it, const Type& value){
 
 template<typename It>
 void caller_cleanup(mtac::Function& function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto call = boost::get<std::shared_ptr<ltac::Instruction>>(*it);
+    auto call = *it;
 
     caller_save_registers(function, target_function, bb, it, platform, configuration);
 
@@ -274,12 +268,12 @@ void caller_cleanup(mtac::Function& function, eddic::Function& target_function, 
 
         bool rewind = true;
 
-        if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&*it)){
-            if((*ptr)->op == ltac::Operator::ADD){
-                if(auto* reg_ptr = boost::get<ltac::Register>(&*(*ptr)->arg1)){
-                    if(*reg_ptr == ltac::SP){
-                       rewind = false;
-                    }
+        auto& instruction = *it;
+
+        if(instruction->op == ltac::Operator::ADD){
+            if(auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg1)){
+                if(*reg_ptr == ltac::SP){
+                    rewind = false;
                 }
             }
         }
@@ -355,21 +349,19 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
             auto it = iterate(bb->l_statements);
 
             while(it.has_next()){
-                auto statement = *it;
+                auto& statement = *it;
 
-                if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                    if((*ptr)->op == ltac::Operator::PRE_RET){
-                        (*ptr)->op = ltac::Operator::RET;
+                if(statement->op == ltac::Operator::PRE_RET){
+                    statement->op = ltac::Operator::RET;
 
-                        //Leave stack frame
-                        if(!omit_fp){
-                            it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::LEAVE));
-                        }
-
-                        it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
-
-                        callee_restore_registers(function, it, platform, configuration);
+                    //Leave stack frame
+                    if(!omit_fp){
+                        it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::LEAVE));
                     }
+
+                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
+
+                    callee_restore_registers(function, it, platform, configuration);
                 }
 
                 ++it;
@@ -384,14 +376,12 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
             while(it.has_next()){
                 auto statement = *it;
 
-                if(auto* ptr = boost::get<std::shared_ptr<ltac::Instruction>>(&statement)){
-                    if((*ptr)->op == ltac::Operator::CALL){
-                        caller_cleanup(function, *(*ptr)->target_function, bb, it, platform, configuration);
+                if(statement->op == ltac::Operator::CALL){
+                    caller_cleanup(function, *statement->target_function, bb, it, platform, configuration);
 
-                        //The iterator is invalidated by the cleanup, necessary to find the call again
-                        it.restart();
-                        find(it, *ptr);
-                    }
+                    //The iterator is invalidated by the cleanup, necessary to find the call again
+                    it.restart();
+                    find(it, statement);
                 }
 
                 ++it;

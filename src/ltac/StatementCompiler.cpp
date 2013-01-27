@@ -1375,7 +1375,7 @@ void ltac::StatementCompiler::compile(mtac::Quadruple& quadruple){
             compile_CALL(quadruple);
             break;
         case mtac::Operator::LABEL:
-            bb->l_statements.push_back(quadruple.label());
+            bb->l_statements.push_back(std::make_shared<ltac::Instruction>(quadruple.label(), ltac::Operator::LABEL));
             break;
         case mtac::Operator::IF_FALSE_UNARY:
             compare_unary(*quadruple.arg1);

@@ -41,3 +41,7 @@ ltac::Instruction::Instruction(std::string label, ltac::Operator op) : _uid(++ui
 bool ltac::Instruction::is_jump() const {
     return op >= ltac::Operator::ALWAYS && op <= ltac::Operator::NZ;
 }
+
+bool ltac::Instruction::is_label() const {
+    return op == ltac::Operator::LABEL;
+}

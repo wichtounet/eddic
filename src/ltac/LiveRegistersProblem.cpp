@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "VisitorUtils.hpp"
-
 #include "ltac/Statement.hpp"
 #include "ltac/LiveRegistersProblem.hpp"
 
@@ -111,10 +109,10 @@ struct LivenessCollector : public boost::static_visitor<> {
         }
     }
 
-    void operator()(std::shared_ptr<ltac::Instruction> instruction){
+    void collect(std::shared_ptr<ltac::Instruction> instruction){
         if(instruction->is_jump()){
             collect_jump<Reg, FloatReg, ProblemDomain>(instruction, in);
-        } else {
+        } else if(!instruction->is_label()) {
             if(instruction->op != ltac::Operator::NOP){
                 if(ltac::erase_result_complete(instruction->op)){
                     if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
@@ -133,11 +131,6 @@ struct LivenessCollector : public boost::static_visitor<> {
 
             collect_instruction<Reg, FloatReg, ProblemDomain>(instruction, in);
         }
-    }
-
-    template<typename T>
-    void operator()(T&){
-        //Nothing to do
     }
 };
 
@@ -192,7 +185,7 @@ ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_b
     auto out = in;
     
     LivenessCollector<ltac::Register, ltac::FloatRegister, ProblemDomain> collector(out);
-    visit(collector, statement);
+    collector.collect(statement);
 
     return out;
 }
@@ -201,7 +194,7 @@ PseudoProblemDomain ltac::LivePseudoRegistersProblem::transfer(mtac::basic_block
     auto out = in;
     
     LivenessCollector<ltac::PseudoRegister, ltac::PseudoFloatRegister, PseudoProblemDomain> collector(out);
-    visit(collector, statement);
+    collector.collect(statement);
 
     return out;
 }

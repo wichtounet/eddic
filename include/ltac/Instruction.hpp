@@ -81,7 +81,7 @@ struct Instruction {
         //Instructions with ternary operator
         Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3);
         
-        //Jump or calls
+        //Jump, calls and labels
         Instruction(std::string label, Operator op);
 
         std::size_t uid() const {
@@ -89,6 +89,7 @@ struct Instruction {
         }
 
         bool is_jump() const;
+        bool is_label() const;
 };
 
 } //end of ltac
