@@ -110,16 +110,26 @@ bool callee_save(eddic::Function& definition, ltac::FloatRegister reg, Platform 
 void callee_save_registers(mtac::Function& function, mtac::basic_block_p bb, Platform platform, std::shared_ptr<Configuration> configuration){
     //Save registers for all other functions than main
     if(!function.is_main()){
+        bool omit_fp = configuration->option_defined("fomit-frame-pointer");
+
+        auto it = bb->l_statements.begin()+1;
+        if(!omit_fp){
+            ++it;
+        }
+
         for(auto& reg : function.use_registers()){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::PUSH, reg);
+                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                ++it;
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform)));
-                ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg);
+                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                ++it;
+                bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                ++it;
             }
         }
     }
