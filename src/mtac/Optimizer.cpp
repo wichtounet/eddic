@@ -427,6 +427,7 @@ void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPoo
         
     //Build the CFG of each functions (also needed for register allocation)
     for(auto& function : program.functions){
+        timing_timer timer(program.context->timing(), "build_cfg");
         mtac::build_control_flow_graph(function);
     }
 
