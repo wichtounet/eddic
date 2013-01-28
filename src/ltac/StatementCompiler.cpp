@@ -527,8 +527,8 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
     }
 
     if(call.return2()){
-        return_reg_1 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
-        call_instruction.kills.push_back(return_reg_1);
+        return_reg_2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
+        call_instruction.kills.push_back(return_reg_2);
     }
     
     bb->l_statements.push_back(std::move(call_instruction));
