@@ -842,7 +842,7 @@ bool conditional_move(mtac::Function& function, Platform platform){
                             auto cmov_op = get_cmov_op(jump_1.op);
 
                             move_forward(bit, bend, it, end);
-                            *it = mov_1;
+                            *it = std::move(mov_1);
                             move_forward(bit, bend, it, end);
                             *it = ltac::Instruction(ltac::Operator::MOV, free_reg, *mov_2.arg2);
                             move_forward(bit, bend, it, end);
