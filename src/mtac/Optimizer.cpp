@@ -21,8 +21,6 @@
 #include "timing.hpp"
 #include "GlobalContext.hpp"
 
-#include "ltac/Statement.hpp"
-
 #include "mtac/pass_traits.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"

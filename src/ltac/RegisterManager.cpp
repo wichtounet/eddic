@@ -19,7 +19,6 @@
 #include "ltac/Utils.hpp"
 #include "ltac/RegisterManager.hpp"
 #include "ltac/StatementCompiler.hpp"
-#include "ltac/Statement.hpp"
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
 #include "ltac/PseudoRegister.hpp"
@@ -61,24 +60,24 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
         //If the variable is hold in a register, just move the register value
         if(pseudo_float_registers.inRegister(variable)){
             auto old_reg = pseudo_float_registers[variable];
-            ltac::add_instruction(bb, ltac::Operator::FMOV, reg, old_reg);
+            bb->emplace_back_low(ltac::Operator::FMOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             assert(position.isStack() || position.isGlobal() || position.isParameter());
 
             if(position.isParameter() || position.isStack()){
-                ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
+                bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
+                bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address("V" + position.name()));
             } 
         }
     } else if(auto* ptr = boost::get<double>(&argument)){
         auto label = float_pool->label(*ptr);
-        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
+        bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
         auto label = float_pool->label(static_cast<double>(boost::get<int>(argument)));
-        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
+        bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }
 
@@ -89,21 +88,21 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         //If the variable is hold in a register, just move the register value
         if(pseudo_registers.inRegister(variable)){
             auto old_reg = pseudo_registers[variable];
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, old_reg);
+            bb->emplace_back_low(ltac::Operator::MOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
             eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
             } else if(position.isGlobal()){
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             }
         }
     } else {
         //If it's a constant (int, double, string), just move it
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg, to_arg(argument, *this));
+        bb->emplace_back_low(ltac::Operator::MOV, reg, to_arg(argument, *this));
     }
 }
 

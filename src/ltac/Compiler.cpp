@@ -15,7 +15,6 @@
 #include "Options.hpp"
 #include "logging.hpp"
 
-#include "ltac/Statement.hpp"
 #include "ltac/Compiler.hpp"
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"

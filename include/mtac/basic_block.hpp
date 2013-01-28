@@ -16,6 +16,7 @@
 #include "mtac/Quadruple.hpp"
 
 #include "ltac/forward.hpp"
+#include "ltac/Instruction.hpp"
 
 namespace eddic {
 
@@ -57,11 +58,19 @@ class basic_block {
         }
 
         /*!
-         * Add a new statement to the back of the basic block. 
+         * Add a new MTAC statement to the back of the basic block. 
          * \param statement The statement to add. 
          */
         inline void push_back(mtac::Quadruple&& statement){
             statements.push_back(std::forward<mtac::Quadruple>(statement));
+        }
+        
+        /*!
+         * Add a new LTAC statement to the back of the basic block. 
+         * \param statement The statement to add. 
+         */
+        inline void push_back(ltac::Instruction&& statement){
+            l_statements.push_back(std::forward<ltac::Instruction>(statement));
         }
 
         /*!
@@ -83,6 +92,7 @@ class basic_block {
         }
 
         mtac::Quadruple& find(std::size_t uid);
+        ltac::Instruction& find_low(std::size_t uid);
 
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
@@ -91,7 +101,7 @@ class basic_block {
 
         std::vector<mtac::Quadruple> statements;    /*!< The MTAC statements inside the basic block. */
         
-        std::vector<ltac::Statement> l_statements;  /*!< The LTAC statements inside the basic block. */
+        std::vector<ltac::Instruction> l_statements;  /*!< The LTAC statements inside the basic block. */
 
         /* Doubly-linked list  */
 

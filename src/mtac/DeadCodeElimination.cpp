@@ -19,8 +19,6 @@
 #include "mtac/Offset.hpp"
 #include "mtac/Quadruple.hpp"
 
-#include "ltac/Statement.hpp"
-
 using namespace eddic;
 
 bool mtac::dead_code_elimination::operator()(mtac::Function& function){

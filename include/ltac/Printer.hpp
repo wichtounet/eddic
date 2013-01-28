@@ -24,10 +24,10 @@ namespace ltac {
 struct Printer {
     void print(mtac::Program& program) const ;
     void print(mtac::Function& function) const ;
-    void print(ltac::Statement& statement) const ;
+    void print(ltac::Instruction& statement) const ;
 };
 
-void print_statement(const ltac::Statement& statement, std::ostream& out = std::cout);
+void print_statement(const ltac::Instruction& statement, std::ostream& out = std::cout);
 
 } //end of ltac
 

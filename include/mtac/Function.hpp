@@ -72,6 +72,7 @@ class Function : public std::enable_shared_from_this<Function> {
         }
 
         mtac::Quadruple& find(std::size_t uid);
+        ltac::Instruction& find_low(std::size_t uid);
 
         std::vector<mtac::Quadruple>& get_statements();
         const std::vector<mtac::Quadruple>& get_statements() const;

@@ -16,7 +16,6 @@
 #include "mtac/Program.hpp"
 
 #include "ltac/Printer.hpp"
-#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
@@ -179,24 +178,24 @@ struct DebugVisitor {
         }
     }
 
-    void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        out << "\t" << std::setw(3) << std::setfill('0') << quadruple->uid() << ": ";
+    void operator()(const ltac::Instruction& quadruple){
+        out << "\t" << std::setw(3) << std::setfill('0') << quadruple.uid() << ": ";
 
-        if(quadruple->is_jump()){
-            out << "jmp (" << to_string(quadruple->op) << ") " << quadruple->label << std::endl;
-        } else if(quadruple->is_label()){
-            out << quadruple->label << ":" << std::endl;
+        if(quadruple.is_jump()){
+            out << "jmp (" << to_string(quadruple.op) << ") " << quadruple.label << std::endl;
+        } else if(quadruple.is_label()){
+            out << quadruple.label << ":" << std::endl;
         } else {
-            out << to_string(quadruple->op);
+            out << to_string(quadruple.op);
 
-            if(quadruple->arg1){
-                out << " " << *quadruple->arg1;
+            if(quadruple.arg1){
+                out << " " << *quadruple.arg1;
 
-                if(quadruple->arg2){
-                    out << ", " << *quadruple->arg2;
+                if(quadruple.arg2){
+                    out << ", " << *quadruple.arg2;
 
-                    if(quadruple->arg3){
-                        out << ", " << *quadruple->arg3;
+                    if(quadruple.arg3){
+                        out << ", " << *quadruple.arg3;
                     }
                 }
             }
@@ -208,7 +207,7 @@ struct DebugVisitor {
 
 } //end of anonymous namespace
 
-void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
+void ltac::print_statement(const ltac::Instruction& statement, std::ostream& out){
    DebugVisitor visitor(out);
    visitor(statement); 
 }
@@ -223,7 +222,7 @@ void ltac::Printer::print(mtac::Function& function) const {
    visitor(function); 
 }
 
-void ltac::Printer::print(ltac::Statement& statement) const {
+void ltac::Printer::print(ltac::Instruction& statement) const {
    DebugVisitor visitor(std::cout);
    visitor(statement); 
 }

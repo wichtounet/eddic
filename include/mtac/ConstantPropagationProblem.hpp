@@ -18,10 +18,6 @@
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
-//For hashing
-//TODO Find a way to to not use any ltac if in mtac mode
-#include "ltac/Statement.hpp"
-
 namespace eddic {
 
 class Variable;

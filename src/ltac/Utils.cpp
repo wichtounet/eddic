@@ -26,40 +26,17 @@ bool eddic::ltac::is_int_var(std::shared_ptr<Variable> variable){
     return variable->type() == INT;
 }
 
-bool eddic::ltac::transform_to_nop(std::shared_ptr<ltac::Instruction> instruction){
-    if(instruction->op == ltac::Operator::NOP){
+bool eddic::ltac::transform_to_nop(ltac::Instruction& instruction){
+    if(instruction.op == ltac::Operator::NOP){
         return false;
     }
     
-    instruction->op = ltac::Operator::NOP;
-    instruction->arg1.reset();
-    instruction->arg2.reset();
+    instruction.op = ltac::Operator::NOP;
+    instruction.arg1.reset();
+    instruction.arg2.reset();
+    instruction.arg3.reset();
 
     return true;
-}
-
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op){
-    auto instruction = std::make_shared<ltac::Instruction>(op);
-    bb->l_statements.push_back(instruction);
-    return instruction;
-}
-
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1){
-    auto instruction = std::make_shared<ltac::Instruction>(op, arg1);
-    bb->l_statements.push_back(instruction);
-    return instruction;
-}
-
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2){
-    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2);
-    bb->l_statements.push_back(instruction);
-    return instruction;
-}
-
-std::shared_ptr<ltac::Instruction> eddic::ltac::add_instruction(mtac::basic_block_p bb, ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3){
-    auto instruction = std::make_shared<ltac::Instruction>(op, arg1, arg2, arg3);
-    bb->l_statements.push_back(instruction);
-    return instruction;
 }
 
 ltac::PseudoRegister eddic::ltac::to_register(std::shared_ptr<Variable> var, ltac::RegisterManager& manager){

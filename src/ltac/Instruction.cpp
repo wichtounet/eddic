@@ -64,7 +64,7 @@ ltac::Instruction& ltac::Instruction::operator=(const ltac::Instruction& rhs){
     if(this == &rhs){
         return *this;
     }
-
+    
     _uid = ++uid_counter; 
     op = rhs.op;
     arg1 = rhs.arg1;
@@ -86,7 +86,7 @@ ltac::Instruction& ltac::Instruction::operator=(const ltac::Instruction& rhs){
 }
 
 ltac::Instruction::Instruction(ltac::Instruction&& rhs) noexcept :
-    _uid(std::move(uid_counter)), 
+    _uid(std::move(rhs._uid)), 
     op(std::move(rhs.op)),
     arg1(std::move(rhs.arg1)),
     arg2(std::move(rhs.arg2)),

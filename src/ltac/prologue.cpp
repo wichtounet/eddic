@@ -118,16 +118,16 @@ void callee_save_registers(mtac::Function& function, mtac::basic_block_p bb, Pla
 
         for(auto& reg : function.use_registers()){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                it = bb->l_statements.insert(it, ltac::Instruction(ltac::Operator::PUSH, reg));
                 ++it;
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                it = bb->l_statements.insert(it, ltac::Instruction(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                 ++it;
-                it = bb->l_statements.insert(it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                it = bb->l_statements.insert(it, ltac::Instruction(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
                 ++it;
             }
         }
@@ -139,14 +139,14 @@ void callee_restore_registers(mtac::Function& function, mtac::basic_block_p bb, 
     if(!function.is_main()){
         for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
-                ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
+                bb->emplace_back_low(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0));
+                bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform)));
             }
         }
 
         for(auto& reg : boost::adaptors::reverse(function.use_registers())){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                ltac::add_instruction(bb, ltac::Operator::POP, reg);
+                bb->emplace_back_low(ltac::Operator::POP, reg);
             }
         }
     }
@@ -158,14 +158,14 @@ void callee_restore_registers(mtac::Function& function, It& it, Platform platfor
     if(!function.is_main()){
         for(auto& reg : function.use_registers()){
             if(callee_save(function.definition(), reg, platform, configuration)){
-                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
+                it.insert(ltac::Instruction(ltac::Operator::POP, reg));
             }
         }
 
         for(auto& float_reg : function.use_float_registers()){
             if(callee_save(function.definition(), float_reg, platform, configuration)){
-                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
-                it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
+                it.insert(ltac::Instruction(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                it.insert(ltac::Instruction(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
             }
         }
     }
@@ -215,21 +215,21 @@ void caller_save_registers(mtac::Function& function, eddic::Function& target_fun
         while(pre_it != bb->l_statements.begin()){
             --pre_it;
             
-            auto statement = *pre_it;
+            auto& statement = *pre_it;
 
-            if(statement->op == ltac::Operator::PRE_PARAM){
-                statement->op = ltac::Operator::NOP;
+            if(statement.op == ltac::Operator::PRE_PARAM){
+                statement.op = ltac::Operator::NOP;
 
                 for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
                     if(caller_save(function, target_function, float_reg, platform, configuration)){
-                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
-                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+                        pre_it = bb->l_statements.insert(pre_it, ltac::Instruction(ltac::Operator::FMOV, ltac::Address(ltac::SP, 0), float_reg));
+                        pre_it = bb->l_statements.insert(pre_it, ltac::Instruction(ltac::Operator::SUB, ltac::SP, static_cast<int>(FLOAT->size(platform))));
                     }
                 }
 
                 for(auto& reg : boost::adaptors::reverse(function.use_registers())){
                     if(caller_save(function, target_function, reg, platform, configuration)){
-                        pre_it = bb->l_statements.insert(pre_it, std::make_shared<ltac::Instruction>(ltac::Operator::PUSH, reg));
+                        pre_it = bb->l_statements.insert(pre_it, ltac::Instruction(ltac::Operator::PUSH, reg));
                     }
                 }
 
@@ -242,10 +242,10 @@ void caller_save_registers(mtac::Function& function, eddic::Function& target_fun
     }
 }
 
-template<typename It, typename Type>
-void find(It& it, const Type& value){
+template<typename It>
+void find(It& it, std::size_t uid){
     while(true){
-        if(*it == value){
+        if(it->uid() == uid){
             return;
         }
 
@@ -255,13 +255,13 @@ void find(It& it, const Type& value){
 
 template<typename It>
 void caller_cleanup(mtac::Function& function, eddic::Function& target_function, mtac::basic_block_p bb, It it, Platform platform, std::shared_ptr<Configuration> configuration){
-    auto call = *it;
+    auto call_uid = it->uid();
 
     caller_save_registers(function, target_function, bb, it, platform, configuration);
 
     //The iterator has been invalidated by the save, find the call again
     it.restart();
-    find(it, call);
+    find(it, call_uid);
 
     if(it.has_next()){
         ++it;
@@ -270,8 +270,8 @@ void caller_cleanup(mtac::Function& function, eddic::Function& target_function, 
 
         auto& instruction = *it;
 
-        if(instruction->op == ltac::Operator::ADD){
-            if(auto* reg_ptr = boost::get<ltac::Register>(&*instruction->arg1)){
+        if(instruction.op == ltac::Operator::ADD){
+            if(auto* reg_ptr = boost::get<ltac::Register>(&*instruction.arg1)){
                 if(*reg_ptr == ltac::SP){
                     rewind = false;
                 }
@@ -285,14 +285,14 @@ void caller_cleanup(mtac::Function& function, eddic::Function& target_function, 
 
     for(auto& float_reg : boost::adaptors::reverse(function.use_float_registers())){
         if(caller_save(function, target_function, float_reg, platform, configuration)){
-            it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
-            it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
+            it.insert_after(ltac::Instruction(ltac::Operator::FMOV, float_reg, ltac::Address(ltac::SP, 0)));
+            it.insert_after(ltac::Instruction(ltac::Operator::ADD, ltac::SP, static_cast<int>(FLOAT->size(platform))));
         }
     }
     
     for(auto& reg : boost::adaptors::reverse(function.use_registers())){
         if(caller_save(function, target_function, reg, platform, configuration)){
-            it.insert_after(std::make_shared<ltac::Instruction>(ltac::Operator::POP, reg));
+            it.insert_after(ltac::Instruction(ltac::Operator::POP, reg));
         }
     }
 }
@@ -314,16 +314,13 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
     
         //Enter stack frame
         if(!omit_fp){
-            bb->l_statements.insert(bb->l_statements.begin(), 
-                    std::make_shared<ltac::Instruction>(ltac::Operator::ENTER));
+            bb->l_statements.insert(bb->l_statements.begin(), ltac::Instruction(ltac::Operator::ENTER));
             
             //Allocate stack space for locals
-            bb->l_statements.insert(bb->l_statements.begin()+1, 
-                    std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, size));
+            bb->l_statements.insert(bb->l_statements.begin()+1, ltac::Instruction(ltac::Operator::SUB, ltac::SP, size));
         } else {
             //Allocate stack space for locals
-            bb->l_statements.insert(bb->l_statements.begin(), 
-                    std::make_shared<ltac::Instruction>(ltac::Operator::SUB, ltac::SP, size));
+            bb->l_statements.insert(bb->l_statements.begin(), ltac::Instruction(ltac::Operator::SUB, ltac::SP, size));
         }
 
         callee_save_registers(function, bb, platform, configuration);
@@ -334,14 +331,14 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
 
         callee_restore_registers(function, bb, platform, configuration);
 
-        ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, size);
+        bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, size);
 
         //Leave stack frame
         if(!omit_fp){
-            ltac::add_instruction(bb, ltac::Operator::LEAVE);
+            bb->emplace_back_low(ltac::Operator::LEAVE);
         }
 
-        ltac::add_instruction(bb, ltac::Operator::RET);
+        bb->emplace_back_low(ltac::Operator::RET);
         
         //3. Generate epilogue for each unresolved RET
         
@@ -351,15 +348,15 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
             while(it.has_next()){
                 auto& statement = *it;
 
-                if(statement->op == ltac::Operator::PRE_RET){
-                    statement->op = ltac::Operator::RET;
+                if(statement.op == ltac::Operator::PRE_RET){
+                    statement.op = ltac::Operator::RET;
 
                     //Leave stack frame
                     if(!omit_fp){
-                        it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::LEAVE));
+                        it.insert(ltac::Instruction(ltac::Operator::LEAVE));
                     }
 
-                    it.insert(std::make_shared<ltac::Instruction>(ltac::Operator::ADD, ltac::SP, size));
+                    it.insert(ltac::Instruction(ltac::Operator::ADD, ltac::SP, size));
 
                     callee_restore_registers(function, it, platform, configuration);
                 }
@@ -374,14 +371,15 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
             auto it = iterate(bb->l_statements);
 
             while(it.has_next()){
-                auto statement = *it;
+                auto& statement = *it;
+                auto uid = it->uid();
 
-                if(statement->op == ltac::Operator::CALL){
-                    caller_cleanup(function, *statement->target_function, bb, it, platform, configuration);
+                if(statement.op == ltac::Operator::CALL){
+                    caller_cleanup(function, *statement.target_function, bb, it, platform, configuration);
 
                     //The iterator is invalidated by the cleanup, necessary to find the call again
                     it.restart();
-                    find(it, statement);
+                    find(it, uid);
                 }
 
                 ++it;

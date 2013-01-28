@@ -23,10 +23,6 @@ struct FloatRegister;
 struct PseudoRegister;
 struct PseudoFloatRegister;
 
-typedef 
-        std::shared_ptr<ltac::Instruction>         //Basic quadruples
-     Statement;
-
 typedef boost::variant<
             ltac::Register, 
             ltac::PseudoRegister, 
