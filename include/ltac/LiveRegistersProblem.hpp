@@ -85,8 +85,7 @@ struct LiveRegistersProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Instruction& statement, ProblemDomain& in);
 
     ProblemDomain top_element(){
         return ProblemDomain();
@@ -110,8 +109,7 @@ struct LivePseudoRegistersProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Instruction& statement, ProblemDomain& in);
 
     ProblemDomain top_element(){
         return ProblemDomain();

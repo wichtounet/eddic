@@ -19,8 +19,6 @@
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 
-#include "ltac/Statement.hpp"
-
 using namespace eddic;
 
 typedef mtac::OffsetConstantPropagationProblem::ProblemDomain ProblemDomain;

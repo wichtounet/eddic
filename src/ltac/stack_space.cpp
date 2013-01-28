@@ -83,7 +83,7 @@ void ltac::alloc_stack_space(mtac::Program& program){
 
             if(size < 8){
                 for(int i = 0; i < size; ++i){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
                 }
             } else {
                 int int_in_sse = 16 / int_size;
@@ -91,16 +91,16 @@ void ltac::alloc_stack_space(mtac::Program& program){
                 ltac::PseudoFloatRegister reg(function.pseudo_float_registers());
                 function.set_pseudo_float_registers(function.pseudo_float_registers() + 1);
 
-                ltac::add_instruction(bb, ltac::Operator::XORPS, reg, reg);
+                bb->emplace_back_low(ltac::Operator::XORPS, reg, reg);
 
                 int normal = size % int_in_sse; 
 
                 for(int i = 0; i < normal; ++i){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, range.first + i * int_size), 0);
                 }
 
                 for(int i = 0; i < size - normal; i += int_in_sse){
-                    ltac::add_instruction(bb, ltac::Operator::MOVDQU, ltac::Address(ltac::BP, range.first + (i +    normal) * int_size), reg);
+                    bb->emplace_back_low(ltac::Operator::MOVDQU, ltac::Address(ltac::BP, range.first + (i +    normal) * int_size), reg);
                 }
             }
         }
@@ -115,7 +115,7 @@ void ltac::alloc_stack_space(mtac::Program& program){
                 int position = var->position().offset();
 
                 if(type->is_array() && type->has_elements()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(type->elements()));
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position), static_cast<int>(type->elements()));
                 } else if(type->is_custom_type()){
                     //Set lengths of arrays inside structures
                     auto struct_type = function.context->global()->get_struct(type);
@@ -124,7 +124,7 @@ void ltac::alloc_stack_space(mtac::Program& program){
                     while(struct_type){
                         for(auto& member : struct_type->members){
                             if(member->type->is_array() && !member->type->is_dynamic_array()){
-                                ltac::add_instruction(bb, ltac::Operator::MOV, 
+                                bb->emplace_back_low(ltac::Operator::MOV, 
                                         ltac::Address(ltac::BP, position + offset + function.context->global()->member_offset(struct_type, member->name)),
                                         static_cast<int>(member->type->elements()));
                             }

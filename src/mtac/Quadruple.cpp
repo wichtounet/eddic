@@ -44,7 +44,7 @@ mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1, mtac::Argument a
     //Nothing to init    
 }
     
-mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : _uid(++uid_counter), op(op), m_param(param){
+mtac::Quadruple::Quadruple(std::string param, mtac::Operator op) : _uid(++uid_counter), op(op), m_param(std::move(param)){
     //Nothing to init
 }
 
@@ -52,7 +52,7 @@ mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_pt
     //Nothing to init
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function) : _uid(++uid_counter), arg1(arg), op(op), m_function(&function), m_param(param){
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string param, eddic::Function& function) : _uid(++uid_counter), arg1(arg), op(op), m_function(&function), m_param(std::move(param)){
     //Nothing to init
 }
 
@@ -60,7 +60,7 @@ mtac::Quadruple::Quadruple(mtac::Operator op, eddic::Function& function, std::sh
     eddic_assert(m_function, "Function is mandatory for calls");
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label) : _uid(++uid_counter), arg1(arg), op(op), m_param(label) {
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string label) : _uid(++uid_counter), arg1(arg), op(op), m_param(std::move(label)) {
     //Nothing to init
 }
 
