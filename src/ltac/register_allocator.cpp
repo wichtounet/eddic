@@ -247,9 +247,11 @@ void find_local_registers(mtac::Function& function, local_reg<Pseudo>& local_pse
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            find_reg(statement.arg1, pseudo_registers[bb]);
-            find_reg(statement.arg2, pseudo_registers[bb]);
-            find_reg(statement.arg3, pseudo_registers[bb]);
+            if(!statement.is_jump() && !statement.is_label()){
+                find_reg(statement.arg1, pseudo_registers[bb]);
+                find_reg(statement.arg2, pseudo_registers[bb]);
+                find_reg(statement.arg3, pseudo_registers[bb]);
+            }
 
             get_special_uses(statement, pseudo_registers[bb]);
         }
