@@ -179,7 +179,7 @@ struct DebugVisitor {
     }
 
     void operator()(const ltac::Instruction& quadruple){
-        out << "\t" << std::setw(3) << std::setfill('0') << quadruple.uid() << ": ";
+        out << "\t" ;/*<< std::setw(3) << std::setfill('0') << quadruple.uid() << ": "*/;
 
         if(quadruple.is_jump()){
             out << "jmp (" << to_string(quadruple.op) << ") " << quadruple.label << std::endl;
