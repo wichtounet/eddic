@@ -786,21 +786,21 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::Function& functio
                 } else if(is_store(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
                     
+                    replace_register(statement, pseudo_reg, new_pseudo_reg);
+                    
                     spill_load(new_pseudo_reg, position, it);
 
                     ++it;
                     
                     spill_store(new_pseudo_reg, position, it);
-                    
-                    replace_register(statement, pseudo_reg, new_pseudo_reg);
                 } else if(is_load(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
+
+                    replace_register(statement, pseudo_reg, new_pseudo_reg);
 
                     spill_load(new_pseudo_reg, position, it);
 
                     ++it;
-
-                    replace_register(statement, pseudo_reg, new_pseudo_reg);
                 } 
                 
                 ++it;
