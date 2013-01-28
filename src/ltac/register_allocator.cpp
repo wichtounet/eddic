@@ -247,11 +247,9 @@ void find_local_registers(mtac::Function& function, local_reg<Pseudo>& local_pse
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            if(!statement.is_jump() && !statement.is_label()){
-                find_reg(statement.arg1, pseudo_registers[bb]);
-                find_reg(statement.arg2, pseudo_registers[bb]);
-                find_reg(statement.arg3, pseudo_registers[bb]);
-            }
+            find_reg(statement.arg1, pseudo_registers[bb]);
+            find_reg(statement.arg2, pseudo_registers[bb]);
+            find_reg(statement.arg3, pseudo_registers[bb]);
 
             get_special_uses(statement, pseudo_registers[bb]);
         }
@@ -391,7 +389,7 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::Fun
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            auto results = live_results->OUT_LS[statement.uid()];
+            auto& results = live_results->OUT_LS[statement.uid()];
 
             if(results.top()){
                continue; 
@@ -775,7 +773,7 @@ void spill_code(ltac::interference_graph<Pseudo>& graph, mtac::Function& functio
             //TODO Add support for spilling float registers
 
             while(it.has_next()){
-                auto statement = *it;
+                auto& statement = *it;
 
                 if(is_store_complete(statement, pseudo_reg)){
                     Pseudo new_pseudo_reg(++current_reg);
