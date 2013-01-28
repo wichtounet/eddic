@@ -828,8 +828,8 @@ bool conditional_move(mtac::Function& function, Platform platform){
 
                     if(temp_it->op == ltac::Operator::LABEL){
                         if(ltac::is_reg(*mov_1.arg1) && ltac::is_reg(*mov_2.arg1)){
-                            auto& reg1 = boost::get<ltac::Register>(*mov_1.arg1); 
-                            auto& reg2 = boost::get<ltac::Register>(*mov_2.arg1); 
+                            auto reg1 = boost::get<ltac::Register>(*mov_1.arg1); 
+                            auto reg2 = boost::get<ltac::Register>(*mov_2.arg1); 
 
                             if(reg1 != reg2){
                                 if(!move_forward(bit, bend, it, end)){
