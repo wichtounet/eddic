@@ -77,6 +77,8 @@ class call_graph {
         void compute_reachable();
         void release_reachable();
 
+        std::vector<std::reference_wrapper<eddic::Function>> topological_order();
+
         bool is_reachable(eddic::Function& function);
 
     private:
