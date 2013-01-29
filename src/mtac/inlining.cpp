@@ -539,37 +539,40 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     for(auto& function_ref : order){
         auto& function = function_ref.get();
 
-        //Standard function are assembly functions, cannot be inlined
-        if(!function.standard()){
-            auto cg_node = call_graph.node(function);
+        //Consider only reachable functions
+        if(call_graph.is_reachable(function)){
+            //Standard function are assembly functions, cannot be inlined
+            if(!function.standard()){
+                auto cg_node = call_graph.node(function);
 
-            //Collect the callers of the functions
+                //Collect the callers of the functions
 
-            std::vector<func_ref> callers;
-            for(auto& in_edge : cg_node->in_edges){
-                if(in_edge->count > 0){
-                    callers.push_back(in_edge->source->function);
+                std::vector<func_ref> callers;
+                for(auto& in_edge : cg_node->in_edges){
+                    if(in_edge->count > 0){
+                        callers.push_back(in_edge->source->function);
+                    }
                 }
-            }
 
-            //Sort them to inline the edges in the order of the topological sort
+                //Sort them to inline the edges in the order of the topological sort
 
-            std::sort(callers.begin(), callers.end(), 
-                    [&order](const func_ref& lhs, const func_ref& rhs){ return std::find(order.begin(), order.end(), lhs) < std::find(order.begin(),order.end(), rhs); });
+                std::sort(callers.begin(), callers.end(), 
+                        [&order](const func_ref& lhs, const func_ref& rhs){ return std::find(order.begin(), order.end(), lhs) < std::find(order.begin(),order.end(), rhs); });
 
-            auto& source_function = program.mtac_function(function);
+                auto& source_function = program.mtac_function(function);
 
-            for(auto& caller : callers){
-                if(call_graph.is_reachable(caller.get())){
-                    std::cout << "Consider inlining " << function.mangled_name() << " into " << caller.get().mangled_name() << std::endl;
+                for(auto& caller : callers){
+                    if(call_graph.is_reachable(caller.get())){
+                        std::cout << "Consider inlining " << function.mangled_name() << " into " << caller.get().mangled_name() << std::endl;
 
-                    auto& dest_function = program.mtac_function(caller.get());
+                        auto& dest_function = program.mtac_function(caller.get());
 
-                    bool local = false;
-                    do {
-                        local = call_site_inlining(dest_function, source_function, program);
-                        optimized |= local;
-                    } while(local);
+                        bool local = false;
+                        do {
+                            local = call_site_inlining(dest_function, source_function, program);
+                            optimized |= local;
+                        } while(local);
+                    }
                 }
             }
         }
