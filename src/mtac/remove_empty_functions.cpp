@@ -34,6 +34,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
 
         if(statements == 0){
             program.context->stats().inc_counter("empty_function_removed");
+            LOG<Debug>("Optimizer") << "Remove empty function " << function.get_name() << log::endl;
 
             removed_functions.push_back(function.get_name());
             it.erase();
@@ -51,9 +52,12 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                     auto& quadruple = *fit;
 
                     if(quadruple.op == mtac::Operator::CALL){
-                        auto function = quadruple.function().mangled_name();
+                        auto function_name = quadruple.function().mangled_name();
 
-                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                        if(std::find(removed_functions.begin(), removed_functions.end(), function_name) != removed_functions.end()){
+                            //Update the call graph
+                            --program.call_graph.edge(function.definition(), quadruple.function())->count;
+
                             int parameters = quadruple.function().parameters().size();
 
                             if(parameters > 0){

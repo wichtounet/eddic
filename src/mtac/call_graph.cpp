@@ -122,3 +122,21 @@ void mtac::build_call_graph(mtac::Program& program){
         }
     }
 }
+
+void post_dfs_visit(mtac::call_graph_node_p& node, std::vector<std::reference_wrapper<eddic::Function>>& order){
+    for(auto& edge : node->out_edges){
+        if(edge->target->function != node->function){
+            post_dfs_visit(edge->target, order);
+        }
+    }
+
+    order.push_back(node->function);
+}
+        
+std::vector<std::reference_wrapper<eddic::Function>> mtac::call_graph::topological_order(){
+    std::vector<std::reference_wrapper<eddic::Function>> order;   
+
+    post_dfs_visit(entry, order);
+
+    return order;
+}
