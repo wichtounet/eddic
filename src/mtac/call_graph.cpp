@@ -125,7 +125,7 @@ void mtac::build_call_graph(mtac::Program& program){
 
 void post_dfs_visit(mtac::call_graph_node_p& node, std::vector<std::reference_wrapper<eddic::Function>>& order){
     for(auto& edge : node->out_edges){
-        if(edge->count > 0){
+        if(edge->target->function != node->function){
             post_dfs_visit(edge->target, order);
         }
     }
