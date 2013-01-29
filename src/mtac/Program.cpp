@@ -23,7 +23,7 @@ mtac::Function& mtac::Program::mtac_function(const eddic::Function& function){
         }
     }
 
-    eddic_unreachable("There are no such function");
+    eddic_unreachable(("There are no function \"" + function.mangled_name() + "\"").c_str());
 }
 
 std::ostream& mtac::operator<<(std::ostream& stream, mtac::Program& program){
