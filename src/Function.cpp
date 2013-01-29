@@ -104,6 +104,10 @@ bool eddic::operator==(const eddic::Function& lhs, const eddic::Function& rhs){
     return lhs.mangled_name() == rhs.mangled_name();
 }
 
+bool eddic::operator!=(const eddic::Function& lhs, const eddic::Function& rhs){
+    return lhs.mangled_name() != rhs.mangled_name();
+}
+
 std::shared_ptr<FunctionContext>& Function::context(){
     return _context;
 }

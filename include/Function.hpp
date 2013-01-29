@@ -69,6 +69,7 @@ class Function {
 };
 
 bool operator==(const Function& lhs, const Function& rhs);
+bool operator!=(const Function& lhs, const Function& rhs);
 
 } //end of eddic
 
