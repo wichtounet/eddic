@@ -563,8 +563,6 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
 
                 for(auto& caller : callers){
                     if(call_graph.is_reachable(caller.get())){
-                        std::cout << "Consider inlining " << function.mangled_name() << " into " << caller.get().mangled_name() << std::endl;
-
                         auto& dest_function = program.mtac_function(caller.get());
 
                         bool local = false;
