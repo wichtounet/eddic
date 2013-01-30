@@ -385,8 +385,8 @@ std::ostream& mtac::operator<<(std::ostream& stream, const ConstantPropagationLa
 }
 
 bool mtac::operator==(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs){
-    if(lhs.top() != rhs.top()){
-        return false;
+    if(lhs.top() || rhs.top()){
+        return lhs.top() == rhs.top();
     }
 
     auto& lhs_values = lhs.values();
