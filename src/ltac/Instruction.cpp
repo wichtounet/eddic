@@ -56,8 +56,6 @@ ltac::Instruction::Instruction(const ltac::Instruction& rhs) :
     hard_kills(rhs.hard_kills),
     hard_float_kills(rhs.hard_float_kills)
 {
-    std::cout << "COPY" << std::endl;
-
     //Nothing to init
 }
 
@@ -66,8 +64,6 @@ ltac::Instruction& ltac::Instruction::operator=(const ltac::Instruction& rhs){
     if(this == &rhs){
         return *this;
     }
-    
-    std::cout << "COPY" << std::endl;
     
     _uid = ++uid_counter; 
     op = rhs.op;
