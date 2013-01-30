@@ -43,7 +43,7 @@ class CommonSubexpressionElimination {
         typedef Domain<Expressions> ProblemDomain;
 
         //The direction
-        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward);
         
         mtac::EscapedVariables pointer_escaped;
 
@@ -51,15 +51,12 @@ class CommonSubexpressionElimination {
         ProblemDomain Boundary(mtac::Function& function);
 
         void meet(ProblemDomain& in, const ProblemDomain& out);
-        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+        void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
         boost::optional<Expressions> init;
 
     private:
-        ProblemDomain top_element();
-        ProblemDomain default_element();
-        
         std::unordered_set<std::size_t> optimized;
         mtac::Function* function;
 };
@@ -71,6 +68,10 @@ struct pass_traits<CommonSubexpressionElimination> {
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
+
+bool operator==(const mtac::Expression& lhs, const mtac::Expression& rhs);
+bool operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
+bool operator!=(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
 
 } //end of mtac
 

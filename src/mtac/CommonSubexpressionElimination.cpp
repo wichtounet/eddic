@@ -59,8 +59,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
     }
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in){
-    auto out = in;
+void mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& out){
     auto op = quadruple.op;
 
     if(mtac::is_expression(op)){
@@ -131,14 +130,12 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
             ++it;
         }
     }
-
-    return out;
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
-    return default_element();
+    return ProblemDomain(ProblemDomain::Values());
 }
 
 ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& function){
@@ -178,12 +175,24 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
 bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     bool changes = false;
 
+    //TODO Avoid doing that first, but integrate it the process
+    
+    for(auto& block : function){
+        auto& in = global_results->IN[block];
+        
+        for(auto& statement : block){
+            transfer(block, statement, in);
+            global_results->IN_S[statement.uid()] = in;
+        }
+    }
+
     for(auto& block : function){
         auto qit = block->statements.begin();
         auto qend = block->statements.end();
 
         while(qit != qend){
             bool local = false;
+
             auto& quadruple = *qit;
             auto& results = global_results->IN_S[quadruple.uid()];
 
@@ -272,10 +281,33 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
     return changes;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::top_element(){
-    return ProblemDomain();
+bool mtac::operator==(const mtac::Expression& lhs, const mtac::Expression& rhs){
+    return lhs.expression == rhs.expression && lhs.source == rhs.source;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::default_element(){
-    return ProblemDomain(ProblemDomain::Values());
+bool mtac::operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs){
+    if(lhs.top() || rhs.top()){
+        return lhs.top() == rhs.top();
+    }
+
+    auto& lhs_values = lhs.values();
+    auto& rhs_values = rhs.values();
+
+    if(lhs_values.size() != rhs_values.size()){
+        return false;
+    }
+
+    for(auto& lhs_expression : lhs_values){
+        auto rhs_find = std::find(rhs_values.begin(), rhs_values.end(), lhs_expression);
+
+        if(rhs_find == rhs_values.end()){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool mtac::operator!=(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs){
+    return !(lhs == rhs);
 }
