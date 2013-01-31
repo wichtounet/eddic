@@ -298,9 +298,15 @@ bool mtac::operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<E
     }
 
     for(auto& lhs_expression : lhs_values){
-        auto rhs_find = std::find(rhs_values.begin(), rhs_values.end(), lhs_expression);
+        bool found = false;
+        for(auto& rhs_expression : rhs_values){
+            if(are_equivalent(lhs_expression.source->find(lhs_expression.expression), rhs_expression.source->find(rhs_expression.expression))){
+                found = true;
+                break;
+            }
+        }
 
-        if(rhs_find == rhs_values.end()){
+        if(!found){
             return false;
         }
     }
