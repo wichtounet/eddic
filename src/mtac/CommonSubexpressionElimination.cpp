@@ -147,6 +147,8 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
     }
 
     typename ProblemDomain::Values values;
+
+    //TODO a = a - b does not create an expression
     
     for(auto& block : function){
         for(auto& quadruple : block->statements){
