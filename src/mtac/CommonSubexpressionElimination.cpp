@@ -12,13 +12,13 @@
 #include "iterators.hpp"
 #include "GlobalContext.hpp"
 
-#include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/global_cse.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
-typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
+typedef mtac::global_cse::ProblemDomain ProblemDomain;
 
 std::ostream& mtac::operator<<(std::ostream& os, const Expression& expression){
     return os << "Expression {expression = " << expression.expression;
@@ -28,7 +28,7 @@ inline bool are_equivalent(mtac::Quadruple& first, mtac::Quadruple& second){
     return first.op == second.op && *first.arg1 == *second.arg1 && *first.arg2 == *second.arg2;
 }
 
-void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const ProblemDomain& out){
+void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
     eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
@@ -59,7 +59,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
     }
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in){
+ProblemDomain mtac::global_cse::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in){
     auto out = in;
     auto op = quadruple.op;
 
@@ -135,13 +135,13 @@ ProblemDomain mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p
     return out;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& function){
+ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
     return default_element();
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& function){
+ProblemDomain mtac::global_cse::Init(mtac::Function& function){
     this->function = &function;
 
     if(init){
@@ -177,7 +177,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
     return result;
 }
 
-bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     bool changes = false;
 
     for(auto& block : function){
@@ -274,10 +274,10 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
     return changes;
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::top_element(){
+ProblemDomain mtac::global_cse::top_element(){
     return ProblemDomain();
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::default_element(){
+ProblemDomain mtac::global_cse::default_element(){
     return ProblemDomain(ProblemDomain::Values());
 }

@@ -61,7 +61,7 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/global_cse.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -98,7 +98,7 @@ typedef boost::mpl::vector<
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
         mtac::local_cse*,
-        //mtac::CommonSubexpressionElimination*,
+        //mtac::global_cse*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,

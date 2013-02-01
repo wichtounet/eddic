@@ -5,8 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
-#define MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
+#ifndef MTAC_GLOBAL_CSE_H
+#define MTAC_GLOBAL_CSE_H
 
 #include <memory>
 #include <unordered_set>
@@ -37,7 +37,7 @@ std::ostream& operator<<(std::ostream& stream, const Expression& expression);
 
 typedef std::vector<Expression> Expressions;
 
-class CommonSubexpressionElimination {
+class global_cse {
     public:
         //The type of data managed
         typedef Domain<Expressions> ProblemDomain;
@@ -65,7 +65,7 @@ class CommonSubexpressionElimination {
 };
 
 template<>
-struct pass_traits<CommonSubexpressionElimination> {
+struct pass_traits<global_cse> {
     STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
     STATIC_STRING(name, "common_subexpression_elimination");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
