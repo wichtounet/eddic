@@ -136,7 +136,8 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                 }
             }
             
-            if(mtac::erase_result(quadruple.op)){
+            auto op = quadruple.op;
+            if(mtac::erase_result(op) || op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN || op == mtac::Operator::DOT_PASSIGN){
                 auto eit = iterate(expressions);
 
                 while(eit.has_next()){
