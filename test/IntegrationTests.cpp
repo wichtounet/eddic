@@ -661,4 +661,10 @@ BOOST_AUTO_TEST_CASE( common_subexpr_elimination ){
     BOOST_REQUIRE_EQUAL(stats.counter("common_subexpr_eliminated"), 4);
 }
 
+BOOST_AUTO_TEST_CASE( local_cse ){
+    auto& stats = compute_stats("local_cse.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("local_cse"), 4);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
