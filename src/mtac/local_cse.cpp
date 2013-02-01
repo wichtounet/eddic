@@ -61,6 +61,8 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                 for(auto& exp : expressions){
                     if(are_equivalent(quadruple, exp)){
                         found = true;
+                                
+                        function.context->global()->stats().inc_counter("local_cse");
 
                         if(!exp.tmp){
                             auto tmp = function.context->new_temporary(quadruple.result->type() == INT ? INT : FLOAT);
