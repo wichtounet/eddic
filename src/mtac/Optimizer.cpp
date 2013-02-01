@@ -96,7 +96,7 @@ typedef boost::mpl::vector<
         mtac::conditional_propagation*,
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
-        mtac::CommonSubexpressionElimination*,
+        //mtac::CommonSubexpressionElimination*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,
