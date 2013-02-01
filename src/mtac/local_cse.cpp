@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
 #include "Variable.hpp"
 
 #include "mtac/Argument.hpp"
@@ -29,6 +30,18 @@ struct expression {
         //Nothing
     }
 };
+
+bool is_interesting(mtac::Quadruple& quadruple){
+    if(boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+        return true;
+    }
+    
+    if(boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+        return true;
+    }
+
+    return false;
+}
 
 bool are_equivalent(mtac::Quadruple& quadruple, expression& exp){
     if(exp.op == quadruple.op){
@@ -55,7 +68,7 @@ bool mtac::local_cse::operator()(mtac::Function& function){
         while(it != block->statements.end()){
             auto& quadruple = *it;
                 
-            if(mtac::is_expression(quadruple.op)){
+            if(mtac::is_expression(quadruple.op) && is_interesting(quadruple)){
                 bool found = false;
 
                 for(auto& exp : expressions){
@@ -64,19 +77,27 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                                 
                         function.context->global()->stats().inc_counter("local_cse");
 
+                        optimized = true;
+
                         if(!exp.tmp){
                             auto tmp = function.context->new_temporary(quadruple.result->type() == INT ? INT : FLOAT);
                             exp.tmp = tmp;
 
                             auto current_uid = quadruple.uid();
-                            quadruple.result = tmp;
+
+                            quadruple.op = mtac::Operator::ASSIGN;
+                            quadruple.arg1 = tmp;
+                            quadruple.arg2.reset();
 
                             auto old_it = block->statements.begin();
                             while(old_it->uid() != exp.uid){
                                 ++old_it;
                             }
 
-                            old_it->result = tmp;
+                            old_it->op = mtac::Operator::ASSIGN;
+                            old_it->arg1 = tmp;
+                            old_it->arg2.reset();
+
                             block->statements.insert(old_it, mtac::Quadruple(tmp, exp.arg1, exp.op, exp.arg2));
 
                             it = block->statements.begin();
@@ -84,7 +105,9 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                                 ++it;
                             }
                         } else {
-                            quadruple.result = exp.tmp;
+                            quadruple.op = mtac::Operator::ASSIGN;
+                            quadruple.arg1 = exp.tmp;
+                            quadruple.arg2.reset();
                         }
 
                         break;
