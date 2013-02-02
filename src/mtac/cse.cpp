@@ -69,6 +69,9 @@ bool mtac::is_expression(mtac::Operator op){
 }
 
 bool mtac::is_killing(mtac::Quadruple& quadruple, const mtac::expression expression){
+    std::cout << static_cast<int>(quadruple.op) << std::endl;
+    eddic_assert(quadruple.result, "is_killing should only be called on quadruple erasing the result, thus having a result");
+
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg1)){
         if(quadruple.result == *ptr){
             return true;

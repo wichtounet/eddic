@@ -83,7 +83,7 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                 }
             }
             
-            mtac::kill_expressions(quadruple, expressions);
+            mtac::kill_expressions(*it, expressions);
 
             ++it;
         }

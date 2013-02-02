@@ -180,27 +180,31 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
 
                 auto it = i->begin();
 
-                while(!mtac::are_equivalent(*it, exp)){
+                while(!mtac::are_equivalent(*it, exp) && it != i->end()){
                     ++it;
                 }
 
+                eddic_assert(it != i->end(), "The expression must be found because it is in Eval(i)");
+
                 auto& quadruple = *it;
 
-                bool global_cs = true;
+                if(it != i->begin()){
+                    bool global_cs = true;
 
-                do {
-                    --it;
+                    do {
+                        --it;
 
-                    if(mtac::erase_result(it->op) || it->op == mtac::Operator::DOT_ASSIGN || it->op == mtac::Operator::DOT_FASSIGN || it->op == mtac::Operator::DOT_PASSIGN){
-                        if(mtac::is_killing(*it, exp)){
-                            global_cs = false;
-                            break;
+                        if(mtac::erase_result(it->op) || it->op == mtac::Operator::DOT_ASSIGN || it->op == mtac::Operator::DOT_FASSIGN || it->op == mtac::Operator::DOT_PASSIGN){
+                            if(mtac::is_killing(*it, exp)){
+                                global_cs = false;
+                                break;
+                            }
                         }
-                    }
-                } while(it != i->begin());
+                    } while(it != i->begin());
 
-                if(!global_cs){
-                    continue;
+                    if(!global_cs){
+                        continue;
+                    }
                 }
 
                 auto tj = function.context->new_temporary(exp.type);
