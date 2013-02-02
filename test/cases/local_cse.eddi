@@ -10,21 +10,30 @@ void main(){
 }
 
 void test_a(){
-    print(ga * 99);
+    int a = ga * 99;
+    int b = 99 * ga;
+    int c = ga * 99;
+    int d = 99 * 99;
+
+    print(a);
     print("|");
-    print(ga * 99);
+    print(b);
     print("|");
-    print(ga * 99);
+    print(c);
     print("|");
-    print(100 * 100);
+    print(d);
     print("|");
 }
 
 void test_b(){
-    print(gb * gc);
+    int a = gb * gc;
+    int b = gc * gb;
+    int c = gb * gc;
+
+    print(a);
     print("|");
-    print(gb * gc);
+    print(b);
     print("|");
-    print(gb * gc);
+    print(c);
     print("|");
 }
