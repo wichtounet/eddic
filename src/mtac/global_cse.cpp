@@ -73,11 +73,14 @@ ProblemDomain mtac::global_cse::Init(mtac::Function& function){
     
     for(auto& block : function){
         for(auto& q : block->statements){
-            for(auto& b : function){
-                if(b != block){
-                    for(auto& expression : Eval[b]){
-                        if(mtac::is_killing(q, expression)){
-                            Kill[block].insert(expression);
+            auto op = q.op;
+            if(mtac::erase_result(op) || op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN || op == mtac::Operator::DOT_PASSIGN){
+                for(auto& b : function){
+                    if(b != block){
+                        for(auto& expression : Eval[b]){
+                            if(mtac::is_killing(q, expression)){
+                                Kill[block].insert(expression);
+                            }
                         }
                     }
                 }
@@ -159,6 +162,10 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
     bool changes = false;
 
     for(auto& i : function){
+        if(global_results->IN[i].top()){
+            continue;
+        }
+
         auto& AEin = global_results->IN[i].values();
 
         for(auto& exp : Eval[i]){
@@ -170,14 +177,17 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
                 }
 
                 auto& quadruple = *it;
+
                 bool global_cs = true;
 
                 do {
                     --it;
 
-                    if(mtac::is_killing(*it, exp)){
-                        global_cs = false;
-                        break;
+                    if(mtac::erase_result(it->op) || it->op == mtac::Operator::DOT_ASSIGN || it->op == mtac::Operator::DOT_FASSIGN || it->op == mtac::Operator::DOT_PASSIGN){
+                        if(mtac::is_killing(*it, exp)){
+                            global_cs = false;
+                            break;
+                        }
                     }
                 } while(it != i->begin());
 
