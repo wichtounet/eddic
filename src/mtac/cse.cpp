@@ -38,10 +38,10 @@ bool mtac::is_interesting(mtac::Quadruple& quadruple){
 
 bool mtac::is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped){
     if(quadruple.op == mtac::Operator::DOT){
-        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
-
-        if(var->type()->is_pointer()){
-            return false;
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            if((*ptr)->type()->is_pointer()){
+                return false;
+            }
         }
     }
     
