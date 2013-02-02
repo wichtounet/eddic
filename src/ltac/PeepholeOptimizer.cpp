@@ -659,8 +659,8 @@ bool dead_code_elimination(mtac::Function& function){
                     }
 
                     //Some statements (in ENTRY and EXIT) are not annotated, it is enough to ignore them
-                    if(results->OUT_LS.count(instruction.uid())){
-                        auto& liveness = results->OUT_LS[instruction.uid()].values();
+                    if(results->OUT_S.count(instruction.uid())){
+                        auto& liveness = results->OUT_S[instruction.uid()].values();
 
                         if(liveness.find(*reg_ptr) == liveness.end()){
                             it.erase();

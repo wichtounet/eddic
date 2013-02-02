@@ -50,8 +50,8 @@ inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
-    auto& OUT_S = results->OUT_LS;
-    auto& IN_S = results->IN_LS;
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
 
     auto& statements = B->l_statements;
 
@@ -161,8 +161,8 @@ inline typename std::enable_if<Low, void>::type backward_statements(P& problem, 
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
-    auto& OUT_S = results->OUT_LS;
-    auto& IN_S = results->IN_LS;
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
 
     auto& statements = B->l_statements;
 

@@ -24,9 +24,6 @@ struct DataFlowResults {
     
     std::unordered_map<std::size_t, Domain> OUT_S;
     std::unordered_map<std::size_t, Domain> IN_S;
-    
-    std::unordered_map<std::size_t, Domain> OUT_LS;
-    std::unordered_map<std::size_t, Domain> IN_LS;
 };
 
 enum class DataFlowType : unsigned int {
