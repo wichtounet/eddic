@@ -127,15 +127,6 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && !(op >= mtac::Operator::IF_UNARY && op <= mtac::Operator::IF_FALSE_FL);
 }
 
-//TODO Should be called is_commutative
-bool eddic::mtac::is_distributive(mtac::Operator op){
-    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
-}
-
-bool eddic::mtac::is_expression(mtac::Operator op){
-    return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
-}
-
 unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){
     return compute_member(context, type, member).first;
 }

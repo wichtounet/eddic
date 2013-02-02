@@ -34,6 +34,8 @@ struct expression {
     }
 };
 
+bool is_distributive(mtac::Operator op);
+bool is_expression(mtac::Operator op);
 bool are_equivalent(mtac::Quadruple& quadruple, expression& exp);
 bool is_interesting(mtac::Quadruple& quadruple);
 bool is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped);

@@ -87,8 +87,6 @@ bool is_recursive(mtac::Function& function);
 
 bool safe(const std::string& call);
 bool erase_result(mtac::Operator op);
-bool is_distributive(mtac::Operator op);
-bool is_expression(mtac::Operator op);
 
 mtac::Quadruple copy(const mtac::Quadruple& statement);
 

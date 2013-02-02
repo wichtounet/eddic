@@ -59,3 +59,12 @@ bool mtac::is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped)
 
     return true;
 }
+
+//TODO Should be called is_commutative
+bool mtac::is_distributive(mtac::Operator op){
+    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
+}
+
+bool mtac::is_expression(mtac::Operator op){
+    return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
+}
