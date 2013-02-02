@@ -98,7 +98,7 @@ typedef boost::mpl::vector<
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
         mtac::local_cse*,
-        //mtac::global_cse*,
+        mtac::global_cse*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,

@@ -9,80 +9,13 @@
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Argument.hpp"
 #include "mtac/local_cse.hpp"
+#include "mtac/cse.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
-#include "mtac/EscapeAnalysis.hpp"
 
 using namespace eddic;
-
-namespace {
-
-struct expression {
-    std::size_t uid;
-    mtac::Argument arg1;
-    mtac::Argument arg2;
-    mtac::Operator op;
-    std::shared_ptr<Variable> tmp;
-    std::shared_ptr<const Type> type;
-
-    expression(std::size_t uid, mtac::Argument arg1, mtac::Argument arg2, mtac::Operator op, std::shared_ptr<Variable> tmp, std::shared_ptr<const Type> type) 
-            : uid(uid), arg1(arg1), arg2(arg2), op(op), tmp(tmp), type(type) {
-        //Nothing
-    }
-};
-
-bool are_equivalent(mtac::Quadruple& quadruple, expression& exp){
-    if(exp.op == quadruple.op && exp.type == quadruple.result->type()){
-        if(exp.arg1 == *quadruple.arg1 && exp.arg2 == *quadruple.arg2){
-            return true;
-        } else if(mtac::is_distributive(quadruple.op) && exp.arg1 == *quadruple.arg2 && exp.arg2 == *quadruple.arg1){
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool is_interesting(mtac::Quadruple& quadruple){
-    if(boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-        return true;
-    }
-    
-    if(boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-        return true;
-    }
-
-    return false;
-}
-
-bool is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped){
-    if(quadruple.op == mtac::Operator::DOT){
-        auto var = boost::get<std::shared_ptr<Variable>>(*quadruple.arg1);
-
-        if(var->type()->is_pointer()){
-            return false;
-        }
-    }
-    
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-        if(escaped->find(*ptr) != escaped->end()){
-            return false;
-        }
-    }
-    
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-        if(escaped->find(*ptr) != escaped->end()){
-            return false;
-        }
-    }
-
-    return true;
-}
-
-}
 
 bool mtac::local_cse::operator()(mtac::Function& function){
     auto escaped = mtac::escape_analysis(function);
@@ -91,12 +24,12 @@ bool mtac::local_cse::operator()(mtac::Function& function){
     for(auto& block : function){
         auto it = block->statements.begin();
 
-        std::vector<expression> expressions;
+        std::vector<mtac::expression> expressions;
 
         while(it != block->statements.end()){
             auto& quadruple = *it;
                 
-            if(mtac::is_expression(quadruple.op) && is_interesting(quadruple) && is_valid(quadruple, escaped)){
+            if(mtac::is_expression(quadruple.op) && mtac::is_interesting(quadruple) && mtac::is_valid(quadruple, escaped)){
                 bool found = false;
 
                 for(auto& exp : expressions){

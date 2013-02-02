@@ -24,8 +24,12 @@ std::ostream& mtac::operator<<(std::ostream& os, const Expression& expression){
     return os << "Expression {expression = " << expression.expression;
 }
 
+namespace {
+
 inline bool are_equivalent(mtac::Quadruple& first, mtac::Quadruple& second){
     return first.op == second.op && *first.arg1 == *second.arg1 && *first.arg2 == *second.arg2;
+}
+
 }
 
 void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
@@ -43,7 +47,7 @@ void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
             bool found = false;
 
             for(auto& out_value : out.values()){
-                if(are_equivalent(function->find(in_value.expression), function->find(out_value.expression))){
+                if(::are_equivalent(function->find(in_value.expression), function->find(out_value.expression))){
                     found = true;
                     break;
                 }
@@ -92,7 +96,7 @@ ProblemDomain mtac::global_cse::transfer(mtac::basic_block_p basic_block, mtac::
         if(valid){
             bool exists = false;
             for(auto& expression : out.values()){
-                if(are_equivalent(quadruple, function->find(expression.expression))){
+                if(::are_equivalent(quadruple, function->find(expression.expression))){
                     exists = true;
                     break;
                 }
@@ -158,7 +162,7 @@ ProblemDomain mtac::global_cse::Init(mtac::Function& function){
             if(mtac::is_expression(quadruple.op)){
                 bool exists = false;
                 for(auto& expression : values){
-                    if(are_equivalent(quadruple, function.find(expression.expression))){
+                    if(::are_equivalent(quadruple, function.find(expression.expression))){
                         exists = true;
                         break;
                     }
@@ -201,7 +205,7 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
                         auto result = source_statement.result;
                         auto quid = quadruple.uid();
 
-                        if(are_equivalent(source_statement, quadruple)){
+                        if(::are_equivalent(source_statement, quadruple)){
                             mtac::Operator assign_op;
                             if((quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD) || quadruple.op == mtac::Operator::DOT){
                                 assign_op = mtac::Operator::ASSIGN;

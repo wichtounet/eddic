@@ -18,6 +18,7 @@
 
 #include "assert.hpp"
 
+#include "mtac/cse.hpp"
 #include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/forward.hpp"
