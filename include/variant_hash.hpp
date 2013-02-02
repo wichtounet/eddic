@@ -26,4 +26,16 @@ namespace detail { namespace variant {
 
 } //end of boost
 
+namespace std {
+    template<BOOST_VARIANT_ENUM_PARAMS(typename T)>
+    class hash<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>> {
+        public:
+            std::size_t operator()(const boost::variant< BOOST_VARIANT_ENUM_PARAMS(T)>& val) const {
+                std::size_t seed = boost::apply_visitor(boost::detail::variant::variant_hasher(), val);
+                boost::hash_combine(seed, val.which());
+                return seed;
+            }
+    };
+}
+
 #endif

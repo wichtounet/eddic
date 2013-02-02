@@ -232,15 +232,14 @@ double compute(mtac::Operator op, double lhs, double rhs){
     }
 }
 
-ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mtac::Quadruple& quadruple, ProblemDomain& in){
-    auto out = in;
-
-    std::shared_ptr<Variable> remove_copies;
+void mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mtac::Quadruple& quadruple, ProblemDomain& out){
     auto op = quadruple.op;
 
     if(op == mtac::Operator::NOP){
-        return out;
+        return;
     }
+    
+    std::shared_ptr<Variable> remove_copies;
 
     if(op == mtac::Operator::ASSIGN || op == mtac::Operator::FASSIGN){
         ConstantCollector collector(out, quadruple.result);
@@ -249,15 +248,15 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mt
         remove_copies = quadruple.result;
     } else if(op >= mtac::Operator::ADD && op <= mtac::Operator::MOD){
         if(auto* lhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-            if(in[*lhs].constant() && boost::get<int>(&in[*lhs].value())){
+            if(out[*lhs].constant() && boost::get<int>(&out[*lhs].value())){
                 if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-                    if(in[*rhs].constant() && boost::get<int>(&in[*rhs].value())){
-                        out[quadruple.result] = {compute(op, boost::get<int>(in[*lhs].value()), boost::get<int>(in[*rhs].value()))};
+                    if(out[*rhs].constant() && boost::get<int>(&out[*rhs].value())){
+                        out[quadruple.result] = {compute(op, boost::get<int>(out[*lhs].value()), boost::get<int>(out[*rhs].value()))};
                     } else {
                         out[quadruple.result].set_nac();
                     }
                 } else if(auto* rhs = boost::get<int>(&*quadruple.arg2)){
-                    out[quadruple.result] = {compute(op, boost::get<int>(in[*lhs].value()), *rhs)};
+                    out[quadruple.result] = {compute(op, boost::get<int>(out[*lhs].value()), *rhs)};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -265,9 +264,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mt
                 out[quadruple.result].set_nac();
             }
         } else if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-            if(in[*rhs].constant() && boost::get<int>(&in[*rhs].value())){
+            if(out[*rhs].constant() && boost::get<int>(&out[*rhs].value())){
                 if(auto* lhs = boost::get<int>(&*quadruple.arg1)){
-                    out[quadruple.result] = {compute(op, *lhs, boost::get<int>(in[*rhs].value()))};
+                    out[quadruple.result] = {compute(op, *lhs, boost::get<int>(out[*rhs].value()))};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -281,15 +280,15 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mt
         remove_copies = quadruple.result;
     } else if(op >= mtac::Operator::FADD && op <= mtac::Operator::FDIV){
         if(auto* lhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-            if(in[*lhs].constant() && boost::get<double>(&in[*lhs].value())){
+            if(out[*lhs].constant() && boost::get<double>(&out[*lhs].value())){
                 if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-                    if(in[*rhs].constant() && boost::get<double>(&in[*rhs].value())){
-                        out[quadruple.result] = {compute(op, boost::get<double>(in[*lhs].value()), boost::get<double>(in[*rhs].value()))};
+                    if(out[*rhs].constant() && boost::get<double>(&out[*rhs].value())){
+                        out[quadruple.result] = {compute(op, boost::get<double>(out[*lhs].value()), boost::get<double>(out[*rhs].value()))};
                     } else {
                         out[quadruple.result].set_nac();
                     }
                 } else if(auto* rhs = boost::get<double>(&*quadruple.arg2)){
-                    out[quadruple.result] = {compute(op, boost::get<double>(in[*lhs].value()), *rhs)};
+                    out[quadruple.result] = {compute(op, boost::get<double>(out[*lhs].value()), *rhs)};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -297,9 +296,9 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mt
                 out[quadruple.result].set_nac();
             }
         } else if(auto* rhs = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-            if(in[*rhs].constant() && boost::get<double>(&in[*rhs].value())){
+            if(out[*rhs].constant() && boost::get<double>(&out[*rhs].value())){
                 if(auto* lhs = boost::get<double>(&*quadruple.arg1)){
-                    out[quadruple.result] = {compute(op, *lhs, boost::get<double>(in[*rhs].value()))};
+                    out[quadruple.result] = {compute(op, *lhs, boost::get<double>(out[*rhs].value()))};
                 } else {
                     out[quadruple.result].set_nac();
                 }
@@ -346,21 +345,23 @@ ProblemDomain mtac::ConstantPropagationProblem::transfer(mtac::basic_block_p, mt
             } 
         }
     }
-
-    return out;
 }
 
 bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> global_results){
     bool optimized = false;
 
     for(auto& block : function){
-        for(auto& statement : block->statements){
-            if(global_results->IN_S[statement.uid()].top()){
-                continue;
-            }
+        auto& in = global_results->IN[block];
 
-            ConstantOptimizer optimizer(global_results->IN_S[statement.uid()], pointer_escaped);
+        if(in.top()){
+            continue;
+        }
+
+        for(auto& statement : block->statements){
+            ConstantOptimizer optimizer(in, pointer_escaped);
             optimized |= optimizer.optimize(statement);
+
+            transfer(block, statement, in);
         }
     }
 
@@ -381,4 +382,42 @@ std::ostream& mtac::operator<<(std::ostream& stream, const ConstantPropagationLa
     } else {
         return stream << lattice.value();
     }
+}
+
+bool mtac::operator==(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs){
+    if(lhs.top() || rhs.top()){
+        return lhs.top() == rhs.top();
+    }
+
+    auto& lhs_values = lhs.values();
+    auto& rhs_values = rhs.values();
+
+    if(lhs_values.size() != rhs_values.size()){
+        return false;
+    }
+
+    for(auto& value_pair : lhs_values){
+        auto rhs_find = rhs_values.find(value_pair.first);
+
+        if(rhs_find == rhs_values.end()){
+            return false;
+        }
+
+        auto& lhs_lattice = value_pair.second;
+        auto& rhs_lattice = rhs_find->second;
+
+        if(lhs_lattice.nac() != rhs_lattice.nac()){
+            return false;
+        }
+
+        if(!lhs_lattice.nac() && lhs_lattice.constant() != rhs_lattice.constant()){
+           return false; 
+        }
+    }
+
+    return true;
+}
+
+bool mtac::operator!=(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs){
+    return !(lhs == rhs);
 }

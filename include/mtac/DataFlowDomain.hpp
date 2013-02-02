@@ -13,6 +13,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 
 #include "Variable.hpp"
 
@@ -183,6 +184,17 @@ std::ostream& operator<<(std::ostream& stream, const std::unordered_map<Key, Val
 
 template<typename Value, typename Hasher>
 std::ostream& operator<<(std::ostream& stream, const std::unordered_set<Value, Hasher>& values){
+    stream << "set{";
+
+    for(auto& value : values){
+        stream << value << ", ";
+    }
+
+    return stream << "}";
+}
+
+template<typename Value, typename Hasher>
+std::ostream& operator<<(std::ostream& stream, const std::set<Value, Hasher>& values){
     stream << "set{";
 
     for(auto& value : values){

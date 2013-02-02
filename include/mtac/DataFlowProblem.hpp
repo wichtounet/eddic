@@ -33,7 +33,10 @@ enum class DataFlowType : unsigned int {
     Forward,        //Common forward data-flow problem in MTAC
     Backward,       //Common backward data-flow problem in MTAC
     Low_Forward,    //Common forward data-flow problem in LTAC
-    Low_Backward    //Common backward data-flow problem in LTAC
+    Low_Backward,   //Common backward data-flow problem in LTAC
+
+    Fast_Forward,          //Experimental support for fast forward data-flow
+    Fast_Forward_Block     //Experimental support for fast forward data-flow
 };
 
 template<typename ProblemDomain>

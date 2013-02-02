@@ -75,6 +75,12 @@ add_custom_target(cases bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/cases.sh ${CMAKE_
     COMMENT "Compiling cases" VERBATIM
 )
 
+# Add a custom target to gather timings
+add_custom_target(timing bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/timing.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Computing timings" VERBATIM
+)
+
 # Add a custom target to gather git stats
 add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -233,7 +239,8 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
     OptimizationSuite/loop_unrolling
-    OptimizationSuite/common_subexpr_elimination
+    OptimizationSuite/global_cse
+    OptimizationSuite/local_cse
     #Unit tests
     toString
     toNumber

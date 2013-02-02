@@ -33,6 +33,8 @@ inline void assign(Left& old, Right&& value, bool& changes){
     old = value;
 }
 
+//Forward
+
 template<bool Low, typename P, typename R>
 inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
@@ -141,6 +143,8 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
 
     return results;
 }
+
+//Backward
 
 template<bool Low, typename P, typename R>
 inline typename std::enable_if<Low, void>::type backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
@@ -267,6 +271,130 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
     return results;
 }
 
+//Fast forward
+
+template<bool Low, typename P, typename R>
+inline typename std::enable_if<!Low, void>::type fast_forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    auto in = IN[B];
+
+    for(auto& statement : B->statements){
+        problem.transfer(B, statement, in);
+    }
+
+    if(OUT[B] != in){
+        changes = true;
+    }
+
+    OUT[B] = in;
+}
+
+template<bool Low, typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_data_flow(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    OUT[function.entry_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "OUT[" << *function.entry_bb() << "] set to " << OUT[function.entry_bb()] << log::endl;
+
+    for(auto& block : function){
+        //Initialize all but ENTRY
+        if(block->index != -1){
+            OUT[block] = problem.Init(function);
+            LOG<Dev>("Data-Flow") << "OUT[" << *block << "] set to " << OUT[block] << log::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(auto& B : function){
+            //Do not consider ENTRY
+            if(B->index == -1){
+                continue;
+            }
+
+            for(auto& P : B->predecessors){
+                LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
+                LOG<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
+                LOG<Dev>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
+
+                problem.meet(IN[B], OUT[P]);
+                
+                LOG<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
+
+                fast_forward_statements<Low>(problem, results, B, changes);
+            }
+        }
+    }
+
+    return results;
+}
+
+//Fast forward block
+
+template<typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_data_flow_block(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    OUT[function.entry_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "OUT[" << *function.entry_bb() << "] set to " << OUT[function.entry_bb()] << log::endl;
+
+    for(auto& block : function){
+        //Initialize all but ENTRY
+        if(block->index != -1){
+            OUT[block] = problem.Init(function);
+            LOG<Dev>("Data-Flow") << "OUT[" << *block << "] set to " << OUT[block] << log::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(auto& B : function){
+            //Do not consider ENTRY
+            if(B->index == -1){
+                continue;
+            }
+
+            for(auto& P : B->predecessors){
+                LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
+                LOG<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
+                LOG<Dev>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
+
+                problem.meet(IN[B], OUT[P]);
+                
+                LOG<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
+
+                auto in = IN[B];
+
+                problem.transfer(B, in);
+
+                if(OUT[B] != in){
+                    changes = true;
+                }
+
+                OUT[B] = in;
+            }
+        }
+    }
+
+    return results;
+}
+
 template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Forward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
@@ -289,6 +417,18 @@ template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Low_Backward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
     return backward_data_flow<true>(function, problem);
+}
+
+template<typename Problem>
+typename std::enable_if<Problem::Type == DataFlowType::Fast_Forward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
+data_flow(mtac::Function& function, Problem& problem){
+    return fast_forward_data_flow<false>(function, problem);
+}
+
+template<typename Problem>
+typename std::enable_if<Problem::Type == DataFlowType::Fast_Forward_Block, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
+data_flow(mtac::Function& function, Problem& problem){
+    return fast_forward_data_flow_block(function, problem);
 }
 
 } //end of mtac
