@@ -46,45 +46,14 @@ inline typename std::enable_if<!Low, std::vector<mtac::Quadruple>&>::type get_st
 //Forward
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<Low, void>::type forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
-    auto& OUT = results->OUT;
-    auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
-
-    auto& statements = B->l_statements;
-
-    if(statements.size() > 0){
-        IN_S[statements.front().uid()] = IN[B];
-
-        for(unsigned i = 0; i < statements.size(); ++i){
-            auto& statement = statements[i];
-
-            assign(OUT_S[statement.uid()], problem.transfer(B, statement, IN_S[statement.uid()]), changes);
-
-            //The entry value of the next statement are the exit values of the current statement
-            if(i != statements.size() - 1){
-                IN_S[statements[i+1].uid()] = OUT_S[statement.uid()];
-            }
-        }
-
-        assign(OUT[B], OUT_S[statements.back().uid()], changes);
-    } else {
-        //If the basic block is empty, the OUT values are the IN values
-        assign(OUT[B], IN[B], changes);
-    }
-}
-
-template<bool Low, typename P, typename R>
-inline typename std::enable_if<!Low, void>::type forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
+inline void forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
     
-    auto& statements = B->statements;
+    auto& statements = get_statements<Low>(B);
 
     if(statements.size() > 0){
         IN_S[statements.front().uid()] = IN[B];
@@ -157,52 +126,14 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
 //Backward
 
 template<bool Low, typename P, typename R>
-inline typename std::enable_if<Low, void>::type backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
+inline void backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
     auto& OUT = results->OUT;
     auto& IN = results->IN;
     
     auto& OUT_S = results->OUT_S;
     auto& IN_S = results->IN_S;
 
-    auto& statements = B->l_statements;
-
-    if(statements.size() > 0){
-        LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
-        assign(OUT_S[statements.back().uid()], OUT[B], changes);
-        LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after  transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
-
-        for(unsigned i = statements.size() - 1; i > 0; --i){
-            auto& statement = statements[i];
-
-            LOG<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement.uid()] << log::endl;
-            assign(IN_S[statement.uid()], problem.transfer(B, statement, OUT_S[statement.uid()]), changes);
-            LOG<Dev>("Data-Flow") << "IN_S[" << i << "] after  transfer " << IN_S[statement.uid()] << log::endl;
-
-            LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
-            OUT_S[statements[i-1].uid()] = IN_S[statement.uid()];
-            LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after  transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
-        }
-
-        LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0].uid()] << log::endl;
-        assign(IN_S[statements[0].uid()], problem.transfer(B, statements[0], OUT_S[statements[0].uid()]), changes);
-        LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] after  transfer " << IN_S[statements[0].uid()] << log::endl;
-
-        assign(IN[B], IN_S[statements.front().uid()], changes);
-    } else {
-        //If the basic block is empty, the IN values are the OUT values
-        assign(IN[B], OUT[B], changes);
-    }
-}
-
-template<bool Low, typename P, typename R>
-inline typename std::enable_if<!Low, void>::type backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
-    auto& OUT = results->OUT;
-    auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
-
-    auto& statements = B->statements;
+    auto& statements = get_statements<Low>(B);
 
     if(statements.size() > 0){
         LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
@@ -281,7 +212,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
     return results;
 }
 
-//Fast forward
+//Fast forward statements
 
 template<bool Low, typename Problem>
 std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_data_flow(mtac::Function& function, Problem& problem){
@@ -389,7 +320,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
                     changes = true;
                 }
 
-                OUT[B] = in;
+                OUT[B] = std::move(in);
             }
         }
     }
