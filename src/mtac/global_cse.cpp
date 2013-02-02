@@ -128,13 +128,19 @@ void mtac::global_cse::transfer(mtac::basic_block_p basic_block, ProblemDomain& 
 
 namespace {
 
-void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mtac::Operator op, mtac::basic_block_p& block){
-   auto it = block->end();
-   auto end = block->begin();
+void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mtac::Operator op, mtac::basic_block_p& block, std::unordered_set<mtac::basic_block_p>& visited){
+    if(visited.find(block) != visited.end()){
+        return;
+    }
 
-   do {
+    visited.insert(block);
+    
+    auto it = block->end();
+    auto end = block->begin();
+
+    do {
         --it;
-        
+
         auto& quadruple = *it;    
         if(mtac::are_equivalent(quadruple, exp)){
             quadruple.op = op;
@@ -145,15 +151,13 @@ void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mta
 
             return;
         }
-   } while(it != end);
+    } while(it != end);
 
-   eddic_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
+    eddic_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
 
-   for(auto& P : block->predecessors){
-       if(P != block){
-           search_path(exp, tj, op, P);
-       }
-   }
+    for(auto& P : block->predecessors){
+        search_path(exp, tj, op, P, visited);
+    }
 }
 
 } //end of anonymous namespace
@@ -204,10 +208,11 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
                 quadruple.arg1 = tj;
                 quadruple.arg2.reset();
 
+                std::unordered_set<mtac::basic_block_p> visited;
+                visited.insert(i);
+
                 for(auto& P : i->predecessors){
-                    if(P != i){
-                        search_path(exp, tj, op, P);
-                    }
+                    search_path(exp, tj, op, P, visited);
                 }
             }
         }
