@@ -135,23 +135,25 @@ void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mta
 
     visited.insert(block);
     
-    auto it = block->end();
-    auto end = block->begin();
+    if(!block->statements.empty()){
+        auto it = block->end();
+        auto end = block->begin();
 
-    do {
-        --it;
+        do {
+            --it;
 
-        auto& quadruple = *it;    
-        if(mtac::are_equivalent(quadruple, exp)){
-            quadruple.op = op;
-            quadruple.arg1 = tj;
-            quadruple.arg2.reset();
+            auto& quadruple = *it;
+            if(mtac::is_expression(quadruple.op) && mtac::are_equivalent(quadruple, exp)){
+                quadruple.op = op;
+                quadruple.arg1 = tj;
+                quadruple.arg2.reset();
 
-            block->statements.insert(it, mtac::Quadruple(tj, exp.arg1, exp.op, exp.arg2));
+                block->statements.insert(it, mtac::Quadruple(tj, exp.arg1, exp.op, exp.arg2));
 
-            return;
-        }
-    } while(it != end);
+                return;
+            }
+        } while(it != end);
+    }
 
     eddic_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
 
