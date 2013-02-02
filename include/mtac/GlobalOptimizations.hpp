@@ -338,6 +338,63 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
     return results;
 }
 
+//Fast forward block
+
+template<typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_data_flow_block(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    OUT[function.entry_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "OUT[" << *function.entry_bb() << "] set to " << OUT[function.entry_bb()] << log::endl;
+
+    for(auto& block : function){
+        //Initialize all but ENTRY
+        if(block->index != -1){
+            OUT[block] = problem.Init(function);
+            LOG<Dev>("Data-Flow") << "OUT[" << *block << "] set to " << OUT[block] << log::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(auto& B : function){
+            //Do not consider ENTRY
+            if(B->index == -1){
+                continue;
+            }
+
+            for(auto& P : B->predecessors){
+                LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
+                LOG<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
+                LOG<Dev>("Data-Flow") << "OUT[P] before " << OUT[P] << log::endl;
+
+                problem.meet(IN[B], OUT[P]);
+                
+                LOG<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
+
+                auto in = IN[B];
+
+                problem.transfer(B, in);
+
+                if(OUT[B] != in){
+                    changes = true;
+                }
+
+                OUT[B] = in;
+            }
+        }
+    }
+
+    return results;
+}
+
 template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Forward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
@@ -366,6 +423,12 @@ template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Fast_Forward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
     return fast_forward_data_flow<false>(function, problem);
+}
+
+template<typename Problem>
+typename std::enable_if<Problem::Type == DataFlowType::Fast_Forward_Block, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
+data_flow(mtac::Function& function, Problem& problem){
+    return fast_forward_data_flow_block(function, problem);
 }
 
 } //end of mtac

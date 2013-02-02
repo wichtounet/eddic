@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <algorithm>
+
 #include "assert.hpp"
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
@@ -20,18 +22,6 @@ using namespace eddic;
 
 typedef mtac::global_cse::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& os, const Expression& expression){
-    return os << "Expression {expression = " << expression.expression;
-}
-
-namespace {
-
-inline bool are_equivalent(mtac::Quadruple& first, mtac::Quadruple& second){
-    return first.op == second.op && *first.arg1 == *second.arg1 && *first.arg2 == *second.arg2;
-}
-
-}
-
 void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
     eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
@@ -40,150 +30,182 @@ void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
     } else if(out.top()){
         //in does not change
     } else {
-        auto it = iterate(in.values());
+        auto& first = in.values();
+        auto& second = out.values();
+        
+        std::set<expression> intersection;
 
-        while(it.has_next()){
-            auto& in_value = *it;
-            bool found = false;
+        std::set_intersection(first.begin(), first.end(), second.begin(), second.end(), std::inserter(intersection, intersection.begin()));
 
-            for(auto& out_value : out.values()){
-                if(::are_equivalent(function->find(in_value.expression), function->find(out_value.expression))){
-                    found = true;
-                    break;
-                }
-            }
-
-            if(!found){
-                it.erase();
-                continue;
-            }
-
-            ++it;
-        }
+        in.values() = std::move(intersection);
     }
 }
 
-void mtac::global_cse::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& out){
-    auto op = quadruple.op;
-
-    if(mtac::is_expression(op)){
-        bool valid = true;
-        if(op == mtac::Operator::DOT){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                if((*ptr)->type()->is_pointer()){
-                    valid = false;
-                }
-            }
-        }
-
-        if(valid){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                if(pointer_escaped->find(*ptr) != pointer_escaped->end()){
-                    valid = false;
-                }
-            }
-        }
-
-        if(valid){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-                if(pointer_escaped->find(*ptr) != pointer_escaped->end()){
-                    valid = false;
-                }
-            }
-        }
-
-        if(valid){
-            bool exists = false;
-            for(auto& expression : out.values()){
-                if(::are_equivalent(quadruple, function->find(expression.expression))){
-                    exists = true;
-                    break;
-                }
-            }
-
-            if(!exists){
-                out.values().push_back({quadruple.uid(), basic_block});
-            }
-        }
-    }
-
-    if(mtac::erase_result(op) || op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN || op == mtac::Operator::DOT_PASSIGN){
-        auto it = iterate(out.values());
-
-        while(it.has_next()){
-            auto& expression = function->find((*it).expression);
-
-            if(expression.arg1){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression.arg1)){
-                    if(*var_ptr == quadruple.result){
-                        it.erase();
-                        continue;
-                    }
-                }
-            }
-
-            if(expression.arg2){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*expression.arg2)){
-                    if(*var_ptr == quadruple.result){
-                        it.erase();
-                        continue;
-                    }
-                }
-            }
-
-            ++it;
-        }
-    }
-}
-
-ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
-    pointer_escaped = mtac::escape_analysis(function);
-
+ProblemDomain mtac::global_cse::Boundary(mtac::Function&){
     return ProblemDomain(ProblemDomain::Values());
 }
 
 ProblemDomain mtac::global_cse::Init(mtac::Function& function){
-    this->function = &function;
-
     if(init){
         ProblemDomain result(*init);
         return result;
     }
+    
+    this->function = &function;
+        
+    pointer_escaped = mtac::escape_analysis(function);
 
     typename ProblemDomain::Values values;
+    
+    //Compute Eval(i)
 
-    //TODO a = a - b does not create an expression
+    for(auto& block : function){
+        for(auto& q : block->statements){
+            if(mtac::is_expression(q.op) && mtac::is_valid(q, pointer_escaped) && mtac::is_interesting(q)){
+                Eval[block].insert({0, *q.arg1, *q.arg2, q.op, nullptr, q.result->type()});
+            }
+
+            mtac::kill_expressions(q, Eval[block]);
+        }
+    }
+
+    //Compute Kill(i)
     
     for(auto& block : function){
-        for(auto& quadruple : block->statements){
-            if(mtac::is_expression(quadruple.op)){
-                bool exists = false;
-                for(auto& expression : values){
-                    if(::are_equivalent(quadruple, function.find(expression.expression))){
-                        exists = true;
-                        break;
+        for(auto& q : block->statements){
+            for(auto& b : function){
+                if(b != block){
+                    for(auto& expression : Eval[b]){
+                        if(mtac::is_killing(q, expression)){
+                            Kill[block].insert(expression);
+                        }
                     }
-                }
-
-                if(!exists){
-                    values.push_back({quadruple.uid(), block});
                 }
             }
         }
     }
 
-    init = values;
+    Expressions expressions;
+
+    //Compute Uexp
+
+    for(auto& block : function){
+        for(auto& expression : Eval[block]){
+            expressions.insert(expression);
+        }
+    }
+
+    init = expressions;
     
-    ProblemDomain result(values);
+    ProblemDomain result(expressions);
     return result;
 }
+
+void mtac::global_cse::transfer(mtac::basic_block_p basic_block, ProblemDomain& out){
+    auto& out_values = out.values();
+    auto it = out_values.begin();
+
+    //Compute AEin - Kill(i)
+
+    while(it != out_values.end()){
+        if(Kill[basic_block].find(*it) != Kill[basic_block].end()){
+            it = out_values.erase(it);
+            continue;
+        }
+
+        ++it;
+    }
+
+    //Compute Eval(i) U (AEin - Kill(i))
+
+    for(auto& expression : Eval[basic_block]){
+        out_values.insert(expression);
+    }
+}
+
+namespace {
+
+void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mtac::Operator op, mtac::basic_block_p& block){
+   auto it = block->end();
+   auto end = block->begin();
+
+   do {
+        --it;
+        
+        auto& quadruple = *it;    
+        if(mtac::are_equivalent(quadruple, exp)){
+            quadruple.op = op;
+            quadruple.arg1 = tj;
+            quadruple.arg2.reset();
+
+            block->statements.insert(it, mtac::Quadruple(tj, exp.arg1, exp.op, exp.arg2));
+
+            return;
+        }
+   } while(it != end);
+
+   eddic_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
+
+   for(auto& P : block->predecessors){
+       if(P != block){
+           search_path(exp, tj, op, P);
+       }
+   }
+}
+
+} //end of anonymous namespace
 
 bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     bool changes = false;
 
+    for(auto& i : function){
+        auto& AEin = global_results->IN[i].values();
+
+        for(auto& exp : Eval[i]){
+            if(AEin.find(exp) != AEin.end()){
+                auto it = i->begin();
+
+                while(!mtac::are_equivalent(*it, exp)){
+                    ++it;
+                }
+
+                auto& quadruple = *it;
+                bool global_cs = true;
+
+                do {
+                    --it;
+
+                    if(mtac::is_killing(*it, exp)){
+                        global_cs = false;
+                        break;
+                    }
+                } while(it != i->begin());
+
+                if(!global_cs){
+                    continue;
+                }
+
+                auto tj = function.context->new_temporary(exp.type);
+                mtac::Operator op = mtac::assign_op(exp.op);
+
+                quadruple.op = op;
+                quadruple.arg1 = tj;
+                quadruple.arg2.reset();
+
+                for(auto& P : i->predecessors){
+                    if(P != i){
+                        search_path(exp, tj, op, P);
+                    }
+                }
+            }
+        }
+    }
+
+
+
     //TODO Avoid doing that first, but integrate it the process
     
-    for(auto& block : function){
+    /*for(auto& block : function){
         auto& in = global_results->IN[block];
         
         for(auto& statement : block){
@@ -282,13 +304,9 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
                 ++qit;
             }
         }
-    }
+    }*/
 
     return changes;
-}
-
-bool mtac::operator==(const mtac::Expression& lhs, const mtac::Expression& rhs){
-    return lhs.expression == rhs.expression && lhs.source == rhs.source;
 }
 
 bool mtac::operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs){
@@ -304,15 +322,7 @@ bool mtac::operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<E
     }
 
     for(auto& lhs_expression : lhs_values){
-        bool found = false;
-        for(auto& rhs_expression : rhs_values){
-            if(::are_equivalent(lhs_expression.source->find(lhs_expression.expression), rhs_expression.source->find(rhs_expression.expression))){
-                found = true;
-                break;
-            }
-        }
-
-        if(!found){
+        if(rhs_values.find(lhs_expression) == rhs_values.end()){
             return false;
         }
     }

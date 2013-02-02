@@ -9,8 +9,6 @@
 #define MTAC_GLOBAL_CSE_H
 
 #include <memory>
-#include <unordered_set>
-#include <list>
 
 #include <boost/utility.hpp>
 
@@ -29,14 +27,7 @@ namespace eddic {
 
 namespace mtac {
 
-struct Expression {
-    std::size_t expression;
-    basic_block_p source;
-};
-
-std::ostream& operator<<(std::ostream& stream, const Expression& expression);
-
-typedef std::vector<Expression> Expressions;
+typedef std::set<expression> Expressions;
 
 class global_cse {
     public:
@@ -44,7 +35,7 @@ class global_cse {
         typedef Domain<Expressions> ProblemDomain;
 
         //The direction
-        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward);
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward_Block);
         
         mtac::EscapedVariables pointer_escaped;
 
@@ -52,7 +43,7 @@ class global_cse {
         ProblemDomain Boundary(mtac::Function& function);
 
         void meet(ProblemDomain& in, const ProblemDomain& out);
-        void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+        void transfer(mtac::basic_block_p basic_block, ProblemDomain& in);
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
         boost::optional<Expressions> init;
@@ -60,6 +51,10 @@ class global_cse {
     private:
         std::unordered_set<std::size_t> optimized;
         mtac::Function* function;
+
+        std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Eval;
+        std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Kill;
+        
 };
 
 template<>
@@ -70,7 +65,6 @@ struct pass_traits<global_cse> {
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
 
-bool operator==(const mtac::Expression& lhs, const mtac::Expression& rhs);
 bool operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
 bool operator!=(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
 

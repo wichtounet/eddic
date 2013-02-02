@@ -40,14 +40,7 @@ bool mtac::local_cse::operator()(mtac::Function& function){
 
                         optimized = true;
                             
-                        mtac::Operator op;
-                        if(exp.op == mtac::Operator::DOT){
-                            op = mtac::Operator::ASSIGN;
-                        } else if(exp.op <= mtac::Operator::ADD && exp.op <= mtac::Operator::MOD){
-                            op = mtac::Operator::ASSIGN;
-                        } else if(exp.op <= mtac::Operator::FADD && exp.op <= mtac::Operator::FDIV){
-                            op = mtac::Operator::FASSIGN;
-                        }
+                        mtac::Operator op = mtac::assign_op(exp.op);
 
                         if(!exp.tmp){
                             auto tmp = function.context->new_temporary(exp.type);
@@ -90,30 +83,7 @@ bool mtac::local_cse::operator()(mtac::Function& function){
                 }
             }
             
-            auto op = quadruple.op;
-            if(mtac::erase_result(op) || op == mtac::Operator::DOT_ASSIGN || op == mtac::Operator::DOT_FASSIGN || op == mtac::Operator::DOT_PASSIGN){
-                auto eit = iterate(expressions);
-
-                while(eit.has_next()){
-                    auto& expression = *eit;
-
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg1)){
-                        if(quadruple.result == *ptr){
-                            eit.erase();
-                            continue;
-                        }
-                    }
-                    
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg2)){
-                        if(quadruple.result == *ptr){
-                            eit.erase();
-                            continue;
-                        }
-                    }
-
-                    ++eit;
-                }
-            }
+            mtac::kill_expressions(quadruple, expressions);
 
             ++it;
         }

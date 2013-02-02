@@ -12,7 +12,7 @@
 
 using namespace eddic;
 
-bool mtac::are_equivalent(mtac::Quadruple& quadruple, expression& exp){
+bool mtac::are_equivalent(mtac::Quadruple& quadruple, const expression& exp){
     if(exp.op == quadruple.op && exp.type == quadruple.result->type()){
         if(exp.arg1 == *quadruple.arg1 && exp.arg2 == *quadruple.arg2){
             return true;
@@ -66,4 +66,36 @@ bool mtac::is_commutative(mtac::Operator op){
 
 bool mtac::is_expression(mtac::Operator op){
     return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
+}
+
+bool mtac::is_killing(mtac::Quadruple& quadruple, const mtac::expression expression){
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg1)){
+        if(quadruple.result == *ptr){
+            return true;
+        }
+    }
+
+    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg2)){
+        if(quadruple.result == *ptr){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::ostream& mtac::operator<<(std::ostream& stream, const expression& expression){
+    return stream << "{" << expression.arg1 << " " << static_cast<unsigned int>(expression.op) << " " << expression.arg2 << "}";
+}
+
+mtac::Operator mtac::assign_op(mtac::Operator op){
+    if(op == mtac::Operator::DOT){
+        return mtac::Operator::ASSIGN;
+    } else if(op <= mtac::Operator::ADD && op <= mtac::Operator::MOD){
+        return mtac::Operator::ASSIGN;
+    } else if(op <= mtac::Operator::FADD && op <= mtac::Operator::FDIV){
+        return mtac::Operator::FASSIGN;
+    }
+
+    eddic_unreachable("This is not an expression operator");
 }
