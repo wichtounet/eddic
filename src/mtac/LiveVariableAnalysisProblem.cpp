@@ -18,20 +18,6 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-std::ostream& mtac::operator<<(std::ostream& stream, const mtac::LiveVariableValues& value){
-    stream << "set{";
-
-    for(auto& v : value){
-        if(!v){
-            stream << "null, ";
-        } else {
-            stream << v->name() << ", ";
-        }
-    }
-
-    return stream << "}";
-}
-
 ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 

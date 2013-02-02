@@ -28,39 +28,9 @@ namespace mtac {
     
 typedef std::unordered_set<std::shared_ptr<Variable>> Values;
 
-struct LiveVariableValues {
-    Values values;
-
-    void insert(std::shared_ptr<Variable> var){
-        values.insert(var);
-    }
-    
-    void erase(std::shared_ptr<Variable> var){
-        values.erase(var);
-    }
-
-    Values::const_iterator find(std::shared_ptr<Variable> var) const {
-        return values.find(var);
-    }
-    
-    Values::const_iterator begin() const {
-        return values.begin();
-    }
-    
-    Values::const_iterator end() const {
-        return values.end();
-    }
-
-    std::size_t size() const {
-        return values.size();
-    }
-};
-
-std::ostream& operator<<(std::ostream& stream, const LiveVariableValues& expression);
-
 struct LiveVariableAnalysisProblem {
     //The type of data managed
-    typedef Domain<LiveVariableValues> ProblemDomain;
+    typedef Domain<Values> ProblemDomain;
 
     //The direction
     STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
