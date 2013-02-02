@@ -33,6 +33,16 @@ inline void assign(Left& old, Right&& value, bool& changes){
     old = value;
 }
 
+template<bool Low>
+inline typename std::enable_if<Low, std::vector<ltac::Instruction>&>::type get_statements(mtac::basic_block_p& B){
+    return B->l_statements;
+}
+
+template<bool Low>
+inline typename std::enable_if<!Low, std::vector<mtac::Quadruple>&>::type get_statements(mtac::basic_block_p& B){
+    return B->statements;
+}
+
 //Forward
 
 template<bool Low, typename P, typename R>
@@ -273,24 +283,6 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
 
 //Fast forward
 
-template<bool Low, typename P, typename R>
-inline typename std::enable_if<!Low, void>::type fast_forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
-    auto& OUT = results->OUT;
-    auto& IN = results->IN;
-
-    auto in = IN[B];
-
-    for(auto& statement : B->statements){
-        problem.transfer(B, statement, in);
-    }
-
-    if(OUT[B] != in){
-        changes = true;
-    }
-
-    OUT[B] = in;
-}
-
 template<bool Low, typename Problem>
 std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_data_flow(mtac::Function& function, Problem& problem){
     typedef typename Problem::ProblemDomain Domain;
@@ -330,7 +322,17 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
                 
                 LOG<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
-                fast_forward_statements<Low>(problem, results, B, changes);
+                auto in = IN[B];
+
+                for(auto& statement : get_statements<Low>(B)){
+                    problem.transfer(B, statement, in);
+                }
+
+                if(OUT[B] != in){
+                    changes = true;
+                }
+
+                OUT[B] = std::move(in);
             }
         }
     }
