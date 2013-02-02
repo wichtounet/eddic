@@ -16,7 +16,7 @@ bool mtac::are_equivalent(mtac::Quadruple& quadruple, expression& exp){
     if(exp.op == quadruple.op && exp.type == quadruple.result->type()){
         if(exp.arg1 == *quadruple.arg1 && exp.arg2 == *quadruple.arg2){
             return true;
-        } else if(mtac::is_distributive(quadruple.op) && exp.arg1 == *quadruple.arg2 && exp.arg2 == *quadruple.arg1){
+        } else if(mtac::is_commutative(quadruple.op) && exp.arg1 == *quadruple.arg2 && exp.arg2 == *quadruple.arg1){
             return true;
         }
     }
@@ -60,8 +60,7 @@ bool mtac::is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped)
     return true;
 }
 
-//TODO Should be called is_commutative
-bool mtac::is_distributive(mtac::Operator op){
+bool mtac::is_commutative(mtac::Operator op){
     return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
 }
 
