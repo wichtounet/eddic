@@ -42,15 +42,6 @@ struct LiveVariableAnalysisProblem {
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
     ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
-    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-
-    ProblemDomain top_element(){
-        return ProblemDomain();
-    }
-
-    ProblemDomain default_element(){
-        return ProblemDomain(ProblemDomain::Values());
-    }
 };
 
 } //end of mtac

@@ -21,13 +21,11 @@ typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
-    auto value = default_element();
-    return value;
+    return ProblemDomain(ProblemDomain::Values());
 }
 
 ProblemDomain mtac::LiveVariableAnalysisProblem::Init(mtac::Function& /*function*/){
-    auto value = default_element();
-    return value;
+    return ProblemDomain(ProblemDomain::Values());
 }
 
 void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDomain& in){
@@ -40,7 +38,7 @@ void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDo
     }
 
     for(auto& value : in.values()){
-        out.values().insert(value);
+        out.insert(value);
     }
 }
 
@@ -60,7 +58,7 @@ struct LivenessCollector {
                     in.int_values = values;
                 }
 
-                in.values().insert(*ptr);
+                in.insert(*ptr);
             }
         }
     }
@@ -68,9 +66,9 @@ struct LivenessCollector {
     void collect(mtac::Quadruple& quadruple){
         if(quadruple.op != mtac::Operator::NOP){
             if(mtac::erase_result(quadruple.op)){
-                in.values().erase(quadruple.result);
+                in.erase(quadruple.result);
             } else {
-                in.values().insert(quadruple.result);
+                in.insert(quadruple.result);
             }
 
             update_optional(quadruple.arg1);
@@ -88,13 +86,8 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* 
     collector.collect(statement);
 
     for(auto& escaped_var : *pointer_escaped){
-        in.values().insert(escaped_var);
+        in.insert(escaped_var);
     }
 
     return in;
-}
-
-bool mtac::LiveVariableAnalysisProblem::optimize(mtac::Function& /*statement*/, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> /*global_results*/){
-    //This analysis is only made to gather information, not to optimize anything
-    throw "Unimplemented";
 }

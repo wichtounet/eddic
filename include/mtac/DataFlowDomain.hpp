@@ -239,6 +239,12 @@ struct Domain<std::unordered_set<Key, Hasher, Equals>> {
         (*int_values).erase(key);
     }
     
+    void insert(const Key& key){
+        assert(int_values);
+
+        (*int_values).insert(key);
+    }
+    
     void clear(){
         assert(int_values);
 
