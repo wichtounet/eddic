@@ -15,7 +15,6 @@
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/GlobalOptimizations.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 
