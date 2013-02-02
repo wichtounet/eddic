@@ -48,6 +48,7 @@
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/pure_analysis.hpp"
+#include "mtac/local_cse.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -60,7 +61,7 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/global_cse.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -96,7 +97,8 @@ typedef boost::mpl::vector<
         mtac::conditional_propagation*,
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
-        mtac::CommonSubexpressionElimination*,
+        mtac::local_cse*,
+        mtac::global_cse*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,

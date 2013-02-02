@@ -1,0 +1,30 @@
+include<print>
+
+int ga = 9;
+int gb = 99;
+int gc = 999;
+
+void main(){
+    test_a();
+    test_b();
+}
+
+void test_a(){
+    print(ga * 99);
+    print("|");
+    print(ga * 99);
+    print("|");
+    print(ga * 99);
+    print("|");
+    print(100 * 100);
+    print("|");
+}
+
+void test_b(){
+    print(gb * gc);
+    print("|");
+    print(gb * gc);
+    print("|");
+    print(gb * gc);
+    print("|");
+}

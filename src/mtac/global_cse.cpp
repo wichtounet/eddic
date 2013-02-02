@@ -12,23 +12,27 @@
 #include "iterators.hpp"
 #include "GlobalContext.hpp"
 
-#include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/global_cse.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
 
 using namespace eddic;
 
-typedef mtac::CommonSubexpressionElimination::ProblemDomain ProblemDomain;
+typedef mtac::global_cse::ProblemDomain ProblemDomain;
 
 std::ostream& mtac::operator<<(std::ostream& os, const Expression& expression){
     return os << "Expression {expression = " << expression.expression;
 }
 
+namespace {
+
 inline bool are_equivalent(mtac::Quadruple& first, mtac::Quadruple& second){
     return first.op == second.op && *first.arg1 == *second.arg1 && *first.arg2 == *second.arg2;
 }
 
-void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const ProblemDomain& out){
+}
+
+void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
     eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
@@ -43,7 +47,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
             bool found = false;
 
             for(auto& out_value : out.values()){
-                if(are_equivalent(function->find(in_value.expression), function->find(out_value.expression))){
+                if(::are_equivalent(function->find(in_value.expression), function->find(out_value.expression))){
                     found = true;
                     break;
                 }
@@ -59,7 +63,7 @@ void mtac::CommonSubexpressionElimination::meet(ProblemDomain& in, const Problem
     }
 }
 
-void mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& out){
+void mtac::global_cse::transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& out){
     auto op = quadruple.op;
 
     if(mtac::is_expression(op)){
@@ -91,7 +95,7 @@ void mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_bl
         if(valid){
             bool exists = false;
             for(auto& expression : out.values()){
-                if(are_equivalent(quadruple, function->find(expression.expression))){
+                if(::are_equivalent(quadruple, function->find(expression.expression))){
                     exists = true;
                     break;
                 }
@@ -132,13 +136,13 @@ void mtac::CommonSubexpressionElimination::transfer(mtac::basic_block_p basic_bl
     }
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Boundary(mtac::Function& function){
+ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
     return ProblemDomain(ProblemDomain::Values());
 }
 
-ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& function){
+ProblemDomain mtac::global_cse::Init(mtac::Function& function){
     this->function = &function;
 
     if(init){
@@ -155,7 +159,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
             if(mtac::is_expression(quadruple.op)){
                 bool exists = false;
                 for(auto& expression : values){
-                    if(are_equivalent(quadruple, function.find(expression.expression))){
+                    if(::are_equivalent(quadruple, function.find(expression.expression))){
                         exists = true;
                         break;
                     }
@@ -174,7 +178,7 @@ ProblemDomain mtac::CommonSubexpressionElimination::Init(mtac::Function& functio
     return result;
 }
 
-bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
+bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
     bool changes = false;
 
     //TODO Avoid doing that first, but integrate it the process
@@ -210,7 +214,7 @@ bool mtac::CommonSubexpressionElimination::optimize(mtac::Function& function, st
                         auto result = source_statement.result;
                         auto quid = quadruple.uid();
 
-                        if(are_equivalent(source_statement, quadruple)){
+                        if(::are_equivalent(source_statement, quadruple)){
                             mtac::Operator assign_op;
                             if((quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD) || quadruple.op == mtac::Operator::DOT){
                                 assign_op = mtac::Operator::ASSIGN;
@@ -302,7 +306,7 @@ bool mtac::operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<E
     for(auto& lhs_expression : lhs_values){
         bool found = false;
         for(auto& rhs_expression : rhs_values){
-            if(are_equivalent(lhs_expression.source->find(lhs_expression.expression), rhs_expression.source->find(rhs_expression.expression))){
+            if(::are_equivalent(lhs_expression.source->find(lhs_expression.expression), rhs_expression.source->find(rhs_expression.expression))){
                 found = true;
                 break;
             }
