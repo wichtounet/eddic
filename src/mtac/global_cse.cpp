@@ -178,6 +178,8 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
             if(AEin.find(exp) != AEin.end()){
                 function.context->global()->stats().inc_counter("common_subexpr_eliminated");
 
+                changes = true;
+
                 auto it = i->begin();
 
                 while(!mtac::are_equivalent(*it, exp) && it != i->end()){
@@ -223,111 +225,6 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
             }
         }
     }
-
-
-
-    //TODO Avoid doing that first, but integrate it the process
-    
-    /*for(auto& block : function){
-        auto& in = global_results->IN[block];
-        
-        for(auto& statement : block){
-            transfer(block, statement, in);
-            global_results->IN_S[statement.uid()] = in;
-        }
-    }
-
-    for(auto& block : function){
-        auto qit = block->statements.begin();
-        auto qend = block->statements.end();
-
-        while(qit != qend){
-            bool local = false;
-
-            auto& quadruple = *qit;
-            auto& results = global_results->IN_S[quadruple.uid()];
-
-            if(results.top()){
-                ++qit;
-                continue;
-            }
-
-            if(optimized.find(quadruple.uid()) == optimized.end()){
-                if(mtac::is_expression(quadruple.op)){
-                    for(auto& expression : results.values()){
-                        auto& source_statement = function.find(expression.expression);
-                        auto result = source_statement.result;
-                        auto quid = quadruple.uid();
-
-                        if(::are_equivalent(source_statement, quadruple)){
-                            mtac::Operator assign_op;
-                            if((quadruple.op >= mtac::Operator::ADD && quadruple.op <= mtac::Operator::MOD) || quadruple.op == mtac::Operator::DOT){
-                                assign_op = mtac::Operator::ASSIGN;
-                            } else {
-                                assign_op = mtac::Operator::FASSIGN;
-                            } 
-
-                            std::shared_ptr<Variable> new_result = result;
-
-                            if(optimized.find(source_statement.uid()) == optimized.end()){
-                                function.context->global()->stats().inc_counter("common_subexpr_eliminated");
-
-                                std::shared_ptr<Variable> temp;
-                                temp = expression.source->context->new_temporary(result->type());
-
-                                new_result = temp;
-
-                                auto it = expression.source->statements.begin();
-                                auto end = expression.source->statements.end();
-
-                                source_statement.result = temp;
-
-                                optimized.insert(source_statement.uid());
-
-                                while(it != end){
-                                    auto& target = *it;
-                                    if(target == source_statement){
-                                        ++it;
-                                        expression.source->statements.insert(it, mtac::Quadruple(result, temp, assign_op));
-
-                                        break;
-                                    }
-
-                                    ++it;
-                                }
-                            }
-
-                            if(optimized.find(quid) == optimized.end()){
-                                function.context->global()->stats().inc_counter("common_subexpr_eliminated");
-
-                                auto& quadruple = function.find(quid);
-
-                                eddic_assert(new_result, "Should have been filled");
-
-                                quadruple.op = assign_op;
-                                quadruple.arg1 = new_result;
-                                quadruple.arg2.reset();
-
-                                optimized.insert(quid);
-
-                                local = true;
-                                changes = true;
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if(local){
-                qit = block->statements.begin();
-                qend = block->statements.end();
-            } else {
-                ++qit;
-            }
-        }
-    }*/
 
     return changes;
 }
