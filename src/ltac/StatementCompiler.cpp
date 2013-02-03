@@ -528,33 +528,22 @@ void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
     }
 }
 
-void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
-    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
-
-    //Means that there are no params
-    if(first_param){
-        bb->emplace_back_low(ltac::Operator::PRE_PARAM);
-    }
-
-    first_param = true;
-
-    //Compute the size of the parameters
-
+int ltac::StatementCompiler::function_stack_size(eddic::Function& function){
     int total = 0;
 
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call.function().standard() && !configuration->option_defined("fparameter-allocation")){
+    if(!function.standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
 
-    for(auto& param : call.function().parameters()){
+    for(auto& param : function.parameters()){
         auto type = param.type(); 
 
         if(type->is_array()){
-            //Passing an array is just passing an adress
+            //Passing an array is just passing an address
             total += INT->size(platform);
         } else {
             if(mtac::is_single_int_register(type)){
@@ -577,10 +566,26 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
         }
     }
 
+    return total;
+}
+
+void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
+    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
+
+    //Means that there are no params
+    if(first_param){
+        bb->emplace_back_low(ltac::Operator::PRE_PARAM);
+    }
+
+    first_param = true;
+
+    //Compute the size of the parameters
+    auto total = function_stack_size(call.function());
+
     //Align stack pointer to the size of an INT
 
     if(total % INT->size(platform) != 0){
-        int padding = total % INT->size(platform);
+        int padding = INT->size(platform) - (total % INT->size(platform));
 
         bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
 
