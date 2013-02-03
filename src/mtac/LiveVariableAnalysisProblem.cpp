@@ -21,6 +21,34 @@ typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 
+    for(auto& block : function){
+        for(auto& q : block){
+            if(mtac::erase_result(q.op)){
+                if(use[block].find(q.result) == use[block].end()){
+                    def[block].insert(q.result);
+                }
+            } else {
+                use[block].insert(q.result);
+            }
+
+            if(q.arg1){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*q.arg1)){
+                    use[block].insert(*ptr);
+                }
+            }
+            
+            if(q.arg2){
+                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*q.arg2)){
+                    use[block].insert(*ptr);
+                }
+            }
+        }
+        
+        for(auto& escaped_var : *pointer_escaped){
+            use[block].insert(escaped_var);
+        }
+    }
+
     return ProblemDomain(ProblemDomain::Values());
 }
 
@@ -38,7 +66,23 @@ void mtac::LiveVariableAnalysisProblem::meet(ProblemDomain& out, const ProblemDo
     }
 
     for(auto& value : in.values()){
-        out.insert(value);
+        out.values().insert(value);
+    }
+}
+
+void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p B, ProblemDomain& x){
+    auto& x_values = x.values();
+
+    //Compute x - def(B)
+
+    for(auto& v : def[B]){
+        x_values.erase(v);
+    }
+
+    //Compute use(B) U (x - def(B))
+     
+    for(auto& v : use[B]){
+        x_values.insert(v);
     }
 }
 
@@ -58,7 +102,7 @@ struct LivenessCollector {
                     in.int_values = values;
                 }
 
-                in.insert(*ptr);
+                in.values().insert(*ptr);
             }
         }
     }
@@ -66,9 +110,9 @@ struct LivenessCollector {
     void collect(mtac::Quadruple& quadruple){
         if(quadruple.op != mtac::Operator::NOP){
             if(mtac::erase_result(quadruple.op)){
-                in.erase(quadruple.result);
+                in.values().erase(quadruple.result);
             } else {
-                in.insert(quadruple.result);
+                in.values().insert(quadruple.result);
             }
 
             update_optional(quadruple.arg1);
@@ -79,15 +123,11 @@ struct LivenessCollector {
 
 } //End of anonymous namespace
 
-ProblemDomain mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& out){
-    auto in = out;
-    
+void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& in){
     LivenessCollector collector(in);
     collector.collect(statement);
 
     for(auto& escaped_var : *pointer_escaped){
-        in.insert(escaped_var);
+        in.values().insert(escaped_var);
     }
-
-    return in;
 }

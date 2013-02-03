@@ -55,7 +55,6 @@ class global_cse {
 
         std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Eval;
         std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Kill;
-        
 };
 
 template<>

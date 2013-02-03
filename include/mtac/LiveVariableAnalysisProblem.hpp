@@ -26,14 +26,14 @@ class Variable;
 
 namespace mtac {
     
-typedef std::unordered_set<std::shared_ptr<Variable>> Values;
+typedef std::set<std::shared_ptr<Variable>> Values;
 
 struct LiveVariableAnalysisProblem {
     //The type of data managed
     typedef Domain<Values> ProblemDomain;
 
     //The direction and modes
-    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
+    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Backward_Block);
     STATIC_CONSTANT(bool, Low, false);
 
     mtac::EscapedVariables pointer_escaped;
@@ -42,8 +42,16 @@ struct LiveVariableAnalysisProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+    
+    void transfer(mtac::basic_block_p basic_block, ProblemDomain& in);
+    void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+    
+    std::unordered_map<mtac::basic_block_p, std::set<std::shared_ptr<Variable>>> def;
+    std::unordered_map<mtac::basic_block_p, std::set<std::shared_ptr<Variable>>> use;
 };
+
+bool operator==(const mtac::Domain<Values>& lhs, const mtac::Domain<Values>& rhs);
+bool operator!=(const mtac::Domain<Values>& lhs, const mtac::Domain<Values>& rhs);
 
 } //end of mtac
 
