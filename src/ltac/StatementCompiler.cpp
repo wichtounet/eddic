@@ -389,6 +389,8 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
     std::tie(type, register_allocated, position) = common_param(param);
 
+    //1. If register allocated, find the correct register and move the value into it
+
     if(register_allocated){
         if(auto* ptr = boost::get<int>(&*param.arg1)){
             if(*ptr == 0){
@@ -407,17 +409,46 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
         return;
     }
+    
+    //2. If the param as not been handled as register passing, push it on the stack 
 
-    //If the param as not been handled as register passing, push it on the stack 
+    //Char has a smaller size, cannot use push instructions
+    
+    if(param.param() && param.param()->type() == CHAR){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
+            auto& var = *ptr;
+            auto reg = manager.get_pseudo_reg(var);
+
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), reg);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+        } else {
+            //If it is not a variable it can only be an int (char value)
+            auto value = boost::get<int>(*param.arg1);
+            
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+        }
+        
+        bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, 1);
+
+        return;
+    }
+
+    //Use push instructions for regular types
+
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
-        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
+        auto var = *ptr;
+
+        if(!var->type()->is_array() && ltac::is_float_var(var)){
             auto reg1 = manager.get_free_pseudo_reg();
-            auto reg2 = manager.get_pseudo_float_reg(*ptr);
+            auto reg2 = manager.get_pseudo_float_reg(var);
 
             bb->emplace_back_low(ltac::Operator::MOV, reg1, reg2);
             push(reg1);
         } else {
-            if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
+            if(var->type()->is_array() && !var->type()->is_dynamic_array()){
                 auto position = (*ptr)->position();
 
                 if(position.isGlobal()){
@@ -434,7 +465,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
                     push(stack_address(position.offset()));
                 }
             } else {
-                auto reg = manager.get_pseudo_reg(*ptr);
+                auto reg = manager.get_pseudo_reg(var);
                 push(reg);
             }
         }
