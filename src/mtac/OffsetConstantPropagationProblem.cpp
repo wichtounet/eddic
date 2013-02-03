@@ -14,7 +14,6 @@
 #include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/GlobalOptimizations.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 

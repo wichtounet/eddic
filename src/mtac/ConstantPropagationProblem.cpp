@@ -22,16 +22,15 @@ namespace {
 
 struct ConstantCollector : public boost::static_visitor<> {
     ProblemDomain& out;
-    std::shared_ptr<Variable> var;
+    std::shared_ptr<Variable>& var;
 
-    ConstantCollector(ProblemDomain& out, std::shared_ptr<Variable> var) : out(out), var(var) {}
+    ConstantCollector(ProblemDomain& out, std::shared_ptr<Variable>& var) : out(out), var(var) {}
 
     void operator()(int value){
         out[var] = {value};
     }
 
-    //Warning : Do not pass it by reference to avoid going to the template function
-    void operator()(std::string value){
+    void operator()(const std::string& value){
         out[var] = {value};
     }
 
@@ -39,7 +38,7 @@ struct ConstantCollector : public boost::static_visitor<> {
         out[var] = {value};
     }
 
-    void operator()(std::shared_ptr<Variable> variable){
+    void operator()(std::shared_ptr<Variable>& variable){
         if(variable != var){
             out[var] = {variable};
         }

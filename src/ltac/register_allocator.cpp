@@ -391,7 +391,7 @@ void build_interference_graph(ltac::interference_graph<Pseudo>& graph, mtac::Fun
 
     for(auto& bb : function){
         for(auto& statement : bb->l_statements){
-            auto& results = live_results->OUT_LS[statement.uid()];
+            auto& results = live_results->OUT_S[statement.uid()];
 
             if(results.top()){
                continue; 

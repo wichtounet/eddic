@@ -41,6 +41,7 @@ class OffsetConstantPropagationProblem {
 
         //The direction
         STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        STATIC_CONSTANT(bool, Low, false);
 
         std::unordered_set<Offset, mtac::OffsetHash> escaped;
         mtac::EscapedVariables pointer_escaped;

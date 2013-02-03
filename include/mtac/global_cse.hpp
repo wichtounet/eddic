@@ -36,6 +36,7 @@ class global_cse {
 
         //The direction
         STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward_Block);
+        STATIC_CONSTANT(bool, Low, false);
         
         mtac::EscapedVariables pointer_escaped;
 
@@ -54,7 +55,6 @@ class global_cse {
 
         std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Eval;
         std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Kill;
-        
 };
 
 template<>

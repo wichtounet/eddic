@@ -149,6 +149,113 @@ struct Domain<std::unordered_map<Key, Value, Hasher, Equals>> {
     }
 };
 
+template<typename Key, typename Hasher, typename Equals>
+struct Domain<std::unordered_set<Key, Hasher, Equals>> {
+    typedef std::unordered_set<Key, Hasher, Equals> Values;
+    
+    boost::optional<Values> int_values;
+
+    Domain(){
+        //Nothing to init
+    }
+
+    Domain(Values values) : int_values(values){
+        //Nothing to init
+    }
+
+    Domain(const Domain& rhs) : int_values(rhs.int_values) {}
+    Domain& operator=(const Domain& rhs){
+        int_values = rhs.int_values;
+
+        return *this;
+    }
+
+    Domain(Domain&& rhs) : int_values(std::move(rhs.int_values)) {}
+    Domain& operator=(Domain&& rhs){
+        int_values = std::move(rhs.int_values);
+
+        return *this;
+    }
+
+    Values& values(){
+        return *int_values;
+    }
+    
+    const Values& values() const {
+        return *int_values;
+    }
+
+    typename Values::iterator begin(){
+        assert(int_values);
+
+        return (*int_values).begin();
+    }
+
+    typename Values::iterator end(){
+        assert(int_values);
+
+        return (*int_values).end();
+    }
+
+    typename Values::const_iterator begin() const {
+        assert(int_values);
+
+        return (*int_values).cbegin();
+    }
+
+    typename Values::const_iterator end() const {
+        assert(int_values);
+
+        return (*int_values).cend();
+    }
+    
+    auto count(const Key& key) const -> decltype((*int_values).count(key)){
+        assert(int_values);
+
+        return (*int_values).count(key);
+    }
+    
+    typename Values::const_iterator find(const Key& key) const {
+        assert(int_values);
+
+        return (*int_values).find(key);
+    }
+
+    typename Values::iterator erase(typename Values::iterator it){
+        assert(int_values);
+        
+        return (*int_values).erase(it);
+    }
+
+    std::size_t size(){
+        assert(int_values);
+        
+        return (*int_values).size();
+    }
+
+    void erase(const Key& key){
+        assert(int_values);
+
+        (*int_values).erase(key);
+    }
+    
+    void insert(const Key& key){
+        assert(int_values);
+
+        (*int_values).insert(key);
+    }
+    
+    void clear(){
+        assert(int_values);
+
+        (*int_values).clear();
+    }
+
+    bool top() const {
+        return !int_values;
+    }
+};
+
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values){
     stream << "vector{";

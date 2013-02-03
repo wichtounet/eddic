@@ -78,6 +78,7 @@ class ConstantPropagationProblem {
 
         //The direction
         STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward);
+        STATIC_CONSTANT(bool, Low, false);
 
         ProblemDomain Init(mtac::Function& function);
         ProblemDomain Boundary(mtac::Function& function);

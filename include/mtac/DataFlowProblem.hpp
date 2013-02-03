@@ -24,19 +24,17 @@ struct DataFlowResults {
     
     std::unordered_map<std::size_t, Domain> OUT_S;
     std::unordered_map<std::size_t, Domain> IN_S;
-    
-    std::unordered_map<std::size_t, Domain> OUT_LS;
-    std::unordered_map<std::size_t, Domain> IN_LS;
 };
 
 enum class DataFlowType : unsigned int {
-    Forward,        //Common forward data-flow problem in MTAC
-    Backward,       //Common backward data-flow problem in MTAC
-    Low_Forward,    //Common forward data-flow problem in LTAC
-    Low_Backward,   //Common backward data-flow problem in LTAC
+    Forward,                //Common forward data-flow problem
+    Backward,               //Common backward data-flow problem
 
-    Fast_Forward,          //Experimental support for fast forward data-flow
-    Fast_Forward_Block     //Experimental support for fast forward data-flow
+    Fast_Forward,           //Fast forward data-flow on statements
+    Fast_Forward_Block,     //Fast forward data-flow on block
+
+    Fast_Backward,          //Fast forward data-flow on statements
+    Fast_Backward_Block     //Fast forward data-flow on blocks
 };
 
 template<typename ProblemDomain>

@@ -5,7 +5,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <list>
+#include <boost/range/adaptors.hpp>
 
 #include "Type.hpp"
 #include "FunctionContext.hpp"
@@ -27,21 +27,30 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
 
+    std::vector<std::size_t> to_delete;
+
     for(auto& block : function){
-        auto it = iterate(block->statements);
+        auto& out = results->OUT[block];
 
-        while(it.has_next()){
-            auto& quadruple = *it;
-
+        for(auto& quadruple : boost::adaptors::reverse(block->statements)){
             if(quadruple.result && mtac::erase_result(quadruple.op)){
-                if(results->OUT_S[quadruple.uid()].top() || results->OUT_S[quadruple.uid()].values().find(quadruple.result) == results->OUT_S[quadruple.uid()].values().end()){
-                    it.erase();
-                    optimized=true;
-                    continue;
+                if(out.top() || out.values().find(quadruple.result) == out.values().end()){
+                    to_delete.push_back(quadruple.uid());
                 }
             }
 
-            ++it;
+            problem.transfer(block, quadruple, out);
+        }
+    }
+
+    if(!to_delete.empty()){
+        optimized = true;
+
+        for(auto& block : function){
+            block->statements.erase(
+                    remove_if(block->statements.begin(), block->statements.end(), 
+                        [&to_delete](const mtac::Quadruple& q){return std::find(to_delete.begin(), to_delete.end(), q.uid()) != to_delete.end();}), 
+                    block->statements.end());
         }
     }
 

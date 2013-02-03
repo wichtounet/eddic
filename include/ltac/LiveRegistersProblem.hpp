@@ -79,7 +79,8 @@ struct LiveRegistersProblem {
     typedef mtac::Domain<LiveRegisterValues<ltac::Register, ltac::FloatRegister>> ProblemDomain;
 
     //The direction
-    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Backward);
+    STATIC_CONSTANT(bool, Low, true);
 
     ProblemDomain Boundary(mtac::Function& function);
     ProblemDomain Init(mtac::Function& function);
@@ -103,7 +104,8 @@ struct LivePseudoRegistersProblem {
     typedef mtac::Domain<LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> ProblemDomain;
 
     //The direction
-    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Backward);
+    STATIC_CONSTANT(bool, Low, true);
 
     ProblemDomain Boundary(mtac::Function& function);
     ProblemDomain Init(mtac::Function& function);
