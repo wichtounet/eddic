@@ -27,10 +27,8 @@ struct DataFlowResults {
 };
 
 enum class DataFlowType : unsigned int {
-    Forward,        //Common forward data-flow problem in MTAC
-    Backward,       //Common backward data-flow problem in MTAC
-    Low_Forward,    //Common forward data-flow problem in LTAC
-    Low_Backward,   //Common backward data-flow problem in LTAC
+    Forward,                //Common forward data-flow problem
+    Backward,               //Common backward data-flow problem
 
     Fast_Forward,           //Fast forward data-flow on statements
     Fast_Forward_Block,     //Fast forward data-flow on block

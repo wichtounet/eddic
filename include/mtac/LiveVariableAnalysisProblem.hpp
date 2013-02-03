@@ -32,8 +32,9 @@ struct LiveVariableAnalysisProblem {
     //The type of data managed
     typedef Domain<Values> ProblemDomain;
 
-    //The direction
+    //The direction and modes
     STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
+    STATIC_CONSTANT(bool, Low, false);
 
     mtac::EscapedVariables pointer_escaped;
     
