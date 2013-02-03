@@ -8,6 +8,8 @@
 #ifndef MTAC_GLOBAL_OPTIMIZATIONS_H
 #define MTAC_GLOBAL_OPTIMIZATIONS_H
 
+#include <boost/range/adaptors.hpp>
+
 #include <memory>
 #include <ostream>
 #include <type_traits>
@@ -312,6 +314,126 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
     return results;
 }
 
+//Fast Backward statements
+
+template<bool Low, typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_backward_data_flow(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    IN[function.exit_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "IN[" << *function.exit_bb() << "] set to " << IN[function.exit_bb()] << log::endl;
+    
+    for(auto& block : function){
+        //Init all but EXIT
+        if(block->index != -2){
+            IN[block] = problem.Init(function);
+            LOG<Dev>("Data-Flow") << "IN[" << *block << "] set to " << IN[block] << log::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(auto& B : function){
+            //Do not consider EXIT
+            if(B->index == -2){
+                continue;
+            }
+
+            auto& statements = get_statements<Low>(B);
+
+            for(auto& S : B->successors){
+                LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with S = " << *S << log::endl;
+                LOG<Dev>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
+                LOG<Dev>("Data-Flow") << "IN[S]  before " << IN[S] << log::endl;
+
+                problem.meet(OUT[B], IN[S]);
+                
+                LOG<Dev>("Data-Flow") << "OUT[B]  after " << OUT[B] << log::endl;
+
+                auto out = OUT[B];
+
+                for(auto& statement : boost::adaptors::reverse(get_statements<Low>(B))){
+                    problem.transfer(B, statement, out);
+                }
+
+                if(IN[B] != out){
+                    changes = true;
+                }
+
+                IN[B] = std::move(out);
+            }
+        }
+    }
+
+    return results;
+}
+
+//Fast Backward block
+
+template<bool Low, typename Problem>
+std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_backward_data_flow_block(mtac::Function& function, Problem& problem){
+    typedef typename Problem::ProblemDomain Domain;
+
+    auto results = std::make_shared<DataFlowResults<Domain>>();
+    
+    auto& OUT = results->OUT;
+    auto& IN = results->IN;
+
+    IN[function.exit_bb()] = problem.Boundary(function);
+    LOG<Dev>("Data-Flow") << "IN[" << *function.exit_bb() << "] set to " << IN[function.exit_bb()] << log::endl;
+    
+    for(auto& block : function){
+        //Init all but EXIT
+        if(block->index != -2){
+            IN[block] = problem.Init(function);
+            LOG<Dev>("Data-Flow") << "IN[" << *block << "] set to " << IN[block] << log::endl;
+        }
+    }
+
+    bool changes = true;
+    while(changes){
+        changes = false;
+
+        for(auto& B : function){
+            //Do not consider EXIT
+            if(B->index == -2){
+                continue;
+            }
+
+            auto& statements = get_statements<Low>(B);
+
+            for(auto& S : B->successors){
+                LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with S = " << *S << log::endl;
+                LOG<Dev>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
+                LOG<Dev>("Data-Flow") << "IN[S]  before " << IN[S] << log::endl;
+
+                problem.meet(OUT[B], IN[S]);
+                
+                LOG<Dev>("Data-Flow") << "OUT[B]  after " << OUT[B] << log::endl;
+
+                auto out = OUT[B];
+
+                problem.transfer(B, out);
+
+                if(IN[B] != out){
+                    changes = true;
+                }
+
+                IN[B] = std::move(out);
+            }
+        }
+    }
+
+    return results;
+}
+
 template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Forward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
@@ -346,6 +468,18 @@ template<typename Problem>
 typename std::enable_if<Problem::Type == DataFlowType::Fast_Forward_Block, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
 data_flow(mtac::Function& function, Problem& problem){
     return fast_forward_data_flow_block(function, problem);
+}
+
+template<typename Problem>
+typename std::enable_if<Problem::Type == DataFlowType::Fast_Backward, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
+data_flow(mtac::Function& function, Problem& problem){
+    return fast_backward_data_flow<false>(function, problem);
+}
+
+template<typename Problem>
+typename std::enable_if<Problem::Type == DataFlowType::Fast_Backward_Block, std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>>>::type 
+data_flow(mtac::Function& function, Problem& problem){
+    return fast_backward_data_flow_block<false>(function, problem);
 }
 
 } //end of mtac
