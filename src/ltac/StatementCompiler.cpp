@@ -431,7 +431,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             bb->push_back(std::move(mov));
         }
         
-        bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, 1);
+        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
 
         return;
     }
@@ -538,34 +538,7 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
 
     first_param = true;
 
-    ltac::Instruction call_instruction(call.function().mangled_name(), ltac::Operator::CALL);
-    call_instruction.target_function = &call.function();
-    call_instruction.uses = uses;
-    call_instruction.float_uses = float_uses;
-
-    ltac::PseudoRegister return_reg_1;
-    ltac::PseudoRegister return_reg_2;
-    ltac::PseudoFloatRegister return_float_reg_1;
-    
-    if(call.return1()){
-        if(call.return1()->type() == FLOAT){
-            return_float_reg_1 = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
-            call_instruction.float_kills.push_back(return_float_reg_1);
-        } else {
-            return_reg_1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
-            call_instruction.kills.push_back(return_reg_1);
-        }
-    }
-
-    if(call.return2()){
-        return_reg_2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
-        call_instruction.kills.push_back(return_reg_2);
-    }
-    
-    bb->l_statements.push_back(std::move(call_instruction));
-
-    uses.clear();
-    float_uses.clear();
+    //Compute the size of the parameters
 
     int total = 0;
 
@@ -603,6 +576,47 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
             }
         }
     }
+
+    //Align stack pointer to the size of an INT
+
+    if(total % INT->size(platform) != 0){
+        int padding = total % INT->size(platform);
+
+        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
+
+        total += padding;
+    }
+
+    ltac::Instruction call_instruction(call.function().mangled_name(), ltac::Operator::CALL);
+    call_instruction.target_function = &call.function();
+    call_instruction.uses = uses;
+    call_instruction.float_uses = float_uses;
+
+    ltac::PseudoRegister return_reg_1;
+    ltac::PseudoRegister return_reg_2;
+    ltac::PseudoFloatRegister return_float_reg_1;
+    
+    if(call.return1()){
+        if(call.return1()->type() == FLOAT){
+            return_float_reg_1 = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
+            call_instruction.float_kills.push_back(return_float_reg_1);
+        } else {
+            return_reg_1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
+            call_instruction.kills.push_back(return_reg_1);
+        }
+    }
+
+    if(call.return2()){
+        return_reg_2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
+        call_instruction.kills.push_back(return_reg_2);
+    }
+    
+    bb->l_statements.push_back(std::move(call_instruction));
+
+    uses.clear();
+    float_uses.clear();
+
+    //Deallocate space of the parameters
 
     bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, total);
 
