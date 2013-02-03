@@ -97,17 +97,17 @@ struct LivenessCollector {
     inline void update_optional(Arg& arg){
         if(arg){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
-                if(in.top()){
-                    ProblemDomain::Values values;
-                    in.int_values = values;
-                }
-
                 in.values().insert(*ptr);
             }
         }
     }
 
     void collect(mtac::Quadruple& quadruple){
+        if(in.top()){
+            ProblemDomain::Values values;
+            in.int_values = values;
+        }
+
         if(quadruple.op != mtac::Operator::NOP){
             if(mtac::erase_result(quadruple.op)){
                 in.values().erase(quadruple.result);
