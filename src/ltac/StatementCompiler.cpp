@@ -352,6 +352,16 @@ std::tuple<std::shared_ptr<const Type>, bool, unsigned int> ltac::StatementCompi
 
     if(first_param){
         bb->emplace_back_low(ltac::Operator::PRE_PARAM);
+
+        //Align stack pointer to the size of an INT
+
+        auto total = function_stack_size(param.function());
+        if(total % INT->size(platform) != 0){
+            int padding = INT->size(platform) - (total % INT->size(platform));
+
+            bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
+        }
+
         first_param = false;
     }
     
@@ -415,6 +425,8 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
     //Char has a smaller size, cannot use push instructions
     
     if(param.param() && param.param()->type() == CHAR){
+        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
+
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
             auto& var = *ptr;
             auto reg = manager.get_pseudo_reg(var);
@@ -430,8 +442,6 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             mov.size = ltac::Size::BYTE;
             bb->push_back(std::move(mov));
         }
-        
-        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
 
         return;
     }
@@ -586,9 +596,6 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
 
     if(total % INT->size(platform) != 0){
         int padding = INT->size(platform) - (total % INT->size(platform));
-
-        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
-
         total += padding;
     }
 
