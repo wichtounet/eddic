@@ -45,37 +45,6 @@ inline typename std::enable_if<!Low, std::vector<mtac::Quadruple>&>::type get_st
 
 //Forward
 
-template<bool Low, typename P, typename R>
-inline void forward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
-    auto& OUT = results->OUT;
-    auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
-    
-    auto& statements = get_statements<Low>(B);
-
-    if(statements.size() > 0){
-        IN_S[statements.front().uid()] = IN[B];
-
-        for(unsigned i = 0; i < statements.size(); ++i){
-            auto& statement = statements[i];
-
-            assign(OUT_S[statement.uid()], problem.transfer(B, statement, IN_S[statement.uid()]), changes);
-
-            //The entry value of the next statement are the exit values of the current statement
-            if(i != statements.size() - 1){
-                IN_S[statements[i+1].uid()] = OUT_S[statement.uid()];
-            }
-        }
-
-        assign(OUT[B], OUT_S[statements.back().uid()], changes);
-    } else {
-        //If the basic block is empty, the OUT values are the IN values
-        assign(OUT[B], IN[B], changes);
-    }
-}
-
 template<bool Low, typename Problem>
 std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_flow(mtac::Function& function, Problem& problem){
     typedef typename Problem::ProblemDomain Domain;
@@ -84,6 +53,9 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
     
     auto& OUT = results->OUT;
     auto& IN = results->IN;
+
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
 
     OUT[function.entry_bb()] = problem.Boundary(function);
     LOG<Dev>("Data-Flow") << "OUT[" << *function.entry_bb() << "] set to " << OUT[function.entry_bb()] << log::endl;
@@ -106,6 +78,8 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
                 continue;
             }
 
+            auto& statements = get_statements<Low>(B);
+
             for(auto& P : B->predecessors){
                 LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with P = " << *P << log::endl;
                 LOG<Dev>("Data-Flow") << "IN[B] before " << IN[B] << log::endl;
@@ -115,7 +89,25 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
                 
                 LOG<Dev>("Data-Flow") << "IN[B] after " << IN[B] << log::endl;
 
-                forward_statements<Low>(problem, results, B, changes);
+                if(statements.size() > 0){
+                    IN_S[statements.front().uid()] = IN[B];
+
+                    for(unsigned i = 0; i < statements.size(); ++i){
+                        auto& statement = statements[i];
+
+                        assign(OUT_S[statement.uid()], problem.transfer(B, statement, IN_S[statement.uid()]), changes);
+
+                        //The entry value of the next statement are the exit values of the current statement
+                        if(i != statements.size() - 1){
+                            IN_S[statements[i+1].uid()] = OUT_S[statement.uid()];
+                        }
+                    }
+
+                    assign(OUT[B], OUT_S[statements.back().uid()], changes);
+                } else {
+                    //If the basic block is empty, the OUT values are the IN values
+                    assign(OUT[B], IN[B], changes);
+                }
             }
         }
     }
@@ -125,44 +117,6 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> forward_data_f
 
 //Backward
 
-template<bool Low, typename P, typename R>
-inline void backward_statements(P& problem, R& results, mtac::basic_block_p& B, bool& changes){
-    auto& OUT = results->OUT;
-    auto& IN = results->IN;
-    
-    auto& OUT_S = results->OUT_S;
-    auto& IN_S = results->IN_S;
-
-    auto& statements = get_statements<Low>(B);
-
-    if(statements.size() > 0){
-        LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
-        assign(OUT_S[statements.back().uid()], OUT[B], changes);
-        LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after  transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
-
-        for(unsigned i = statements.size() - 1; i > 0; --i){
-            auto& statement = statements[i];
-
-            LOG<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement.uid()] << log::endl;
-            assign(IN_S[statement.uid()], problem.transfer(B, statement, OUT_S[statement.uid()]), changes);
-            LOG<Dev>("Data-Flow") << "IN_S[" << i << "] after  transfer " << IN_S[statement.uid()] << log::endl;
-
-            LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
-            OUT_S[statements[i-1].uid()] = IN_S[statement.uid()];
-            LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after  transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
-        }
-
-        LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0].uid()] << log::endl;
-        assign(IN_S[statements[0].uid()], problem.transfer(B, statements[0], OUT_S[statements[0].uid()]), changes);
-        LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] after  transfer " << IN_S[statements[0].uid()] << log::endl;
-
-        assign(IN[B], IN_S[statements.front().uid()], changes);
-    } else {
-        //If the basic block is empty, the IN values are the OUT values
-        assign(IN[B], OUT[B], changes);
-    }
-}
-
 template<bool Low, typename Problem>
 std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_flow(mtac::Function& function, Problem& problem){
     typedef typename Problem::ProblemDomain Domain;
@@ -171,6 +125,9 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
     
     auto& OUT = results->OUT;
     auto& IN = results->IN;
+    
+    auto& OUT_S = results->OUT_S;
+    auto& IN_S = results->IN_S;
 
     IN[function.exit_bb()] = problem.Boundary(function);
     LOG<Dev>("Data-Flow") << "IN[" << *function.exit_bb() << "] set to " << IN[function.exit_bb()] << log::endl;
@@ -193,6 +150,8 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
                 continue;
             }
 
+            auto& statements = get_statements<Low>(B);
+
             for(auto& S : B->successors){
                 LOG<Dev>("Data-Flow") << "Meet B = " << *B << " with S = " << *S << log::endl;
                 LOG<Dev>("Data-Flow") << "OUT[B] before " << OUT[B] << log::endl;
@@ -202,7 +161,32 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> backward_data_
                 
                 LOG<Dev>("Data-Flow") << "OUT[B]  after " << OUT[B] << log::endl;
 
-                backward_statements<Low>(problem, results, B, changes);
+                if(statements.size() > 0){
+                    LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] before transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
+                    assign(OUT_S[statements.back().uid()], OUT[B], changes);
+                    LOG<Dev>("Data-Flow") << "OUT_S[" << (statements.size() - 1) << "] after  transfer " << OUT_S[statements[statements.size() - 1].uid()] << log::endl;
+
+                    for(unsigned i = statements.size() - 1; i > 0; --i){
+                        auto& statement = statements[i];
+
+                        LOG<Dev>("Data-Flow") << "IN_S[" << i << "] before transfer " << IN_S[statement.uid()] << log::endl;
+                        assign(IN_S[statement.uid()], problem.transfer(B, statement, OUT_S[statement.uid()]), changes);
+                        LOG<Dev>("Data-Flow") << "IN_S[" << i << "] after  transfer " << IN_S[statement.uid()] << log::endl;
+
+                        LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] before transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
+                        OUT_S[statements[i-1].uid()] = IN_S[statement.uid()];
+                        LOG<Dev>("Data-Flow") << "OUT_S[" << (i - 1) << "] after  transfer " << OUT_S[statements[i - 1].uid()] << log::endl;
+                    }
+
+                    LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] before transfer " << IN_S[statements[0].uid()] << log::endl;
+                    assign(IN_S[statements[0].uid()], problem.transfer(B, statements[0], OUT_S[statements[0].uid()]), changes);
+                    LOG<Dev>("Data-Flow") << "IN_S[" << 0 << "] after  transfer " << IN_S[statements[0].uid()] << log::endl;
+
+                    assign(IN[B], IN_S[statements.front().uid()], changes);
+                } else {
+                    //If the basic block is empty, the IN values are the OUT values
+                    assign(IN[B], OUT[B], changes);
+                }
                 
                 LOG<Dev>("Data-Flow") << "IN[B]   after " << IN[B] << log::endl;
             }
