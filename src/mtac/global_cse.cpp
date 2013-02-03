@@ -41,18 +41,9 @@ void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
     }
 }
 
-ProblemDomain mtac::global_cse::Boundary(mtac::Function&){
-    return ProblemDomain(ProblemDomain::Values());
-}
-
-ProblemDomain mtac::global_cse::Init(mtac::Function& function){
-    if(init){
-        ProblemDomain result(*init);
-        return result;
-    }
-    
+ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
     this->function = &function;
-        
+    
     pointer_escaped = mtac::escape_analysis(function);
 
     typename ProblemDomain::Values values;
@@ -98,9 +89,13 @@ ProblemDomain mtac::global_cse::Init(mtac::Function& function){
         }
     }
 
-    init = expressions;
-    
-    ProblemDomain result(expressions);
+    init = std::move(expressions);
+
+    return ProblemDomain(ProblemDomain::Values());
+}
+
+ProblemDomain mtac::global_cse::Init(mtac::Function&){
+    ProblemDomain result(*init);
     return result;
 }
 
