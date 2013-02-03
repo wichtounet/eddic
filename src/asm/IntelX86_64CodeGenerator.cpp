@@ -99,19 +99,39 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
             break;
         case ltac::Operator::MOV:
             if(instruction.size != ltac::Size::DEFAULT){
-                switch(instruction.size){
-                    case ltac::Size::BYTE:
-                        writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
-                        break;
-                    case ltac::Size::WORD:
-                        writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
-                        break;
-                    case ltac::Size::DOUBLE_WORD:
-                        writer.stream() << "movzx " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
-                        break;
-                    default:
-                        writer.stream() << "mov " << *instruction.arg1 << ", qword " << *instruction.arg2 << '\n';
-                        break;
+                if(boost::get<ltac::Address>(&*instruction.arg1)){
+                    switch(instruction.size){
+                        case ltac::Size::BYTE:
+                            writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::WORD:
+                            writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::DOUBLE_WORD:
+                            writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                            break;
+                        default:
+                            writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                            break;
+                    }
+                } else {
+                    //TODO The instruction should always be mov (and not movzx) to avoid having something context-dependent
+                    //movzx should be chosen higher
+
+                    switch(instruction.size){
+                        case ltac::Size::BYTE:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::WORD:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::DOUBLE_WORD:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
+                            break;
+                        default:
+                            writer.stream() << "mov " << *instruction.arg1 << ", qword " << *instruction.arg2 << '\n';
+                            break;
+                    }
                 }
 
                 break;
