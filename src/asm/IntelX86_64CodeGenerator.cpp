@@ -33,6 +33,18 @@ const std::string registers[14] = {
     "rax", "rbx", "rcx", "rdx", "rsi", "rdi", 
     "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"};
 
+const std::string registers_8[14] = {
+    "al", "bl", "cl", "dl", "", "", 
+    "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"};
+
+const std::string registers_16[14] = {
+    "ax", "bx", "cx", "dx", "si", "di", 
+    "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"};
+
+const std::string registers_32[14] = {
+    "eax", "ebx", "ecx", "edx", "esi", "edi", 
+    "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"};
+
 const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
 struct X86_64StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
@@ -92,6 +104,23 @@ using namespace x86_64;
 
 namespace {
 
+std::string get_register_8(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    auto sub_reg = registers_8[reg.reg];
+    eddic_assert(!sub_reg.empty(), "RSI and RDI are not 8-bit allocatable");
+    return sub_reg;
+}
+
+std::string get_register_16(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    return registers_16[reg.reg];
+}
+
+std::string get_register_32(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    return registers_32[reg.reg];
+}
+
 void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instruction){
     switch(instruction.op){
         case ltac::Operator::LABEL:
@@ -100,19 +129,36 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
         case ltac::Operator::MOV:
             if(instruction.size != ltac::Size::DEFAULT){
                 if(boost::get<ltac::Address>(&*instruction.arg1)){
-                    switch(instruction.size){
-                        case ltac::Size::BYTE:
-                            writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
-                            break;
-                        case ltac::Size::WORD:
-                            writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
-                            break;
-                        case ltac::Size::DOUBLE_WORD:
-                            writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
-                            break;
-                        default:
-                            writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
-                            break;
+                    if(auto* ptr = boost::get<ltac::Register>(&*instruction.arg2)){
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << get_register_8(*ptr) << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << get_register_16(*ptr) << '\n';
+                                break;
+                            case ltac::Size::DOUBLE_WORD:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << get_register_32(*ptr) << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                        }
+                    } else {
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            case ltac::Size::DOUBLE_WORD:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                        }
                     }
                 } else {
                     //TODO The instruction should always be mov (and not movzx) to avoid having something context-dependent

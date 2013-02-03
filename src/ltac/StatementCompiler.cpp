@@ -430,10 +430,16 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
             auto& var = *ptr;
             auto reg = manager.get_pseudo_reg(var);
+                
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
             mov.size = ltac::Size::BYTE;
             bb->push_back(std::move(mov));
+
+            uses.push_back(hard_reg);
         } else {
             //If it is not a variable it can only be an int (char value)
             auto value = boost::get<int>(*param.arg1);
