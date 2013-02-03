@@ -33,6 +33,8 @@ enum class Size : char {
     QUAD_WORD
 };
 
+//TODO Quadruple should be made smaller to allow faster removal
+
 struct Quadruple {
     private:
         std::size_t _uid;
