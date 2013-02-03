@@ -126,8 +126,29 @@ struct LivenessCollector {
 void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& in){
     LivenessCollector collector(in);
     collector.collect(statement);
+}
 
-    for(auto& escaped_var : *pointer_escaped){
-        in.values().insert(escaped_var);
+bool mtac::operator==(const mtac::Domain<mtac::Values>& lhs, const mtac::Domain<mtac::Values>& rhs){
+    if(lhs.top() || rhs.top()){
+        return lhs.top() == rhs.top();
     }
+
+    auto& lhs_values = lhs.values();
+    auto& rhs_values = rhs.values();
+
+    if(lhs_values.size() != rhs_values.size()){
+        return false;
+    }
+
+    for(auto& lhs_variable : lhs_values){
+        if(rhs_values.find(lhs_variable) == rhs_values.end()){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool mtac::operator!=(const mtac::Domain<Values>& lhs, const mtac::Domain<Values>& rhs){
+    return !(lhs == rhs);
 }
