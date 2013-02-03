@@ -245,7 +245,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
                     problem.transfer(B, statement, in);
                 }
 
-                if(OUT[B] != in){
+                if(!changes && OUT[B] != in){
                     changes = true;
                 }
 
@@ -302,7 +302,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_forward_d
 
                 problem.transfer(B, in);
 
-                if(OUT[B] != in){
+                if(!changes && OUT[B] != in){
                     changes = true;
                 }
 
@@ -363,7 +363,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_backward_
                     problem.transfer(B, statement, out);
                 }
 
-                if(IN[B] != out){
+                if(!changes && IN[B] != out){
                     changes = true;
                 }
 
@@ -420,7 +420,7 @@ std::shared_ptr<DataFlowResults<typename Problem::ProblemDomain>> fast_backward_
 
                 problem.transfer(B, out);
 
-                if(IN[B] != out){
+                if(!changes && IN[B] != out){
                     changes = true;
                 }
 
