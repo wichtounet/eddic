@@ -188,6 +188,23 @@ struct DebugVisitor {
         } else {
             out << to_string(quadruple.op);
 
+            if(quadruple.size != ltac::Size::DEFAULT){
+                switch(quadruple.size){
+                    case ltac::Size::BYTE:
+                        out << " BYTE";
+                        break;
+                    case ltac::Size::WORD:
+                        out << " WORD";
+                        break;
+                    case ltac::Size::DOUBLE_WORD:
+                        out << " DWORD";
+                        break;
+                    default:
+                        out << " QWORD";
+                        break;
+                }
+            }
+
             if(quadruple.arg1){
                 out << " " << *quadruple.arg1;
 
