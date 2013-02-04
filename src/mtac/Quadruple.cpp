@@ -198,6 +198,21 @@ std::string printTarget(const mtac::Quadruple& quadruple){
     }
 }
 
+std::string size(mtac::Size size){
+    switch(size){
+        case mtac::Size::DEFAULT:
+            return "";
+        case mtac::Size::BYTE:
+            return " (byte)";
+        case mtac::Size::WORD:
+            return " (word)";
+        case mtac::Size::DOUBLE_WORD:
+            return " (dword)";
+        case mtac::Size::QUAD_WORD:
+            return " (qword)";
+    }
+}
+
 }
 
 std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadruple& quadruple){
@@ -285,7 +300,7 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
             stream << "\t" << quadruple.result << " = (cast int) " << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT:
-            stream << "\t" << quadruple.result << " = (normal) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (normal)" << size(quadruple.size) << " (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FDOT:
             stream << "\t" << quadruple.result << " = (float) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
@@ -294,7 +309,7 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
             stream << "\t" << quadruple.result << " = (pointer) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_ASSIGN:
-            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal)" << size(quadruple.size) << " " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_FASSIGN:
             stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
