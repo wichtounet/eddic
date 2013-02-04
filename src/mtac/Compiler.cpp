@@ -1184,6 +1184,10 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             if(left_type->is_pointer()){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]);
+            } else if(left_type == CHAR){
+                mtac::Quadruple mov(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
+                mov.size = mtac::Size::BYTE;
+                function.push_back(std::move(mov));
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
