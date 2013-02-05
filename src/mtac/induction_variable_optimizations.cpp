@@ -294,7 +294,11 @@ bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& fun
     }
     
     for(auto& biv : loop.basic_induction_variables()){
-        LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        if(biv.second.div){
+            LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+        } else {
+            LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        }
     }
     
     for(auto& biv : loop.dependent_induction_variables()){

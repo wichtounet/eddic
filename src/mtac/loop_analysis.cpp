@@ -43,9 +43,9 @@ mtac::InductionVariables find_all_candidates(mtac::Loop& loop){
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MINUS){
+            if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::DIV || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MINUS){
                 candidates[quadruple.result] = {quadruple.uid(), nullptr, 0, 0, false};
-            }
+            } 
         }
     }
 
@@ -107,7 +107,15 @@ void find_basic_induction_variables(mtac::Loop& loop){
                     loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, boost::get<int>(arg2), false}; 
                     continue;
                 } 
-            } 
+            } else if(quadruple.op == mtac::Operator::DIV){
+                auto arg1 = *quadruple.arg1;
+                auto arg2 = *quadruple.arg2;
+
+                if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                    loop.basic_induction_variables()[var] = {quadruple.uid(), var, boost::get<int>(arg2), 0, false, true}; 
+                    continue;
+                } 
+            }
 
             loop.basic_induction_variables().erase(var);
         }
