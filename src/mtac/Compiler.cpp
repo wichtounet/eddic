@@ -405,15 +405,29 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                         left = {temp};
                     } else {
-                        if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
+                        if(data_type == BOOL || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
                             std::shared_ptr<Variable> temp;
                             if(T == ArgumentType::REFERENCE){
                                 temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
                             } else {
                                 temp = function.context->new_temporary(data_type);
                             }
-
+                            
                             function.emplace_back(temp, left[0], mtac::Operator::DOT, index);
+
+                            left = {temp};
+                        } else if(data_type == CHAR){
+                            std::shared_ptr<Variable> temp;
+                            if(T == ArgumentType::REFERENCE){
+                                temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
+                            } else {
+                                temp = function.context->new_temporary(data_type);
+                            }
+                            
+                            mtac::Quadruple dot(temp, left[0], mtac::Operator::DOT, index);
+                            dot.size = mtac::Size::BYTE;
+                            function.push_back(std::move(dot));
+
                             left = {temp};
                         } else if (data_type == STRING){
                             auto t1 = function.context->new_temporary(INT);
