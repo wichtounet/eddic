@@ -1,0 +1,24 @@
+struct chars {
+    char a;
+    char b;
+    char c;
+    char d;
+}
+
+void main(){
+    chars c;
+
+    c.a = 'a';
+    c.b = 'b';
+    c.c = 'c';
+    c.d = 'd';
+
+    print(c.a);
+    print('|');
+    print(c.b);
+    print('|');
+    print(c.c);
+    print('|');
+    print(c.d);
+    print('|');
+}

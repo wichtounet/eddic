@@ -95,7 +95,13 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
             eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
-                bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                if(variable->type() == CHAR){
+                    ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                    mov.size = ltac::Size::BYTE;
+                    bb->push_back(std::move(mov));
+                } else {
+                    bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                }
             } else if(position.isGlobal()){
                 bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
             }

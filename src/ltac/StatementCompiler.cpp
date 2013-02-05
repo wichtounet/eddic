@@ -38,6 +38,21 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
     return ltac::Address(ltac::BP, offsetReg, 1, offset);
 }
 
+ltac::Size convert_size(mtac::Size size){
+    switch(size){
+        case mtac::Size::BYTE:
+            return ltac::Size::BYTE;
+        case mtac::Size::WORD:
+            return ltac::Size::WORD;
+        case mtac::Size::DOUBLE_WORD:
+            return ltac::Size::DOUBLE_WORD;
+        case mtac::Size::QUAD_WORD:
+            return ltac::Size::QUAD_WORD;
+        case mtac::Size::DEFAULT:
+            return ltac::Size::DEFAULT;
+    }
+}
+
 } //end of anonymous namespace
 
 ltac::StatementCompiler::StatementCompiler(std::shared_ptr<FloatPool> float_pool) : manager(float_pool), float_pool(float_pool) {}
@@ -352,6 +367,16 @@ std::tuple<std::shared_ptr<const Type>, bool, unsigned int> ltac::StatementCompi
 
     if(first_param){
         bb->emplace_back_low(ltac::Operator::PRE_PARAM);
+
+        //Align stack pointer to the size of an INT
+
+        auto total = function_stack_size(param.function());
+        if(total % INT->size(platform) != 0){
+            int padding = INT->size(platform) - (total % INT->size(platform));
+
+            bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
+        }
+
         first_param = false;
     }
     
@@ -389,6 +414,8 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
     std::tie(type, register_allocated, position) = common_param(param);
 
+    //1. If register allocated, find the correct register and move the value into it
+
     if(register_allocated){
         if(auto* ptr = boost::get<int>(&*param.arg1)){
             if(*ptr == 0){
@@ -407,17 +434,52 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
         return;
     }
+    
+    //2. If the param as not been handled as register passing, push it on the stack 
 
-    //If the param as not been handled as register passing, push it on the stack 
+    //Char has a smaller size, cannot use push instructions
+    
+    if(param.param() && param.param()->type() == CHAR){
+        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
+
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
+            auto& var = *ptr;
+            auto reg = manager.get_pseudo_reg(var);
+                
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+
+            uses.push_back(hard_reg);
+        } else {
+            //If it is not a variable it can only be an int (char value)
+            auto value = boost::get<int>(*param.arg1);
+            
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+        }
+
+        return;
+    }
+
+    //Use push instructions for regular types
+
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
-        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
+        auto var = *ptr;
+
+        if(!var->type()->is_array() && ltac::is_float_var(var)){
             auto reg1 = manager.get_free_pseudo_reg();
-            auto reg2 = manager.get_pseudo_float_reg(*ptr);
+            auto reg2 = manager.get_pseudo_float_reg(var);
 
             bb->emplace_back_low(ltac::Operator::MOV, reg1, reg2);
             push(reg1);
         } else {
-            if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
+            if(var->type()->is_array() && !var->type()->is_dynamic_array()){
                 auto position = (*ptr)->position();
 
                 if(position.isGlobal()){
@@ -434,7 +496,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
                     push(stack_address(position.offset()));
                 }
             } else {
-                auto reg = manager.get_pseudo_reg(*ptr);
+                auto reg = manager.get_pseudo_reg(var);
                 push(reg);
             }
         }
@@ -497,6 +559,47 @@ void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
     }
 }
 
+int ltac::StatementCompiler::function_stack_size(eddic::Function& function){
+    int total = 0;
+
+    unsigned int maxInt = descriptor->numberOfIntParamRegisters();
+    unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
+    
+    if(!function.standard() && !configuration->option_defined("fparameter-allocation")){
+        maxInt = 0;
+        maxFloat = 0;
+    }
+
+    for(auto& param : function.parameters()){
+        auto type = param.type(); 
+
+        if(type->is_array()){
+            //Passing an array is just passing an address
+            total += INT->size(platform);
+        } else {
+            if(mtac::is_single_int_register(type)){
+                //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                if(maxInt > 0){
+                    --maxInt;
+                } else {
+                    total += type->size(platform);
+                }
+            } else if(mtac::is_single_float_register(type)){
+                //If the parameter is allocated in a register, there is no need to deallocate stack space for it
+                if(maxFloat > 0){
+                    --maxFloat;
+                } else {
+                    total += type->size(platform);
+                }
+            } else {
+                total += type->size(platform);
+            }
+        }
+    }
+
+    return total;
+}
+
 void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
     LOG<Trace>("Registers") << "Current statement " << call << log::endl;
 
@@ -506,6 +609,16 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
     }
 
     first_param = true;
+
+    //Compute the size of the parameters
+    auto total = function_stack_size(call.function());
+
+    //Align stack pointer to the size of an INT
+
+    if(total % INT->size(platform) != 0){
+        int padding = INT->size(platform) - (total % INT->size(platform));
+        total += padding;
+    }
 
     ltac::Instruction call_instruction(call.function().mangled_name(), ltac::Operator::CALL);
     call_instruction.target_function = &call.function();
@@ -536,42 +649,7 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
     uses.clear();
     float_uses.clear();
 
-    int total = 0;
-
-    unsigned int maxInt = descriptor->numberOfIntParamRegisters();
-    unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
-    
-    if(!call.function().standard() && !configuration->option_defined("fparameter-allocation")){
-        maxInt = 0;
-        maxFloat = 0;
-    }
-
-    for(auto& param : call.function().parameters()){
-        auto type = param.type(); 
-
-        if(type->is_array()){
-            //Passing an array is just passing an adress
-            total += INT->size(platform);
-        } else {
-            if(mtac::is_single_int_register(type)){
-                //If the parameter is allocated in a register, there is no need to deallocate stack space for it
-                if(maxInt > 0){
-                    --maxInt;
-                } else {
-                    total += type->size(platform);
-                }
-            } else if(mtac::is_single_float_register(type)){
-                //If the parameter is allocated in a register, there is no need to deallocate stack space for it
-                if(maxFloat > 0){
-                    --maxFloat;
-                } else {
-                    total += type->size(platform);
-                }
-            } else {
-                total += type->size(platform);
-            }
-        }
-    }
+    //Deallocate space of the parameters
 
     bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, total);
 
@@ -1091,24 +1169,7 @@ void ltac::StatementCompiler::compile_F2I(mtac::Quadruple& quadruple){
 }
 
 void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
-    ltac::Size size;
-    switch(quadruple.size){
-        case mtac::Size::BYTE:
-            size = ltac::Size::BYTE;
-            break;
-        case mtac::Size::WORD:
-            size = ltac::Size::WORD;
-            break;
-        case mtac::Size::DOUBLE_WORD:
-            size = ltac::Size::DOUBLE_WORD;
-            break;
-        case mtac::Size::QUAD_WORD:
-            size = ltac::Size::QUAD_WORD;
-            break;
-        default:
-            size = ltac::Size::DEFAULT;
-            break;
-    }
+    auto size = convert_size(quadruple.size);
     
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
         auto variable = *var_ptr;
@@ -1201,7 +1262,29 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
-    bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+    if(quadruple.size == mtac::Size::BYTE){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+            auto reg = manager.get_pseudo_reg(*ptr);
+                
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
+            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+
+            uses.push_back(hard_reg);
+        } else {
+            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
+        }
+    } else {
+        ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+        mov.size = convert_size(quadruple.size);
+        bb->push_back(std::move(mov));
+    }
 }
 
 void ltac::StatementCompiler::compile_DOT_FASSIGN(mtac::Quadruple& quadruple){

@@ -526,7 +526,7 @@ bool copy_propagation(mtac::Function& function, Platform platform){
             }
 
             //Optimize MOV
-            if(instruction.op == ltac::Operator::MOV){
+            if(instruction.op == ltac::Operator::MOV && instruction.size == ltac::Size::DEFAULT){
                 if(ltac::is_reg(*instruction.arg2)){
                     auto reg2 = boost::get<ltac::Register>(*instruction.arg2);
 

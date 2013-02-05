@@ -84,6 +84,7 @@ class StatementCompiler {
         ltac::Address address(std::shared_ptr<Variable> var, mtac::Argument offset);
 
         std::tuple<std::shared_ptr<const Type>, bool, unsigned int> common_param(mtac::Quadruple& param);
+        int function_stack_size(eddic::Function& function);
     
         void compile_ASSIGN(mtac::Quadruple& quadruple);
         void compile_PASSIGN(mtac::Quadruple& quadruple);

@@ -20,6 +20,8 @@ using namespace eddic;
 bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
 
+    bool changes = false;
+
     auto it = iterate(program.functions);
 
     while(it.has_next()){
@@ -35,6 +37,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
         if(statements == 0){
             program.context->stats().inc_counter("empty_function_removed");
             LOG<Debug>("Optimizer") << "Remove empty function " << function.get_name() << log::endl;
+            changes = true;
 
             removed_functions.push_back(function.get_name());
             it.erase();
@@ -101,6 +104,5 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
         }
     }
 
-    //Not necessary to restart the other passes
-    return false;
+    return changes;
 }

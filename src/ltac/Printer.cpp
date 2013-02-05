@@ -179,7 +179,7 @@ struct DebugVisitor {
     }
 
     void operator()(const ltac::Instruction& quadruple){
-        out << "\t" ;/*<< std::setw(3) << std::setfill('0') << quadruple.uid() << ": "*/;
+        out << "\t";
 
         if(quadruple.is_jump()){
             out << "jmp (" << to_string(quadruple.op) << ") " << quadruple.label << std::endl;
@@ -187,6 +187,23 @@ struct DebugVisitor {
             out << quadruple.label << ":" << std::endl;
         } else {
             out << to_string(quadruple.op);
+
+            if(quadruple.size != ltac::Size::DEFAULT){
+                switch(quadruple.size){
+                    case ltac::Size::BYTE:
+                        out << " BYTE";
+                        break;
+                    case ltac::Size::WORD:
+                        out << " WORD";
+                        break;
+                    case ltac::Size::DOUBLE_WORD:
+                        out << " DWORD";
+                        break;
+                    default:
+                        out << " QWORD";
+                        break;
+                }
+            }
 
             if(quadruple.arg1){
                 out << " " << *quadruple.arg1;

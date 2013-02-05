@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE( arrays_in_struct ){
 }
 
 BOOST_AUTO_TEST_CASE( char_type ){
-    assert_output("char_type.eddi", "a|0|z|e|e|u|u|");
+    assert_output("char_type.eddi", "a|x|0|z|e|e|u|u|");
 }
 
 BOOST_AUTO_TEST_CASE( char_at ){

@@ -3,6 +3,8 @@ void main(){
     print(a);
     print("|");
 
+    pass('x');
+
     print('0');
     print("|");
 
@@ -22,6 +24,11 @@ void main(){
     print("|");
     print(test('z', 'a'));
     print("|");
+}
+
+void pass(char a){
+    print(a);
+    print('|');
 }
 
 char test(char a, char b){

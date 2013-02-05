@@ -27,6 +27,9 @@ as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, mtac::Pr
 namespace {
     
 const std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
+const std::string registers_8[6] = {"al", "bl", "cl", "dl", "", ""};
+const std::string registers_16[6] = {"ax", "bx", "cx", "dx", "si", "di"};
+
 const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
 struct X86_32StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
@@ -86,6 +89,18 @@ using namespace x86;
 
 namespace {
 
+std::string get_register_8(ltac::Register& reg){
+    eddic_assert(reg.reg < 6, "SP and BP registers cannot be subclassed");
+    auto sub_reg = registers_8[reg.reg];
+    eddic_assert(!sub_reg.empty(), "RSI and RDI are not 8-bit allocatable");
+    return sub_reg;
+}
+
+std::string get_register_16(ltac::Register& reg){
+    eddic_assert(reg.reg < 6, "SP and BP registers cannot be subclassed");
+    return registers_16[reg.reg];
+}
+
 void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instruction){
     switch(instruction.op){
         case ltac::Operator::LABEL:
@@ -93,16 +108,46 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
             break;
         case ltac::Operator::MOV:
             if(instruction.size != ltac::Size::DEFAULT){
-                switch(instruction.size){
-                    case ltac::Size::BYTE:
-                        writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
-                        break;
-                    case ltac::Size::WORD:
-                        writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
-                        break;
-                    default:
-                        writer.stream() << "mov " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
-                        break;
+                if(boost::get<ltac::Address>(&*instruction.arg1)){
+                    if(auto* ptr = boost::get<ltac::Register>(&*instruction.arg2)){
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << get_register_8(*ptr) << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << get_register_16(*ptr) << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                        }
+                    } else {
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                        }
+                    }
+                } else {
+                    //TODO The instruction should always be mov (and not movzx) to avoid having something context-dependent
+                    //movzx should be chosen higher
+                    switch(instruction.size){
+                        case ltac::Size::BYTE:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::WORD:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
+                            break;
+                        default:
+                            writer.stream() << "mov " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
+                            break;
+                    }
                 }
 
                 break;
