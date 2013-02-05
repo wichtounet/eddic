@@ -11,8 +11,8 @@
 
 using namespace eddic;
 
-SemanticalException::SemanticalException(const std::string& message) : m_message(message) {}
-SemanticalException::SemanticalException(const std::string& message, const eddic::ast::Position& position) : m_message(message), m_position(position) {}
+SemanticalException::SemanticalException(std::string message) : m_message(std::move(message)) {}
+SemanticalException::SemanticalException(std::string message, eddic::ast::Position position) : m_message(std::move(message)), m_position(std::move(position)) {}
 
 SemanticalException::~SemanticalException() throw() {}
 
