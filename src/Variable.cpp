@@ -11,14 +11,14 @@
 
 using namespace eddic;
 
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position) 
-    : m_name(name), m_type(type), m_position(position) {}
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position) 
+    : m_name(std::move(name)), m_type(std::move(type)), m_position(std::move(position)) {}
 
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value) 
-    : m_name(name), m_type(type), m_position(position), v_value(value) {}
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position, Val value) 
+    : m_name(std::move(name)), m_type(std::move(type)), m_position(std::move(position)), v_value(std::move(value)) {}
 
-Variable::Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset) 
-    : m_name(name), m_type(type), m_position(PositionType::TEMPORARY), m_reference(reference), m_offset(offset) {}
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset) 
+    : m_name(std::move(name)), m_type(std::move(type)), m_position(PositionType::TEMPORARY), m_reference(std::move(reference)), m_offset(std::move(offset)) {}
 
 std::string Variable::name() const  {
     return m_name;
