@@ -25,7 +25,7 @@ class Type;
  */
 class Function {
     public:
-        Function(std::shared_ptr<const Type> ret, const std::string& name, const std::string& mangled_name);
+        Function(std::shared_ptr<const Type> ret, std::string name, std::string mangled_name);
 
         //Function cannot be copied
         Function(const Function& rhs) = delete;

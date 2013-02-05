@@ -48,7 +48,7 @@ namespace mtac {
  */
 class Function : public std::enable_shared_from_this<Function> {
     public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
+        Function(std::shared_ptr<FunctionContext> context, std::string name, eddic::Function& definition);
 
         //Function cannot be copied
         Function(const Function& rhs) = delete;

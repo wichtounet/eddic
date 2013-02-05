@@ -13,8 +13,8 @@
 
 using namespace eddic;
 
-Function::Function(std::shared_ptr<const Type> return_type, const std::string& name, const std::string& mangled_name) 
-        : _return_type(return_type), _name(name), _mangled_name(mangled_name) {
+Function::Function(std::shared_ptr<const Type> return_type, std::string name, std::string mangled_name) 
+        : _return_type(return_type), _name(std::move(name)), _mangled_name(std::move(mangled_name)) {
     //Nothing to do
 }
 

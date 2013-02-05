@@ -15,7 +15,7 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), _definition(&definition), name(n) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, std::string n, eddic::Function& definition) : context(c), _definition(&definition), name(std::move(n)) {
     //Nothing to do   
 }
         
