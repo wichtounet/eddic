@@ -1047,20 +1047,26 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
         if(src_type != dest_type){
-            auto t1 = function.context->new_temporary(dest_type);
-
             if(dest_type == FLOAT){
+                auto t1 = function.context->new_temporary(dest_type);
                 function.emplace_back(t1, arg, mtac::Operator::I2F);
+                return {t1};
             } else if(dest_type == INT){
+                auto t1 = function.context->new_temporary(dest_type);
                 if(src_type == FLOAT){
                     function.emplace_back(t1, arg, mtac::Operator::F2I);
                 } else if(src_type == CHAR){
                     function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
                 }
+                return {t1};
             } else if(dest_type == CHAR){
+                auto t1 = function.context->new_temporary(dest_type);
                 function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
+                return {t1};
             } else if(dest_type->is_pointer() && src_type->is_pointer()){
                 if(dest_type->data_type()->is_structure() && src_type->data_type()->is_structure()){
+                    auto t1 = function.context->new_temporary(dest_type);
+
                     auto global_context = function.context->global();
 
                     auto src_struct_type = global_context->get_struct(src_type);
@@ -1087,18 +1093,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                         return {t1};
                     }
-                }
-
-                //At this point, the cast has no effect
-                return {arg};
-            } else {
-                return {arg};
-            }
-            
-            return {t1};
+                } 
+            } 
         }
 
-        //If src_type == dest_type, there is nothing to do
+        //If it has not been there is nothing to do (cast without effect)
         return {arg};
     }
 };
