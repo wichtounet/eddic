@@ -292,7 +292,7 @@ bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& fun
     for(auto& basic : loop.basic_induction_variables()){
         optimized |= strength_reduce(loop, basic.second, function);
     }
-    
+
     for(auto& biv : loop.basic_induction_variables()){
         if(biv.second.div){
             LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
