@@ -544,6 +544,16 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
 
     LOG<Trace>("Control-Flow") << "Found " << function.loops().size() << " natural loops" << log::endl;
 
+    for(auto& loop : function.loops()){
+        auto& stream = LOG<Trace>("Control-Flow") << "Loop {";
+
+        for(auto& bb : loop.blocks()){
+            stream << bb << ",";
+        }
+
+        stream << "}" << log::endl;
+    }
+
     //Find BIV and DIV of the loops
     for(auto& loop : function.loops()){
         find_basic_induction_variables(loop);
