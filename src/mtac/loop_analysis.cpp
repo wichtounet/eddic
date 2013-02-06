@@ -556,31 +556,31 @@ void estimate_iterations(mtac::Function& function){
                         biv = boost::get<std::shared_ptr<Variable>>(*condition.arg1);
                     } else if(mtac::isVariable(*condition.arg2) && boost::get<int>(&*condition.arg1)){
                         biv = boost::get<std::shared_ptr<Variable>>(*condition.arg2);
-                    } else {
-                        continue;
                     }
 
                     auto& basic_induction_variables = loop.basic_induction_variables();
-                    if(!basic_induction_variables.count(biv)){
-                        continue;
-                    }
+                    if(biv && basic_induction_variables.count(biv)){
+                        auto& linear_equation = basic_induction_variables[biv];
+                        auto initial_value = get_initial_value(preheader, linear_equation.i);
 
-                    auto& linear_equation = basic_induction_variables[biv];
-                    auto initial_value = get_initial_value(preheader, linear_equation.i);
+                        if(initial_value.first){
+                            auto it = number_of_iterations(linear_equation, initial_value.second, condition);
 
-                    if(initial_value.first){
-                        auto it = number_of_iterations(linear_equation, initial_value.second, condition);
+                            //number_of_iterations gives the upper bound
+                            it = it - 1;
 
-                        //number_of_iterations gives the upper bound
-                        it = it - 1;
-
-                        loop.estimate() = it;
-                        loop.initial_value() = initial_value.second;
-
-                        std::cout << loop << " iterates " << it << " times" << log::endl;
+                            loop.estimate() = it;
+                            loop.initial_value() = initial_value.second;
+                        }
                     }
                 }
             }
+        }
+
+        if(loop.estimate() > 0){
+            LOG<Trace>("Control-Flow") << loop << " iterates " << loop.estimate() << " times" << log::endl;
+        } else {
+            LOG<Trace>("Control-Flow") << loop << " iterates " << loop.estimate() << " times (analysis failed)" << log::endl;
         }
     }
 }
