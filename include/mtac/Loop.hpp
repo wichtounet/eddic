@@ -68,11 +68,18 @@ class Loop {
 };
 
 /*!
- * \brief Find the basic block that is the entry to the Loop
- * \param loop The loop to find the entry of. 
+ * \brief Find the basic block that is the entry to the Loop.
+ * \param loop The loop. 
  * \return The entry basic block. 
  */
 mtac::basic_block_p find_entry(mtac::Loop& loop);
+
+/*!
+ * \brief Find the basic block that is the exit to the Loop. 
+ * \param loop The loop.
+ * \return The exit basic block. 
+ */
+mtac::basic_block_p find_exit(mtac::Loop& loop);
 
 /*!
  * \brief Find or create a preheader for the given loop. 

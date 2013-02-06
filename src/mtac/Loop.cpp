@@ -65,6 +65,20 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
     eddic_unreachable("Every loop should have a single entry");
 }
 
+mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
+    for(auto& block : loop.blocks()){
+        for(auto& succ : block->successors){
+            if(loop.blocks().find(succ) == loop.blocks().end()){
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as exit of loop" << log::endl;
+
+                return block;
+            }
+        }
+    }
+
+    eddic_unreachable("Every loop should have at least an exit");
+}
+
 mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& function){
     auto first_bb = find_entry(loop);
 
