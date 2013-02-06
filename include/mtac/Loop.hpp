@@ -49,6 +49,7 @@ class Loop {
         iterator end();
         
         std::set<mtac::basic_block_p>& blocks();
+        const std::set<mtac::basic_block_p>& blocks() const;
 
         bool has_estimate();
         long& estimate();
@@ -89,6 +90,8 @@ mtac::basic_block_p find_exit(mtac::Loop& loop);
  * \return The preheader basic block of the Loop or nullptr if is has not been found neither created. 
  */
 mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function, bool create);
+
+std::ostream& operator<<(std::ostream& stream, const mtac::Loop& loop);
 
 } //end of mtac
 

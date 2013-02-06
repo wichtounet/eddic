@@ -531,21 +531,13 @@ void find_loops(mtac::Function& function){
             }
         }
 
-        LOG<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
-
         function.loops().emplace_back(natural_loop);
     }
 
     LOG<Trace>("Control-Flow") << "Found " << function.loops().size() << " natural loops" << log::endl;
 
     for(auto& loop : function.loops()){
-        auto& stream = LOG<Trace>("Control-Flow") << "Loop {";
-
-        for(auto& bb : loop.blocks()){
-            stream << bb << ",";
-        }
-
-        stream << "}" << log::endl;
+        LOG<Trace>("Control-Flow") << loop << log::endl;
     }
 }
 
@@ -584,6 +576,8 @@ void estimate_iterations(mtac::Function& function){
 
                         loop.estimate() = it;
                         loop.initial_value() = initial_value.second;
+
+                        std::cout << loop << " iterates " << it << " times" << log::endl;
                     }
                 }
             }

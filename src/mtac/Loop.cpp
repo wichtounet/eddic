@@ -42,6 +42,10 @@ long& mtac::Loop::initial_value(){
 std::set<mtac::basic_block_p>& mtac::Loop::blocks(){
     return m_blocks;
 }
+      
+const std::set<mtac::basic_block_p>& mtac::Loop::blocks() const {
+    return m_blocks;
+}
 
 mtac::InductionVariables& mtac::Loop::basic_induction_variables(){
     return biv;
@@ -55,7 +59,7 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
     for(auto& block : loop.blocks()){
         for(auto& pred : block->predecessors){
             if(loop.blocks().find(pred) == loop.blocks().end()){
-                LOG<Trace>("Control-Flow") << "Found " << *block << " as entry of loop" << log::endl;
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as entry of " << loop << log::endl;
 
                 return block;
             }
@@ -69,7 +73,7 @@ mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
     for(auto& block : loop.blocks()){
         for(auto& succ : block->successors){
             if(loop.blocks().find(succ) == loop.blocks().end()){
-                LOG<Trace>("Control-Flow") << "Found " << *block << " as exit of loop" << log::endl;
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as exit of " << loop << log::endl;
 
                 return block;
             }
@@ -92,7 +96,7 @@ mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& func
 
         //It must be the only successor and a fall through edge
         if(pred->successors.size() == 1 && pred->next == first_bb){
-            LOG<Trace>("Control-Flow") << "Found " << *pred << " as preheader of loop" << log::endl;
+            LOG<Trace>("Control-Flow") << "Found " << *pred << " as preheader of " << loop << log::endl;
 
             return pred;
         }
@@ -127,8 +131,17 @@ mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& func
     //Create the fall through edge
     mtac::make_edge(pre_header, first_bb);
                 
-    LOG<Trace>("Control-Flow") << "Create " << *pre_header << " as preheader of loop" << log::endl;
+    LOG<Trace>("Control-Flow") << "Create " << *pre_header << " as preheader of " << loop << log::endl;
     
     return pre_header;
 }
 
+std::ostream& mtac::operator<<(std::ostream& stream, const mtac::Loop& loop){
+    stream << "Loop {";
+
+    for(auto& block : loop.blocks()){
+        stream << block << ", ";
+    }
+
+    return stream << "}";
+}
