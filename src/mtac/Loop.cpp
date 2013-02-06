@@ -84,8 +84,11 @@ mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& func
 
     //Step 1: Try to find if there is already a preheader
 
-    if(first_bb->predecessors.size() == 1){
-        auto& pred = first_bb->predecessors.front();
+    if(first_bb->predecessors.size() == 1 || (first_bb->predecessors.size() == 2 && loop.blocks().size() == 1)){
+        auto pred = first_bb->predecessors.front();
+        if(pred == first_bb){
+            pred = first_bb->predecessors.back();
+        }
 
         //It must be the only successor and a fall through edge
         if(pred->successors.size() == 1 && pred->next == first_bb){

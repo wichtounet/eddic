@@ -551,11 +551,13 @@ void find_loops(mtac::Function& function){
 
 void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
-        if(loop.blocks().size() == 1){
-            auto& bb = *loop.begin();
+        auto bb = mtac::find_exit(loop);
+        auto preheader = mtac::find_pre_header(loop, function, false);
+
+        if(!bb->statements.empty() && preheader && !preheader->statements.empty()){
             auto& condition = bb->statements.back();
 
-            if(bb->prev && (condition.is_if() || condition.is_if_false())){
+            if(condition.is_if() || condition.is_if_false()){
                 if(condition.arg1 && condition.arg2){
                     std::shared_ptr<Variable> biv;
                     if(mtac::isVariable(*condition.arg1) && boost::get<int>(&*condition.arg2)){
@@ -572,7 +574,7 @@ void estimate_iterations(mtac::Function& function){
                     }
 
                     auto& linear_equation = basic_induction_variables[biv];
-                    auto initial_value = get_initial_value(bb->prev, linear_equation.i);
+                    auto initial_value = get_initial_value(preheader, linear_equation.i);
 
                     if(initial_value.first){
                         auto it = number_of_iterations(linear_equation, initial_value.second, condition);
@@ -587,7 +589,6 @@ void estimate_iterations(mtac::Function& function){
             }
         }
     }
-
 }
 
 } //end of anonymous namespace
