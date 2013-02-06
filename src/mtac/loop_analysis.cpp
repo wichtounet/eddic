@@ -395,85 +395,65 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
 
 int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Quadruple& if_){
     if(if_.is_if()){
-        if(mtac::isVariable(*if_.arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
-
-            if(var != linear_equation.i){
-                return -1;   
-            }
-
-            if(auto* cst_ptr = boost::get<int>(&*if_.arg2)){
-                int number = *cst_ptr;
-
-                //We found the form "var op number"
-                
-                if(if_.op == mtac::Operator::IF_LESS){
-                    return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
-                    return (number + 1 - initial_value) / linear_equation.d + 1;
-                }
-
-                return -1;
-            } 
-        } else if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
+        if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
             int number = *cst_ptr;
 
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_.arg2)){
-                if(*var_ptr != linear_equation.i){
-                    return -1;   
-                }
-                
-                //We found the form "number op var"
+            //We found the form "number op var"
 
+            if(!linear_equation.div){
                 if(if_.op == mtac::Operator::IF_GREATER){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_GREATER_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
-
-                return -1;
-            } 
-        } 
-    } else if(if_.is_if_false()){
-        if(mtac::isVariable(*if_.arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
-
-            if(var != linear_equation.i){
-                return -1;   
             }
 
-            if(auto* cst_ptr = boost::get<int>(&*if_.arg2)){
-                int number = *cst_ptr;
+            return -1;
+        } else {
+            auto number = boost::get<int>(*if_.arg2);
 
-                //We found the form "var op number"
-                
-                if(if_.op == mtac::Operator::IF_FALSE_GREATER_EQUALS){
+            //We found the form "var op number"
+
+            if(!linear_equation.div){
+                if(if_.op == mtac::Operator::IF_LESS){
                     return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_.op == mtac::Operator::IF_FALSE_GREATER){
+                } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
+            }
 
-                return -1;
-            } 
-        } else if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
+            return -1;
+        }
+    } else if(if_.is_if_false()){
+        if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
             int number = *cst_ptr;
 
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_.arg2)){
-                if(*var_ptr != linear_equation.i){
-                    return -1;   
-                }
-                
-                //We found the form "number op var"
-                
+            //We found the form "number op var"
+
+            if(!linear_equation.div){
                 if(if_.op == mtac::Operator::IF_FALSE_LESS_EQUALS){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_FALSE_LESS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
+            }
 
-                return -1;
-            } 
-        } 
+            return -1;
+        } else {
+            auto number = boost::get<int>(*if_.arg2);
+
+            //We found the form "var op number"
+
+            if(!linear_equation.div){
+                if(if_.op == mtac::Operator::IF_FALSE_GREATER_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_.op == mtac::Operator::IF_FALSE_GREATER){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+            }
+
+            return -1;
+        }
     }
 
     return -1;
@@ -549,19 +529,30 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
     //Basic computation of estimates
     for(auto& loop : function.loops()){
         if(loop.blocks().size() == 1){
-            auto& basic_induction_variables = loop.basic_induction_variables();
+            auto& bb = *loop.begin();
+            auto& condition = bb->statements.back();
 
-            if(basic_induction_variables.size() == 1){
-                auto bb = *loop.begin();
+            if(bb->prev && (condition.is_if() || condition.is_if_false())){
+                if(condition.arg1 && condition.arg2){
+                    std::shared_ptr<Variable> biv;
+                    if(mtac::isVariable(*condition.arg1) && boost::get<int>(&*condition.arg2)){
+                        biv = boost::get<std::shared_ptr<Variable>>(*condition.arg1);
+                    } else if(mtac::isVariable(*condition.arg2) && boost::get<int>(&*condition.arg1)){
+                        biv = boost::get<std::shared_ptr<Variable>>(*condition.arg2);
+                    } else {
+                        continue;
+                    }
 
-                if(bb->prev){
-                    auto biv = *basic_induction_variables.begin();
-                    auto linear_equation = biv.second;
+                    auto& basic_induction_variables = loop.basic_induction_variables();
+                    if(!basic_induction_variables.count(biv)){
+                        continue;
+                    }
 
+                    auto& linear_equation = basic_induction_variables[biv];
                     auto initial_value = get_initial_value(bb->prev, linear_equation.i);
 
                     if(initial_value.first){
-                        auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
+                        auto it = number_of_iterations(linear_equation, initial_value.second, condition);
 
                         //number_of_iterations gives the upper bound
                         it = it - 1;
