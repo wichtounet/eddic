@@ -483,14 +483,8 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
     return -1;
 }
 
-} //end of anonymous namespace
-
-bool mtac::loop_analysis::operator()(mtac::Function& function){
+void find_loops(mtac::Function& function){
     std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
-
-    for(auto& bb : function){
-        init_depth(bb);
-    }
     
     compute_dominators(function);
 
@@ -553,14 +547,9 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
 
         stream << "}" << log::endl;
     }
+}
 
-    //Find BIV and DIV of the loops
-    for(auto& loop : function.loops()){
-        find_basic_induction_variables(loop);
-        find_dependent_induction_variables(loop, function);
-    }
-
-    //Basic computation of estimates
+void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
         if(loop.blocks().size() == 1){
             auto& bb = *loop.begin();
@@ -598,7 +587,30 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
             }
         }
     }
+
+}
+
+} //end of anonymous namespace
+
+bool mtac::loop_analysis::operator()(mtac::Function& function){
+    //Set the depth of all basic blocks to 0
+    for(auto& bb : function){
+        init_depth(bb);
+    }
     
+    //Find all loops in the function
+    find_loops(function);
+
+    //Find BIV and DIV of the loops
+    for(auto& loop : function.loops()){
+        find_basic_induction_variables(loop);
+        find_dependent_induction_variables(loop, function);
+    }
+
+    //Basic computation of estimates for all loops of the function
+    estimate_iterations(function);
+    
+    //Set the real depth of each basic blocks
     for(auto& loop : function.loops()){
         for(auto& bb : loop){
             increase_depth(bb);
