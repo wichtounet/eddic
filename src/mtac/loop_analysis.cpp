@@ -400,7 +400,19 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
             //We found the form "number op var"
 
-            if(!linear_equation.div){
+            if(linear_equation.div){
+                if(linear_equation.d == 0 && if_.op == mtac::Operator::IF_NOT_EQUALS){
+                    int it = 0;
+                    int a = initial_value;
+
+                    while(a != number){
+                        ++it; 
+                        a /= linear_equation.e;
+                    }
+
+                    return it + 1;
+                }
+            } else {
                 if(if_.op == mtac::Operator::IF_GREATER){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_GREATER_EQUALS){
@@ -414,7 +426,19 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
 
             //We found the form "var op number"
 
-            if(!linear_equation.div){
+            if(linear_equation.div){
+                if(linear_equation.d == 0 && if_.op == mtac::Operator::IF_NOT_EQUALS){
+                    int it = 0;
+                    int a = initial_value;
+
+                    while(a != number){
+                        ++it; 
+                        a /= linear_equation.e;
+                    }
+
+                    return it + 1;
+                }
+            } else {
                 if(if_.op == mtac::Operator::IF_LESS){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
