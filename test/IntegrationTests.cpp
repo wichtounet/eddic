@@ -646,7 +646,7 @@ BOOST_AUTO_TEST_CASE( invariant_code_motion ){
 BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
     auto& stats = compute_stats("complete_loop_peeling.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 10);
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
 }
 
 BOOST_AUTO_TEST_CASE( loop_unrolling ){
