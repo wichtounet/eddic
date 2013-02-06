@@ -83,11 +83,12 @@ mtac::basic_block_p find_exit(mtac::Loop& loop);
 
 /*!
  * \brief Find or create a preheader for the given loop. 
- * \param loop The loop to find the preheader for
- * \param function The function the loop is located in
- * \return The preheader basic block of the Loop
+ * \param loop The loop to find the preheader for.
+ * \param function The function the loop is located in.
+ * \param create Indicate if the preheader has to be created if it does not exists.
+ * \return The preheader basic block of the Loop or nullptr if is has not been found neither created. 
  */
-mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function);
+mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function, bool create = true);
 
 } //end of mtac
 

@@ -79,7 +79,7 @@ mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
     eddic_unreachable("Every loop should have at least an exit");
 }
 
-mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& function){
+mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& function, bool create){
     auto first_bb = find_entry(loop);
 
     //Step 1: Try to find if there is already a preheader
@@ -93,6 +93,10 @@ mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& func
 
             return pred;
         }
+    }
+
+    if(!create){
+        return nullptr;
     }
 
     //Step 2: If not found, create a new preheader
