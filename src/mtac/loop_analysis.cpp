@@ -107,6 +107,14 @@ void find_basic_induction_variables(mtac::Loop& loop){
                     loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, boost::get<int>(arg2), false}; 
                     continue;
                 } 
+            } else if(quadruple.op == mtac::Operator::ADD){
+                auto arg1 = *quadruple.arg1;
+                auto arg2 = *quadruple.arg2;
+
+                if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                    loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, -1 * boost::get<int>(arg2), false}; 
+                    continue;
+                } 
             } else if(quadruple.op == mtac::Operator::DIV){
                 auto arg1 = *quadruple.arg1;
                 auto arg2 = *quadruple.arg2;
@@ -544,7 +552,7 @@ void find_loops(mtac::Function& function){
 void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
         auto bb = mtac::find_exit(loop);
-        auto preheader = mtac::find_safe_preheader(loop, function, false);
+        auto preheader = mtac::find_preheader(loop);
 
         if(!bb->statements.empty() && preheader && !preheader->statements.empty()){
             auto& condition = bb->statements.back();
@@ -557,8 +565,9 @@ void estimate_iterations(mtac::Function& function){
                     } else if(mtac::isVariable(*condition.arg2) && boost::get<int>(&*condition.arg1)){
                         biv = boost::get<std::shared_ptr<Variable>>(*condition.arg2);
                     }
-
+                    
                     auto& basic_induction_variables = loop.basic_induction_variables();
+
                     if(biv && basic_induction_variables.count(biv)){
                         auto& linear_equation = basic_induction_variables[biv];
                         auto initial_value = get_initial_value(preheader, linear_equation.i);
@@ -600,6 +609,18 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
     for(auto& loop : function.loops()){
         find_basic_induction_variables(loop);
         find_dependent_induction_variables(loop, function);
+        
+        for(auto& biv : loop.basic_induction_variables()){
+            if(biv.second.div){
+                LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+            } else {
+                LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+            }
+        }
+
+        for(auto& biv : loop.dependent_induction_variables()){
+            LOG<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
+        }
     }
 
     //Basic computation of estimates for all loops of the function
