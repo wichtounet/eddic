@@ -451,6 +451,8 @@ int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_valu
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
+                } else if(if_.op == mtac::Operator::IF_GREATER){
+                    return (number - initial_value) / linear_equation.d + 1;
                 }
             }
 
