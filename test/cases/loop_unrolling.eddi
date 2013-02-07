@@ -1,7 +1,11 @@
-include<print>
-
 void main(){
+    int a = 55;
+    
     for(int i = 0; i < 1000; ++i){
-        print(i);
+        a *= i;
+    }
+
+    if(a > 0){
+        print('i');
     }
 }
