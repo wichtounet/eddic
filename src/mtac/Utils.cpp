@@ -36,26 +36,10 @@ bool mtac::is_recursive(mtac::Function& function){
     return false;
 }
 
-namespace {
-
-struct BasicBlockUsageCollector {
-    std::unordered_set<mtac::basic_block_p>& usage;
-
-    BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
-
-    void collect(mtac::Quadruple& goto_){
-        usage.insert(goto_.block);
-    }
-};
-
-} //end of anonymous namespace
-
 void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
-    BasicBlockUsageCollector collector(usage);
-
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            collector.collect(quadruple);
+            usage.insert(quadruple.block);
         }
     }
 }
