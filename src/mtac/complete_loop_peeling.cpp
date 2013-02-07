@@ -34,7 +34,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
     while(lit.has_next()){
         auto loop = *lit;
 
-        if(loop.has_estimate()){
+        if(loop.has_estimate() && loop.blocks().size() == 1){
             auto it = loop.estimate();
 
             if(it > 0 && it < 12){

@@ -28,7 +28,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        if(loop.has_estimate()){
+        if(loop.has_estimate() && loop.blocks().size() == 1){
             auto it = loop.estimate();
 
             if(it > 100){
