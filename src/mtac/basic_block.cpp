@@ -63,6 +63,19 @@ void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream)
     }
 }
 
+mtac::basic_block_p mtac::clone(mtac::Function& function, mtac::basic_block_p block){
+    auto new_bb = function.new_bb();
+
+    //Copy the control flow graph properties, they will be corrected after
+    new_bb->successors = block->successors;
+    new_bb->predecessors = block->predecessors;
+
+    //Copy all the statements
+    new_bb->statements = block->statements;
+    
+    return new_bb;
+}
+
 void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream){
     std::string sep(25, '-');
 
