@@ -609,6 +609,8 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
     for(auto& loop : function.loops()){
         find_basic_induction_variables(loop);
         find_dependent_induction_variables(loop, function);
+
+        LOG<Trace>("Loops") << "Induction variables for " << loop << log::endl;
         
         for(auto& biv : loop.basic_induction_variables()){
             if(biv.second.div){
