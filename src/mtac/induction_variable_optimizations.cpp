@@ -169,11 +169,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     for(auto& var : dependent_induction_variables){
         if(usage.read[var.first] == 1){
             auto& def = function.find(var.second.def);
-
-            def.op = mtac::Operator::NOP;
-            def.result = nullptr;
-            def.arg1.reset();
-            def.arg2.reset();
+            mtac::transform_to_nop(def);
 
             usage.read[var.first] = 0;
 
@@ -275,10 +271,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
             
         //The unique assignment to i is not useful anymore 
         auto& def = function.find(basic_induction_variables[biv].def);
-        def.op = mtac::Operator::NOP;
-        def.result = nullptr;
-        def.arg1.reset();
-        def.arg2.reset();
+        mtac::transform_to_nop(def);
 
         //Not a basic induction variable anymore
         basic_induction_variables.erase(biv);

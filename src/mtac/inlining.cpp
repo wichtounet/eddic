@@ -197,9 +197,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
 
                     variable_clones[src_var] = dest_var;
 
-                    statement.op = mtac::Operator::NOP;
-                    statement.arg1.reset();
-                    statement.arg2.reset();
+                    mtac::transform_to_nop(statement);
                 } else if(src_var->type() == STRING){
                     if(!string_states.count(src_var)){
                         auto dest_var = dest_definition.context()->newVariable(src_var);
