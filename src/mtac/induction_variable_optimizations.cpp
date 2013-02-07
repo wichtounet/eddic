@@ -89,7 +89,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
 
             //Create the preheader if necessary
             if(!pre_header){
-                pre_header = mtac::find_pre_header(loop, function, true);
+                pre_header = mtac::find_safe_preheader(loop, function, true);
             }
 
             pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);

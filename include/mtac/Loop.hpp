@@ -83,13 +83,22 @@ mtac::basic_block_p find_entry(mtac::Loop& loop);
 mtac::basic_block_p find_exit(mtac::Loop& loop);
 
 /*!
- * \brief Find or create a preheader for the given loop. 
+ * \brief Find the preheader of the loop if it exists. 
+ * \param loop The loop to find the preheader for.
+ * \return The preheader basic block of the Loop or nullptr if is has not been found. 
+ */
+mtac::basic_block_p find_preheader(mtac::Loop& loop);
+
+/*!
+ * \brief Find or create a preheader for the given loop. This function finds a preheader that is safe to 
+ * move for the loop into. If a regular preheader is need, find_preheader is better suited. 
+ *
  * \param loop The loop to find the preheader for.
  * \param function The function the loop is located in.
  * \param create Indicate if the preheader has to be created if it does not exists.
  * \return The preheader basic block of the Loop or nullptr if is has not been found neither created. 
  */
-mtac::basic_block_p find_pre_header(mtac::Loop& loop, mtac::Function& function, bool create);
+mtac::basic_block_p find_safe_preheader(mtac::Loop& loop, mtac::Function& function, bool create);
 
 std::ostream& operator<<(std::ostream& stream, const mtac::Loop& loop);
 

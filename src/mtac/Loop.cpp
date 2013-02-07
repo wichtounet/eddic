@@ -83,20 +83,31 @@ mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
     eddic_unreachable("Every loop should have at least an exit");
 }
 
-mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& function, bool create){
+mtac::basic_block_p mtac::find_preheader(mtac::Loop& loop){
+    auto first_bb = find_entry(loop);
+
+    for(auto& pred : first_bb->predecessors){
+        if(loop.blocks().find(pred) == loop.blocks().end()){
+            LOG<Trace>("Control-Flow") << "Found " << *pred << " as preheader of " << loop << log::endl;
+
+            return pred;
+        }
+    }
+
+    return nullptr;
+}
+
+mtac::basic_block_p mtac::find_safe_preheader(mtac::Loop& loop, mtac::Function& function, bool create){
     auto first_bb = find_entry(loop);
 
     //Step 1: Try to find if there is already a preheader
+    
+    auto pred = find_preheader(loop);
 
-    if(first_bb->predecessors.size() == 1 || (first_bb->predecessors.size() == 2 && loop.blocks().size() == 1)){
-        auto pred = first_bb->predecessors.front();
-        if(pred == first_bb){
-            pred = first_bb->predecessors.back();
-        }
-
+    if(pred){
         //It must be the only successor and a fall through edge
         if(pred->successors.size() == 1 && pred->next == first_bb){
-            LOG<Trace>("Control-Flow") << "Found " << *pred << " as preheader of " << loop << log::endl;
+            LOG<Trace>("Control-Flow") << "Found " << *pred << " as safe preheader of " << loop << log::endl;
 
             return pred;
         }
@@ -131,7 +142,7 @@ mtac::basic_block_p mtac::find_pre_header(mtac::Loop& loop, mtac::Function& func
     //Create the fall through edge
     mtac::make_edge(pre_header, first_bb);
                 
-    LOG<Trace>("Control-Flow") << "Create " << *pre_header << " as preheader of " << loop << log::endl;
+    LOG<Trace>("Control-Flow") << "Create " << *pre_header << " as safe preheader of " << loop << log::endl;
     
     return pre_header;
 }
