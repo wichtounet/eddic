@@ -107,7 +107,7 @@ void find_basic_induction_variables(mtac::Loop& loop){
                     loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, boost::get<int>(arg2), false}; 
                     continue;
                 } 
-            } else if(quadruple.op == mtac::Operator::ADD){
+            } else if(quadruple.op == mtac::Operator::SUB){
                 auto arg1 = *quadruple.arg1;
                 auto arg2 = *quadruple.arg2;
 
