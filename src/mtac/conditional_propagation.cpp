@@ -11,6 +11,7 @@
 #include "mtac/Function.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/variable_usage.hpp"
 
 using namespace eddic;
 
@@ -135,6 +136,20 @@ bool mtac::conditional_propagation::operator()(mtac::Function& function){
                 optimized |= optimize_branch<false>(quadruple, basic_block, variable_usage);
             } else if(quadruple.op == mtac::Operator::IF_UNARY){
                 optimized |= optimize_branch<true>(quadruple, basic_block, variable_usage);
+            }
+        }
+    }
+
+    if(optimized){
+        auto usage = mtac::compute_read_usage(function);
+
+        for(auto& block : function){
+            for(auto& quadruple : block){
+                if(mtac::erase_result(quadruple.op)){
+                    if(usage.read[quadruple.result] == 0){
+                        mtac::transform_to_nop(quadruple);
+                    }
+                }
             }
         }
     }

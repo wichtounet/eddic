@@ -115,6 +115,8 @@ struct Quadruple {
         bool operator!=(const mtac::Quadruple& quadruple) const;
 };
 
+void transform_to_nop(mtac::Quadruple& quadruple);
+
 std::ostream& operator<<(std::ostream& stream, const mtac::Quadruple& quadruple);
 
 } //end of mtac
