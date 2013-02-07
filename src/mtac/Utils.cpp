@@ -38,35 +38,6 @@ bool mtac::is_recursive(mtac::Function& function){
 
 namespace {
 
-struct VariableUsageCollector {
-    mtac::VariableUsage& usage;
-    int depth_factor;
-    int current_depth;
-
-    VariableUsageCollector(mtac::VariableUsage& usage, int depth_factor) : usage(usage), depth_factor(depth_factor) {}
-
-    void inc_usage(std::shared_ptr<Variable> variable){
-        usage[variable] += pow(depth_factor, current_depth);
-    }
-
-    template<typename T>
-    void collect_optional(T& opt){
-        if(opt){
-            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
-                inc_usage(*variablePtr);
-            }
-        }
-    }
-
-    void collect(mtac::Quadruple& quadruple){
-        current_depth = quadruple.depth;
-
-        inc_usage(quadruple.result);
-        collect_optional(quadruple.arg1);
-        collect_optional(quadruple.arg2);
-    }
-};
-
 struct BasicBlockUsageCollector {
     std::unordered_set<mtac::basic_block_p>& usage;
 
@@ -78,24 +49,6 @@ struct BasicBlockUsageCollector {
 };
 
 } //end of anonymous namespace
-
-mtac::VariableUsage mtac::compute_variable_usage(mtac::Function& function){
-    return compute_variable_usage_with_depth(function, 1);
-}
-
-mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& function, int factor){
-    mtac::VariableUsage usage;
-
-    VariableUsageCollector collector(usage, factor);
-
-    for(auto& block : function){
-        for(auto& quadruple : block->statements){
-            collector.collect(quadruple);
-        }
-    }
-
-    return usage;
-}
 
 void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
     BasicBlockUsageCollector collector(usage);

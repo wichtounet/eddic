@@ -18,9 +18,11 @@ namespace eddic {
 
 namespace mtac {
 
+typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
+
 struct Usage {
-    std::unordered_map<std::shared_ptr<Variable>, unsigned int> written;
-    std::unordered_map<std::shared_ptr<Variable>, unsigned int> read;
+    VariableUsage written;
+    VariableUsage read;
 };
 
 Usage compute_read_usage(mtac::Loop& loop);
@@ -28,6 +30,9 @@ Usage compute_read_usage(mtac::Function& function);
 
 Usage compute_write_usage(mtac::Loop& loop);
 Usage compute_write_usage(mtac::Function& function);
+
+VariableUsage compute_variable_usage(mtac::Function& function);
+VariableUsage compute_variable_usage_with_depth(mtac::Function& function, int factor);
 
 bool use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var);
 

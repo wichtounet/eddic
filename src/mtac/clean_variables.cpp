@@ -13,6 +13,7 @@
 #include "mtac/Utils.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/clean_variables.hpp"
+#include "mtac/variable_usage.hpp"
 
 using namespace eddic;
 
