@@ -186,7 +186,6 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_includes
     SamplesSuite/samples_optimize
     SamplesSuite/samples_problem
-    SamplesSuite/samples_sort
     SamplesSuite/samples_identifiers
     SamplesSuite/samples_registers
     SamplesSuite/samples_structures

@@ -6,17 +6,8 @@ void main(){
     for(int i = 0; i < size(array); i++){
         array[i] = size(array) - i;
     }
-
-    Timer timer;
-    start_timer(timer);
     
     bubblesort();
-    
-    end_timer(timer);
-
-    print("Bubble Sort took ");
-    print_timer(timer);
-    println(" clock cycles");
 }
 
 void bubblesort(){
