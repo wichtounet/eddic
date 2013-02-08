@@ -55,7 +55,7 @@ void init_descriptions(){
        
         ("debug,g", "Add debugging symbols")
         
-        ("template-depth", po::value<int>()->default_value(100), "Define the maximum template depth")
+        ("template-depth", po::value<std::string>()->default_value("100"), "Define the maximum template depth")
         
         ("32", "Force the compilation for 32 bits platform")
         ("64", "Force the compilation for 64 bits platform")
@@ -85,7 +85,7 @@ void init_descriptions(){
 
     po::options_description optimization("Optimization options");
     optimization.add_options()
-        ("Opt,O", po::value<int>()->implicit_value(0)->default_value(2), "Define the optimization level")
+        ("Opt,O", po::value<std::string>()->implicit_value("0")->default_value("2"), "Define the optimization level")
         ("O0", "Disable all optimizations")
         ("O1", "Enable low-level optimizations")
         ("O2", "Enable all optimizations improving the speed but do imply a space tradeoff.")
@@ -103,7 +103,7 @@ void init_descriptions(){
     
     po::options_description backend("Backend options");
     backend.add_options()
-        ("log", po::value<int>()->default_value(0), "Define the logging")
+        ("log", po::value<std::string>()->default_value("0"), "Define the logging")
         ("quiet,q", "Do not print anything")
         ("verbose,v", "Make the compiler verbose")
         ("single-threaded", "Disable the multi-threaded optimization")
@@ -162,7 +162,7 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
 
             if(options.count(option->long_name())){
                 value.defined = true;
-                value.value = options[option->long_name()].value();
+                value.value = options[option->long_name()].as<std::string>();
             } else {
                 value.defined = false;
                 value.value = std::string("false");
@@ -185,13 +185,13 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
 
         //Update optimization level based on special switches
         if(options.count("O0")){
-            configuration->values["Opt"].value = 0;
+            configuration->values["Opt"].value = "0";
         } else if(options.count("O1")){
-            configuration->values["Opt"].value = 1;
+            configuration->values["Opt"].value = "1";
         } else if(options.count("O2")){
-            configuration->values["Opt"].value = 2;
+            configuration->values["Opt"].value = "2";
         } else if(options.count("O3")){
-            configuration->values["Opt"].value = 3;
+            configuration->values["Opt"].value = "3";
         }
 
         //Triggers dependent options
@@ -234,11 +234,11 @@ bool Configuration::option_defined(const std::string& option_name){
 }
 
 std::string Configuration::option_value(const std::string& option_name){
-    return boost::any_cast<std::string>(values[option_name].value);
+    return values[option_name].value;
 }
 
 int Configuration::option_int_value(const std::string& option_name){
-    return boost::any_cast<int>(values[option_name].value);
+    return boost::lexical_cast<int>(values[option_name].value);
 }
 
 void eddic::print_help(){

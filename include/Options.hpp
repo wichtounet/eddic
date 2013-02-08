@@ -12,13 +12,11 @@
 #include <unordered_map>
 #include <memory>
 
-#include <boost/any.hpp>
-
 namespace eddic {
 
 struct ConfigValue {
     bool defined;
-    boost::any value;
+    std::string value;
 };
 
 struct Configuration {
