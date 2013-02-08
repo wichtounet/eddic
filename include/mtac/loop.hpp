@@ -55,6 +55,9 @@ class loop {
         long& estimate();
         long& initial_value();
 
+        InductionVariables& basic_induction_variables();
+        InductionVariables& dependent_induction_variables();
+
         /*!
          * \brief Test if the loop has a single exit
          * \return true if the loop has a single exit, false otherwise.
@@ -63,7 +66,6 @@ class loop {
 
         /*!
          * \brief Find the basic block that is the entry to the loop.
-         * \param loop The loop. 
          * \return The entry basic block. 
          */
         mtac::basic_block_p find_entry() const ;
@@ -73,13 +75,25 @@ class loop {
          *
          * Works only if the loop has exactly one exit. 
          *
-         * \param loop The loop.
          * \return The exit basic block. 
          */
         mtac::basic_block_p find_exit() const ;
 
-        InductionVariables& basic_induction_variables();
-        InductionVariables& dependent_induction_variables();
+        /*!
+         * \brief Find the preheader of the loop if it exists. 
+         * \return The preheader basic block of the loop or nullptr if is has not been found. 
+         */
+        mtac::basic_block_p find_preheader() const ;
+
+        /*!
+         * \brief Find or create a preheader for the given loop. This function finds a preheader that is safe to 
+         * move for the loop into. If a regular preheader is need, find_preheader is better suited. 
+         *
+         * \param function The function the loop is located in.
+         * \param create Indicate if the preheader has to be created if it does not exists.
+         * \return The preheader basic block of the loop or nullptr if is has not been found neither created. 
+         */
+        mtac::basic_block_p find_safe_preheader(mtac::Function& function, bool create) const ;
 
     private:
         InductionVariables biv;
@@ -90,24 +104,6 @@ class loop {
         long m_estimate = -1;
         long m_initial;
 };
-
-/*!
- * \brief Find the preheader of the loop if it exists. 
- * \param loop The loop to find the preheader for.
- * \return The preheader basic block of the loop or nullptr if is has not been found. 
- */
-mtac::basic_block_p find_preheader(mtac::loop& loop);
-
-/*!
- * \brief Find or create a preheader for the given loop. This function finds a preheader that is safe to 
- * move for the loop into. If a regular preheader is need, find_preheader is better suited. 
- *
- * \param loop The loop to find the preheader for.
- * \param function The function the loop is located in.
- * \param create Indicate if the preheader has to be created if it does not exists.
- * \return The preheader basic block of the loop or nullptr if is has not been found neither created. 
- */
-mtac::basic_block_p find_safe_preheader(mtac::loop& loop, mtac::Function& function, bool create);
 
 std::ostream& operator<<(std::ostream& stream, const mtac::loop& loop);
 

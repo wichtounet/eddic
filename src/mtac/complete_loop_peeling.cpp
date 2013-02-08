@@ -79,7 +79,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                     }
                 }
                 
-                auto preheader = mtac::find_safe_preheader(loop, function, true);
+                auto preheader = loop.find_safe_preheader(function, true);
                 auto it = function.at(preheader);
                     
                 std::vector<mtac::basic_block_p> source_bbs;
