@@ -131,19 +131,19 @@ file(
 SET_SOURCE_FILES_PROPERTIES(
     ${mtac_files}
     PROPERTIES
-    COMPILE_FLAGS "-fno-exceptions"
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
 )
 
 SET_SOURCE_FILES_PROPERTIES(
     ${mtac_files}
     PROPERTIES
-    COMPILE_FLAGS "-fno-exceptions"
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
 )
 
 SET_SOURCE_FILES_PROPERTIES(
     ${asm_files}
     PROPERTIES
-    COMPILE_FLAGS "-fno-exceptions"
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
 )
 
 # Create the eddic executable
