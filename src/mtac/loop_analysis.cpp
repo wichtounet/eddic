@@ -271,21 +271,7 @@ void find_dependent_induction_variables(mtac::loop& loop, mtac::Function& functi
             } else if(quadruple.op == mtac::Operator::SUB){
                 auto arg2 = *quadruple.arg2;
 
-                if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
-                    auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
-                    auto e = boost::get<int>(arg1);
-
-                    if(variable != var){
-                        if(loop.basic_induction_variables().count(variable)){
-                            loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, -1, -1 * e, false}; 
-                            valid = true;
-                        } else if(loop.dependent_induction_variables()[variable].i){
-                            auto equation = loop.dependent_induction_variables()[variable];
-                            loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, -1 * equation.e, e - equation.d, false}; 
-                            valid = true;
-                        }
-                    }
-                } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
+                if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
                     auto e = boost::get<int>(arg2);
 
