@@ -278,6 +278,7 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/remove_empty_loops
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
+    OptimizationSuite/complete_loop_peeling_2
     OptimizationSuite/loop_unrolling
     OptimizationSuite/global_cse
     OptimizationSuite/local_cse
