@@ -282,6 +282,7 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/loop_unrolling
     OptimizationSuite/global_cse
     OptimizationSuite/local_cse
+    OptimizationSuite/cmov_opt
     #Unit tests
     toString
     toNumber

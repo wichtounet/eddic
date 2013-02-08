@@ -1,0 +1,15 @@
+include <print>
+
+int ga = 7;
+
+void main(){
+    int b;
+    if(ga == 5){
+        b = 4;
+    } else {
+        b = 8;
+    }
+
+    print(b);
+    print("|");
+}

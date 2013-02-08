@@ -213,15 +213,15 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
             trigger_childs(configuration, triggers["__3"]);
         }
     } catch (const po::ambiguous_option& e) {
-        std::cout << "Invalid command line options : " << e.what() << std::endl;
+        std::cout << "Invalid command line options: " << e.what() << std::endl;
 
         return nullptr;
     } catch (const po::unknown_option& e) {
-        std::cout << "Invalid command line options : " << e.what() << std::endl;
+        std::cout << "Invalid command line options: " << e.what() << std::endl;
 
         return nullptr;
     } catch (const po::multiple_occurrences& e) {
-        std::cout << "Only one file can be compiled" << std::endl;
+        std::cout << "Invalid command line options: Multiple occurrences of " << e.get_option_name() << std::endl;
 
         return nullptr;
     }

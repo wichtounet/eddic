@@ -856,6 +856,7 @@ bool conditional_move(mtac::Function& function, Platform platform){
                             move_forward(bit, bend, it, end);
 
                             optimized = true;
+                            function.context->global()->stats().inc_counter("cmov_opt");
                         }
                     }
                 }
