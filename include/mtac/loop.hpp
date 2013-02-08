@@ -39,11 +39,11 @@ struct LinearEquation {
 
 typedef std::map<std::shared_ptr<Variable>, LinearEquation> InductionVariables;
 
-class Loop {
+class loop {
     public:
         typedef std::set<mtac::basic_block_p>::iterator iterator;
 
-        Loop(const std::set<mtac::basic_block_p>& blocks);
+        loop(const std::set<mtac::basic_block_p>& blocks);
 
         iterator begin();
         iterator end();
@@ -75,28 +75,28 @@ class Loop {
 };
 
 /*!
- * \brief Find the basic block that is the entry to the Loop.
+ * \brief Find the basic block that is the entry to the loop.
  * \param loop The loop. 
  * \return The entry basic block. 
  */
-mtac::basic_block_p find_entry(mtac::Loop& loop);
+mtac::basic_block_p find_entry(mtac::loop& loop);
 
 /*!
- * \brief Find the basic block that is the exit to the Loop. 
+ * \brief Find the basic block that is the exit to the loop. 
  *
  * Works only if the loop has exactly one exit. 
  *
  * \param loop The loop.
  * \return The exit basic block. 
  */
-mtac::basic_block_p find_exit(mtac::Loop& loop);
+mtac::basic_block_p find_exit(mtac::loop& loop);
 
 /*!
  * \brief Find the preheader of the loop if it exists. 
  * \param loop The loop to find the preheader for.
- * \return The preheader basic block of the Loop or nullptr if is has not been found. 
+ * \return The preheader basic block of the loop or nullptr if is has not been found. 
  */
-mtac::basic_block_p find_preheader(mtac::Loop& loop);
+mtac::basic_block_p find_preheader(mtac::loop& loop);
 
 /*!
  * \brief Find or create a preheader for the given loop. This function finds a preheader that is safe to 
@@ -105,11 +105,11 @@ mtac::basic_block_p find_preheader(mtac::Loop& loop);
  * \param loop The loop to find the preheader for.
  * \param function The function the loop is located in.
  * \param create Indicate if the preheader has to be created if it does not exists.
- * \return The preheader basic block of the Loop or nullptr if is has not been found neither created. 
+ * \return The preheader basic block of the loop or nullptr if is has not been found neither created. 
  */
-mtac::basic_block_p find_safe_preheader(mtac::Loop& loop, mtac::Function& function, bool create);
+mtac::basic_block_p find_safe_preheader(mtac::loop& loop, mtac::Function& function, bool create);
 
-std::ostream& operator<<(std::ostream& stream, const mtac::Loop& loop);
+std::ostream& operator<<(std::ostream& stream, const mtac::loop& loop);
 
 } //end of mtac
 

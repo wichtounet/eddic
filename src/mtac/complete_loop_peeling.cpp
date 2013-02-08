@@ -22,7 +22,7 @@ using namespace eddic;
 
 namespace {
 
-void remove_back_edge(mtac::Loop& loop){
+void remove_back_edge(mtac::loop& loop){
     mtac::remove_edge(mtac::find_exit(loop), mtac::find_entry(loop));
 }
 
@@ -50,7 +50,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
             if(iterations > 0 && iterations < 12){
                 optimized = true;
 
-                LOG<Trace>("Loops") << "Completely peel " << loop << " with "  << iterations << " iterations" << log::endl;
+                LOG<Trace>("loops") << "Completely peel " << loop << " with "  << iterations << " iterations" << log::endl;
                 function.context->global()->stats().inc_counter("loop_peeled");
 
                 //The comparison is not necessary anymore
@@ -102,7 +102,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                     for(auto& bb : source_bbs){
                         auto clone_bb = mtac::clone(function, bb);
                 
-                        LOG<Trace>("Loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
+                        LOG<Trace>("loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
 
                         bb_clones[bb] = clone_bb;
                         local_cloned.push_back(clone_bb);

@@ -15,47 +15,47 @@
 
 using namespace eddic;
 
-mtac::Loop::Loop(const std::set<mtac::basic_block_p>& blocks) : m_blocks(blocks) {
+mtac::loop::loop(const std::set<mtac::basic_block_p>& blocks) : m_blocks(blocks) {
     //Nothing
 }
 
-mtac::Loop::iterator mtac::Loop::begin(){
+mtac::loop::iterator mtac::loop::begin(){
     return m_blocks.begin();
 }
 
-mtac::Loop::iterator mtac::Loop::end(){
+mtac::loop::iterator mtac::loop::end(){
     return m_blocks.end();
 }
 
-bool mtac::Loop::has_estimate(){
+bool mtac::loop::has_estimate(){
     return m_estimate > 0;
 }
 
-long& mtac::Loop::estimate(){
+long& mtac::loop::estimate(){
     return m_estimate;
 }
 
-long& mtac::Loop::initial_value(){
+long& mtac::loop::initial_value(){
     return m_initial;
 }
       
-std::set<mtac::basic_block_p>& mtac::Loop::blocks(){
+std::set<mtac::basic_block_p>& mtac::loop::blocks(){
     return m_blocks;
 }
       
-const std::set<mtac::basic_block_p>& mtac::Loop::blocks() const {
+const std::set<mtac::basic_block_p>& mtac::loop::blocks() const {
     return m_blocks;
 }
 
-mtac::InductionVariables& mtac::Loop::basic_induction_variables(){
+mtac::InductionVariables& mtac::loop::basic_induction_variables(){
     return biv;
 }
 
-mtac::InductionVariables& mtac::Loop::dependent_induction_variables(){
+mtac::InductionVariables& mtac::loop::dependent_induction_variables(){
     return div;
 }
 
-mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
+mtac::basic_block_p mtac::find_entry(mtac::loop& loop){
     for(auto& block : loop.blocks()){
         for(auto& pred : block->predecessors){
             if(loop.blocks().find(pred) == loop.blocks().end()){
@@ -69,7 +69,7 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
     eddic_unreachable("Every loop should have a single entry");
 }
         
-bool mtac::Loop::single_exit() const {
+bool mtac::loop::single_exit() const {
     int exits = 0;
     
     for(auto& block : blocks()){
@@ -83,7 +83,7 @@ bool mtac::Loop::single_exit() const {
     return exits == 1;
 }
 
-mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
+mtac::basic_block_p mtac::find_exit(mtac::loop& loop){
     for(auto& block : loop.blocks()){
         for(auto& succ : block->successors){
             if(loop.blocks().find(succ) == loop.blocks().end()){
@@ -97,7 +97,7 @@ mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
     eddic_unreachable("Every loop should have at least an exit");
 }
 
-mtac::basic_block_p mtac::find_preheader(mtac::Loop& loop){
+mtac::basic_block_p mtac::find_preheader(mtac::loop& loop){
     auto first_bb = find_entry(loop);
 
     for(auto& pred : first_bb->predecessors){
@@ -111,7 +111,7 @@ mtac::basic_block_p mtac::find_preheader(mtac::Loop& loop){
     return nullptr;
 }
 
-mtac::basic_block_p mtac::find_safe_preheader(mtac::Loop& loop, mtac::Function& function, bool create){
+mtac::basic_block_p mtac::find_safe_preheader(mtac::loop& loop, mtac::Function& function, bool create){
     auto first_bb = find_entry(loop);
 
     //Step 1: Try to find if there is already a preheader
@@ -161,8 +161,8 @@ mtac::basic_block_p mtac::find_safe_preheader(mtac::Loop& loop, mtac::Function& 
     return pre_header;
 }
 
-std::ostream& mtac::operator<<(std::ostream& stream, const mtac::Loop& loop){
-    stream << "Loop {";
+std::ostream& mtac::operator<<(std::ostream& stream, const mtac::loop& loop){
+    stream << "loop {";
 
     for(auto& block : loop.blocks()){
         stream << block << ", ";
