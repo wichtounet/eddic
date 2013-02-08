@@ -55,6 +55,12 @@ class Loop {
         long& estimate();
         long& initial_value();
 
+        /*!
+         * \brief Test if the loop has a single exit
+         * \return true if the loop has a single exit, false otherwise.
+         */
+        bool single_exit() const;
+
         InductionVariables& basic_induction_variables();
         InductionVariables& dependent_induction_variables();
 
@@ -77,6 +83,9 @@ mtac::basic_block_p find_entry(mtac::Loop& loop);
 
 /*!
  * \brief Find the basic block that is the exit to the Loop. 
+ *
+ * Works only if the loop has exactly one exit. 
+ *
  * \param loop The loop.
  * \return The exit basic block. 
  */

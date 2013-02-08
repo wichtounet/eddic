@@ -68,6 +68,20 @@ mtac::basic_block_p mtac::find_entry(mtac::Loop& loop){
 
     eddic_unreachable("Every loop should have a single entry");
 }
+        
+bool mtac::Loop::single_exit() const {
+    int exits = 0;
+    
+    for(auto& block : blocks()){
+        for(auto& succ : block->successors){
+            if(blocks().find(succ) == blocks().end()){
+                ++exits;
+            }
+        }
+    }
+
+    return exits == 1;
+}
 
 mtac::basic_block_p mtac::find_exit(mtac::Loop& loop){
     for(auto& block : loop.blocks()){
