@@ -5,9 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include "boost_cfg.hpp"
-#include <boost/variant.hpp>
-
 #include "assert.hpp"
 
 #include "mtac/VariableReplace.hpp"

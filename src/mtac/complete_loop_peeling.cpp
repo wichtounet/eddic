@@ -5,8 +5,6 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <boost/range/adaptors.hpp>
-
 #include "iterators.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"

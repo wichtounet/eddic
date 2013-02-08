@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
 #include <boost/range/adaptors.hpp>
 
 #include "Type.hpp"

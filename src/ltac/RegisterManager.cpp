@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <set>
-#include <boost/range/adaptors.hpp>
 
 #include "assert.hpp"
 #include "FunctionContext.hpp"

@@ -9,7 +9,9 @@
 #include <iostream>
 #include <memory>
 
+#include "boost_cfg.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "Options.hpp"
 #include "Compiler.hpp"

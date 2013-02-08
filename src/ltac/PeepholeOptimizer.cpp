@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include <boost/optional.hpp>
-#include <boost/range/adaptors.hpp>
 
 #include "assert.hpp"
 #include "logging.hpp"

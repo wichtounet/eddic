@@ -8,15 +8,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "boost_cfg.hpp"
-
 #include <vector>
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-
-#include <boost/lexical_cast.hpp>
 
 namespace eddic {
 
@@ -73,7 +69,7 @@ template <typename T>
 inline std::string toString(T number) {
     //PERF: If necessary, use karma
     //PERF: If necessary, come again to lexical_cast
-    return boost::lexical_cast<std::string>(number); 
+    return std::to_string(number);
 }
 
 bool has_extension(const std::string& file, const std::string& extension);

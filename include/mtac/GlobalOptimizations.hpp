@@ -8,6 +8,8 @@
 #ifndef MTAC_GLOBAL_OPTIMIZATIONS_H
 #define MTAC_GLOBAL_OPTIMIZATIONS_H
 
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
 #include <boost/range/adaptors.hpp>
 
 #include <memory>

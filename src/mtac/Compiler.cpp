@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
 #include <boost/range/adaptors.hpp>
 
 #include "assert.hpp"
