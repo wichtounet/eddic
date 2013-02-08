@@ -89,7 +89,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
 
             //Create the preheader if necessary
             if(!pre_header){
-                pre_header = mtac::find_pre_header(loop, function);
+                pre_header = mtac::find_safe_preheader(loop, function, true);
             }
 
             pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);
@@ -169,11 +169,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     for(auto& var : dependent_induction_variables){
         if(usage.read[var.first] == 1){
             auto& def = function.find(var.second.def);
-
-            def.op = mtac::Operator::NOP;
-            def.result = nullptr;
-            def.arg1.reset();
-            def.arg2.reset();
+            mtac::transform_to_nop(def);
 
             usage.read[var.first] = 0;
 
@@ -275,10 +271,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
             
         //The unique assignment to i is not useful anymore 
         auto& def = function.find(basic_induction_variables[biv].def);
-        def.op = mtac::Operator::NOP;
-        def.result = nullptr;
-        def.arg1.reset();
-        def.arg2.reset();
+        mtac::transform_to_nop(def);
 
         //Not a basic induction variable anymore
         basic_induction_variables.erase(biv);
@@ -292,9 +285,13 @@ bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& fun
     for(auto& basic : loop.basic_induction_variables()){
         optimized |= strength_reduce(loop, basic.second, function);
     }
-    
+
     for(auto& biv : loop.basic_induction_variables()){
-        LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        if(biv.second.div){
+            LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+        } else {
+            LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        }
     }
     
     for(auto& biv : loop.dependent_induction_variables()){

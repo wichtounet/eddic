@@ -52,7 +52,7 @@ struct X86_32StringConverter : public as::StringConverter, public boost::static_
     }
 
     std::string operator()(int value) const {
-       return ::toString(value);
+       return std::to_string(value);
     }
 
     std::string operator()(const std::string& value) const {

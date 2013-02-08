@@ -33,7 +33,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                 } else if(value == 1){
                     mtac::remove_edge(block, quadruple.block);
 
-                    quadruple = mtac::Quadruple(mtac::Operator::NOP);
+                    mtac::transform_to_nop(quadruple);
                     optimized = true;
                 }
             } else if(quadruple.op == mtac::Operator::IF_UNARY && boost::get<int>(&*quadruple.arg1)){
@@ -42,7 +42,7 @@ bool mtac::optimize_branches::operator()(mtac::Function& function){
                 if(value == 0){
                     mtac::remove_edge(block, quadruple.block);
 
-                    quadruple = mtac::Quadruple(mtac::Operator::NOP);
+                    mtac::transform_to_nop(quadruple);
                     optimized = true;
                 } else if(value == 1){
                     auto goto_ = mtac::Quadruple(quadruple.label(), mtac::Operator::GOTO);

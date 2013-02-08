@@ -106,6 +106,46 @@ list(REMOVE_ITEM compiler_files ${to_remove})
 
 add_library(Compiler OBJECT ${compiler_files})
 
+# Set different options
+
+file(
+	GLOB_RECURSE
+	mtac_files
+	src/mtac/*.cpp
+)
+
+file(
+	GLOB_RECURSE
+	ltac_files
+	src/ltac/*.cpp
+)
+
+file(
+	GLOB_RECURSE
+	asm_files
+	src/asm/*.cpp
+)
+
+# Disable exceptions for MTAC and LTAC and ASM
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${mtac_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions"
+)
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${mtac_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions"
+)
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${asm_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions"
+)
+
 # Create the eddic executable
 
 add_executable(eddic $<TARGET_OBJECTS:Compiler> src/eddi.cpp)
@@ -238,6 +278,7 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/remove_empty_loops
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
+    OptimizationSuite/complete_loop_peeling_2
     OptimizationSuite/loop_unrolling
     OptimizationSuite/global_cse
     OptimizationSuite/local_cse

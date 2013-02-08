@@ -17,7 +17,7 @@ void mtac::ArithmeticIdentities::operator()(mtac::Quadruple& quadruple){
         case mtac::Operator::PASSIGN:
         case mtac::Operator::FASSIGN:
             if(*quadruple.arg1 == quadruple.result){
-                replaceRight(*this, quadruple, mtac::Operator::NOP); 
+                mtac::transform_to_nop(quadruple);
             }
 
             break;

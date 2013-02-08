@@ -215,6 +215,20 @@ std::string size(mtac::Size size){
 
 }
 
+void mtac::transform_to_nop(mtac::Quadruple& quadruple){
+    //Transform it to a NOP
+    quadruple.op = mtac::Operator::NOP;
+
+    //Clear all informations
+    quadruple.arg1.reset();
+    quadruple.arg2.reset();
+    quadruple.result = nullptr;
+    quadruple.secondary = nullptr;
+    quadruple.block = nullptr;
+    quadruple.m_function = nullptr;
+    quadruple.m_param.clear();
+}
+
 std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadruple& quadruple){
     auto op = quadruple.op;
 

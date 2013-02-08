@@ -78,11 +78,6 @@ std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_
 
 void computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage);
 
-typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
-
-VariableUsage compute_variable_usage(mtac::Function& function);
-VariableUsage compute_variable_usage_with_depth(mtac::Function& function, int factor);
-
 bool is_recursive(mtac::Function& function);
 
 bool safe(const std::string& call);

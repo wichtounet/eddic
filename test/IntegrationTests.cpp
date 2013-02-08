@@ -649,6 +649,12 @@ BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
     BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
 }
 
+BOOST_AUTO_TEST_CASE( complete_loop_peeling_2 ){
+    auto& stats = compute_stats("complete_loop_peeling_2.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
+}
+
 BOOST_AUTO_TEST_CASE( loop_unrolling ){
     auto& stats = compute_stats("loop_unrolling.eddi");
 
