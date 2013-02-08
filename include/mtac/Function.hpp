@@ -120,6 +120,8 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_const_iterator end() const {
             return basic_block_const_iterator(nullptr, exit);
         }
+
+        std::size_t position(const basic_block_p& bb) const;
         
         basic_block_iterator at(basic_block_p bb);
 

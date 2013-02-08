@@ -386,6 +386,23 @@ std::vector<mtac::Loop>& mtac::Function::loops(){
     return m_loops;
 }
 
+std::size_t mtac::Function::position(const basic_block_p& bb) const {
+    std::size_t position = 0;
+
+    auto it = begin();
+
+    while(it != end()){
+        if(*it == bb){
+            return position;
+        }
+        
+        ++position;
+        ++it;
+    }
+
+    eddic_unreachable("This basic block is not part of the function");
+}
+
 bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){
     return lhs.get_name() == rhs.get_name();
 }
