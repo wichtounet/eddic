@@ -78,15 +78,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             mtac::collect_warnings(*program, configuration);
 
             if(!configuration->option_defined("mtac-only")){
-                //Compute the definitive reachable flag for functions
-                program->call_graph.compute_reachable();
-
-                auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
-
-                back_end->set_string_pool(front_end->get_string_pool());
-                back_end->set_configuration(configuration);
-
-                back_end->generate(*program, platform);
+                compile_ltac(*program, platform, configuration, front_end);
             }
         }
     } catch (const SemanticalException& e) {
@@ -164,4 +156,16 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
     }
 
     return {std::move(program), front_end};
+}
+    
+void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<FrontEnd> front_end){
+    //Compute the definitive reachable flag for functions
+    program.call_graph.compute_reachable();
+
+    auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
+
+    back_end->set_string_pool(front_end->get_string_pool());
+    back_end->set_configuration(configuration);
+
+    back_end->generate(program, platform);
 }
