@@ -9,6 +9,7 @@
 #define TIMING_H
 
 #include <memory>
+#include <unordered_map>
 
 #include "Options.hpp"
 #include "StopWatch.hpp"

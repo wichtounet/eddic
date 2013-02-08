@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <algorithm>
 
 #include "timing.hpp"
 
@@ -33,7 +35,8 @@ void timing_system::display(){
         timers.emplace_back(timing.first, timing.second);
     }
 
-    std::sort(timers.begin(), timers.end(), [](const timer& lhs, const timer& rhs){ return lhs.second > rhs.second; });
+    std::sort(timers.begin(), timers.end(), 
+            [](const timer& lhs, const timer& rhs){ return lhs.second > rhs.second; });
 
     double total = 0.0;
     
