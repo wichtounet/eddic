@@ -382,7 +382,7 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
     return std::make_pair(begin(), end());
 }
 
-std::vector<mtac::Loop>& mtac::Function::loops(){
+std::vector<mtac::loop>& mtac::Function::loops(){
     return m_loops;
 }
 

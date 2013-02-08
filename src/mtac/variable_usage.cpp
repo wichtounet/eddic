@@ -8,7 +8,7 @@
 #include "VisitorUtils.hpp"
 
 #include "mtac/variable_usage.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
@@ -127,7 +127,7 @@ struct VariableUsageCollector {
 
 } //end of anonymous namespace
 
-mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
+mtac::Usage mtac::compute_read_usage(mtac::loop& loop){
     return ::compute_read_usage(loop);
 }
 
@@ -135,7 +135,7 @@ mtac::Usage mtac::compute_read_usage(mtac::Function& function){
     return ::compute_read_usage(function);
 }
 
-mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
+mtac::Usage mtac::compute_write_usage(mtac::loop& loop){
     return ::compute_write_usage(loop);
 }
 

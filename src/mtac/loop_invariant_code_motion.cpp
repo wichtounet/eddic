@@ -16,7 +16,7 @@
 #include "logging.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -58,7 +58,7 @@ bool is_invariant(mtac::Quadruple& quadruple, mtac::Usage& usage){
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadruple, mtac::Loop& loop){
+bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadruple, mtac::loop& loop){
     //It is not necessary to move statements with no effects. 
     if(quadruple.op == mtac::Operator::NOP){
         return false;
@@ -96,7 +96,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadrupl
     return true;
 }
 
-bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
+bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
     mtac::basic_block_p pre_header;
 
     bool optimized = false;
@@ -113,7 +113,7 @@ bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
                 if(is_valid_invariant(bb, statement, loop)){
                     //Create the preheader if necessary
                     if(!pre_header){
-                        pre_header = mtac::find_safe_preheader(loop, function, true);
+                        pre_header = loop.find_safe_preheader(function, true);
                     }
 
                     function.context->global()->stats().inc_counter("invariant_moved");

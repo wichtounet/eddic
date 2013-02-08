@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"

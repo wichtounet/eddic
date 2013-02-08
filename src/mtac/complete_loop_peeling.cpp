@@ -12,7 +12,7 @@
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -22,8 +22,8 @@ using namespace eddic;
 
 namespace {
 
-void remove_back_edge(mtac::Loop& loop){
-    mtac::remove_edge(mtac::find_exit(loop), mtac::find_entry(loop));
+void remove_back_edge(mtac::loop& loop){
+    mtac::remove_edge(loop.find_exit(), loop.find_entry());
 }
 
 }
@@ -50,14 +50,14 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
             if(iterations > 0 && iterations < 12){
                 optimized = true;
 
-                LOG<Trace>("Loops") << "Completely peel " << loop << " with "  << iterations << " iterations" << log::endl;
+                LOG<Trace>("loops") << "Completely peel " << loop << " with "  << iterations << " iterations" << log::endl;
                 function.context->global()->stats().inc_counter("loop_peeled");
 
                 //The comparison is not necessary anymore
-                auto exit = mtac::find_exit(loop);
+                auto exit = loop.find_exit();
                 exit->statements.pop_back();
 
-                auto real_entry = mtac::find_entry(loop);
+                auto real_entry = loop.find_entry();
                 auto entry = real_entry;
 
                 mtac::basic_block_p next_bb;
@@ -79,7 +79,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                     }
                 }
                 
-                auto preheader = mtac::find_safe_preheader(loop, function, true);
+                auto preheader = loop.find_safe_preheader(function, true);
                 auto it = function.at(preheader);
                     
                 std::vector<mtac::basic_block_p> source_bbs;
@@ -102,7 +102,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                     for(auto& bb : source_bbs){
                         auto clone_bb = mtac::clone(function, bb);
                 
-                        LOG<Trace>("Loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
+                        LOG<Trace>("loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
 
                         bb_clones[bb] = clone_bb;
                         local_cloned.push_back(clone_bb);

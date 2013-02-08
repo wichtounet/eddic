@@ -12,7 +12,7 @@
 
 #include "mtac/pass_traits.hpp"
 #include "mtac/forward.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 
 namespace eddic {
 
@@ -25,10 +25,10 @@ struct Usage {
     VariableUsage read;
 };
 
-Usage compute_read_usage(mtac::Loop& loop);
+Usage compute_read_usage(mtac::loop& loop);
 Usage compute_read_usage(mtac::Function& function);
 
-Usage compute_write_usage(mtac::Loop& loop);
+Usage compute_write_usage(mtac::loop& loop);
 Usage compute_write_usage(mtac::Function& function);
 
 VariableUsage compute_variable_usage(mtac::Function& function);

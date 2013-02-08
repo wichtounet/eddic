@@ -15,7 +15,7 @@
 
 #include "mtac/loop_analysis.hpp"
 #include "mtac/dominators.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
@@ -38,7 +38,7 @@ void increase_depth(mtac::basic_block_p bb){
     }
 }
 
-mtac::InductionVariables find_all_candidates(mtac::Loop& loop){
+mtac::InductionVariables find_all_candidates(mtac::loop& loop){
     mtac::InductionVariables candidates;
 
     for(auto& bb : loop){
@@ -68,7 +68,7 @@ void clean_defaults(mtac::InductionVariables& induction_variables){
     }
 }
 
-void find_basic_induction_variables(mtac::Loop& loop){
+void find_basic_induction_variables(mtac::loop& loop){
     loop.basic_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -132,7 +132,7 @@ void find_basic_induction_variables(mtac::Loop& loop){
     clean_defaults(loop.basic_induction_variables());
 }
 
-void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& function){
+void find_dependent_induction_variables(mtac::loop& loop, mtac::Function& function){
     loop.dependent_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -553,8 +553,8 @@ void find_loops(mtac::Function& function){
 
 void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
-        auto bb = mtac::find_exit(loop);
-        auto preheader = mtac::find_preheader(loop);
+        auto bb = loop.find_exit();
+        auto preheader = loop.find_preheader();
 
         if(!bb->statements.empty() && preheader && !preheader->statements.empty()){
             auto& condition = bb->statements.back();
@@ -612,18 +612,18 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
         find_basic_induction_variables(loop);
         find_dependent_induction_variables(loop, function);
 
-        LOG<Trace>("Loops") << "Induction variables for " << loop << log::endl;
+        LOG<Trace>("loops") << "Induction variables for " << loop << log::endl;
         
         for(auto& biv : loop.basic_induction_variables()){
             if(biv.second.div){
-                LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+                LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
             } else {
-                LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+                LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
             }
         }
 
         for(auto& biv : loop.dependent_induction_variables()){
-            LOG<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
+            LOG<Trace>("loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
         }
     }
 

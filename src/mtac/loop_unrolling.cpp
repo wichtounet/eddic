@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 
 #include "mtac/Function.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/loop_unrolling.hpp"
 #include "mtac/Utils.hpp"
 
@@ -49,7 +49,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                         continue;
                     }
 
-                    LOG<Trace>("Loops") << "Unroll the loop with a factor " << factor << log::endl;
+                    LOG<Trace>("loops") << "Unroll the loop with a factor " << factor << log::endl;
                     function.context->global()->stats().inc_counter("loop_unrolled");
 
                     optimized = true;
