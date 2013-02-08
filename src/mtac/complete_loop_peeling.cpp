@@ -23,7 +23,7 @@ using namespace eddic;
 namespace {
 
 void remove_back_edge(mtac::loop& loop){
-    mtac::remove_edge(mtac::find_exit(loop), mtac::find_entry(loop));
+    mtac::remove_edge(loop.find_exit(), loop.find_entry());
 }
 
 }
@@ -54,10 +54,10 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 function.context->global()->stats().inc_counter("loop_peeled");
 
                 //The comparison is not necessary anymore
-                auto exit = mtac::find_exit(loop);
+                auto exit = loop.find_exit();
                 exit->statements.pop_back();
 
-                auto real_entry = mtac::find_entry(loop);
+                auto real_entry = loop.find_entry();
                 auto entry = real_entry;
 
                 mtac::basic_block_p next_bb;

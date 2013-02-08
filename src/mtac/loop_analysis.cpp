@@ -553,7 +553,7 @@ void find_loops(mtac::Function& function){
 
 void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
-        auto bb = mtac::find_exit(loop);
+        auto bb = loop.find_exit();
         auto preheader = mtac::find_preheader(loop);
 
         if(!bb->statements.empty() && preheader && !preheader->statements.empty()){

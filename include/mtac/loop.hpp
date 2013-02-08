@@ -61,6 +61,23 @@ class loop {
          */
         bool single_exit() const;
 
+        /*!
+         * \brief Find the basic block that is the entry to the loop.
+         * \param loop The loop. 
+         * \return The entry basic block. 
+         */
+        mtac::basic_block_p find_entry() const ;
+
+        /*!
+         * \brief Find the basic block that is the exit to the loop. 
+         *
+         * Works only if the loop has exactly one exit. 
+         *
+         * \param loop The loop.
+         * \return The exit basic block. 
+         */
+        mtac::basic_block_p find_exit() const ;
+
         InductionVariables& basic_induction_variables();
         InductionVariables& dependent_induction_variables();
 
@@ -73,23 +90,6 @@ class loop {
         long m_estimate = -1;
         long m_initial;
 };
-
-/*!
- * \brief Find the basic block that is the entry to the loop.
- * \param loop The loop. 
- * \return The entry basic block. 
- */
-mtac::basic_block_p find_entry(mtac::loop& loop);
-
-/*!
- * \brief Find the basic block that is the exit to the loop. 
- *
- * Works only if the loop has exactly one exit. 
- *
- * \param loop The loop.
- * \return The exit basic block. 
- */
-mtac::basic_block_p find_exit(mtac::loop& loop);
 
 /*!
  * \brief Find the preheader of the loop if it exists. 

@@ -54,20 +54,6 @@ mtac::InductionVariables& mtac::loop::basic_induction_variables(){
 mtac::InductionVariables& mtac::loop::dependent_induction_variables(){
     return div;
 }
-
-mtac::basic_block_p mtac::find_entry(mtac::loop& loop){
-    for(auto& block : loop.blocks()){
-        for(auto& pred : block->predecessors){
-            if(loop.blocks().find(pred) == loop.blocks().end()){
-                LOG<Trace>("Control-Flow") << "Found " << *block << " as entry of " << loop << log::endl;
-
-                return block;
-            }
-        }
-    }
-
-    eddic_unreachable("Every loop should have a single entry");
-}
         
 bool mtac::loop::single_exit() const {
     int exits = 0;
@@ -83,11 +69,25 @@ bool mtac::loop::single_exit() const {
     return exits == 1;
 }
 
-mtac::basic_block_p mtac::find_exit(mtac::loop& loop){
-    for(auto& block : loop.blocks()){
+mtac::basic_block_p mtac::loop::find_entry() const {
+    for(auto& block : blocks()){
+        for(auto& pred : block->predecessors){
+            if(blocks().find(pred) == blocks().end()){
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as entry of " << *this << log::endl;
+
+                return block;
+            }
+        }
+    }
+
+    eddic_unreachable("Every loop should have a single entry");
+}
+
+mtac::basic_block_p mtac::loop::find_exit() const {
+    for(auto& block : blocks()){
         for(auto& succ : block->successors){
-            if(loop.blocks().find(succ) == loop.blocks().end()){
-                LOG<Trace>("Control-Flow") << "Found " << *block << " as exit of " << loop << log::endl;
+            if(blocks().find(succ) == blocks().end()){
+                LOG<Trace>("Control-Flow") << "Found " << *block << " as exit of " << *this << log::endl;
 
                 return block;
             }
@@ -98,7 +98,7 @@ mtac::basic_block_p mtac::find_exit(mtac::loop& loop){
 }
 
 mtac::basic_block_p mtac::find_preheader(mtac::loop& loop){
-    auto first_bb = find_entry(loop);
+    auto first_bb = loop.find_entry();
 
     for(auto& pred : first_bb->predecessors){
         if(loop.blocks().find(pred) == loop.blocks().end()){
@@ -112,7 +112,7 @@ mtac::basic_block_p mtac::find_preheader(mtac::loop& loop){
 }
 
 mtac::basic_block_p mtac::find_safe_preheader(mtac::loop& loop, mtac::Function& function, bool create){
-    auto first_bb = find_entry(loop);
+    auto first_bb = loop.find_entry();
 
     //Step 1: Try to find if there is already a preheader
     
