@@ -638,6 +638,8 @@ eddic::statistics& compute_stats_ltac(const std::string& file){
     auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
     compiler.compile_ltac(*pair.first, eddic::Platform::INTEL_X86_64, configuration, pair.second);
 
+    remove("test/cases/" + file + ".out");
+
     auto global_context = pair.first->context;
     return global_context->stats();
 }
