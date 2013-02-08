@@ -144,7 +144,9 @@ bool mtac::loop_invariant_code_motion::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        optimized |= ::loop_invariant_code_motion(loop, function);
+        if(loop.blocks().size() == 1){
+            optimized |= ::loop_invariant_code_motion(loop, function);
+        }
     }
     
     return optimized;
