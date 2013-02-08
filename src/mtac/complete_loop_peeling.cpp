@@ -45,7 +45,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
         if(loop.has_estimate()){
             auto iterations = loop.estimate();
 
-            if(iterations > 0 && ((loop.blocks().size() == 1 && iterations < 12) || iterations < 5)){
+            if(iterations > 0 && iterations < 12){
                 optimized = true;
 
                 LOG<Trace>("Loops") << "Peel completely the loop with " << iterations << " iterations" << log::endl;
