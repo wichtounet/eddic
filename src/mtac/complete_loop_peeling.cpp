@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <boost/range/adaptors.hpp>
+
 #include "iterators.hpp"
 #include "GlobalContext.hpp"
 #include "FunctionContext.hpp"
@@ -80,6 +82,15 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                 auto preheader = mtac::find_safe_preheader(loop, function, true);
                 auto it = function.at(preheader);
                     
+                std::vector<mtac::basic_block_p> source_bbs;
+
+                for(auto& bb : loop){
+                    source_bbs.push_back(bb);
+                }
+
+                std::sort(source_bbs.begin(), source_bbs.end(), 
+                        [&function](const mtac::basic_block_p& lhs, const mtac::basic_block_p& rhs){ return function.position(lhs) > function.position(rhs);});
+
                 std::vector<mtac::basic_block_p> cloned;
 
                 for(int i = 1; i < iterations; ++i){
@@ -88,7 +99,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
 
                     //Copy all the basic blocks
 
-                    for(auto& bb : loop){
+                    for(auto& bb : source_bbs){
                         auto clone_bb = mtac::clone(function, bb);
                 
                         LOG<Trace>("Loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
