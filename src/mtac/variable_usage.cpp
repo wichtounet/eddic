@@ -8,7 +8,7 @@
 #include "VisitorUtils.hpp"
 
 #include "mtac/variable_usage.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"

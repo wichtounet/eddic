@@ -16,7 +16,7 @@
 #include "logging.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"

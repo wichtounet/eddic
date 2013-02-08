@@ -12,7 +12,7 @@
 #include "logging.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/induction_variable_optimizations.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"

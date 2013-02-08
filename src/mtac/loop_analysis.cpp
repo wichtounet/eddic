@@ -15,7 +15,7 @@
 
 #include "mtac/loop_analysis.hpp"
 #include "mtac/dominators.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"

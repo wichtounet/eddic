@@ -12,7 +12,7 @@
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"

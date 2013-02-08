@@ -8,7 +8,7 @@
 #include "logging.hpp"
 #include "assert.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/Function.hpp"

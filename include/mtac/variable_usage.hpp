@@ -12,7 +12,7 @@
 
 #include "mtac/pass_traits.hpp"
 #include "mtac/forward.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 
 namespace eddic {
 

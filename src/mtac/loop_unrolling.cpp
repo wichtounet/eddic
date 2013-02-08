@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 
 #include "mtac/Function.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/loop_unrolling.hpp"
 #include "mtac/Utils.hpp"
 
