@@ -50,7 +50,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
             if(iterations > 0 && iterations < 12){
                 optimized = true;
 
-                LOG<Trace>("Loops") << "Peel completely the loop with " << iterations << " iterations" << log::endl;
+                LOG<Trace>("Loops") << "Completely peel " << loop << " with "  << iterations << " iterations" << log::endl;
                 function.context->global()->stats().inc_counter("loop_peeled");
 
                 //The comparison is not necessary anymore
