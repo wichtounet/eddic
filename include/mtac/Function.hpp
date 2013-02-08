@@ -19,7 +19,7 @@
 #include "mtac/forward.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
-#include "mtac/loop.hpp"
+#include "mtac/loop.hpp" //TODO Use a forward declaration
 #include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
