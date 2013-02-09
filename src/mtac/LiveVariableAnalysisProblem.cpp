@@ -18,15 +18,6 @@ using namespace eddic;
 
 typedef mtac::LiveVariableAnalysisProblem::ProblemDomain ProblemDomain;
 
-template<typename T, typename OptVariant>
-void if_init(OptVariant& opt_variant, std::function<void(T&)> functor){
-    if(opt_variant){
-        if(auto* ptr = boost::get<T>(&*opt_variant)){
-            functor(*ptr);
-        }
-    }
-}
-
 ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& function){
     pointer_escaped = mtac::escape_analysis(function);
 

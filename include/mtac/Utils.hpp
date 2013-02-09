@@ -70,6 +70,15 @@ void visit_all_statements(Visitor& visitor, mtac::Function& function){
     }
 }
 
+template<typename T, typename OptVariant>
+void if_init(OptVariant& opt_variant, std::function<void(T&)> functor){
+    if(opt_variant){
+        if(auto* ptr = boost::get<T>(&*opt_variant)){
+            functor(*ptr);
+        }
+    }
+}
+
 bool is_single_int_register(std::shared_ptr<const Type> type);
 bool is_single_float_register(std::shared_ptr<const Type> type);
 
