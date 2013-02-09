@@ -5,6 +5,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+#include <set>
+
 #define BOOST_NO_RTTI
 #define BOOST_NO_TYPEID
 #include <boost/range/adaptors.hpp>
@@ -24,9 +26,7 @@
 using namespace eddic;
 
 bool mtac::dead_code_elimination::operator()(mtac::Function& function){
-    bool optimized = false;
-
-    std::vector<std::size_t> to_delete;
+    std::set<std::size_t> to_delete;
 
     //1. DCE based on data-flow analysis
 
@@ -39,7 +39,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         for(auto& quadruple : boost::adaptors::reverse(block->statements)){
             if(quadruple.result && mtac::erase_result(quadruple.op)){
                 if(out.top() || out.values().find(quadruple.result) == out.values().end()){
-                    to_delete.push_back(quadruple.uid());
+                    to_delete.insert(quadruple.uid());
                 }
             }
 
@@ -114,25 +114,13 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         for(auto& block : function){
             for(auto& quadruple : block->statements){
                 if(quadruple.result && mtac::erase_result(quadruple.op) && candidates.find(quadruple.result) != candidates.end()){
-                    to_delete.push_back(quadruple.uid());
+                    to_delete.insert(quadruple.uid());
                 } 
             }
         }
     }
 
-    //Delete what has been found on previous steps
-
-    if(!to_delete.empty()){
-        optimized = true;
-
-        for(auto& block : function){
-            block->statements.erase(
-                    remove_if(block->statements.begin(), block->statements.end(), 
-                        [&to_delete](const mtac::Quadruple& q){return std::find(to_delete.begin(), to_delete.end(), q.uid()) != to_delete.end();}), 
-                    block->statements.end());
-        }
-    }
-
+    //3. Basic DCE for memory 
     //TODO Review or remove this optimization, this is quite unsafe
 
     std::unordered_set<Offset, mtac::OffsetHash> used_offsets;
@@ -169,6 +157,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                                 auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
                                 if(member_type->is_pointer()){
+                                    to_delete.insert(quadruple.uid());
                                     ++it;
                                     continue;
                                 }
@@ -177,9 +166,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                             mtac::Offset offset(quadruple.result, *offset_ptr);
 
                             if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                                it.erase();
-                                optimized=true;
-                                continue;
+                                to_delete.insert(quadruple.uid());
                             }
                         }
                     }
@@ -190,5 +177,18 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         }
     }
 
-    return optimized;
+    //Delete what has been found on previous steps
+
+    if(!to_delete.empty()){
+        for(auto& block : function){
+            block->statements.erase(
+                    remove_if(block->statements.begin(), block->statements.end(), 
+                        [&to_delete](const mtac::Quadruple& q){return to_delete.find(q.uid()) != to_delete.end();}), 
+                    block->statements.end());
+        }
+
+        return true;
+    }
+
+    return false;
 }
