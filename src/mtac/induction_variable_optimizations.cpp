@@ -114,10 +114,7 @@ void induction_variable_removal(mtac::Function& function, mtac::loop& loop){
 
     //Remove generated copy when useless
     for(auto& bb : loop){
-        auto it = iterate(bb->statements);
-
-        while(it.has_next()){
-            auto& quadruple = *it;
+        for(auto& quadruple : bb->statements){
             auto op = quadruple.op;
 
             if(op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
@@ -134,8 +131,7 @@ void induction_variable_removal(mtac::Function& function, mtac::loop& loop){
 
                         dependent_induction_variables.erase(j);
 
-                        it.erase();
-                        continue;
+                        mtac::transform_to_nop(quadruple);
                     }
                 }
             }
@@ -154,12 +150,9 @@ void induction_variable_removal(mtac::Function& function, mtac::loop& loop){
                     //There is one less read of j
                     --usage.read[j];
 
-                    it.erase();
-                    continue;
+                    mtac::transform_to_nop(quadruple);
                 }
             }
-
-            ++it;
         }
     }
 

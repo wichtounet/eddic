@@ -203,18 +203,7 @@ struct pass_runner {
 
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
-        for(auto& block : *function){
-            auto it = iterate(block->statements);
-
-            while(it.has_next()){
-                if(it->op == mtac::Operator::NOP){
-                    it.erase();
-                    continue;
-                }
-
-                ++it;
-            }
-        }
+        //TODO Remove that
     }
     
     template<typename Pass>

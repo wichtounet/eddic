@@ -372,7 +372,17 @@ std::size_t mtac::Function::size() const {
     std::size_t size = 0;
 
     for(auto& block : *this){
-        size += block->statements.size();
+        size += block->size();
+    }
+
+    return size;
+}
+
+std::size_t mtac::Function::size_no_nop() const {
+    std::size_t size = 0;
+
+    for(auto& block : *this){
+        size += block->size_no_nop();
     }
 
     return size;

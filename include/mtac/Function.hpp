@@ -145,6 +145,7 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::size_t bb_count() const;
         std::size_t size() const;
+        std::size_t size_no_nop() const;
         
         std::size_t pseudo_registers() const ;
         void set_pseudo_registers(std::size_t pseudo_registers);
