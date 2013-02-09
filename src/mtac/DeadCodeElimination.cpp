@@ -95,17 +95,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
             } else {
                 candidates.erase(quadruple.result);
 
-                if(quadruple.arg1){
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                        candidates.erase(*ptr);
-                    }
-                }
-
-                if(quadruple.arg2){
-                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-                        candidates.erase(*ptr);
-                    }
-                }
+                if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var); });
+                if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var); });
             }
         }
     }
