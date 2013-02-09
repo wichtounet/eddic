@@ -26,10 +26,12 @@ using namespace eddic;
 bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     bool optimized = false;
 
+    std::vector<std::size_t> to_delete;
+
+    //1. DCE based on data-flow analysis
+
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
-
-    std::vector<std::size_t> to_delete;
 
     for(auto& block : function){
         auto& out = results->OUT[block];
@@ -44,6 +46,81 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
             problem.transfer(block, quadruple, out);
         }
     }
+
+    //2. Remove variables that contribute only to themselves
+    //TODO This could probably be done directly in the data-flow DCE
+
+    std::unordered_set<std::shared_ptr<Variable>> candidates;
+
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            if(quadruple.result && mtac::erase_result(quadruple.op)){
+                if(quadruple.arg1){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                        if(*ptr == quadruple.result){
+                            candidates.insert(quadruple.result);
+                        }
+                    }
+                }
+
+                if(quadruple.arg2){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+                        if(*ptr == quadruple.result){
+                            candidates.insert(quadruple.result);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            if(quadruple.result && mtac::erase_result(quadruple.op)){
+                if(quadruple.arg1){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                        if(*ptr != quadruple.result){
+                            candidates.erase(*ptr);
+                        }
+                    }
+                }
+
+                if(quadruple.arg2){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+                        if(*ptr != quadruple.result){
+                            candidates.erase(*ptr);
+                        }
+                    }
+                }
+            } else {
+                candidates.erase(quadruple.result);
+
+                if(quadruple.arg1){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+                        candidates.erase(*ptr);
+                    }
+                }
+
+                if(quadruple.arg2){
+                    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+                        candidates.erase(*ptr);
+                    }
+                }
+            }
+        }
+    }
+
+    if(!candidates.empty()){
+        for(auto& block : function){
+            for(auto& quadruple : block->statements){
+                if(quadruple.result && mtac::erase_result(quadruple.op) && candidates.find(quadruple.result) != candidates.end()){
+                    to_delete.push_back(quadruple.uid());
+                } 
+            }
+        }
+    }
+
+    //Delete what has been found on previous steps
 
     if(!to_delete.empty()){
         optimized = true;
