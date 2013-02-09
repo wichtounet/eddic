@@ -8,10 +8,6 @@ void main(){
     }
 
     insertion_sort();
-
-    foreach(int i in array){
-        print(i);
-    }
 }
 
 void insertion_sort(){

@@ -42,3 +42,4 @@ function bench(){
 }
 
 bench bubble_sort
+bench insertion_sort
