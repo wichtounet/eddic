@@ -11,7 +11,7 @@
 using namespace eddic;
 
 struct X86Descriptor : public PlatformDescriptor {
-    int sizes[BASETYPE_COUNT] = {  8, 4, 1, 4, 4, 0 };
+    int sizes[BASETYPE_COUNT] = {  8, 4, 1, 1, 4, 0 };
 
     X86Descriptor(){};
 
@@ -83,7 +83,7 @@ struct X86Descriptor : public PlatformDescriptor {
 };
 
 struct X86_64Descriptor : public PlatformDescriptor {
-    int sizes[BASETYPE_COUNT] = { 16, 8, 1, 8, 8, 0 };
+    int sizes[BASETYPE_COUNT] = { 16, 8, 1, 1, 8, 0 };
 
     X86_64Descriptor(){};
 
