@@ -55,8 +55,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     for(auto& block : function){
         for(auto& quadruple : block->statements){
             if(quadruple.result && mtac::erase_result(quadruple.op)){
-                if_init_equals(quadruple.arg1, quadruple.result, [&candidates, &quadruple](){candidates.insert(quadruple.result);});
-                if_init_equals(quadruple.arg2, quadruple.result, [&candidates, &quadruple](){candidates.insert(quadruple.result);});
+                if_init_equals(quadruple.arg1, quadruple.result, [&candidates, &quadruple](){ candidates.insert(quadruple.result);});
+                if_init_equals(quadruple.arg2, quadruple.result, [&candidates, &quadruple](){ candidates.insert(quadruple.result);});
             }
         }
     }
@@ -64,8 +64,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     for(auto& block : function){
         for(auto& quadruple : block->statements){
             if(quadruple.result && mtac::erase_result(quadruple.op)){
-                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg1, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){candidates.erase(var);});
-                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg2, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){candidates.erase(var);});
+                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg1, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var);});
+                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg2, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var);});
             } else {
                 candidates.erase(quadruple.result);
 
