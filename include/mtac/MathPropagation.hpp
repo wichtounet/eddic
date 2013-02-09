@@ -29,9 +29,6 @@ class MathPropagation {
         void clear();
 
         void operator()(mtac::Quadruple& quadruple);
-    
-        void collect(mtac::Argument* arg);
-        void collect(boost::optional<mtac::Argument>& arg);
 
     private:
         std::unordered_map<std::shared_ptr<Variable>, std::reference_wrapper<mtac::Quadruple>> assigns;

@@ -17,34 +17,6 @@ using namespace eddic;
 
 namespace {
 
-struct VariableReadCollector {
-    mtac::Usage& usage;
-
-    VariableReadCollector(mtac::Usage& usage) : usage(usage) {}
-
-    void inc_usage(std::shared_ptr<Variable> variable){
-        ++usage.read[variable];
-    }
-
-    template<typename T>
-    void collect_optional(T& opt){
-        if(opt){
-            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
-                inc_usage(*variablePtr);
-            }
-        }
-    }
-
-    void collect(mtac::Quadruple& quadruple){
-        if(!mtac::erase_result(quadruple.op)){
-            inc_usage(quadruple.result);
-        }
-
-        collect_optional(quadruple.arg1);
-        collect_optional(quadruple.arg2);
-    }
-};
-
 struct UsageCollector {
     std::shared_ptr<Variable> var;
 
@@ -69,11 +41,15 @@ struct UsageCollector {
 template<typename Container>
 mtac::Usage compute_read_usage(Container& loop){
     mtac::Usage usage;
-    VariableReadCollector collector(usage);
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-           collector.collect(quadruple);
+            if(!mtac::erase_result(quadruple.op)){
+                ++usage.read[quadruple.result];
+            }
+
+            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
+            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
         }
     }
 
@@ -103,25 +79,16 @@ struct VariableUsageCollector {
 
     VariableUsageCollector(mtac::VariableUsage& usage, int depth_factor) : usage(usage), depth_factor(depth_factor) {}
 
-    void inc_usage(std::shared_ptr<Variable> variable){
+    inline void inc_usage(std::shared_ptr<Variable> variable){
         usage[variable] += pow(depth_factor, current_depth);
-    }
-
-    template<typename T>
-    void collect_optional(T& opt){
-        if(opt){
-            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
-                inc_usage(*variablePtr);
-            }
-        }
     }
 
     void collect(mtac::Quadruple& quadruple){
         current_depth = quadruple.depth;
 
         inc_usage(quadruple.result);
-        collect_optional(quadruple.arg1);
-        collect_optional(quadruple.arg2);
+        mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [this](std::shared_ptr<Variable>& var){inc_usage(var);});
+        mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [this](std::shared_ptr<Variable>& var){inc_usage(var);});
     }
 };
 

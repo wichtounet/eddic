@@ -31,17 +31,8 @@ ProblemDomain mtac::LiveVariableAnalysisProblem::Boundary(mtac::Function& functi
                 use[block].insert(q.result);
             }
 
-            if(q.arg1){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*q.arg1)){
-                    use[block].insert(*ptr);
-                }
-            }
-            
-            if(q.arg2){
-                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*q.arg2)){
-                    use[block].insert(*ptr);
-                }
-            }
+            if_init<std::shared_ptr<Variable>>(q.arg1, [this, &block](std::shared_ptr<Variable>& var){ use[block].insert(var); });
+            if_init<std::shared_ptr<Variable>>(q.arg2, [this, &block](std::shared_ptr<Variable>& var){ use[block].insert(var); });
         }
         
         for(auto& escaped_var : *pointer_escaped){
@@ -86,46 +77,22 @@ void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p B, ProblemD
     }
 }
 
-namespace {
-
-struct LivenessCollector {
-    ProblemDomain& in;
-
-    LivenessCollector(ProblemDomain& in) : in(in) {}
-
-    template<typename Arg>
-    inline void update_optional(Arg& arg){
-        if(arg){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*arg)){
-                in.values().insert(*ptr);
-            }
-        }
+void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& in){
+    if(in.top()){
+        ProblemDomain::Values values;
+        in.int_values = values;
     }
 
-    void collect(mtac::Quadruple& quadruple){
-        if(in.top()){
-            ProblemDomain::Values values;
-            in.int_values = values;
+    if(quadruple.op != mtac::Operator::NOP){
+        if(mtac::erase_result(quadruple.op)){
+            in.values().erase(quadruple.result);
+        } else {
+            in.values().insert(quadruple.result);
         }
 
-        if(quadruple.op != mtac::Operator::NOP){
-            if(mtac::erase_result(quadruple.op)){
-                in.values().erase(quadruple.result);
-            } else {
-                in.values().insert(quadruple.result);
-            }
-
-            update_optional(quadruple.arg1);
-            update_optional(quadruple.arg2);
-        }
+        if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&in](std::shared_ptr<Variable>& var){in.values().insert(var);});
+        if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&in](std::shared_ptr<Variable>& var){in.values().insert(var);});
     }
-};
-
-} //End of anonymous namespace
-
-void mtac::LiveVariableAnalysisProblem::transfer(mtac::basic_block_p/* basic_block*/, mtac::Quadruple& statement, ProblemDomain& in){
-    LivenessCollector collector(in);
-    collector.collect(statement);
 }
 
 bool mtac::operator==(const mtac::Domain<mtac::Values>& lhs, const mtac::Domain<mtac::Values>& rhs){
