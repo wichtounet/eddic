@@ -1,22 +1,11 @@
-include <timer>
-
-int array[1000];
+int array[50000];
 
 void main(){
-    for(int i = 0; i < size(array); i++){
+    for(int i = 0; i < size(array); ++i){
         array[i] = size(array) - i;
     }
 
-    Timer timer;
-    start_timer(timer);
-    
     bubblesort();
-    
-    end_timer(timer);
-
-    print("Bubble Sort took ");
-    print_timer(timer);
-    println(" clock cycles");
 }
 
 void bubblesort(){
@@ -25,7 +14,7 @@ void bubblesort(){
     do {
         swapped = false;
 
-        for(int i = 1; i < size(array); i++){
+        for(int i = 1; i < size(array); ++i){
             if(array[i - 1] > array[i]){
                 int a = array[i];
                 array[i] = array[i - 1];
