@@ -96,10 +96,6 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                     mtac::transform_to_nop(quadruple);
                 }
             }
-           /* block->statements.erase(
-                    remove_if(block->statements.begin(), block->statements.end(), 
-                        [&to_delete](const mtac::Quadruple& q){return std::find(to_delete.begin(), to_delete.end(), q.uid()) != to_delete.end();}), 
-                    block->statements.end());*/
         }
     }
 
