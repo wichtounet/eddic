@@ -152,6 +152,15 @@ class CheckerVisitor : public boost::static_visitor<> {
                 }
             }
 
+            if(left_value_type->is_structure()){
+                std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(left_value_type)};
+                auto ctor_name = mangle_ctor(ctor_types, left_value_type);
+
+                if(!context->exists(ctor_name)){
+                    throw SemanticalException("Assigning to a structure needs a copy constructor", assignment.Content->position);
+                }
+            }
+
             //Special rules for assignments of variables
             if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
                 auto var = (*ptr).variable();
