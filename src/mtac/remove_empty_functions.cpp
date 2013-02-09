@@ -32,7 +32,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
             continue;
         }
 
-        unsigned int statements = function.size();
+        unsigned int statements = function.size_no_nop();
 
         if(statements == 0){
             program.context->stats().inc_counter("empty_function_removed");

@@ -42,7 +42,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 
         auto next = block->next;
 
-        if(unlikely(block->statements.empty())){
+        if(unlikely(block->size_no_nop() == 0)){
             if(usage.find(block) == usage.end()){
                 it.erase();
                 optimized = true;

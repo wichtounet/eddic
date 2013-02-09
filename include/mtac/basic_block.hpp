@@ -94,6 +94,9 @@ class basic_block {
         mtac::Quadruple& find(std::size_t uid);
         ltac::Instruction& find_low(std::size_t uid);
 
+        std::size_t size() const ;
+        std::size_t size_no_nop() const ;
+
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
         std::string label;  /*!< The label of the block */
