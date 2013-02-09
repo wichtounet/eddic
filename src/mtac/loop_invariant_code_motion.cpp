@@ -114,7 +114,7 @@ bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
 
                     function.context->global()->stats().inc_counter("invariant_moved");
 
-                    pre_header->statements.push_back(std::move(statement));
+                    pre_header->statements.push_back(statement);
                     mtac::transform_to_nop(statement);
 
                     optimized = true;
