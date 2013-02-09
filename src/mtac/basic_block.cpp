@@ -23,6 +23,22 @@ mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
     eddic_unreachable("The uid should exists");
 }
 
+std::size_t mtac::basic_block::size() const {
+    return statements.size();
+}
+
+std::size_t mtac::basic_block::size_no_nop() const {
+    std::size_t size = 0;
+
+    for(auto& quadruple : statements){
+        if(quadruple.op != mtac::Operator::NOP){
+            ++size;
+        }
+    }
+
+    return size;
+}
+
 std::ostream& mtac::operator<<(std::ostream& stream, const std::shared_ptr<basic_block>& basic_block){
     if(basic_block){
         return stream << *basic_block;
