@@ -10,6 +10,7 @@
 
 #include "mtac/MathPropagation.hpp"
 #include "mtac/OptimizerUtils.hpp"
+#include "mtac/Utils.hpp"
 
 using namespace eddic;
 
@@ -19,22 +20,10 @@ void mtac::MathPropagation::clear(){
     usage.clear();
 }
 
-void mtac::MathPropagation::collect(mtac::Argument* arg){
-    if(auto* ptr = boost::get<std::shared_ptr<Variable>>(arg)){
-        usage[*ptr] += 1;
-    }
-}
-
-void mtac::MathPropagation::collect(boost::optional<mtac::Argument>& arg){
-    if(arg){
-        collect(&*arg);
-    }
-}
-
 void mtac::MathPropagation::operator()(mtac::Quadruple& quadruple){
     if(pass == mtac::Pass::DATA_MINING){
-        collect(quadruple.arg1);
-        collect(quadruple.arg2);
+        if_init<std::shared_ptr<Variable>>(quadruple.arg1, [this](std::shared_ptr<Variable>& var){ ++usage[var]; });
+        if_init<std::shared_ptr<Variable>>(quadruple.arg2, [this](std::shared_ptr<Variable>& var){ ++usage[var]; });
     } else if(!quadruple.is_if() && quadruple.is_if_false()){
         if(quadruple.result && quadruple.op != mtac::Operator::CALL){
             assigns.emplace(std::make_pair(quadruple.result, std::ref(quadruple)));
