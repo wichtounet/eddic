@@ -67,7 +67,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
 
         //Erase the call
-        bb->statements.erase(bb->statements.begin());
+        mtac::transform_to_nop(bb->statements.front());
 
         //The basic block remains the same
         return bb;
