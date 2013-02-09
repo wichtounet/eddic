@@ -94,7 +94,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
             eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
-                if(variable->type() == CHAR){
+                if(variable->type() == CHAR || variable->type() == BOOL){
                     ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
                     mov.size = ltac::Size::BYTE;
                     bb->push_back(std::move(mov));

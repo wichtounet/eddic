@@ -407,7 +407,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                         left = {temp};
                     } else {
-                        if(data_type == BOOL || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
+                        if(data_type == INT || data_type == FLOAT || data_type->is_pointer()){
                             std::shared_ptr<Variable> temp;
                             if(T == ArgumentType::REFERENCE){
                                 temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
@@ -418,7 +418,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                             function.emplace_back(temp, left[0], mtac::Operator::DOT, index);
 
                             left = {temp};
-                        } else if(data_type == CHAR){
+                        } else if(data_type == CHAR || data_type == BOOL){
                             std::shared_ptr<Variable> temp;
                             if(T == ArgumentType::REFERENCE){
                                 temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
@@ -1199,7 +1199,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             if(left_type->is_pointer()){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]);
-            } else if(left_type == CHAR){
+            } else if(left_type == CHAR || left_type == BOOL){
                 mtac::Quadruple mov(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
                 mov.size = mtac::Size::BYTE;
                 function.push_back(std::move(mov));

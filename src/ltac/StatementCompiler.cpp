@@ -439,7 +439,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
     //Char has a smaller size, cannot use push instructions
     
-    if(param.param() && param.param()->type() == CHAR){
+    if(param.param() && (param.param()->type() == CHAR || param.param()->type() == BOOL)){
         bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
 
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
