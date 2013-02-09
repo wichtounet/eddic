@@ -47,6 +47,20 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         }
     }
 
+    //Delete what has been found on previous steps
+
+    if(!to_delete.empty()){
+        optimized = true;
+
+        for(auto& block : function){
+            for(auto& quadruple : block->statements){
+                if(std::find(to_delete.begin(), to_delete.end(), quadruple.uid()) != to_delete.end()){
+                    mtac::transform_to_nop(quadruple);
+                }
+            }
+        }
+    }
+
     //2. Remove variables that contribute only to themselves
     //TODO This could probably be done directly in the data-flow DCE
 
@@ -79,22 +93,9 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
         for(auto& block : function){
             for(auto& quadruple : block->statements){
                 if(quadruple.result && mtac::erase_result(quadruple.op) && candidates.find(quadruple.result) != candidates.end()){
-                    to_delete.push_back(quadruple.uid());
-                } 
-            }
-        }
-    }
-
-    //Delete what has been found on previous steps
-
-    if(!to_delete.empty()){
-        optimized = true;
-
-        for(auto& block : function){
-            for(auto& quadruple : block->statements){
-                if(std::find(to_delete.begin(), to_delete.end(), quadruple.uid()) != to_delete.end()){
                     mtac::transform_to_nop(quadruple);
-                }
+                    optimized = true;
+                } 
             }
         }
     }
@@ -143,9 +144,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                             mtac::Offset offset(quadruple.result, *offset_ptr);
 
                             if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                                it.erase();
+                                mtac::transform_to_nop(quadruple);
                                 optimized=true;
-                                continue;
                             }
                         }
                     }
