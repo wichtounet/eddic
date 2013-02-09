@@ -104,11 +104,7 @@ bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
     auto usage = compute_write_usage(loop);
 
     for(auto& bb : loop){
-        auto it = iterate(bb->statements); 
-
-        while(it.has_next()){
-            auto& statement = *it;
-
+        for(auto& statement : bb->statements){
             if(is_invariant(statement, usage)){
                 if(is_valid_invariant(bb, statement, loop)){
                     //Create the preheader if necessary
@@ -119,15 +115,11 @@ bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
                     function.context->global()->stats().inc_counter("invariant_moved");
 
                     pre_header->statements.push_back(std::move(statement));
-                    it.erase();
+                    mtac::transform_to_nop(statement);
 
                     optimized = true;
-
-                    continue;
                 } 
             }
-
-            ++it;
         }
     }
 
