@@ -1,0 +1,29 @@
+int array[50000];
+
+include<print>
+
+void main(){
+    for(int i = 0; i < size(array); ++i){
+        array[i] = size(array) - i;
+    }
+
+    insertion_sort();
+
+    foreach(int i in array){
+        print(i);
+    }
+}
+
+void insertion_sort(){
+    for(int i = 1; i < size(array); ++i){
+        int value = array[i];
+        int hole = i;
+
+        while(hole > 0 && value < array[hole - 1]){
+            array[hole] = array[hole - 1];
+            --hole;
+        }
+
+        array[hole] = value;
+    }
+}
