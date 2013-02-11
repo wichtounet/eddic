@@ -91,10 +91,36 @@ class basic_block {
             l_statements.emplace_back(std::forward<Args>(args)...);
         }
 
+        /*!
+         * \brief Return the MTAC statement with the given UID. 
+         *
+         * Operation in O(n). The operation will fail if there are no MTAC statement with this UID in the basic block. 
+         * \return A reference to the MTAC statement with the given UID in the basic block. 
+         */
         mtac::Quadruple& find(std::size_t uid);
+
+        /*!
+         * \brief Return the LTAC statement with the given UID. 
+         *
+         * Operation in O(n). The operation will fail if there are no LTAC statement with this UID in the basic block. 
+         * \return A reference to the LTAC statement with the given UID in the basic block. 
+         */
         ltac::Instruction& find_low(std::size_t uid);
 
+        /*!
+         * \brief Return the number of MTAC statements of the basic blocks. 
+         *
+         * Operation in O(1)
+         * \return the number of MTAC statements of the basic blocks. 
+         */
         std::size_t size() const ;
+
+        /*!
+         * \brief Return the number of non-NOP MTAC statements of the basic blocks. 
+         *
+         * Operation in O(n)
+         * \return the number of non-NOP MTAC statements of the basic blocks. 
+         */
         std::size_t size_no_nop() const ;
 
         const int index;    /*!< The index of the block */
@@ -112,8 +138,8 @@ class basic_block {
         std::shared_ptr<basic_block> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
 
         /* Control Flow Graph */
-        std::vector<std::shared_ptr<basic_block>> successors;
-        std::vector<std::shared_ptr<basic_block>> predecessors;
+        std::vector<std::shared_ptr<basic_block>> successors;   //!< The basic block's predecessors in the CFG
+        std::vector<std::shared_ptr<basic_block>> predecessors; //!< The basic block's successors in the CFG
 
         /* Dominance tree */
         
