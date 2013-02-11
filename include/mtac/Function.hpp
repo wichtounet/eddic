@@ -165,15 +165,50 @@ class Function : public std::enable_shared_from_this<Function> {
         void variable_use(ltac::Register reg);
         void variable_use(ltac::FloatRegister reg);
 
+        /*!
+         * \brief Indicate if this function is the main function.
+         * \return true if it is the main function, false otherwise. 
+         */
         bool is_main() const;
 
+        /*!
+         * \brief Indicate if the function is pure. 
+         *
+         * A pure function cannot modify value of global variables, edit pointers or call unpure functions. 
+         * \return true if the function is pure, false otherise. 
+         */
         bool& pure();
+
+        /*!
+         * \brief Indicate if the function is pure. 
+         *
+         * A pure function cannot modify value of global variables, edit pointers or call unpure functions. 
+         * \return true if the function is pure, false otherise. 
+         */
         bool pure() const;
 
+        /*!
+         * \brief Indicate if the function comes from the standard library or is a user function. 
+         * \return true if the function comes from the standard library, false otherwise. 
+         */
         bool& standard();
+
+        /*!
+         * \brief Indicate if the function comes from the standard library or is a user function. 
+         * \return true if the function comes from the standard library, false otherwise. 
+         */
         bool standard() const;
 
+        /*!
+         * \brief Return the function definition for this MTAC function. 
+         * \return the function definition of this function.
+         */
         eddic::Function& definition();
+
+        /*!
+         * \brief Return the function definition for this MTAC function. 
+         * \return the function definition of this function.
+         */
         const eddic::Function& definition() const;
 
         std::shared_ptr<FunctionContext> context;
