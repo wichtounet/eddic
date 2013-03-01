@@ -1265,6 +1265,8 @@ void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
     if(quadruple.size == mtac::Size::BYTE){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             auto reg = manager.get_pseudo_reg(*ptr);
+
+            //TODO if the reg is already 8-bit allocatable, use it directly
                 
             //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
             auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
