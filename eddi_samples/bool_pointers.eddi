@@ -8,9 +8,4 @@ void main(){
 void test(bool* a){
     print(*a);
     print("|");
-
-    bool* b = a;
-    
-    print(*b);
-    print("|");
 }
