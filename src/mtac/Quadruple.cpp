@@ -234,6 +234,24 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
 
     stream << "\t" << std::setw(3) << std::setfill('0') << quadruple.uid() << ":";
 
+    switch(quadruple.size){
+        case mtac::Size::BYTE:
+            stream << " (byte) ";
+            break;
+        case mtac::Size::WORD:
+            stream << " (word) ";
+            break;
+        case mtac::Size::DOUBLE_WORD:
+            stream << " (dword) ";
+            break;
+        case mtac::Size::QUAD_WORD:
+            stream << " (qword) ";
+            break;
+        case mtac::Size::DEFAULT:
+            //Nothing
+            break;
+    }
+
     switch(op){
         case mtac::Operator::ASSIGN:
             stream << "\t" << quadruple.result << " = (normal) " << *quadruple.arg1 << " : " << quadruple.depth ;
