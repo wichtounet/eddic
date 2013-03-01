@@ -1123,7 +1123,13 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::PASSIGN);
-        } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
+        } else if(type == CHAR || type == BOOL){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
+            
+            mtac::Quadruple mov(variable, values[0], mtac::Operator::ASSIGN);
+            mov.size = mtac::Size::BYTE;
+            function.push_back(std::move(mov));
+        } else if(type->is_array() || type == INT){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
         } else if(type == STRING){
