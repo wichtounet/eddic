@@ -80,34 +80,44 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
     }
 }
 
-void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg){
+void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg, ltac::Size size){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
         
         //If the variable is hold in a register, just move the register value
         if(pseudo_registers.inRegister(variable)){
             auto old_reg = pseudo_registers[variable];
-            bb->emplace_back_low(ltac::Operator::MOV, reg, old_reg);
+            
+            ltac::Instruction mov(ltac::Operator::MOV, reg, old_reg);
+            mov.size = size;
+            bb->push_back(std::move(mov));
         } else {
             auto position = variable->position();
 
             eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
+                //TODO Perhaps not useful anymore
                 if(variable->type() == CHAR || variable->type() == BOOL){
                     ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
                     mov.size = ltac::Size::BYTE;
                     bb->push_back(std::move(mov));
                 } else {
-                    bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                    ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
+                    mov.size = size;
+                    bb->push_back(std::move(mov));
                 }
             } else if(position.isGlobal()){
-                bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
+                mov.size = size;
+                bb->push_back(std::move(mov));
             }
         }
     } else {
         //If it's a constant (int, double, string), just move it
-        bb->emplace_back_low(ltac::Operator::MOV, reg, to_arg(argument, *this));
+        ltac::Instruction mov(ltac::Operator::MOV, reg, to_arg(argument, *this));
+        mov.size = size;
+        bb->push_back(std::move(mov));
     }
 }
 
