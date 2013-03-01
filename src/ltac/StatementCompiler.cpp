@@ -679,13 +679,14 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
     
     //Copy it in the register
-    manager.copy(*quadruple.arg1, reg);
+    manager.copy(*quadruple.arg1, reg, convert_size(quadruple.size));
 
     //The variable has been written
     manager.set_written(quadruple.result);
 
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple.result)){
+        //TODO Use correct position for the spill too
         auto position = quadruple.result->position();
         if(position.isStack()){
             bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
