@@ -107,7 +107,7 @@ namespace {
 std::string get_register_8(ltac::Register& reg){
     eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
     auto sub_reg = registers_8[reg.reg];
-    eddic_assert(!sub_reg.empty(), "RSI and RDI are not 8-bit allocatable");
+    eddic_assert(!sub_reg.empty(), "The register is not 8-bit allocatable");
     return sub_reg;
 }
 
