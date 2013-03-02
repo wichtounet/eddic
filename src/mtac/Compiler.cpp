@@ -869,10 +869,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
-        if(type == INT || type == CHAR || type == BOOL){
+        if(type == INT){
             auto temp = function.context->new_temporary(type);
 
             function.emplace_back(temp, variable, mtac::Operator::DOT, 0);
+
+            return {temp};
+        } else if(type == CHAR || type == BOOL){
+            auto temp = function.context->new_temporary(type);
+
+            mtac::Quadruple dot(temp, variable, mtac::Operator::DOT, 0);
+            dot.size = mtac::Size::BYTE;
+            function.push_back(std::move(dot));
 
             return {temp};
         } else if(type == FLOAT){
