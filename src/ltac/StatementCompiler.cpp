@@ -686,12 +686,15 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
 
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple.result)){
-        //TODO Use correct position for the spill too
         auto position = quadruple.result->position();
         if(position.isStack()){
-            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
         } else if(position.isGlobal()){
-            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
         } else {
             eddic_unreachable("Invalid position");
         }
