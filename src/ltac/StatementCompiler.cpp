@@ -687,17 +687,27 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple.result)){
         auto position = quadruple.result->position();
+            
+        //TODO if the reg is already 8-bit allocatable, use it directly
+
+        //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+        auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+
+        bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
         if(position.isStack()){
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg);
             mov.size = convert_size(quadruple.size);
             bb->push_back(std::move(mov));
         } else if(position.isGlobal()){
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg);
             mov.size = convert_size(quadruple.size);
             bb->push_back(std::move(mov));
         } else {
             eddic_unreachable("Invalid position");
         }
+        
+        uses.push_back(hard_reg);
         
         manager.remove_from_pseudo_reg(quadruple.result); 
     }
@@ -1180,9 +1190,19 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
 
         if(variable->type()->is_pointer() || (variable->type()->is_dynamic_array() && !variable->position().isParameter())){
             auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-            ltac::Instruction instruction(ltac::Operator::MOV, reg, address(variable, *quadruple.arg2));
+            
+            //TODO if the reg is already 8-bit allocatable, use it directly
+            
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            
+            ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
             instruction.size = size;
             bb->push_back(std::move(instruction));
+            
+            bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
+
+            uses.push_back(hard_reg);
         } else {
             if(ltac::is_float_var(quadruple.result)){
                 auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
@@ -1191,9 +1211,19 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
                 bb->push_back(std::move(instruction));
             } else {
                 auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-                ltac::Instruction instruction(ltac::Operator::MOV, reg, address(variable, *quadruple.arg2));
+
+                //TODO if the reg is already 8-bit allocatable, use it directly
+
+                //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+                auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+                
+                ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
                 instruction.size = size;
                 bb->push_back(std::move(instruction));
+
+                bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
+
+                uses.push_back(hard_reg);
             }
         }
     } else if(auto* string_ptr = boost::get<std::string>(&*quadruple.arg1)){
