@@ -244,8 +244,12 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
 
         if(member_type == FLOAT){
             function.emplace_back(temp, var, mtac::Operator::FDOT, static_cast<int>(offset));
-        } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer() || member_type->is_dynamic_array()){
+        } else if(member_type == INT || member_type->is_pointer() || member_type->is_dynamic_array()){
             function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
+        } else if(member_type == CHAR || member_type == BOOL){
+            mtac::Quadruple dot(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
+            dot.size = mtac::Size::BYTE;
+            function.push_back(std::move(dot));
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member
         } else {
@@ -1667,9 +1671,11 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){
-                function.emplace_back(
-                        param->type()->is_pointer() ? mtac::Operator::PPARAM : mtac::Operator::PARAM, 
-                        arg, param, definition);
+                if(param->type()->is_pointer()){
+                    function.emplace_back(mtac::Operator::PPARAM, arg, param, definition);
+                } else {
+                    function.emplace_back(mtac::Operator::PARAM, arg, param, definition);
+                }
             }
         }
     }
