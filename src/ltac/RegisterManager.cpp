@@ -88,9 +88,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         if(pseudo_registers.inRegister(variable)){
             auto old_reg = pseudo_registers[variable];
             
-            ltac::Instruction mov(ltac::Operator::MOV, reg, old_reg);
-            mov.size = size;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, reg, old_reg);
         } else {
             auto position = variable->position();
 
@@ -115,9 +113,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         }
     } else {
         //If it's a constant (int, double, string), just move it
-        ltac::Instruction mov(ltac::Operator::MOV, reg, to_arg(argument, *this));
-        mov.size = size;
-        bb->push_back(std::move(mov));
+        bb->emplace_back_low(ltac::Operator::MOV, reg, to_arg(argument, *this));
     }
 }
 
