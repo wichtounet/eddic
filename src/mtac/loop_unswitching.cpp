@@ -32,10 +32,18 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
             auto entry = loop.find_entry();
             auto exit = loop.find_exit();
 
-            if(entry && exit){
+            if(entry && exit && entry->size() == 1){
                 if(entry->successors.size() == 2 && exit->predecessors.size() == 2){
-                    //TODO
-                    std::cout << "Find out" << std::endl;
+                    if(std::is_permutation(entry->successors.begin(), entry->successors.end(), exit->predecessors.begin())){
+                        auto& condition = *entry->begin();
+
+                        if(condition.is_if() || condition.is_if_false()){
+                            //TODO Test if the condition is invariant
+                            //TODO Unswitch the loop
+                            
+                            std::cout << "Find out" << std::endl;
+                        }
+                    }
                 }
             }
         }
