@@ -23,11 +23,11 @@ Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::False&) const {
-    return 0;
+    return false;
 }
 
 Val ast::GetConstantValue::operator()(const ast::True&) const {
-    return 1;
+    return true;
 }
 
 Val ast::GetConstantValue::operator()(const ast::IntegerSuffix& integer) const {

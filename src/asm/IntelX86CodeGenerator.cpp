@@ -457,6 +457,14 @@ void as::IntelX86CodeGenerator::declareIntVariable(const std::string& name, int 
     writer.stream() << "V" << name << " dd " << value << '\n';
 }
 
+void as::IntelX86CodeGenerator::declareBoolVariable(const std::string& name, bool value){
+    writer.stream() << "V" << name << " db " << value << '\n';
+}
+
+void as::IntelX86CodeGenerator::declareCharVariable(const std::string& name, char value){
+    writer.stream() << "V" << name << " db " << value << '\n';
+}
+
 void as::IntelX86CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){
     writer.stream() << "V" << name << " dd " << label << ", " << size << '\n';
 }
