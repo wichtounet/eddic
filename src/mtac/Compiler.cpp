@@ -1262,13 +1262,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
                 if(member_type->is_pointer()){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_PASSIGN, values[0]);
-                } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
+                } else if(member_type->is_array() || member_type == INT){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                } else if(member_type == CHAR || member_type == BOOL){
+                    mtac::Quadruple mov(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                    mov.size = mtac::Size::BYTE;
+                    function.push_back(std::move(mov));
+                } else if(member_type == FLOAT){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
                 } else if(member_type == STRING){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
                     function.emplace_back(struct_variable, static_cast<int>(offset + INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
-                } else if(member_type == FLOAT){
-                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
                 } else {
                     eddic_unreachable("Unhandled value type");
                 }
