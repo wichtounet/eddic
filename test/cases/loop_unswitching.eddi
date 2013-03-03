@@ -1,0 +1,14 @@
+bool b = false;
+int limit = 100;
+
+void main(){
+    for(int i = 0; i < limit; ++i){
+        if(b){
+            print('0');
+            print('|');
+        } else {
+            print('1');
+            print('|');
+        }
+    }
+}
