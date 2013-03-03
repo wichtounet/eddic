@@ -28,7 +28,17 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        //TODO
+        if(loop.single_exit()){
+            auto entry = loop.find_entry();
+            auto exit = loop.find_exit();
+
+            if(entry && exit){
+                if(entry->successors.size() == 2 && exit->predecessors.size() == 2){
+                    //TODO
+                    std::cout << "Find out" << std::endl;
+                }
+            }
+        }
     }
 
     return optimized;
