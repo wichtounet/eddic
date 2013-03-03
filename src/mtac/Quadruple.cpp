@@ -323,7 +323,7 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
             stream << "\t" << quadruple.result << " = (pointer)" << size(quadruple.size) << " (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_ASSIGN:
-            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal)" << size(quadruple.size) << size(quadruple.size) << " " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal)" << size(quadruple.size) << " " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_FASSIGN:
             stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (float) " << size(quadruple.size) << *quadruple.arg2 << " : "<< quadruple.depth;
