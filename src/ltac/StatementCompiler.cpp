@@ -502,6 +502,8 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
                 auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
                 bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
+                bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
+
                 ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
                 mov.size = ltac::Size::BYTE;
                 bb->push_back(std::move(mov));
