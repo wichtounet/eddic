@@ -1,0 +1,13 @@
+include <print>
+
+void main(){
+    bool a = false;
+    test(&a);
+}
+
+void test(bool* a){
+    print(*a);
+    print("|");
+    
+    *a = true; 
+}

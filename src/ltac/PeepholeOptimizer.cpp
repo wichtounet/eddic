@@ -299,7 +299,9 @@ inline bool multiple_statement_optimizations_second(ltac::Instruction& i1, ltac:
 
             bool possible = true;
 
-            if(auto* ptr = boost::get<ltac::Address>(&*i1.arg2)){
+            if(i1.size != ltac::Size::DEFAULT){
+                possible = false;
+            } else if(auto* ptr = boost::get<ltac::Address>(&*i1.arg2)){
                 if(ptr->base_register && boost::get<ltac::Register>(*ptr->base_register) == reg11){
                     possible = false;
                 }

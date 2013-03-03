@@ -310,6 +310,13 @@ void ltac::generate_prologue_epilogue(mtac::Program& program, std::shared_ptr<Co
     for(auto& function : program.functions){
         auto size = function.context->size();
 
+        //Align stack pointer to the size of an INT
+
+        if(size % INT->size(platform) != 0){
+            int padding = INT->size(platform) - (size % INT->size(platform));
+            size += padding;
+        }
+
         //1. Generate prologue
         
         auto bb = function.entry_bb();

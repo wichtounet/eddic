@@ -24,6 +24,7 @@
 #include "ltac/Operator.hpp"
 #include "ltac/PseudoRegister.hpp"
 #include "ltac/PseudoFloatRegister.hpp"
+#include "ltac/Instruction.hpp"
 
 #include "asm/PseudoRegisters.hpp"
 
@@ -62,7 +63,7 @@ class RegisterManager {
         ltac::PseudoFloatRegister get_pseudo_float_reg_no_move(std::shared_ptr<Variable> var);
 
         void copy(mtac::Argument argument, ltac::PseudoFloatRegister reg);
-        void copy(mtac::Argument argument, ltac::PseudoRegister reg);
+        void copy(mtac::Argument argument, ltac::PseudoRegister reg, ltac::Size size = ltac::Size::DEFAULT);
 
         void move(mtac::Argument argument, ltac::PseudoRegister reg);
         void move(mtac::Argument argument, ltac::PseudoFloatRegister reg);
