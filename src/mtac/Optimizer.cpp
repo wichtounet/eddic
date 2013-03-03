@@ -43,6 +43,7 @@
 #include "mtac/loop_analysis.hpp"
 #include "mtac/induction_variable_optimizations.hpp"
 #include "mtac/loop_unrolling.hpp"
+#include "mtac/loop_unswitching.hpp"
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
@@ -111,6 +112,7 @@ typedef boost::mpl::vector<
         mtac::loop_induction_variables_optimization*,
         mtac::remove_empty_loops*,
         mtac::loop_unrolling*,
+        mtac::loop_unswitching*,
         mtac::complete_loop_peeling*, //Must be kept last since it can mess up the loop analysis
         mtac::clean_variables*
     > passes;
