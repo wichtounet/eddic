@@ -27,20 +27,6 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
-
-struct BBReplace {
-    BBClones& clones;
-
-    BBReplace(BBClones& clones) : clones(clones) {}
-
-    void operator()(mtac::Quadruple& goto_){
-        if(clones.find(goto_.block) != clones.end()){
-            goto_.block = clones[goto_.block];
-        }
-    }
-};
-
 mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic_block_p bb){
     auto safe_block = dest_function.new_bb();
 
@@ -105,10 +91,10 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
     }
 }
 
-BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
+mtac::BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     LOG<Trace>("Inlining") << "Clone " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
-    BBClones bb_clones;
+    mtac::BBClones bb_clones;
 
     std::vector<mtac::basic_block_p> cloned;
 
@@ -297,9 +283,8 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
     return constant;
 }
 
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, mtac::Quadruple& call, mtac::basic_block_p basic_block){
+void adapt_instructions(mtac::VariableClones& variable_clones, mtac::BBClones& bb_clones, mtac::Quadruple& call, mtac::basic_block_p basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
-    BBReplace bb_replacer(bb_clones);
 
     auto new_bb = basic_block->prev;
 
@@ -312,7 +297,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
             auto& quadruple = *ssit;
 
             variable_replacer.replace(quadruple);
-            bb_replacer(quadruple);
+            mtac::replace_bbs(bb_clones, quadruple);
 
             if(quadruple.op == mtac::Operator::RETURN){
                 auto label = "label";

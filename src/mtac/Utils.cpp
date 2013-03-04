@@ -16,6 +16,24 @@
 
 using namespace eddic;
 
+void mtac::replace_bbs(BBClones& clones, mtac::Quadruple& quadruple){
+    if(clones.find(quadruple.block) != clones.end()){
+        quadruple.block = clones[quadruple.block];
+    }
+}
+
+void mtac::replace_bbs(BBClones& clones, mtac::basic_block_p& bb){
+    for(auto& quadruple : bb){
+        mtac::replace_bbs(clones, quadruple);
+    }
+}
+
+void mtac::replace_bbs(BBClones& clones, mtac::Function& function){
+    for(auto& bb : function){
+        mtac::replace_bbs(clones, bb);
+    }
+}
+
 bool mtac::is_single_int_register(std::shared_ptr<const Type> type){
    return type == INT || type == BOOL || type == CHAR || type->is_pointer(); 
 }
