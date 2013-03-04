@@ -62,17 +62,33 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             
                             entry->predecessors.erase(std::remove(entry->predecessors.begin(), entry->predecessors.end(), entry), entry->predecessors.end());
 
-                            exit_copy = mtac::clone(function, exit);
+                            exit->successors.erase(std::remove(exit->successors.begin(), exit->successors.end(), entry), exit->successors.end());
+                            exit->successors.push_back(loop_2_entry);
+
+                            auto exit_copy = mtac::clone(function, exit);
                             
                             exit_copy->successors.erase(std::remove(exit_copy->successors.begin(), exit_copy->successors.end(), entry), exit_copy->successors.end());
                             exit_copy->successors.push_back(loop_1_entry);
 
-                            exit->successors.erase(std::remove(exit->successors.begin(), exit->successors.end(), entry), exit->successors.end());
-                            exit->successors.push_back(loop_2_entry);
-
-                            //TODO Unswitch the loop
+                            mtac::BBClones bb_clones;
                             
-                            std::cout << "Find out" << std::endl;
+                            bb_clones[entry] = loop_1_entry;
+                            mtac::replace_bbs(bb_clones, exit);
+                            
+                            bb_clones[entry] = loop_2_entry;
+                            mtac::replace_bbs(bb_clones, exit_copy);
+
+                            auto after_exit = exit->next;
+
+                            function.insert_after(function.at(exit), exit_copy);
+
+                            mtac::Quadruple goto_(mtac::Operator::GOTO);
+                            goto_.block = after_exit;
+                            
+                            auto new_goto_bb = function.new_bb();
+                            new_goto_bb->statements.push_back(std::move(goto_));
+
+                            function.insert_after(function.at(exit), new_goto_bb);
                         }
                     }
                 }
