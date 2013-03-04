@@ -57,6 +57,19 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                                 }
                             }
 
+                            auto loop_1_entry = entry->successors.front();
+                            auto loop_2_entry = entry->successors.back();
+                            
+                            entry->predecessors.erase(std::remove(entry->predecessors.begin(), entry->predecessors.end(), entry), entry->predecessors.end());
+
+                            exit_copy = mtac::clone(function, exit);
+                            
+                            exit_copy->successors.erase(std::remove(exit_copy->successors.begin(), exit_copy->successors.end(), entry), exit_copy->successors.end());
+                            exit_copy->successors.push_back(loop_1_entry);
+
+                            exit->successors.erase(std::remove(exit->successors.begin(), exit->successors.end(), entry), exit->successors.end());
+                            exit->successors.push_back(loop_2_entry);
+
                             //TODO Unswitch the loop
                             
                             std::cout << "Find out" << std::endl;
