@@ -89,6 +89,11 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             new_goto_bb->statements.push_back(std::move(goto_));
 
                             function.insert_after(function.at(exit), new_goto_bb);
+                    
+                            LOG<Trace>("loops") << "Unswitch loop" << log::endl;
+                            function.context->global()->stats().inc_counter("loop_unswitched");
+
+                            optimized = true;
                         }
                     }
                 }
