@@ -13,6 +13,7 @@
 #include "mtac/loop.hpp"
 #include "mtac/loop_unswitching.hpp"
 #include "mtac/Utils.hpp"
+#include "mtac/variable_usage.hpp"
 
 using namespace eddic;
 
@@ -38,7 +39,24 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                         auto& condition = *entry->begin();
 
                         if(condition.is_if() || condition.is_if_false()){
-                            //TODO Test if the condition is invariant
+                            auto usage = mtac::compute_write_usage(loop);
+
+                            if(condition.arg1){
+                                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*condition.arg1)){
+                                    if(usage.written[*ptr] > 0){
+                                        continue;
+                                    }
+                                }
+                            }
+                            
+                            if(condition.arg2){
+                                if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*condition.arg2)){
+                                    if(usage.written[*ptr] > 0){
+                                        continue;
+                                    }
+                                }
+                            }
+
                             //TODO Unswitch the loop
                             
                             std::cout << "Find out" << std::endl;
