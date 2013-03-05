@@ -14,6 +14,7 @@
 #include "mtac/loop_unswitching.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/variable_usage.hpp"
+#include "mtac/ControlFlowGraph.hpp"
 
 using namespace eddic;
 
@@ -62,10 +63,10 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             
                             entry->predecessors.erase(std::remove(entry->predecessors.begin(), entry->predecessors.end(), entry), entry->predecessors.end());
 
+                            auto exit_copy = mtac::clone(function, exit);
+
                             exit->successors.erase(std::remove(exit->successors.begin(), exit->successors.end(), entry), exit->successors.end());
                             exit->successors.push_back(loop_2_entry);
-
-                            auto exit_copy = mtac::clone(function, exit);
                             
                             exit_copy->successors.erase(std::remove(exit_copy->successors.begin(), exit_copy->successors.end(), entry), exit_copy->successors.end());
                             exit_copy->successors.push_back(loop_1_entry);
@@ -80,20 +81,33 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
 
                             auto after_exit = exit->next;
 
-                            function.insert_after(function.at(exit), exit_copy);
-
                             mtac::Quadruple goto_(mtac::Operator::GOTO);
                             goto_.block = after_exit;
                             
                             auto new_goto_bb = function.new_bb();
                             new_goto_bb->statements.push_back(std::move(goto_));
 
+                            function.insert_after(function.at(exit), exit_copy);
                             function.insert_after(function.at(exit), new_goto_bb);
+
+                            mtac::make_edge(new_goto_bb, after_exit);
                     
                             LOG<Trace>("loops") << "Unswitch loop" << log::endl;
                             function.context->global()->stats().inc_counter("loop_unswitched");
 
                             optimized = true;
+
+                            std::cout << "After unswitching" << std::endl;
+
+                            std::cout << "after_exit:" << after_exit << std::endl;
+                            std::cout << "entry:" << entry << std::endl;
+                            std::cout << "exit:" << exit << std::endl;
+                            std::cout << "exit_copy:" << exit_copy << std::endl;
+                            std::cout << "new_goto_bb:" << new_goto_bb << std::endl;
+                            std::cout << "loop_1_entry:" << loop_1_entry << std::endl;
+                            std::cout << "loop_2_entry:" << loop_2_entry << std::endl;
+
+                            std::cout << function << std::endl;
                         }
                     }
                 }
