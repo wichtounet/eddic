@@ -1,4 +1,4 @@
-bool b = false;
+bool b = true;
 int limit = 100;
 
 void main(){
