@@ -60,6 +60,10 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
 
                             auto loop_1_entry = entry->successors.front();
                             auto loop_2_entry = entry->successors.back();
+
+                            if(loop_2_entry->next == loop_1_entry){
+                                std::swap(loop_1_entry, loop_2_entry);
+                            }
                             
                             entry->predecessors.erase(std::remove(entry->predecessors.begin(), entry->predecessors.end(), entry), entry->predecessors.end());
 
