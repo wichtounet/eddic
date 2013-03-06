@@ -115,18 +115,6 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             function.context->global()->stats().inc_counter("loop_unswitched");
 
                             optimized = true;
-
-                            std::cout << "After unswitching" << std::endl;
-
-                            std::cout << "after_exit:" << after_exit << std::endl;
-                            std::cout << "entry:" << entry << std::endl;
-                            std::cout << "exit:" << exit << std::endl;
-                            std::cout << "exit_copy:" << exit_copy << std::endl;
-                            std::cout << "new_goto_bb:" << new_goto_bb << std::endl;
-                            std::cout << "loop_1_entry:" << loop_1_entry << std::endl;
-                            std::cout << "loop_2_entry:" << loop_2_entry << std::endl;
-
-                            std::cout << function << std::endl;
                         }
                     }
                 }
