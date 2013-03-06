@@ -382,33 +382,33 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
     }
 
     if(can_be_inlined(target_function)){
-        auto source_size = source_function.size();
-        auto target_size = target_function.size();
+        auto caller_size = source_function.size();
+        auto callee_size = target_function.size();
 
         auto constant_parameters = count_constant_parameters(target_function, source_function, bb, call);
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function.definition().parameters().size() == constant_parameters){
-            return target_size < 100 && source_size < 300;
+            return callee_size < 100 && caller_size < 300;
         }
 
         //For inner loop, increase the chances of inlining
         if(call.depth > 1){
-            return source_size < 250 && target_size < 75;
+            return caller_size < 250 && callee_size < 75;
         }
         
         //For single loop, increase a bit the changes of inlining
         if(call.depth > 0){
-            return source_size < 150 && target_size < 50;
+            return caller_size < 150 && callee_size < 50;
         }
 
         //function called once
         if(program.call_graph.node(target_function.definition())->in_edges.size() == 1){
-            return source_size < 100 && target_size < 100;
+            return caller_size < 100 && callee_size < 100;
         } 
 
         //return false;
-        return target_size < SMALL_FUNCTION && source_size < 200;
+        return callee_size < SMALL_FUNCTION && caller_size < 200;
     }
 
     return false;
