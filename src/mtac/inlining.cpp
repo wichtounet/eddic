@@ -373,6 +373,8 @@ bool can_be_inlined(mtac::Function& function){
     return true;
 }
 
+const int SMALL_FUNCTION = 12;
+
 bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::Function& target_function, mtac::Quadruple& call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function.get_name() == target_function.get_name()){
@@ -405,8 +407,8 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
             return source_size < 100 && target_size < 100;
         } 
 
-        //Inline little functions
-        return target_size < 10 && source_size < 200;
+        //return false;
+        return target_size < SMALL_FUNCTION && source_size < 200;
     }
 
     return false;
