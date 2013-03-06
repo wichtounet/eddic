@@ -407,7 +407,6 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
             return caller_size < 100 && callee_size < 100;
         } 
 
-        //return false;
         return callee_size < SMALL_FUNCTION && caller_size < 200;
     }
 
