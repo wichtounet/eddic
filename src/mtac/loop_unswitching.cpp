@@ -68,20 +68,28 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             entry->predecessors.erase(std::remove(entry->predecessors.begin(), entry->predecessors.end(), entry), entry->predecessors.end());
 
                             auto exit_copy = mtac::clone(function, exit);
+                            
+                            entry->successors.erase(std::remove(entry->successors.begin(), entry->successors.end(), exit), entry->successors.end());
 
                             exit->successors.erase(std::remove(exit->successors.begin(), exit->successors.end(), entry), exit->successors.end());
                             exit->successors.push_back(loop_2_entry);
                             
                             exit_copy->successors.erase(std::remove(exit_copy->successors.begin(), exit_copy->successors.end(), entry), exit_copy->successors.end());
                             exit_copy->successors.push_back(loop_1_entry);
+                            
+                            exit_copy->predecessors.erase(std::remove(exit_copy->predecessors.begin(), exit_copy->predecessors.end(), loop_2_entry), exit_copy->predecessors.end());
+                            exit_copy->predecessors.pop_back();
 
                             mtac::BBClones bb_clones;
                             
                             bb_clones[entry] = loop_1_entry;
-                            mtac::replace_bbs(bb_clones, exit);
+                            mtac::replace_bbs(bb_clones, exit_copy);
                             
                             bb_clones[entry] = loop_2_entry;
-                            mtac::replace_bbs(bb_clones, exit_copy);
+                            mtac::replace_bbs(bb_clones, exit);
+
+                            loop_1_entry->statements.pop_back();
+                            loop_1_entry->predecessors.push_back(exit_copy);
 
                             auto after_exit = exit->next;
 
@@ -91,10 +99,17 @@ bool mtac::loop_unswitching::operator()(mtac::Function& function){
                             auto new_goto_bb = function.new_bb();
                             new_goto_bb->statements.push_back(std::move(goto_));
 
-                            function.insert_after(function.at(exit), exit_copy);
-                            function.insert_after(function.at(exit), new_goto_bb);
+                            function.insert_after(function.at(loop_1_entry), exit_copy);
+                            function.insert_after(function.at(exit_copy), new_goto_bb);
+    
+                            mtac::remove_edge(loop_1_entry, exit);
+                            mtac::make_edge(loop_1_entry, exit_copy);
+
+                            mtac::remove_edge(exit_copy, after_exit);
 
                             mtac::make_edge(new_goto_bb, after_exit);
+                            
+                            mtac::make_edge(exit_copy, new_goto_bb);
                     
                             LOG<Trace>("loops") << "Unswitch loop" << log::endl;
                             function.context->global()->stats().inc_counter("loop_unswitched");
