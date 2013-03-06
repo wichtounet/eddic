@@ -685,6 +685,12 @@ BOOST_AUTO_TEST_CASE( loop_unrolling ){
     BOOST_REQUIRE_EQUAL(stats.counter("loop_unrolled"), 1);
 }
 
+BOOST_AUTO_TEST_CASE( loop_unswitching ){
+    auto& stats = compute_stats_mtac("loop_unswitching.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_unswitched"), 1);
+}
+
 BOOST_AUTO_TEST_CASE( global_cse ){
     auto& stats = compute_stats_mtac("common_subexpr_elim.eddi");
 

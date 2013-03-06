@@ -28,6 +28,12 @@ struct GlobalContext;
 
 namespace mtac {
 
+typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
+
+void replace_bbs(BBClones& clones, mtac::Quadruple& quadruple);
+void replace_bbs(BBClones& clones, mtac::basic_block_p& bb);
+void replace_bbs(BBClones& clones, mtac::Function& function);
+
 template<typename V, typename T>
 inline bool equals(T& variant, V value){
     return boost::get<V>(&variant) && value == boost::get<V>(variant);

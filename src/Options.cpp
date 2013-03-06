@@ -120,7 +120,7 @@ void init_descriptions(){
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
     add_trigger("__2", {"fglobal-optimization", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
-    add_trigger("__3", {"funroll-loops", "fcomplete-peel-loops"});
+    add_trigger("__3", {"funroll-loops", "fcomplete-peel-loops", "funswitch-loops"});
 }
 
 inline void trigger_childs(std::shared_ptr<Configuration> configuration, const std::vector<std::string>& childs){

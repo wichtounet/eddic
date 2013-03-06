@@ -24,7 +24,7 @@ namespace eddic {
 class Type;
 class Variable;
 
-typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+typedef boost::variant<int, double, bool, std::pair<std::string, int>> Val;
 typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
 
 /*!

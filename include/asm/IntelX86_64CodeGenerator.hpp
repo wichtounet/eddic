@@ -34,6 +34,8 @@ class IntelX86_64CodeGenerator : public IntelCodeGenerator {
         void declareFloatArray(const std::string& name, unsigned int size);
 
         void declareIntVariable(const std::string& name, int value);
+        void declareBoolVariable(const std::string& name, bool value);
+        void declareCharVariable(const std::string& name, char value);
         void declareStringVariable(const std::string& name, const std::string& label, int size);
         void declareString(const std::string& label, const std::string& value);
         void declareFloat(const std::string& label, double value);

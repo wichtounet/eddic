@@ -48,6 +48,8 @@ class IntelCodeGenerator : public CodeGenerator {
         virtual void declareFloatArray(const std::string& name, unsigned int size) = 0;
 
         virtual void declareIntVariable(const std::string& name, int value) = 0;
+        virtual void declareBoolVariable(const std::string& name, bool value) = 0;
+        virtual void declareCharVariable(const std::string& name, char value) = 0;
         virtual void declareStringVariable(const std::string& name, const std::string& label, int size) = 0;
         virtual void declareString(const std::string& label, const std::string& value) = 0;
         virtual void declareFloat(const std::string& label, double value) = 0;
