@@ -1,0 +1,13 @@
+include<print>
+
+int global = 100;
+
+void main(){
+    int a = global;
+    print(a);
+    global = 88;
+    print(global);
+    a=global;
+    print(a);
+    print(global * 1000);
+}
