@@ -241,3 +241,7 @@ Platform GlobalContext::target_platform() const {
 statistics& GlobalContext::stats(){
     return m_statistics;
 }
+
+timing_system& GlobalContext::timing(){
+    return m_timing;
+}

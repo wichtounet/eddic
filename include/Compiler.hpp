@@ -48,6 +48,8 @@ struct Compiler {
     int compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration);
 
     std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration);
+    
+    void compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<FrontEnd>);
 };
 
 } //end of eddic

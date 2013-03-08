@@ -23,6 +23,22 @@ mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
     eddic_unreachable("The uid should exists");
 }
 
+std::size_t mtac::basic_block::size() const {
+    return statements.size();
+}
+
+std::size_t mtac::basic_block::size_no_nop() const {
+    std::size_t size = 0;
+
+    for(auto& quadruple : statements){
+        if(quadruple.op != mtac::Operator::NOP){
+            ++size;
+        }
+    }
+
+    return size;
+}
+
 std::ostream& mtac::operator<<(std::ostream& stream, const std::shared_ptr<basic_block>& basic_block){
     if(basic_block){
         return stream << *basic_block;
@@ -61,6 +77,19 @@ void pretty_print(std::vector<mtac::basic_block_p> blocks, std::ostream& stream)
 
         stream << "}";
     }
+}
+
+mtac::basic_block_p mtac::clone(mtac::Function& function, mtac::basic_block_p block){
+    auto new_bb = function.new_bb();
+
+    //Copy the control flow graph properties, they will be corrected after
+    new_bb->successors = block->successors;
+    new_bb->predecessors = block->predecessors;
+
+    //Copy all the statements
+    new_bb->statements = block->statements;
+    
+    return new_bb;
 }
 
 void mtac::pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream){

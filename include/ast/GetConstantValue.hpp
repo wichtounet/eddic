@@ -18,7 +18,7 @@
 
 namespace eddic {
 
-typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+typedef boost::variant<int, double, bool, std::pair<std::string, int>> Val;
 
 namespace ast {
 
@@ -30,6 +30,8 @@ namespace ast {
  */
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const Literal& literal) const;
+    Val operator()(const True& literal) const;
+    Val operator()(const False& literal) const;
     Val operator()(const Integer& literal) const;
     Val operator()(const IntegerSuffix& literal) const;
     Val operator()(const Float& literal) const;

@@ -28,6 +28,12 @@ struct GlobalContext;
 
 namespace mtac {
 
+typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
+
+void replace_bbs(BBClones& clones, mtac::Quadruple& quadruple);
+void replace_bbs(BBClones& clones, mtac::basic_block_p& bb);
+void replace_bbs(BBClones& clones, mtac::Function& function);
+
 template<typename V, typename T>
 inline bool equals(T& variant, V value){
     return boost::get<V>(&variant) && value == boost::get<V>(variant);
@@ -70,6 +76,63 @@ void visit_all_statements(Visitor& visitor, mtac::Function& function){
     }
 }
 
+/*!
+ * \brief Execute the given functor if the given optional variant is initialized and of the given template type. 
+ * \param opt_variant The optional variant. 
+ * \param functor The functor to execute. Must have an operator()(T).
+ * \tparam T The type that must be contained in the variant. 
+ * \tparam OptVariant The optional variant type. 
+ * \tparam Functor the type of the functor. 
+ */
+template<typename T, typename OptVariant, typename Functor>
+void if_init(OptVariant& opt_variant, Functor functor){
+    if(opt_variant){
+        if(auto* ptr = boost::get<T>(&*opt_variant)){
+            functor(*ptr);
+        }
+    }
+}
+
+/*!
+ * \brief Execute the given functor if the given optional variant is initialized and is equals to the given value. 
+ * \param opt_variant The optional variant. 
+ * \param cmp The object the variant must be equals to. 
+ * \param functor The functor to execute. Must have an operator()().
+ * \tparam T The type that must be contained in the variant. 
+ * \tparam OptVariant The optional variant type. 
+ * \tparam Functor the type of the functor. 
+ */
+template<typename T, typename OptVariant, typename Functor>
+void if_init_equals(OptVariant& opt_variant, T& cmp, Functor functor){
+    if(opt_variant){
+        if(auto* ptr = boost::get<T>(&*opt_variant)){
+            if(*ptr == cmp){
+                functor();
+            }
+        }
+    }
+}
+
+/*!
+ * \brief Execute the given functor if the given optional variant is initialized and is not equals to the given value. 
+ * \param opt_variant The optional variant. 
+ * \param cmp The object the variant must be not equals to. 
+ * \param functor The functor to execute. Must have an operator()(T).
+ * \tparam T The type that must be contained in the variant. 
+ * \tparam OptVariant The optional variant type. 
+ * \tparam Functor the type of the functor. 
+ */
+template<typename T, typename OptVariant, typename Functor>
+void if_init_not_equals(OptVariant& opt_variant, T& cmp, Functor functor){
+    if(opt_variant){
+        if(auto* ptr = boost::get<T>(&*opt_variant)){
+            if(*ptr != cmp){
+                functor(*ptr);
+            }
+        }
+    }
+}
+
 bool is_single_int_register(std::shared_ptr<const Type> type);
 bool is_single_float_register(std::shared_ptr<const Type> type);
 
@@ -78,17 +141,10 @@ std::pair<unsigned int, std::shared_ptr<const Type>> compute_member(std::shared_
 
 void computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage);
 
-typedef std::unordered_map<std::shared_ptr<Variable>, unsigned int> VariableUsage;
-
-VariableUsage compute_variable_usage(mtac::Function& function);
-VariableUsage compute_variable_usage_with_depth(mtac::Function& function, int factor);
-
 bool is_recursive(mtac::Function& function);
 
 bool safe(const std::string& call);
 bool erase_result(mtac::Operator op);
-bool is_distributive(mtac::Operator op);
-bool is_expression(mtac::Operator op);
 
 mtac::Quadruple copy(const mtac::Quadruple& statement);
 

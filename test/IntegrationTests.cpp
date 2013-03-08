@@ -9,7 +9,9 @@
 #include <iostream>
 #include <memory>
 
+#include "boost_cfg.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "Options.hpp"
 #include "Compiler.hpp"
@@ -54,28 +56,38 @@ inline void remove(const std::string& file){
     remove(file.c_str());
 }
 
-inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
-    std::string output_file = "--output=" + param3;
-
-    const char* argv[6];
+inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& source_file, const std::string& output_file, std::vector<std::string> params){
+    const char** argv = new const char*[4 + params.size()];
     argv[0] = "./bin/test";
-    argv[1] = param1.c_str();
-    argv[2] = "--quiet";
-    argv[3] = param2.c_str();
-    argv[4] = output_file.c_str();
-    argv[5] = file.c_str();
+    argv[1] = "--quiet";
     
-    BOOST_TEST_MESSAGE( std::string("Compile with options ") + argv[1] + " " + argv[2] + " " + argv[3] + " " + argv[4] + " " + argv[5]); 
+    for(std::size_t i = 0; i < params.size(); ++i){
+        argv[2 + i] = params[i].c_str();
+    }
 
-    auto configuration = eddic::parseOptions(6, argv);
+    std::string temp = "--output=" + output_file;
+    argv[2 + params.size()] = temp.c_str();
+    argv[3 + params.size()] = source_file.c_str();
 
-    BOOST_REQUIRE (configuration);
+    std::string log = "Compile with options";
+    for(std::size_t i = 0; i < 4 + params.size(); ++i){
+        log += " ";
+        log += argv[i];
+    }
+    
+    BOOST_TEST_MESSAGE(log);
+
+    auto configuration = eddic::parseOptions(4 + params.size(), argv);
+
+    BOOST_REQUIRE(configuration);
+
+    delete[] argv;
 
     return configuration;
 }
 
 void assert_compiles(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
-    auto configuration = parse_options(file, param1, param2, param3);
+    auto configuration = parse_options(file, param3, {param1, param2});
 
     eddic::Compiler compiler;
     int code = compiler.compile(file, configuration);
@@ -86,7 +98,7 @@ void assert_compiles(const std::string& file, const std::string& param1, const s
 }
 
 void assert_compilation_error(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
-    auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
+    auto configuration = parse_options("test/cases/" + file, param3, {param1, param2});
 
     eddic::Compiler compiler;
     int code = compiler.compile("test/cases/" + file, configuration);
@@ -103,7 +115,7 @@ std::vector<std::string> split(std::string value){
 }
 
 std::string get_output(const std::string& file, const std::string& param1, const std::string& param2, const std::string& param3){
-    auto configuration = parse_options("test/cases/" + file, param1, param2, param3);
+    auto configuration = parse_options("test/cases/" + file, param3, {param1, param2});
 
     eddic::Compiler compiler;
     int code = compiler.compile("test/cases/" + file, configuration);
@@ -210,7 +222,6 @@ TEST_SAMPLE(inc)
 TEST_SAMPLE(includes)
 TEST_SAMPLE(optimize)
 TEST_SAMPLE(problem)
-TEST_SAMPLE(sort)
 TEST_SAMPLE(identifiers)
 TEST_SAMPLE(registers)
 TEST_SAMPLE(structures)
@@ -250,7 +261,7 @@ BOOST_AUTO_TEST_CASE( arrays_in_struct ){
 }
 
 BOOST_AUTO_TEST_CASE( char_type ){
-    assert_output("char_type.eddi", "a|0|z|e|e|u|u|");
+    assert_output("char_type.eddi", "a|x|0|z|e|e|u|u|");
 }
 
 BOOST_AUTO_TEST_CASE( char_at ){
@@ -478,7 +489,7 @@ BOOST_AUTO_TEST_CASE( nested ){
 }
 
 static void test_args(const std::string& arg1, const std::string& arg2, const std::string& arg3){
-    auto configuration = parse_options("test/cases/args.eddi", arg1, arg2, arg3);
+    auto configuration = parse_options("test/cases/args.eddi", arg3, {arg1, arg2});
 
     eddic::Compiler compiler;
     int code = compiler.compile("test/cases/args.eddi", configuration);
@@ -609,8 +620,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(OptimizationSuite)
 
-eddic::statistics& compute_stats(const std::string& file){
-    auto configuration = parse_options("test/cases/" + file, "--64", "--O3", "test/cases/" + file + ".out");
+eddic::statistics& compute_stats_mtac(const std::string& file){
+    auto configuration = parse_options("test/cases/" + file, "test/cases/" + file + ".out", {"--64", "--O3"});
 
     eddic::Compiler compiler;
     auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
@@ -619,46 +630,83 @@ eddic::statistics& compute_stats(const std::string& file){
     return global_context->stats();
 }
 
+eddic::statistics& compute_stats_ltac(const std::string& file){
+    auto configuration = parse_options("test/cases/" + file, "test/cases/" + file + ".out", {"--64", "--O3"});
+
+    eddic::Compiler compiler;
+    auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
+    compiler.compile_ltac(*pair.first, eddic::Platform::INTEL_X86_64, configuration, pair.second);
+
+    remove("test/cases/" + file + ".out");
+
+    auto global_context = pair.first->context;
+    return global_context->stats();
+}
+
 BOOST_AUTO_TEST_CASE( parameter_propagation ){
-    auto& stats = compute_stats("parameter_propagation.eddi");
+    auto& stats = compute_stats_mtac("parameter_propagation.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
 }
 
 BOOST_AUTO_TEST_CASE( remove_empty_functions ){
-    auto& stats = compute_stats("remove_empty_functions.eddi");
+    auto& stats = compute_stats_mtac("remove_empty_functions.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("empty_function_removed"), 1);
 }
 
 BOOST_AUTO_TEST_CASE( remove_empty_loops ){
-    auto& stats = compute_stats("remove_empty_loops.eddi");
+    auto& stats = compute_stats_mtac("remove_empty_loops.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("empty_loop_removed"), 1);
 }
 
 BOOST_AUTO_TEST_CASE( invariant_code_motion ){
-    auto& stats = compute_stats("invariant_code_motion.eddi");
+    auto& stats = compute_stats_mtac("invariant_code_motion.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 1);
 }
 
 BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
-    auto& stats = compute_stats("complete_loop_peeling.eddi");
+    auto& stats = compute_stats_mtac("complete_loop_peeling.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( complete_loop_peeling_2 ){
+    auto& stats = compute_stats_mtac("complete_loop_peeling_2.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("loop_peeled"), 1);
 }
 
 BOOST_AUTO_TEST_CASE( loop_unrolling ){
-    auto& stats = compute_stats("loop_unrolling.eddi");
+    auto& stats = compute_stats_mtac("loop_unrolling.eddi");
 
     BOOST_REQUIRE_EQUAL(stats.counter("loop_unrolled"), 1);
 }
 
-BOOST_AUTO_TEST_CASE( common_subexpr_elimination ){
-    auto& stats = compute_stats("common_subexpr_elim.eddi");
+BOOST_AUTO_TEST_CASE( loop_unswitching ){
+    auto& stats = compute_stats_mtac("loop_unswitching.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("common_subexpr_eliminated"), 4);
+    BOOST_REQUIRE_EQUAL(stats.counter("loop_unswitched"), 1);
+}
+
+BOOST_AUTO_TEST_CASE( global_cse ){
+    auto& stats = compute_stats_mtac("common_subexpr_elim.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("common_subexpr_eliminated"), 3);
+}
+
+BOOST_AUTO_TEST_CASE( local_cse ){
+    auto& stats = compute_stats_mtac("local_cse.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("local_cse"), 4);
+}
+
+BOOST_AUTO_TEST_CASE( cmov_opt ){
+    auto& stats = compute_stats_ltac("cmov_opt.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("cmov_opt"), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

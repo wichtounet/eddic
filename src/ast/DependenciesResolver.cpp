@@ -23,11 +23,12 @@ using namespace eddic;
 class DependencyVisitor : public boost::static_visitor<> {
     private:
         parser::SpiritParser& parser;
+        ast::SourceFile& source_program;
 
         std::unordered_set<std::string> imported;
 
     public:
-        DependencyVisitor(parser::SpiritParser& p) : parser(p) {}
+        DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& source_program) : parser(p), source_program(source_program) {}
         
         std::vector<ast::SourceFileBlock> blocks;
 
@@ -47,7 +48,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
            
             ast::SourceFile dependency; 
-            if(parser.parse(headerFile, dependency)){
+            if(parser.parse(headerFile, dependency, source_program.Content->context)){
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
@@ -76,7 +77,7 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
            
             ast::SourceFile dependency; 
-            if(parser.parse(file, dependency)){
+            if(parser.parse(file, dependency, source_program.Content->context)){
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
@@ -97,7 +98,7 @@ class DependencyVisitor : public boost::static_visitor<> {
 };
 
 void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
-    DependencyVisitor visitor(parser);
+    DependencyVisitor visitor(parser, program);
     visitor(program);
 
     for(auto& block : visitor.blocks){

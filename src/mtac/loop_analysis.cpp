@@ -15,7 +15,7 @@
 
 #include "mtac/loop_analysis.hpp"
 #include "mtac/dominators.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Program.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
@@ -38,14 +38,14 @@ void increase_depth(mtac::basic_block_p bb){
     }
 }
 
-mtac::InductionVariables find_all_candidates(mtac::Loop& loop){
+mtac::InductionVariables find_all_candidates(mtac::loop& loop){
     mtac::InductionVariables candidates;
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-            if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MINUS){
+            if(quadruple.op == mtac::Operator::ADD || quadruple.op == mtac::Operator::MUL || quadruple.op == mtac::Operator::DIV || quadruple.op == mtac::Operator::SUB || quadruple.op == mtac::Operator::MINUS){
                 candidates[quadruple.result] = {quadruple.uid(), nullptr, 0, 0, false};
-            }
+            } 
         }
     }
 
@@ -68,7 +68,7 @@ void clean_defaults(mtac::InductionVariables& induction_variables){
     }
 }
 
-void find_basic_induction_variables(mtac::Loop& loop){
+void find_basic_induction_variables(mtac::loop& loop){
     loop.basic_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -107,7 +107,23 @@ void find_basic_induction_variables(mtac::Loop& loop){
                     loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, boost::get<int>(arg2), false}; 
                     continue;
                 } 
-            } 
+            } else if(quadruple.op == mtac::Operator::SUB){
+                auto arg1 = *quadruple.arg1;
+                auto arg2 = *quadruple.arg2;
+
+                if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                    loop.basic_induction_variables()[var] = {quadruple.uid(), var, 1, -1 * boost::get<int>(arg2), false}; 
+                    continue;
+                } 
+            } else if(quadruple.op == mtac::Operator::DIV){
+                auto arg1 = *quadruple.arg1;
+                auto arg2 = *quadruple.arg2;
+
+                if(mtac::isInt(arg2) && mtac::equals(arg1, var)){
+                    loop.basic_induction_variables()[var] = {quadruple.uid(), var, boost::get<int>(arg2), 0, false, true}; 
+                    continue;
+                } 
+            }
 
             loop.basic_induction_variables().erase(var);
         }
@@ -116,7 +132,7 @@ void find_basic_induction_variables(mtac::Loop& loop){
     clean_defaults(loop.basic_induction_variables());
 }
 
-void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& function){
+void find_dependent_induction_variables(mtac::loop& loop, mtac::Function& function){
     loop.dependent_induction_variables() = find_all_candidates(loop);
 
     for(auto& bb : loop){
@@ -255,21 +271,7 @@ void find_dependent_induction_variables(mtac::Loop& loop, mtac::Function& functi
             } else if(quadruple.op == mtac::Operator::SUB){
                 auto arg2 = *quadruple.arg2;
 
-                if(mtac::isInt(arg1) && mtac::isVariable(arg2)){
-                    auto variable = boost::get<std::shared_ptr<Variable>>(arg2);
-                    auto e = boost::get<int>(arg1);
-
-                    if(variable != var){
-                        if(loop.basic_induction_variables().count(variable)){
-                            loop.dependent_induction_variables()[var] = {quadruple.uid(), variable, -1, -1 * e, false}; 
-                            valid = true;
-                        } else if(loop.dependent_induction_variables()[variable].i){
-                            auto equation = loop.dependent_induction_variables()[variable];
-                            loop.dependent_induction_variables()[var] = {quadruple.uid(), equation.i, -1 * equation.e, e - equation.d, false}; 
-                            valid = true;
-                        }
-                    }
-                } else if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
+                if(mtac::isInt(arg2) && mtac::isVariable(arg1)){
                     auto variable = boost::get<std::shared_ptr<Variable>>(arg1);
                     auto e = boost::get<int>(arg2);
 
@@ -387,98 +389,98 @@ std::pair<bool, int> get_initial_value(mtac::basic_block_p bb, std::shared_ptr<V
 
 int number_of_iterations(mtac::LinearEquation& linear_equation, int initial_value, mtac::Quadruple& if_){
     if(if_.is_if()){
-        if(mtac::isVariable(*if_.arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
-
-            if(var != linear_equation.i){
-                return -1;   
-            }
-
-            if(auto* cst_ptr = boost::get<int>(&*if_.arg2)){
-                int number = *cst_ptr;
-
-                //We found the form "var op number"
-                
-                if(if_.op == mtac::Operator::IF_LESS){
-                    return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
-                    return (number + 1 - initial_value) / linear_equation.d + 1;
-                }
-
-                return -1;
-            } 
-        } else if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
+        if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
             int number = *cst_ptr;
 
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_.arg2)){
-                if(*var_ptr != linear_equation.i){
-                    return -1;   
-                }
-                
-                //We found the form "number op var"
+            //We found the form "number op var"
 
+            if(linear_equation.div){
+                if(linear_equation.d == 0 && if_.op == mtac::Operator::IF_NOT_EQUALS){
+                    int it = 0;
+                    int a = initial_value;
+
+                    while(a != number){
+                        ++it; 
+                        a /= linear_equation.e;
+                    }
+
+                    return it + 1;
+                }
+            } else {
                 if(if_.op == mtac::Operator::IF_GREATER){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_GREATER_EQUALS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
-
-                return -1;
-            } 
-        } 
-    } else if(if_.is_if_false()){
-        if(mtac::isVariable(*if_.arg1)){
-            auto var = boost::get<std::shared_ptr<Variable>>(*if_.arg1);
-
-            if(var != linear_equation.i){
-                return -1;   
             }
 
-            if(auto* cst_ptr = boost::get<int>(&*if_.arg2)){
-                int number = *cst_ptr;
+            return -1;
+        } else {
+            auto number = boost::get<int>(*if_.arg2);
 
-                //We found the form "var op number"
-                
-                if(if_.op == mtac::Operator::IF_FALSE_GREATER_EQUALS){
-                    return (number - initial_value) / linear_equation.d + 1;
-                } else if(if_.op == mtac::Operator::IF_FALSE_GREATER){
-                    return (number + 1 - initial_value) / linear_equation.d + 1;
+            //We found the form "var op number"
+
+            if(linear_equation.div){
+                if(linear_equation.d == 0 && if_.op == mtac::Operator::IF_NOT_EQUALS){
+                    int it = 0;
+                    int a = initial_value;
+
+                    while(a != number){
+                        ++it; 
+                        a /= linear_equation.e;
+                    }
+
+                    return it + 1;
                 }
+            } else {
+                if(if_.op == mtac::Operator::IF_LESS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_.op == mtac::Operator::IF_LESS_EQUALS){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                } else if(if_.op == mtac::Operator::IF_GREATER){
+                    return (number - initial_value) / linear_equation.d + 1;
+                }
+            }
 
-                return -1;
-            } 
-        } else if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
+            return -1;
+        }
+    } else if(if_.is_if_false()){
+        if(auto* cst_ptr = boost::get<int>(&*if_.arg1)){
             int number = *cst_ptr;
 
-            if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*if_.arg2)){
-                if(*var_ptr != linear_equation.i){
-                    return -1;   
-                }
-                
-                //We found the form "number op var"
-                
+            //We found the form "number op var"
+
+            if(!linear_equation.div){
                 if(if_.op == mtac::Operator::IF_FALSE_LESS_EQUALS){
                     return (number - initial_value) / linear_equation.d + 1;
                 } else if(if_.op == mtac::Operator::IF_FALSE_LESS){
                     return (number + 1 - initial_value) / linear_equation.d + 1;
                 }
+            }
 
-                return -1;
-            } 
-        } 
+            return -1;
+        } else {
+            auto number = boost::get<int>(*if_.arg2);
+
+            //We found the form "var op number"
+
+            if(!linear_equation.div){
+                if(if_.op == mtac::Operator::IF_FALSE_GREATER_EQUALS){
+                    return (number - initial_value) / linear_equation.d + 1;
+                } else if(if_.op == mtac::Operator::IF_FALSE_GREATER){
+                    return (number + 1 - initial_value) / linear_equation.d + 1;
+                }
+            }
+
+            return -1;
+        }
     }
 
     return -1;
 }
 
-} //end of anonymous namespace
-
-bool mtac::loop_analysis::operator()(mtac::Function& function){
+void find_loops(mtac::Function& function){
     std::vector<std::pair<mtac::basic_block_p, mtac::basic_block_p>> back_edges;
-
-    for(auto& bb : function){
-        init_depth(bb);
-    }
     
     compute_dominators(function);
 
@@ -525,47 +527,96 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
             }
         }
 
-        LOG<Trace>("Control-Flow") << "Natural loop of size " << natural_loop.size() << log::endl;
-
         function.loops().emplace_back(natural_loop);
     }
 
     LOG<Trace>("Control-Flow") << "Found " << function.loops().size() << " natural loops" << log::endl;
 
-    //Find BIV and DIV of the loops
     for(auto& loop : function.loops()){
-        find_basic_induction_variables(loop);
-        find_dependent_induction_variables(loop, function);
+        LOG<Trace>("Control-Flow") << loop << log::endl;
     }
+}
 
-    //Basic computation of estimates
+void estimate_iterations(mtac::Function& function){
     for(auto& loop : function.loops()){
-        if(loop.blocks().size() == 1){
-            auto& basic_induction_variables = loop.basic_induction_variables();
+        auto bb = loop.find_exit();
+        auto preheader = loop.find_preheader();
 
-            if(basic_induction_variables.size() == 1){
-                auto bb = *loop.begin();
+        if(!bb->statements.empty() && preheader && !preheader->statements.empty()){
+            auto& condition = bb->statements.back();
 
-                if(bb->prev){
-                    auto biv = *basic_induction_variables.begin();
-                    auto linear_equation = biv.second;
+            if(condition.is_if() || condition.is_if_false()){
+                if(condition.arg1 && condition.arg2){
+                    std::shared_ptr<Variable> biv;
+                    if(mtac::isVariable(*condition.arg1) && boost::get<int>(&*condition.arg2)){
+                        biv = boost::get<std::shared_ptr<Variable>>(*condition.arg1);
+                    } else if(mtac::isVariable(*condition.arg2) && boost::get<int>(&*condition.arg1)){
+                        biv = boost::get<std::shared_ptr<Variable>>(*condition.arg2);
+                    }
+                    
+                    auto& basic_induction_variables = loop.basic_induction_variables();
 
-                    auto initial_value = get_initial_value(bb->prev, linear_equation.i);
+                    if(biv && basic_induction_variables.count(biv)){
+                        auto& linear_equation = basic_induction_variables[biv];
+                        auto initial_value = get_initial_value(preheader, linear_equation.i);
 
-                    if(initial_value.first){
-                        auto it = number_of_iterations(linear_equation, initial_value.second, bb->statements[bb->statements.size() - 1]);
+                        if(initial_value.first){
+                            auto it = number_of_iterations(linear_equation, initial_value.second, condition);
 
-                        //number_of_iterations gives the upper bound
-                        it = it - 1;
+                            //number_of_iterations gives the upper bound
+                            it = it - 1;
 
-                        loop.estimate() = it;
-                        loop.initial_value() = initial_value.second;
+                            loop.estimate() = it;
+                            loop.initial_value() = initial_value.second;
+                        }
                     }
                 }
             }
         }
+
+        if(loop.estimate() > 0){
+            LOG<Trace>("Control-Flow") << loop << " iterates " << loop.estimate() << " times" << log::endl;
+        } else {
+            LOG<Trace>("Control-Flow") << loop << " iterates " << loop.estimate() << " times (analysis failed)" << log::endl;
+        }
+    }
+}
+
+} //end of anonymous namespace
+
+bool mtac::loop_analysis::operator()(mtac::Function& function){
+    //Set the depth of all basic blocks to 0
+    for(auto& bb : function){
+        init_depth(bb);
     }
     
+    //Find all loops in the function
+    find_loops(function);
+
+    //Find BIV and DIV of the loops
+    for(auto& loop : function.loops()){
+        find_basic_induction_variables(loop);
+        find_dependent_induction_variables(loop, function);
+
+        LOG<Trace>("loops") << "Induction variables for " << loop << log::endl;
+        
+        for(auto& biv : loop.basic_induction_variables()){
+            if(biv.second.div){
+                LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+            } else {
+                LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+            }
+        }
+
+        for(auto& biv : loop.dependent_induction_variables()){
+            LOG<Trace>("loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
+        }
+    }
+
+    //Basic computation of estimates for all loops of the function
+    estimate_iterations(function);
+    
+    //Set the real depth of each basic blocks
     for(auto& loop : function.loops()){
         for(auto& bb : loop){
             increase_depth(bb);

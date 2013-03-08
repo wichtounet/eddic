@@ -1,0 +1,19 @@
+include <print>
+
+struct Complex {
+    bool b;
+}
+
+void main(){
+    Complex c;
+    c.b = false;
+
+    test(c);
+}
+
+//Test passing by value
+
+void test(Complex a){
+    print(a.b);
+    print("|");
+}

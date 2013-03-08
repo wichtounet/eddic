@@ -26,44 +26,15 @@ class Variable;
 
 namespace mtac {
     
-typedef std::unordered_set<std::shared_ptr<Variable>> Values;
-
-struct LiveVariableValues {
-    Values values;
-
-    void insert(std::shared_ptr<Variable> var){
-        values.insert(var);
-    }
-    
-    void erase(std::shared_ptr<Variable> var){
-        values.erase(var);
-    }
-
-    Values::const_iterator find(std::shared_ptr<Variable> var) const {
-        return values.find(var);
-    }
-    
-    Values::const_iterator begin() const {
-        return values.begin();
-    }
-    
-    Values::const_iterator end() const {
-        return values.end();
-    }
-
-    std::size_t size() const {
-        return values.size();
-    }
-};
-
-std::ostream& operator<<(std::ostream& stream, const LiveVariableValues& expression);
+typedef std::set<std::shared_ptr<Variable>> Values;
 
 struct LiveVariableAnalysisProblem {
     //The type of data managed
-    typedef Domain<LiveVariableValues> ProblemDomain;
+    typedef Domain<Values> ProblemDomain;
 
-    //The direction
-    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Backward);
+    //The direction and modes
+    STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Backward_Block);
+    STATIC_CONSTANT(bool, Low, false);
 
     mtac::EscapedVariables pointer_escaped;
     
@@ -71,17 +42,16 @@ struct LiveVariableAnalysisProblem {
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
-    bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
-
-    ProblemDomain top_element(){
-        return ProblemDomain();
-    }
-
-    ProblemDomain default_element(){
-        return ProblemDomain(ProblemDomain::Values());
-    }
+    
+    void transfer(mtac::basic_block_p basic_block, ProblemDomain& in);
+    void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+    
+    std::unordered_map<mtac::basic_block_p, std::set<std::shared_ptr<Variable>>> def;
+    std::unordered_map<mtac::basic_block_p, std::set<std::shared_ptr<Variable>>> use;
 };
+
+bool operator==(const mtac::Domain<Values>& lhs, const mtac::Domain<Values>& rhs);
+bool operator!=(const mtac::Domain<Values>& lhs, const mtac::Domain<Values>& rhs);
 
 } //end of mtac
 

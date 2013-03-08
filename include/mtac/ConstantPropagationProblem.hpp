@@ -18,10 +18,6 @@
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
-//For hashing
-//TODO Find a way to to not use any ltac if in mtac mode
-#include "ltac/Statement.hpp"
-
 namespace eddic {
 
 class Variable;
@@ -81,14 +77,15 @@ class ConstantPropagationProblem {
         typedef Domain<ConstantPropagationValues> ProblemDomain;
 
         //The direction
-        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward);
+        STATIC_CONSTANT(bool, Low, false);
 
         ProblemDomain Init(mtac::Function& function);
         ProblemDomain Boundary(mtac::Function& function);
 
         void meet(ProblemDomain& in, const ProblemDomain& out);
 
-        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in);
+        void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in);
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> global_results);
     
     private:
@@ -97,6 +94,9 @@ class ConstantPropagationProblem {
 
         mtac::EscapedVariables pointer_escaped;
 };
+
+bool operator==(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs);
+bool operator!=(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs);
 
 template<>
 struct pass_traits<ConstantPropagationProblem> {

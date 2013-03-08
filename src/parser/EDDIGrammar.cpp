@@ -210,6 +210,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
     repeatable_instruction = 
             value.assignment 
         |   swap 
+        |   value.postfix_expression
         |   value.prefix_operation
         |   value.function_call;
     

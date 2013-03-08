@@ -14,12 +14,8 @@
 #include "StringPool.hpp"
 
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/GlobalOptimizations.hpp"
-#include "mtac/LiveVariableAnalysisProblem.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
-
-#include "ltac/Statement.hpp"
 
 using namespace eddic;
 

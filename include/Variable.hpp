@@ -24,7 +24,7 @@ namespace eddic {
 class Type;
 class Variable;
 
-typedef boost::variant<int, double, std::pair<std::string, int>> Val;
+typedef boost::variant<int, double, bool, std::pair<std::string, int>> Val;
 typedef boost::variant<int, std::shared_ptr<Variable>> Offset;
 
 /*!
@@ -47,9 +47,9 @@ class Variable {
         Offset m_offset;
 
     public:
-        Variable(const std::string& name, std::shared_ptr<const Type> type, Position position);
-        Variable(const std::string& name, std::shared_ptr<const Type> type, Position position, Val value);
-        Variable(const std::string& name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
+        Variable(std::string name, std::shared_ptr<const Type> type, Position position);
+        Variable(std::string name, std::shared_ptr<const Type> type, Position position, Val value);
+        Variable(std::string name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
 
         std::size_t references() const;
         void add_reference();

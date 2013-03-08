@@ -67,4 +67,15 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
             }
         }
     }
+
+    std::sort(signature->members.begin(), signature->members.end(), 
+            [](const std::shared_ptr<Member>& lhs, const std::shared_ptr<Member>& rhs){
+                if(lhs->type == CHAR || lhs->type == BOOL){
+                    return false;
+                } else if(rhs->type == CHAR || rhs->type == BOOL){
+                    return true;
+                } else {
+                    return false;
+                }
+            });
 }

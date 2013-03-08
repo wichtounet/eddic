@@ -19,15 +19,15 @@ ltac::Address::Address(int displacement) : displacement(displacement) {
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute) : absolute(absolute) {
+ltac::Address::Address(std::string absolute) : absolute(std::move(absolute)) {
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute, const ltac::AddressRegister& reg) : base_register(reg), absolute(absolute) {
+ltac::Address::Address(std::string absolute, const ltac::AddressRegister& reg) : base_register(reg), absolute(std::move(absolute)) {
     //Nothing to init    
 }
 
-ltac::Address::Address(const std::string& absolute, int displacement) : displacement(displacement), absolute(absolute) {
+ltac::Address::Address(std::string absolute, int displacement) : displacement(displacement), absolute(std::move(absolute)) {
     //Nothing to init    
 }
 

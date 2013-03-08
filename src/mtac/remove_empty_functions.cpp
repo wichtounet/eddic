@@ -20,6 +20,8 @@ using namespace eddic;
 bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
 
+    bool changes = false;
+
     auto it = iterate(program.functions);
 
     while(it.has_next()){
@@ -30,10 +32,12 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
             continue;
         }
 
-        unsigned int statements = function.size();
+        unsigned int statements = function.size_no_nop();
 
         if(statements == 0){
             program.context->stats().inc_counter("empty_function_removed");
+            LOG<Debug>("Optimizer") << "Remove empty function " << function.get_name() << log::endl;
+            changes = true;
 
             removed_functions.push_back(function.get_name());
             it.erase();
@@ -51,9 +55,12 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                     auto& quadruple = *fit;
 
                     if(quadruple.op == mtac::Operator::CALL){
-                        auto function = quadruple.function().mangled_name();
+                        auto function_name = quadruple.function().mangled_name();
 
-                        if(std::find(removed_functions.begin(), removed_functions.end(), function) != removed_functions.end()){
+                        if(std::find(removed_functions.begin(), removed_functions.end(), function_name) != removed_functions.end()){
+                            //Update the call graph
+                            --program.call_graph.edge(function.definition(), quadruple.function())->count;
+
                             int parameters = quadruple.function().parameters().size();
 
                             if(parameters > 0){
@@ -97,6 +104,5 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
         }
     }
 
-    //Not necessary to restart the other passes
-    return false;
+    return changes;
 }

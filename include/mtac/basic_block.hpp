@@ -16,6 +16,7 @@
 #include "mtac/Quadruple.hpp"
 
 #include "ltac/forward.hpp"
+#include "ltac/Instruction.hpp"
 
 namespace eddic {
 
@@ -57,11 +58,19 @@ class basic_block {
         }
 
         /*!
-         * Add a new statement to the back of the basic block. 
+         * Add a new MTAC statement to the back of the basic block. 
          * \param statement The statement to add. 
          */
         inline void push_back(mtac::Quadruple&& statement){
             statements.push_back(std::forward<mtac::Quadruple>(statement));
+        }
+        
+        /*!
+         * Add a new LTAC statement to the back of the basic block. 
+         * \param statement The statement to add. 
+         */
+        inline void push_back(ltac::Instruction&& statement){
+            l_statements.push_back(std::forward<ltac::Instruction>(statement));
         }
 
         /*!
@@ -82,7 +91,37 @@ class basic_block {
             l_statements.emplace_back(std::forward<Args>(args)...);
         }
 
+        /*!
+         * \brief Return the MTAC statement with the given UID. 
+         *
+         * Operation in O(n). The operation will fail if there are no MTAC statement with this UID in the basic block. 
+         * \return A reference to the MTAC statement with the given UID in the basic block. 
+         */
         mtac::Quadruple& find(std::size_t uid);
+
+        /*!
+         * \brief Return the LTAC statement with the given UID. 
+         *
+         * Operation in O(n). The operation will fail if there are no LTAC statement with this UID in the basic block. 
+         * \return A reference to the LTAC statement with the given UID in the basic block. 
+         */
+        ltac::Instruction& find_low(std::size_t uid);
+
+        /*!
+         * \brief Return the number of MTAC statements of the basic blocks. 
+         *
+         * Operation in O(1)
+         * \return the number of MTAC statements of the basic blocks. 
+         */
+        std::size_t size() const ;
+
+        /*!
+         * \brief Return the number of non-NOP MTAC statements of the basic blocks. 
+         *
+         * Operation in O(n)
+         * \return the number of non-NOP MTAC statements of the basic blocks. 
+         */
+        std::size_t size_no_nop() const ;
 
         const int index;    /*!< The index of the block */
         unsigned int depth = 0;
@@ -91,7 +130,7 @@ class basic_block {
 
         std::vector<mtac::Quadruple> statements;    /*!< The MTAC statements inside the basic block. */
         
-        std::vector<ltac::Statement> l_statements;  /*!< The LTAC statements inside the basic block. */
+        std::vector<ltac::Instruction> l_statements;  /*!< The LTAC statements inside the basic block. */
 
         /* Doubly-linked list  */
 
@@ -99,8 +138,8 @@ class basic_block {
         std::shared_ptr<basic_block> prev = nullptr;     /*!< The previous basic block in the doubly-linked list. */
 
         /* Control Flow Graph */
-        std::vector<std::shared_ptr<basic_block>> successors;
-        std::vector<std::shared_ptr<basic_block>> predecessors;
+        std::vector<std::shared_ptr<basic_block>> successors;   //!< The basic block's predecessors in the CFG
+        std::vector<std::shared_ptr<basic_block>> predecessors; //!< The basic block's successors in the CFG
 
         /* Dominance tree */
         
@@ -114,6 +153,8 @@ std::ostream& operator<<(std::ostream& stream, const basic_block_p& basic_block)
 
 mtac::basic_block::iterator begin(mtac::basic_block_p function);
 mtac::basic_block::iterator end(mtac::basic_block_p function);
+
+mtac::basic_block_p clone(mtac::Function& function, mtac::basic_block_p basic_block);
 
 void pretty_print(std::shared_ptr<const mtac::basic_block> block, std::ostream& stream);
 

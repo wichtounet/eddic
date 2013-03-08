@@ -16,7 +16,7 @@
 #include "logging.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -58,7 +58,7 @@ bool is_invariant(mtac::Quadruple& quadruple, mtac::Usage& usage){
  * 2. It is in a basic block that dominates all exit blocks of the loop
  * 3. It is not an NOP
  */
-bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadruple, mtac::Loop& loop){
+bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadruple, mtac::loop& loop){
     //It is not necessary to move statements with no effects. 
     if(quadruple.op == mtac::Operator::NOP){
         return false;
@@ -96,7 +96,7 @@ bool is_valid_invariant(mtac::basic_block_p source_bb, mtac::Quadruple& quadrupl
     return true;
 }
 
-bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
+bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
     mtac::basic_block_p pre_header;
 
     bool optimized = false;
@@ -104,30 +104,22 @@ bool loop_invariant_code_motion(mtac::Loop& loop, mtac::Function& function){
     auto usage = compute_write_usage(loop);
 
     for(auto& bb : loop){
-        auto it = iterate(bb->statements); 
-
-        while(it.has_next()){
-            auto& statement = *it;
-
+        for(auto& statement : bb->statements){
             if(is_invariant(statement, usage)){
                 if(is_valid_invariant(bb, statement, loop)){
                     //Create the preheader if necessary
                     if(!pre_header){
-                        pre_header = mtac::find_pre_header(loop, function);
+                        pre_header = loop.find_safe_preheader(function, true);
                     }
 
                     function.context->global()->stats().inc_counter("invariant_moved");
 
-                    pre_header->statements.push_back(std::move(statement));
-                    it.erase();
+                    pre_header->statements.push_back(statement);
+                    mtac::transform_to_nop(statement);
 
                     optimized = true;
-
-                    continue;
                 } 
             }
-
-            ++it;
         }
     }
 
@@ -144,7 +136,9 @@ bool mtac::loop_invariant_code_motion::operator()(mtac::Function& function){
     bool optimized = false;
 
     for(auto& loop : function.loops()){
-        optimized |= ::loop_invariant_code_motion(loop, function);
+        if(loop.blocks().size() == 1){
+            optimized |= ::loop_invariant_code_motion(loop, function);
+        }
     }
     
     return optimized;

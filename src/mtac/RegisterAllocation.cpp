@@ -18,6 +18,8 @@
 using namespace eddic;
 
 void mtac::register_param_allocation(mtac::Program& program, Platform platform){
+    timing_timer timer(program.context->timing(), "param_register_allocation");
+
     auto descriptor = getPlatformDescriptor(platform);
 
     auto maxInt = descriptor->numberOfIntParamRegisters();

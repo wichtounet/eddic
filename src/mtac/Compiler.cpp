@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
 #include <boost/range/adaptors.hpp>
 
 #include "assert.hpp"
@@ -242,8 +244,12 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
 
         if(member_type == FLOAT){
             function.emplace_back(temp, var, mtac::Operator::FDOT, static_cast<int>(offset));
-        } else if(member_type == INT || member_type == CHAR || member_type == BOOL || member_type->is_pointer() || member_type->is_dynamic_array()){
+        } else if(member_type == INT || member_type->is_pointer() || member_type->is_dynamic_array()){
             function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
+        } else if(member_type == CHAR || member_type == BOOL){
+            mtac::Quadruple dot(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
+            dot.size = mtac::Size::BYTE;
+            function.push_back(std::move(dot));
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member
         } else {
@@ -405,15 +411,29 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                         left = {temp};
                     } else {
-                        if(data_type == BOOL || data_type == CHAR || data_type == INT || data_type == FLOAT || data_type->is_pointer()){
+                        if(data_type == INT || data_type == FLOAT || data_type->is_pointer()){
                             std::shared_ptr<Variable> temp;
                             if(T == ArgumentType::REFERENCE){
                                 temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
                             } else {
                                 temp = function.context->new_temporary(data_type);
                             }
-
+                            
                             function.emplace_back(temp, left[0], mtac::Operator::DOT, index);
+
+                            left = {temp};
+                        } else if(data_type == CHAR || data_type == BOOL){
+                            std::shared_ptr<Variable> temp;
+                            if(T == ArgumentType::REFERENCE){
+                                temp = function.context->new_reference(data_type, boost::get<std::shared_ptr<Variable>>(left[0]), variant_cast(index));
+                            } else {
+                                temp = function.context->new_temporary(data_type);
+                            }
+                            
+                            mtac::Quadruple dot(temp, left[0], mtac::Operator::DOT, index);
+                            dot.size = mtac::Size::BYTE;
+                            function.push_back(std::move(dot));
+
                             left = {temp};
                         } else if (data_type == STRING){
                             auto t1 = function.context->new_temporary(INT);
@@ -853,10 +873,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
-        if(type == INT || type == CHAR || type == BOOL){
+        if(type == INT){
             auto temp = function.context->new_temporary(type);
 
             function.emplace_back(temp, variable, mtac::Operator::DOT, 0);
+
+            return {temp};
+        } else if(type == CHAR || type == BOOL){
+            auto temp = function.context->new_temporary(type);
+
+            mtac::Quadruple dot(temp, variable, mtac::Operator::DOT, 0);
+            dot.size = mtac::Size::BYTE;
+            function.push_back(std::move(dot));
 
             return {temp};
         } else if(type == FLOAT){
@@ -1033,20 +1061,26 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
         if(src_type != dest_type){
-            auto t1 = function.context->new_temporary(dest_type);
-
             if(dest_type == FLOAT){
+                auto t1 = function.context->new_temporary(dest_type);
                 function.emplace_back(t1, arg, mtac::Operator::I2F);
+                return {t1};
             } else if(dest_type == INT){
+                auto t1 = function.context->new_temporary(dest_type);
                 if(src_type == FLOAT){
                     function.emplace_back(t1, arg, mtac::Operator::F2I);
                 } else if(src_type == CHAR){
                     function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
                 }
+                return {t1};
             } else if(dest_type == CHAR){
+                auto t1 = function.context->new_temporary(dest_type);
                 function.emplace_back(t1, arg, mtac::Operator::ASSIGN);
+                return {t1};
             } else if(dest_type->is_pointer() && src_type->is_pointer()){
                 if(dest_type->data_type()->is_structure() && src_type->data_type()->is_structure()){
+                    auto t1 = function.context->new_temporary(dest_type);
+
                     auto global_context = function.context->global();
 
                     auto src_struct_type = global_context->get_struct(src_type);
@@ -1073,18 +1107,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                         return {t1};
                     }
-                }
-
-                //At this point, the cast has no effect
-                return {arg};
-            } else {
-                return {arg};
-            }
-            
-            return {t1};
+                } 
+            } 
         }
 
-        //If src_type == dest_type, there is nothing to do
+        //If it has not been there is nothing to do (cast without effect)
         return {arg};
     }
 };
@@ -1108,7 +1135,13 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::PASSIGN);
-        } else if(type->is_array() || type == INT || type == CHAR || type == BOOL){
+        } else if(type == CHAR || type == BOOL){
+            auto values = visit(ToArgumentsVisitor<>(function), right_value);
+            
+            mtac::Quadruple mov(variable, values[0], mtac::Operator::ASSIGN);
+            mov.size = mtac::Size::BYTE;
+            function.push_back(std::move(mov));
+        } else if(type->is_array() || type == INT){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
         } else if(type == STRING){
@@ -1184,6 +1217,10 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             if(left_type->is_pointer()){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]);
+            } else if(left_type == CHAR || left_type == BOOL){
+                mtac::Quadruple mov(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
+                mov.size = mtac::Size::BYTE;
+                function.push_back(std::move(mov));
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
@@ -1225,13 +1262,17 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
                 if(member_type->is_pointer()){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_PASSIGN, values[0]);
-                } else if(member_type->is_array() || member_type == INT || member_type == CHAR || member_type == BOOL){
+                } else if(member_type->is_array() || member_type == INT){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                } else if(member_type == CHAR || member_type == BOOL){
+                    mtac::Quadruple mov(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
+                    mov.size = mtac::Size::BYTE;
+                    function.push_back(std::move(mov));
+                } else if(member_type == FLOAT){
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
                 } else if(member_type == STRING){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
                     function.emplace_back(struct_variable, static_cast<int>(offset + INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
-                } else if(member_type == FLOAT){
-                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
                 } else {
                     eddic_unreachable("Unhandled value type");
                 }
@@ -1256,8 +1297,12 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
             if(right_type->is_pointer()){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_PASSIGN, values[0]);
-            } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
+            } else if(right_type->is_array() || right_type == INT){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
+            } else if(right_type == CHAR || right_type == BOOL){
+                mtac::Quadruple dot_assign(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
+                dot_assign.size = mtac::Size::BYTE;
+                function.push_back(std::move(dot_assign));
             } else if(right_type == STRING){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
                 function.emplace_back(pointer_variable, static_cast<int>(INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
@@ -1630,9 +1675,11 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             }
             
             for(auto& arg : boost::adaptors::reverse(args)){
-                function.emplace_back(
-                        param->type()->is_pointer() ? mtac::Operator::PPARAM : mtac::Operator::PARAM, 
-                        arg, param, definition);
+                if(param->type()->is_pointer()){
+                    function.emplace_back(mtac::Operator::PPARAM, arg, param, definition);
+                } else {
+                    function.emplace_back(mtac::Operator::PARAM, arg, param, definition);
+                }
             }
         }
     }
@@ -1641,7 +1688,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
 } //end of anonymous namespace
 
 void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool>, mtac::Program& program) const {
-    PerfsTimer timer("MTAC Compilation");
+    timing_timer timer(source.Content->context->timing(), "mtac_compilation");
 
     program.context = source.Content->context;
 
@@ -1649,16 +1696,18 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
             auto& function = program.functions.back();
+            function.standard() = ptr->Content->standard;
 
             FunctionCompiler compiler(program, function);
 
             visit_each(compiler, ptr->Content->instructions);
             compiler.issue_destructors(ptr->Content->context);
-        } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-            for(auto& struct_block : ptr->Content->blocks){
+        } else if(auto* struct_ptr = boost::get<ast::Struct>(&block)){
+            for(auto& struct_block : struct_ptr->Content->blocks){
                 if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
                     program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
                     auto& function = program.functions.back();
+            function.standard() = struct_ptr->Content->standard;
 
                     FunctionCompiler compiler(program, function);
 
@@ -1667,6 +1716,7 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
                 } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
                     program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
                     auto& function = program.functions.back();
+            function.standard() = struct_ptr->Content->standard;
 
                     FunctionCompiler compiler(program, function);
 
@@ -1675,6 +1725,7 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
                 } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
                     program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
                     auto& function = program.functions.back();
+            function.standard() = struct_ptr->Content->standard;
 
                     FunctionCompiler compiler(program, function);
 

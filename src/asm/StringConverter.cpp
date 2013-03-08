@@ -6,7 +6,6 @@
 //=======================================================================
 
 #include "assert.hpp"
-#include "Utils.hpp"
 
 #include "asm/StringConverter.hpp"
 
@@ -31,7 +30,7 @@ std::string as::StringConverter::register_to_string(eddic::ltac::AddressRegister
 std::string as::StringConverter::address_to_string(eddic::ltac::Address& address) const {
     if(address.absolute){
         if(address.displacement){
-            return "[" + *address.absolute + " + " + ::toString(*address.displacement) + "]";
+            return "[" + *address.absolute + " + " + std::to_string(*address.displacement) + "]";
         }
 
         if(address.base_register){
@@ -45,28 +44,28 @@ std::string as::StringConverter::address_to_string(eddic::ltac::Address& address
         if(address.scaled_register){
             if(address.scale){
                 if(address.displacement){
-                    return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " * " + ::toString(*address.scale) + " + " + ::toString(*address.displacement) + "]";
+                    return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " * " + std::to_string(*address.scale) + " + " + std::to_string(*address.displacement) + "]";
                 }
                 
-                return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " * " + ::toString(*address.scale) + "]";
+                return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " * " + std::to_string(*address.scale) + "]";
             }
                 
             if(address.displacement){
-                return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " + " + ::toString(*address.displacement) + "]";
+                return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + " + " + std::to_string(*address.displacement) + "]";
             }
             
             return "[" + register_to_string(*address.base_register) + " + " + register_to_string(*address.scaled_register) + "]";
         }
                 
         if(address.displacement){
-            return "[" + register_to_string(*address.base_register) + " + " + ::toString(*address.displacement) + "]";
+            return "[" + register_to_string(*address.base_register) + " + " + std::to_string(*address.displacement) + "]";
         }
 
         return "[" + register_to_string(*address.base_register) + "]";
     }
 
     if(address.displacement){
-        return "[" + ::toString(*address.displacement) + "]";
+        return "[" + std::to_string(*address.displacement) + "]";
     }
 
     eddic_unreachable("Invalid address type");

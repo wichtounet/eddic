@@ -26,8 +26,8 @@ class SemanticalException: public std::exception {
         boost::optional<eddic::ast::Position> m_position;
 
     public:
-        SemanticalException(const std::string& message);
-        SemanticalException(const std::string& message, const eddic::ast::Position& position);
+        SemanticalException(std::string message);
+        SemanticalException(std::string message, eddic::ast::Position position);
 
         ~SemanticalException() throw();
 

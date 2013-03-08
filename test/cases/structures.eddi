@@ -6,18 +6,6 @@ struct Complex {
     float d;
     bool b;
     str s;
-
-    this(){
-        //Nothing
-    }
-    
-    this(Complex* rhs){
-        imag = rhs.imag;
-        real = rhs.real;
-        d = rhs.d;
-        b = rhs.b;
-        s = rhs.s;
-    }
 }
 
 void main(){

@@ -127,6 +127,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 auto mangled = mangle(name, types);
                 auto original_mangled = mangled;
 
+                for(auto& type : types){
+                    if(type->is_structure()){
+                        std::vector<std::shared_ptr<const Type>> ctor_types = {new_pointer_type(type)};
+                        auto ctor_name = mangle_ctor(ctor_types, type);
+
+                        if(!context->exists(ctor_name)){
+                            throw SemanticalException("Passing a structure by value needs a copy constructor", functionCall.Content->position);
+                        }
+                    }
+                }
+
                 if(context->exists(mangled)){
                     functionCall.Content->mangled_name = mangled;
                 } else {

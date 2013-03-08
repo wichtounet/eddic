@@ -216,7 +216,7 @@ void main(){
         println(zzz);
     }
     
-    for(int zzz = 0; zzz < 5; zzz = zzz + 1){
+    for(int zzz = 0; zzz < 5; zzz++){
         test();
         test();
     }

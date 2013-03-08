@@ -16,6 +16,24 @@
 
 using namespace eddic;
 
+void mtac::replace_bbs(BBClones& clones, mtac::Quadruple& quadruple){
+    if(clones.find(quadruple.block) != clones.end()){
+        quadruple.block = clones[quadruple.block];
+    }
+}
+
+void mtac::replace_bbs(BBClones& clones, mtac::basic_block_p& bb){
+    for(auto& quadruple : bb){
+        mtac::replace_bbs(clones, quadruple);
+    }
+}
+
+void mtac::replace_bbs(BBClones& clones, mtac::Function& function){
+    for(auto& bb : function){
+        mtac::replace_bbs(clones, bb);
+    }
+}
+
 bool mtac::is_single_int_register(std::shared_ptr<const Type> type){
    return type == INT || type == BOOL || type == CHAR || type->is_pointer(); 
 }
@@ -36,73 +54,10 @@ bool mtac::is_recursive(mtac::Function& function){
     return false;
 }
 
-namespace {
-
-struct VariableUsageCollector {
-    mtac::VariableUsage& usage;
-    int depth_factor;
-    int current_depth;
-
-    VariableUsageCollector(mtac::VariableUsage& usage, int depth_factor) : usage(usage), depth_factor(depth_factor) {}
-
-    void inc_usage(std::shared_ptr<Variable> variable){
-        usage[variable] += pow(depth_factor, current_depth);
-    }
-
-    template<typename T>
-    void collect_optional(T& opt){
-        if(opt){
-            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
-                inc_usage(*variablePtr);
-            }
-        }
-    }
-
-    void collect(mtac::Quadruple& quadruple){
-        current_depth = quadruple.depth;
-
-        inc_usage(quadruple.result);
-        collect_optional(quadruple.arg1);
-        collect_optional(quadruple.arg2);
-    }
-};
-
-struct BasicBlockUsageCollector {
-    std::unordered_set<mtac::basic_block_p>& usage;
-
-    BasicBlockUsageCollector(std::unordered_set<mtac::basic_block_p>& usage) : usage(usage) {}
-
-    void collect(mtac::Quadruple& goto_){
-        usage.insert(goto_.block);
-    }
-};
-
-} //end of anonymous namespace
-
-mtac::VariableUsage mtac::compute_variable_usage(mtac::Function& function){
-    return compute_variable_usage_with_depth(function, 1);
-}
-
-mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& function, int factor){
-    mtac::VariableUsage usage;
-
-    VariableUsageCollector collector(usage, factor);
-
-    for(auto& block : function){
-        for(auto& quadruple : block->statements){
-            collector.collect(quadruple);
-        }
-    }
-
-    return usage;
-}
-
 void eddic::mtac::computeBlockUsage(mtac::Function& function, std::unordered_set<mtac::basic_block_p>& usage){
-    BasicBlockUsageCollector collector(usage);
-
     for(auto& block : function){
         for(auto& quadruple : block->statements){
-            collector.collect(quadruple);
+            usage.insert(quadruple.block);
         }
     }
 }
@@ -125,14 +80,6 @@ bool eddic::mtac::erase_result(mtac::Operator op){
         && op != mtac::Operator::CALL
         && op != mtac::Operator::LABEL
         && !(op >= mtac::Operator::IF_UNARY && op <= mtac::Operator::IF_FALSE_FL);
-}
-
-bool eddic::mtac::is_distributive(mtac::Operator op){
-    return op == mtac::Operator::ADD || op == mtac::Operator::FADD || op == mtac::Operator::MUL || op == mtac::Operator::FMUL;
-}
-
-bool eddic::mtac::is_expression(mtac::Operator op){
-    return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
 }
 
 unsigned int eddic::mtac::compute_member_offset(std::shared_ptr<const GlobalContext> context, std::shared_ptr<const Type> type, const std::string& member){

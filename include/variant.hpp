@@ -8,6 +8,9 @@
 #ifndef EDDIC_BOOST_VARIANT_H
 #define EDDIC_BOOST_VARIANT_H
 
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
+
 #include "boost_cfg.hpp"
 
 #include <boost/variant.hpp>

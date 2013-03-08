@@ -1,3 +1,20 @@
+eddic 1.2.3 - 2013.03.08
+
+* Language: char and bool now take only 1 byte
+* Language: Fix bug with use i++ in for loop
+* Language: Automatic generation of copy constructors for structures with
+structure fields
+* Optimizer: Improve the speed of the data-flow framework
+* Optimizer: Loop Unswitching
+* Optimizer: Iterate the call graph in postorder to inline functions
+* Optimizer: Remove variables contributing only to themselves
+* Optimizer: Improve induction variable to support division
+* Compiler: Better timing system
+* Compiler: Better error reporting
+* Compiler: Parts of the compiler are compiled with RTTI disabled
+* Compiler: Implement performance kernels to test the generated code
+
+
 eddic 1.2.2 - 2013.01.26
 
 * Language: When structures are passed by value, they are copy constructed

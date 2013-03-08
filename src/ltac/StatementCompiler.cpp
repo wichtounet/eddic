@@ -21,7 +21,6 @@
 
 #include "ltac/StatementCompiler.hpp"
 #include "ltac/Utils.hpp"
-#include "ltac/Statement.hpp"
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
 #include "ltac/PseudoRegister.hpp"
@@ -37,6 +36,21 @@ ltac::Address stack_address(int offset){
 
 ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
     return ltac::Address(ltac::BP, offsetReg, 1, offset);
+}
+
+ltac::Size convert_size(mtac::Size size){
+    switch(size){
+        case mtac::Size::BYTE:
+            return ltac::Size::BYTE;
+        case mtac::Size::WORD:
+            return ltac::Size::WORD;
+        case mtac::Size::DOUBLE_WORD:
+            return ltac::Size::DOUBLE_WORD;
+        case mtac::Size::QUAD_WORD:
+            return ltac::Size::QUAD_WORD;
+        case mtac::Size::DEFAULT:
+            return ltac::Size::DEFAULT;
+    }
 }
 
 } //end of anonymous namespace
@@ -56,9 +70,9 @@ void ltac::StatementCompiler::end_bb(){
                 auto reg = manager.get_pseudo_float_reg(var);
 
                 if(position.isStack() || position.isParameter()){
-                    ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
+                    bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
                 } else if(position.isGlobal()){
-                    ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
+                    bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
                 } else {
                     eddic_unreachable("Invalid position");
                 }
@@ -66,9 +80,9 @@ void ltac::StatementCompiler::end_bb(){
                 auto reg = manager.get_pseudo_reg(var);
 
                 if(position.isStack() || position.isParameter()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
                 } else if(position.isGlobal()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
                 } else {
                     eddic_unreachable("Invalid position");
                 }
@@ -120,7 +134,7 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
                 if(var->type()->is_array()){
                     auto reg = manager.get_free_pseudo_reg();
 
-                    ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+                    bb->emplace_back_low(ltac::Operator::MOV, reg, stack_address(position.offset()));
 
                     return ltac::Address(reg, *ptr);
                 //In the other cases, the value is passed, so we can compute the offset directly
@@ -144,9 +158,9 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
 
             //The case of array is special because only the address is passed, not the complete array
             if(var->type()->is_array()){
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg, stack_address(position.offset()));
+                bb->emplace_back_low(ltac::Operator::MOV, reg, stack_address(position.offset()));
             } else {
-                ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
+                bb->emplace_back_low(ltac::Operator::LEA, reg, stack_address(position.offset()));
             }
 
             return ltac::Address(reg, offsetReg);
@@ -163,7 +177,7 @@ ltac::Address ltac::StatementCompiler::address(std::shared_ptr<Variable> var, mt
 
 void ltac::StatementCompiler::pass_in_int_register(mtac::Argument& argument, int position){
     auto reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
-    ltac::add_instruction(bb, ltac::Operator::MOV, reg, to_arg(argument));
+    bb->emplace_back_low(ltac::Operator::MOV, reg, to_arg(argument));
     uses.push_back(reg);
 }
 
@@ -172,12 +186,12 @@ void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, i
 
     if(auto* ptr = boost::get<int>(&argument)){
         auto label = float_pool->label(static_cast<double>(*ptr));
-        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
+        bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else if(auto* ptr = boost::get<double>(&argument)){
         auto label = float_pool->label(*ptr);
-        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, ltac::Address(label));
+        bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
-        ltac::add_instruction(bb, ltac::Operator::FMOV, reg, to_arg(argument));
+        bb->emplace_back_low(ltac::Operator::FMOV, reg, to_arg(argument));
     }
     
     float_uses.push_back(reg);
@@ -188,20 +202,20 @@ void ltac::StatementCompiler::compare_binary(mtac::Argument& arg1, mtac::Argumen
     if(auto* ptr = boost::get<int>(&arg1)){
         auto reg1 = manager.get_free_pseudo_reg();
 
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg1, *ptr);
+        bb->emplace_back_low(ltac::Operator::MOV, reg1, *ptr);
 
         auto reg2 = manager.get_pseudo_reg(ltac::get_variable(arg2));
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
+        bb->emplace_back_low(ltac::Operator::CMP_INT, reg1, reg2);
     } else {
         auto reg1 = manager.get_pseudo_reg(ltac::get_variable(arg1));
         auto reg2 = to_arg(arg2);
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::CMP_INT, reg1, reg2);
+        bb->emplace_back_low(ltac::Operator::CMP_INT, reg1, reg2);
     }
 }
 
@@ -216,7 +230,7 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
+        bb->emplace_back_low(ltac::Operator::CMP_FLOAT, reg1, reg2);
     } else if(mtac::isVariable(arg1) && mtac::isFloat(arg2)){
         auto reg1 = manager.get_pseudo_float_reg(ltac::get_variable(arg1));
         auto reg2 = manager.get_free_pseudo_float_reg();
@@ -225,7 +239,7 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
+        bb->emplace_back_low(ltac::Operator::CMP_FLOAT, reg1, reg2);
     } else if(mtac::isFloat(arg1) && mtac::isVariable(arg2)){
         auto reg1 = manager.get_free_pseudo_float_reg();
         auto reg2 = manager.get_pseudo_float_reg(ltac::get_variable(arg2));
@@ -234,7 +248,7 @@ void ltac::StatementCompiler::compare_float_binary(mtac::Argument& arg1, mtac::A
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, reg1, reg2);
+        bb->emplace_back_low(ltac::Operator::CMP_FLOAT, reg1, reg2);
     }
 }
 
@@ -242,17 +256,17 @@ void ltac::StatementCompiler::compare_unary(mtac::Argument arg1){
     if(auto* ptr = boost::get<int>(&arg1)){
         auto reg = manager.get_free_pseudo_reg();
 
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg, *ptr);
+        bb->emplace_back_low(ltac::Operator::MOV, reg, *ptr);
 
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
+        bb->emplace_back_low(ltac::Operator::OR, reg, reg);
     } else {
         auto reg = manager.get_pseudo_reg(ltac::get_variable(arg1));
         
         end_bb();
 
-        ltac::add_instruction(bb, ltac::Operator::OR, reg, reg);
+        bb->emplace_back_low(ltac::Operator::OR, reg, reg);
     }
 }
 
@@ -260,18 +274,18 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, mtac::Quadruple& qua
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
     //The default value is 0
-    ltac::add_instruction(bb, ltac::Operator::MOV, reg, 0);
+    bb->emplace_back_low(ltac::Operator::MOV, reg, 0);
 
     //The first argument is not important, it can be immediate, but the second must be a register
     if(auto* ptr = boost::get<int>(&*quadruple.arg1)){
         auto cmp_reg = manager.get_free_pseudo_reg();
 
-        ltac::add_instruction(bb, ltac::Operator::MOV, cmp_reg, *ptr); 
+        bb->emplace_back_low(ltac::Operator::MOV, cmp_reg, *ptr); 
         
         if(floats){
-            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple.arg2)); 
         } else {
-            ltac::add_instruction(bb, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple.arg2)); 
         }
     } 
     //For ucomisd, neither the first nor the second argument can be a double
@@ -279,12 +293,12 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, mtac::Quadruple& qua
         auto cmp_reg = manager.get_free_pseudo_float_reg();
 
         auto label = float_pool->label(*ptr);
-        ltac::add_instruction(bb, ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
+        bb->emplace_back_low(ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
         
         if(floats){
-            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_FLOAT, cmp_reg, to_arg(*quadruple.arg2)); 
         } else {
-            ltac::add_instruction(bb, ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_INT, cmp_reg, to_arg(*quadruple.arg2)); 
         }
     }
     //For ucomisd, neither the first nor the second argument can be a double
@@ -292,35 +306,35 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, mtac::Quadruple& qua
         auto cmp_reg = manager.get_free_pseudo_float_reg();
 
         auto label = float_pool->label(*ptr);
-        ltac::add_instruction(bb, ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
+        bb->emplace_back_low(ltac::Operator::FMOV, cmp_reg, ltac::Address(label)); 
         
         if(floats){
-            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, to_arg(*quadruple.arg1), cmp_reg); 
+            bb->emplace_back_low(ltac::Operator::CMP_FLOAT, to_arg(*quadruple.arg1), cmp_reg); 
         } else {
-            ltac::add_instruction(bb, ltac::Operator::CMP_INT, to_arg(*quadruple.arg1), cmp_reg); 
+            bb->emplace_back_low(ltac::Operator::CMP_INT, to_arg(*quadruple.arg1), cmp_reg); 
         }
     } else {
         if(floats){
-            ltac::add_instruction(bb, ltac::Operator::CMP_FLOAT, to_arg(*quadruple.arg1), to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_FLOAT, to_arg(*quadruple.arg1), to_arg(*quadruple.arg2)); 
         } else {
-            ltac::add_instruction(bb, ltac::Operator::CMP_INT, to_arg(*quadruple.arg1), to_arg(*quadruple.arg2)); 
+            bb->emplace_back_low(ltac::Operator::CMP_INT, to_arg(*quadruple.arg1), to_arg(*quadruple.arg2)); 
         }
     }
 
     //Conditionally move 1 in the register
     auto value_reg = manager.get_free_pseudo_reg();
-    ltac::add_instruction(bb, ltac::Operator::MOV, value_reg, 1); 
-    ltac::add_instruction(bb, set, reg, value_reg); 
+    bb->emplace_back_low(ltac::Operator::MOV, value_reg, 1); 
+    bb->emplace_back_low(set, reg, value_reg); 
 
     manager.set_written(quadruple.result);
 }
         
 void ltac::StatementCompiler::push(ltac::Argument arg){
-    ltac::add_instruction(bb, ltac::Operator::PUSH, arg);
+    bb->emplace_back_low(ltac::Operator::PUSH, arg);
 }
 
 void ltac::StatementCompiler::pop(ltac::Argument arg){
-    ltac::add_instruction(bb, ltac::Operator::POP, arg);
+    bb->emplace_back_low(ltac::Operator::POP, arg);
 }
 
 void ltac::StatementCompiler::compile_GOTO(mtac::Quadruple& quadruple){
@@ -328,13 +342,13 @@ void ltac::StatementCompiler::compile_GOTO(mtac::Quadruple& quadruple){
 
     end_bb();
 
-    bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::ALWAYS));
+    bb->emplace_back_low(quadruple.block->label, ltac::Operator::ALWAYS);
 }
 
 ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset){
     auto reg = manager.get_free_pseudo_reg();
 
-    ltac::add_instruction(bb, ltac::Operator::LEA, reg, address(var, offset));
+    bb->emplace_back_low(ltac::Operator::LEA, reg, address(var, offset));
     
     return reg;
 }
@@ -342,8 +356,8 @@ ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg(std::sha
 ltac::PseudoRegister ltac::StatementCompiler::get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::PseudoRegister offset){
     auto reg = manager.get_free_pseudo_reg();
     
-    ltac::add_instruction(bb, ltac::Operator::LEA, reg, address(var, 0));
-    ltac::add_instruction(bb, ltac::Operator::ADD, reg, offset);
+    bb->emplace_back_low(ltac::Operator::LEA, reg, address(var, 0));
+    bb->emplace_back_low(ltac::Operator::ADD, reg, offset);
     
     return reg;
 }
@@ -352,7 +366,17 @@ std::tuple<std::shared_ptr<const Type>, bool, unsigned int> ltac::StatementCompi
     LOG<Trace>("Registers") << "Current statement " << param << log::endl;
 
     if(first_param){
-        ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
+        bb->emplace_back_low(ltac::Operator::PRE_PARAM);
+
+        //Align stack pointer to the size of an INT
+
+        auto total = function_stack_size(param.function());
+        if(total % INT->size(platform) != 0){
+            int padding = INT->size(platform) - (total % INT->size(platform));
+
+            bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, padding);
+        }
+
         first_param = false;
     }
     
@@ -390,6 +414,8 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
     std::tie(type, register_allocated, position) = common_param(param);
 
+    //1. If register allocated, find the correct register and move the value into it
+
     if(register_allocated){
         if(auto* ptr = boost::get<int>(&*param.arg1)){
             if(*ptr == 0){
@@ -408,34 +434,83 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
 
         return;
     }
+    
+    //2. If the param as not been handled as register passing, push it on the stack 
 
-    //If the param as not been handled as register passing, push it on the stack 
+    //Char has a smaller size, cannot use push instructions
+    
+    if(param.param() && (param.param()->type() == CHAR || param.param()->type() == BOOL)){
+        bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
+
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
+            auto& var = *ptr;
+            auto reg = manager.get_pseudo_reg(var);
+                
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+
+            uses.push_back(hard_reg);
+        } else {
+            //If it is not a variable it can only be an int (char value)
+            auto value = boost::get<int>(*param.arg1);
+            
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+        }
+
+        return;
+    }
+
+    //Use push instructions for regular types
+
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*param.arg1)){
-        if(!(*ptr)->type()->is_array() && ltac::is_float_var(*ptr)){
-            auto reg1 = manager.get_free_pseudo_reg();
-            auto reg2 = manager.get_pseudo_float_reg(*ptr);
+        auto var = *ptr;
 
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg1, reg2);
+        if(!var->type()->is_array() && ltac::is_float_var(var)){
+            auto reg1 = manager.get_free_pseudo_reg();
+            auto reg2 = manager.get_pseudo_float_reg(var);
+
+            bb->emplace_back_low(ltac::Operator::MOV, reg1, reg2);
             push(reg1);
         } else {
-            if((*ptr)->type()->is_array() && !(*ptr)->type()->is_dynamic_array()){
+            if(var->type()->is_array() && !var->type()->is_dynamic_array()){
                 auto position = (*ptr)->position();
 
                 if(position.isGlobal()){
                     auto reg = manager.get_free_pseudo_reg();
 
-                    ltac::add_instruction(bb, ltac::Operator::MOV, reg, "V" + position.name());
+                    bb->emplace_back_low(ltac::Operator::MOV, reg, "V" + position.name());
                     push(reg);
                 } else if(position.isStack()){
                     auto reg = manager.get_free_pseudo_reg();
 
-                    ltac::add_instruction(bb, ltac::Operator::LEA, reg, stack_address(position.offset()));
+                    bb->emplace_back_low(ltac::Operator::LEA, reg, stack_address(position.offset()));
                     push(reg);
                 } else if(position.isParameter()){
                     push(stack_address(position.offset()));
                 }
+            } else if(var->type() == CHAR || var->type() == BOOL){
+                auto reg = manager.get_pseudo_reg(var);
+
+                //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+                auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+                bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
+                bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
+
+                ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
+                mov.size = ltac::Size::BYTE;
+                bb->push_back(std::move(mov));
+
+                uses.push_back(hard_reg);
             } else {
-                auto reg = manager.get_pseudo_reg(*ptr);
+                auto reg = manager.get_pseudo_reg(var);
                 push(reg);
             }
         }
@@ -476,7 +551,7 @@ void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
 
             if(register_allocated){
                 auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
-                ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                bb->emplace_back_low(ltac::Operator::MOV, param_reg, reg);
                 uses.push_back(param_reg);
             } else {
                 push(reg);
@@ -486,7 +561,7 @@ void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
 
             if(register_allocated){
                 auto param_reg = manager.get_bound_pseudo_reg(descriptor->int_param_register(position));
-                ltac::add_instruction(bb, ltac::Operator::MOV, param_reg, reg);
+                bb->emplace_back_low(ltac::Operator::MOV, param_reg, reg);
                 uses.push_back(param_reg);
             } else {
                 push(reg);
@@ -498,40 +573,22 @@ void ltac::StatementCompiler::compile_PPARAM(mtac::Quadruple& param){
     }
 }
 
-void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
-    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
-
-    //Means that there are no params
-    if(first_param){
-        ltac::add_instruction(bb, ltac::Operator::PRE_PARAM);
-    }
-
-    first_param = true;
-
-    auto call_instruction = std::make_shared<ltac::Jump>(call.function().mangled_name(), ltac::JumpType::CALL);
-    call_instruction->target_function = &call.function();
-    call_instruction->uses = uses;
-    call_instruction->float_uses = float_uses;
-    bb->l_statements.push_back(call_instruction);
-
-    uses.clear();
-    float_uses.clear();
-
+int ltac::StatementCompiler::function_stack_size(eddic::Function& function){
     int total = 0;
 
     unsigned int maxInt = descriptor->numberOfIntParamRegisters();
     unsigned int maxFloat = descriptor->numberOfFloatParamRegisters();
     
-    if(!call.function().standard() && !configuration->option_defined("fparameter-allocation")){
+    if(!function.standard() && !configuration->option_defined("fparameter-allocation")){
         maxInt = 0;
         maxFloat = 0;
     }
 
-    for(auto& param : call.function().parameters()){
+    for(auto& param : function.parameters()){
         auto type = param.type(); 
 
         if(type->is_array()){
-            //Passing an array is just passing an adress
+            //Passing an array is just passing an address
             total += INT->size(platform);
         } else {
             if(mtac::is_single_int_register(type)){
@@ -554,21 +611,71 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
         }
     }
 
-    ltac::add_instruction(bb, ltac::Operator::ADD, ltac::SP, total);
+    return total;
+}
+
+void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
+    LOG<Trace>("Registers") << "Current statement " << call << log::endl;
+
+    //Means that there are no params
+    if(first_param){
+        bb->emplace_back_low(ltac::Operator::PRE_PARAM);
+    }
+
+    first_param = true;
+
+    //Compute the size of the parameters
+    auto total = function_stack_size(call.function());
+
+    //Align stack pointer to the size of an INT
+
+    if(total % INT->size(platform) != 0){
+        int padding = INT->size(platform) - (total % INT->size(platform));
+        total += padding;
+    }
+
+    ltac::Instruction call_instruction(call.function().mangled_name(), ltac::Operator::CALL);
+    call_instruction.target_function = &call.function();
+    call_instruction.uses = uses;
+    call_instruction.float_uses = float_uses;
+
+    ltac::PseudoRegister return_reg_1;
+    ltac::PseudoRegister return_reg_2;
+    ltac::PseudoFloatRegister return_float_reg_1;
+    
+    if(call.return1()){
+        if(call.return1()->type() == FLOAT){
+            return_float_reg_1 = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
+            call_instruction.float_kills.push_back(return_float_reg_1);
+        } else {
+            return_reg_1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
+            call_instruction.kills.push_back(return_reg_1);
+        }
+    }
+
+    if(call.return2()){
+        return_reg_2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
+        call_instruction.kills.push_back(return_reg_2);
+    }
+    
+    bb->l_statements.push_back(std::move(call_instruction));
+
+    uses.clear();
+    float_uses.clear();
+
+    //Deallocate space of the parameters
+
+    bb->emplace_back_low(ltac::Operator::ADD, ltac::SP, total);
 
     //The copies should be cleaned by the optimizations
 
     if(call.return1()){
         if(call.return1()->type() == FLOAT){
             auto reg = manager.get_pseudo_float_reg_no_move(call.return1());
-            auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
-            ltac::add_instruction(bb, ltac::Operator::FMOV, reg, return_reg);
-            call_instruction->float_kills.push_back(return_reg);
+            bb->emplace_back_low(ltac::Operator::FMOV, reg, return_float_reg_1);
         } else {
             auto reg = manager.get_pseudo_reg_no_move(call.return1());
-            auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
-            call_instruction->kills.push_back(return_reg);
+            bb->emplace_back_low(ltac::Operator::MOV, reg, return_reg_1);
         }
 
         manager.set_written(call.return1());
@@ -576,9 +683,7 @@ void ltac::StatementCompiler::compile_CALL(mtac::Quadruple& call){
 
     if(call.return2()){
         auto reg = manager.get_pseudo_reg_no_move(call.return2());
-        auto return_reg = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg, return_reg);
-        call_instruction->kills.push_back(return_reg);
+        bb->emplace_back_low(ltac::Operator::MOV, reg, return_reg_2);
 
         manager.set_written(call.return2());
     }
@@ -588,7 +693,7 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
     
     //Copy it in the register
-    manager.copy(*quadruple.arg1, reg);
+    manager.copy(*quadruple.arg1, reg, convert_size(quadruple.size));
 
     //The variable has been written
     manager.set_written(quadruple.result);
@@ -596,13 +701,27 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     //If the address of the variable is escaped, we have to spill its value directly
     if(manager.is_escaped(quadruple.result)){
         auto position = quadruple.result->position();
+            
+        //TODO if the reg is already 8-bit allocatable, use it directly
+
+        //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+        auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+
+        bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
         if(position.isStack()){
-            ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg);
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
         } else if(position.isGlobal()){
-            ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
+            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg);
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
         } else {
             eddic_unreachable("Invalid position");
         }
+        
+        uses.push_back(hard_reg);
         
         manager.remove_from_pseudo_reg(quadruple.result); 
     }
@@ -615,7 +734,7 @@ void ltac::StatementCompiler::compile_PASSIGN(mtac::Quadruple& quadruple){
         } else {
             auto result_reg = manager.get_pseudo_reg_no_move(quadruple.result);
             auto value_reg = get_address_in_pseudo_reg(*ptr, 0);
-            ltac::add_instruction(bb, ltac::Operator::MOV, result_reg, value_reg);
+            bb->emplace_back_low(ltac::Operator::MOV, result_reg, value_reg);
 
             manager.set_written(quadruple.result);
 
@@ -623,9 +742,9 @@ void ltac::StatementCompiler::compile_PASSIGN(mtac::Quadruple& quadruple){
             if(manager.is_escaped(quadruple.result)){
                 auto position = quadruple.result->position();
                 if(position.isStack()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), value_reg);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), value_reg);
                 } else if(position.isGlobal()){
-                    ltac::add_instruction(bb, ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
+                    bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
                 } else {
                     eddic_unreachable("Invalid position");
                 }
@@ -648,9 +767,9 @@ void ltac::StatementCompiler::compile_FASSIGN(mtac::Quadruple& quadruple){
     if(manager.is_escaped(quadruple.result)){
         auto position = quadruple.result->position();
         if(position.isStack()){
-            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
+            bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address(ltac::BP, position.offset()), reg);
         } else if(position.isGlobal()){
-            ltac::add_instruction(bb, ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
+            bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
         } else {
             eddic_unreachable("Invalid position");
         }
@@ -665,12 +784,12 @@ void ltac::StatementCompiler::compile_ADD(mtac::Quadruple& quadruple){
     //Optimize the special form a = a + b by using only one ADD instruction
     if(*quadruple.arg1 == result){
         auto reg = manager.get_pseudo_reg(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::ADD, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::ADD, reg, to_arg(*quadruple.arg2));
     } 
     //Optimize the special form a = b + a by using only one ADD instruction
     else if(*quadruple.arg2 == result){
         auto reg = manager.get_pseudo_reg(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::ADD, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::ADD, reg, to_arg(*quadruple.arg2));
     } 
     //In the other cases, use lea to perform the addition
     else {
@@ -678,19 +797,19 @@ void ltac::StatementCompiler::compile_ADD(mtac::Quadruple& quadruple){
 
         if(ltac::is_variable(*quadruple.arg1)){
             if(ltac::is_variable(*quadruple.arg2)){
-                ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(
+                bb->emplace_back_low(ltac::Operator::LEA, reg, ltac::Address(
                             manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)), 
                             manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg2))));
             } else {
-                ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(
+                bb->emplace_back_low(ltac::Operator::LEA, reg, ltac::Address(
                             manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)), boost::get<int>(*quadruple.arg2)));
             }
         } else {
             if(ltac::is_variable(*quadruple.arg2)){
-                ltac::add_instruction(bb, ltac::Operator::LEA, reg, 
+                bb->emplace_back_low(ltac::Operator::LEA, reg, 
                         ltac::Address(manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg2)), boost::get<int>(*quadruple.arg1)));
             } else {
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg, boost::get<int>(*quadruple.arg1) + boost::get<int>(*quadruple.arg2));
+                bb->emplace_back_low(ltac::Operator::MOV, reg, boost::get<int>(*quadruple.arg1) + boost::get<int>(*quadruple.arg2));
             }
         }
     }
@@ -704,13 +823,13 @@ void ltac::StatementCompiler::compile_SUB(mtac::Quadruple& quadruple){
     //Optimize the special form a = a - b by using only one SUB instruction
     if(*quadruple.arg1 == result){
         auto reg = manager.get_pseudo_reg(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::SUB, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::SUB, reg, to_arg(*quadruple.arg2));
     } 
     //In the other cases, move the first arg into the result register and then subtract the second arg into it
     else {
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg, to_arg(*quadruple.arg1));
-        ltac::add_instruction(bb, ltac::Operator::SUB, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::MOV, reg, to_arg(*quadruple.arg1));
+        bb->emplace_back_low(ltac::Operator::SUB, reg, to_arg(*quadruple.arg2));
     }
 
     manager.set_written(quadruple.result);
@@ -723,26 +842,26 @@ void ltac::StatementCompiler::compile_MUL(mtac::Quadruple& quadruple){
     //Form  x = x * y
     if(*quadruple.arg1 == quadruple.result){
         auto reg = manager.get_pseudo_reg(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::MUL2, reg, to_arg(*quadruple.arg2));
     }
     //Form x = y * x
     else if(*quadruple.arg2 == quadruple.result){
         auto reg = manager.get_pseudo_reg(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple.arg1));
+        bb->emplace_back_low(ltac::Operator::MUL2, reg, to_arg(*quadruple.arg1));
     }
     //Form x = y * z (z: immediate)
     else if(mtac::isVariable(*quadruple.arg1) && mtac::isInt(*quadruple.arg2)){
-        ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg1), to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg1), to_arg(*quadruple.arg2));
     }
     //Form x = y * z (y: immediate)
     else if(mtac::isInt(*quadruple.arg1) && mtac::isVariable(*quadruple.arg2)){
-        ltac::add_instruction(bb, ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg2), to_arg(*quadruple.arg1));
+        bb->emplace_back_low(ltac::Operator::MUL3, manager.get_pseudo_reg_no_move(quadruple.result), to_arg(*quadruple.arg2), to_arg(*quadruple.arg1));
     }
     //Form x = y * z (both variables)
     else if(mtac::isVariable(*quadruple.arg1) && mtac::isVariable(*quadruple.arg2)){
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
         manager.copy(*quadruple.arg1, reg);
-        ltac::add_instruction(bb, ltac::Operator::MUL2, reg, to_arg(*quadruple.arg2));
+        bb->emplace_back_low(ltac::Operator::MUL2, reg, to_arg(*quadruple.arg2));
     }
 
     manager.set_written(quadruple.result);
@@ -755,7 +874,7 @@ void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
         int constant = boost::get<int>(*quadruple.arg2);
 
         if(isPowerOfTwo(constant)){
-            ltac::add_instruction(bb, ltac::Operator::SHIFT_RIGHT, manager.get_pseudo_reg(quadruple.result), powerOfTwo(constant));
+            bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, manager.get_pseudo_reg(quadruple.result), powerOfTwo(constant));
 
             manager.set_written(quadruple.result);
 
@@ -769,23 +888,25 @@ void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
 
     manager.copy(*quadruple.arg1, a_reg);
 
-    ltac::add_instruction(bb, ltac::Operator::MOV, d_reg, a_reg);
-    ltac::add_instruction(bb, ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
+    bb->emplace_back_low(ltac::Operator::MOV, d_reg, a_reg);
+    bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
 
     if(mtac::isInt(*quadruple.arg2)){
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple.arg2, reg);
 
-        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, reg);
-        instruction->uses.push_back(a_reg);
-        instruction->uses.push_back(d_reg);
+        ltac::Instruction instruction(ltac::Operator::DIV, reg);
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
     } else {
-        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple.arg2));
-        instruction->uses.push_back(a_reg);
-        instruction->uses.push_back(d_reg);
+        ltac::Instruction instruction(ltac::Operator::DIV, to_arg(*quadruple.arg2));
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
     }
     
-    ltac::add_instruction(bb, ltac::Operator::MOV, result_reg, a_reg);
+    bb->emplace_back_low(ltac::Operator::MOV, result_reg, a_reg);
 
     manager.set_written(quadruple.result);
 }
@@ -797,23 +918,25 @@ void ltac::StatementCompiler::compile_MOD(mtac::Quadruple& quadruple){
 
     manager.copy(*quadruple.arg1, a_reg);
 
-    ltac::add_instruction(bb, ltac::Operator::MOV, d_reg, a_reg);
-    ltac::add_instruction(bb, ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
+    bb->emplace_back_low(ltac::Operator::MOV, d_reg, a_reg);
+    bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
 
     if(mtac::isInt(*quadruple.arg2)){
         auto reg = manager.get_free_pseudo_reg();
         manager.move(*quadruple.arg2, reg);
 
-        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, reg);
-        instruction->uses.push_back(a_reg);
-        instruction->uses.push_back(d_reg);
+        ltac::Instruction instruction(ltac::Operator::DIV, reg);
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
     } else {
-        auto instruction = ltac::add_instruction(bb, ltac::Operator::DIV, to_arg(*quadruple.arg2));
-        instruction->uses.push_back(a_reg);
-        instruction->uses.push_back(d_reg);
+        ltac::Instruction instruction(ltac::Operator::DIV, to_arg(*quadruple.arg2));
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
     }
 
-    ltac::add_instruction(bb, ltac::Operator::MOV, result_reg, d_reg);
+    bb->emplace_back_low(ltac::Operator::MOV, result_reg, d_reg);
 
     manager.set_written(quadruple.result);
 }
@@ -828,9 +951,9 @@ void ltac::StatementCompiler::compile_FADD(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FADD, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FADD, reg, to_arg(*quadruple.arg2));
         }
     }
     //Optimize the special form a = b + a by using only one instruction
@@ -840,9 +963,9 @@ void ltac::StatementCompiler::compile_FADD(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg1)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg1, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FADD, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, to_arg(*quadruple.arg1));
+            bb->emplace_back_low(ltac::Operator::FADD, reg, to_arg(*quadruple.arg1));
         }
     }
     //In the other forms, use two instructions
@@ -853,9 +976,9 @@ void ltac::StatementCompiler::compile_FADD(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FADD, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FADD, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FADD, reg, to_arg(*quadruple.arg2));
         }
     }
 
@@ -872,9 +995,9 @@ void ltac::StatementCompiler::compile_FSUB(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FSUB, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FSUB, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FSUB, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FSUB, reg, to_arg(*quadruple.arg2));
         }
     } else {
         auto reg = manager.get_pseudo_float_reg_no_move(result);
@@ -883,9 +1006,9 @@ void ltac::StatementCompiler::compile_FSUB(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FSUB, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FSUB, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FSUB, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FSUB, reg, to_arg(*quadruple.arg2));
         }
     }
 
@@ -900,9 +1023,9 @@ void ltac::StatementCompiler::compile_FMUL(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
         }
     }
     //Form x = y * x
@@ -912,9 +1035,9 @@ void ltac::StatementCompiler::compile_FMUL(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
         }
     } 
     //General form
@@ -925,9 +1048,9 @@ void ltac::StatementCompiler::compile_FMUL(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FMUL, reg, to_arg(*quadruple.arg2));
         }
     }
 
@@ -942,9 +1065,9 @@ void ltac::StatementCompiler::compile_FDIV(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FDIV, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FDIV, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FDIV, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FDIV, reg, to_arg(*quadruple.arg2));
         }
     } 
     //General form
@@ -955,9 +1078,9 @@ void ltac::StatementCompiler::compile_FDIV(mtac::Quadruple& quadruple){
         if(mtac::isFloat(*quadruple.arg2)){
             auto reg2 = manager.get_free_pseudo_float_reg();
             manager.copy(*quadruple.arg2, reg2);
-            ltac::add_instruction(bb, ltac::Operator::FDIV, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::FDIV, reg, reg2);
         } else {
-            ltac::add_instruction(bb, ltac::Operator::FDIV, reg, to_arg(*quadruple.arg2));
+            bb->emplace_back_low(ltac::Operator::FDIV, reg, to_arg(*quadruple.arg2));
         }
     }
 
@@ -1019,11 +1142,11 @@ void ltac::StatementCompiler::compile_MINUS(mtac::Quadruple& quadruple){
     auto var = ltac::get_variable(*quadruple.arg1);
 
     if(quadruple.result == var){
-        ltac::add_instruction(bb, ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)));
+        bb->emplace_back_low(ltac::Operator::NEG, manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)));
     } else {
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::MOV, reg, manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)));
-        ltac::add_instruction(bb, ltac::Operator::NEG, reg);
+        bb->emplace_back_low(ltac::Operator::MOV, reg, manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1)));
+        bb->emplace_back_low(ltac::Operator::NEG, reg);
     }
 
     manager.set_written(quadruple.result);
@@ -1039,11 +1162,11 @@ void ltac::StatementCompiler::compile_FMINUS(mtac::Quadruple& quadruple){
     manager.copy(-1.0, reg);
 
     if(quadruple.result == var){
-        ltac::add_instruction(bb, ltac::Operator::FMUL, var_reg, reg);
+        bb->emplace_back_low(ltac::Operator::FMUL, var_reg, reg);
     } else {
         auto result_reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
-        ltac::add_instruction(bb, ltac::Operator::FMOV, result_reg, var_reg);
-        ltac::add_instruction(bb, ltac::Operator::FMUL, result_reg, reg);
+        bb->emplace_back_low(ltac::Operator::FMOV, result_reg, var_reg);
+        bb->emplace_back_low(ltac::Operator::FMUL, result_reg, reg);
     }
 
     manager.set_written(quadruple.result);
@@ -1056,7 +1179,7 @@ void ltac::StatementCompiler::compile_I2F(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg1));
     auto result_reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
 
-    ltac::add_instruction(bb, ltac::Operator::I2F, result_reg, reg);
+    bb->emplace_back_low(ltac::Operator::I2F, result_reg, reg);
 
     manager.set_written(quadruple.result);
 }
@@ -1068,56 +1191,68 @@ void ltac::StatementCompiler::compile_F2I(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_float_reg(ltac::get_variable(*quadruple.arg1));
     auto result_reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
-    ltac::add_instruction(bb, ltac::Operator::F2I, result_reg, reg);
+    bb->emplace_back_low(ltac::Operator::F2I, result_reg, reg);
 
     manager.set_written(quadruple.result);
 }
 
 void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
-    std::shared_ptr<ltac::Instruction> instruction;
+    auto size = convert_size(quadruple.size);
     
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
         auto variable = *var_ptr;
 
         if(variable->type()->is_pointer() || (variable->type()->is_dynamic_array() && !variable->position().isParameter())){
             auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-            instruction = ltac::add_instruction(bb, ltac::Operator::MOV, reg, address(variable, *quadruple.arg2));
+            
+            //TODO if the reg is already 8-bit allocatable, use it directly
+            
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            
+            ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
+            instruction.size = size;
+            bb->push_back(std::move(instruction));
+            
+            bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
+
+            uses.push_back(hard_reg);
         } else {
             if(ltac::is_float_var(quadruple.result)){
                 auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
-                instruction = ltac::add_instruction(bb, ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2));
+                ltac::Instruction instruction(ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2));
+                instruction.size = size;
+                bb->push_back(std::move(instruction));
             } else {
                 auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
-                instruction = ltac::add_instruction(bb, ltac::Operator::MOV, reg, address(variable, *quadruple.arg2));
+
+                //TODO if the reg is already 8-bit allocatable, use it directly
+
+                //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+                auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+                
+                ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
+                instruction.size = size;
+                bb->push_back(std::move(instruction));
+
+                bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
+
+                uses.push_back(hard_reg);
             }
         }
     } else if(auto* string_ptr = boost::get<std::string>(&*quadruple.arg1)){
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
         if(auto* offset_ptr = boost::get<int>(&*quadruple.arg2)){
-            instruction = ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(*string_ptr, *offset_ptr));
+            ltac::Instruction instruction(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, *offset_ptr));
+            instruction.size = size;
+            bb->push_back(std::move(instruction));
         } else if(auto* offset_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             auto offset_reg = manager.get_pseudo_reg(*offset_ptr);
-            instruction = ltac::add_instruction(bb, ltac::Operator::MOV, reg, ltac::Address(*string_ptr, offset_reg));
+            ltac::Instruction instruction(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, offset_reg));
+            instruction.size = size;
+            bb->push_back(std::move(instruction));
         }
-    }
-
-    switch(quadruple.size){
-        case mtac::Size::BYTE:
-            instruction->size = ltac::Size::BYTE;
-            break;
-        case mtac::Size::WORD:
-            instruction->size = ltac::Size::WORD;
-            break;
-        case mtac::Size::DOUBLE_WORD:
-            instruction->size = ltac::Size::DOUBLE_WORD;
-            break;
-        case mtac::Size::QUAD_WORD:
-            instruction->size = ltac::Size::QUAD_WORD;
-            break;
-        default:
-            instruction->size = ltac::Size::DEFAULT;
-            break;
     }
 
     manager.set_written(quadruple.result);
@@ -1131,7 +1266,7 @@ void ltac::StatementCompiler::compile_FDOT(mtac::Quadruple& quadruple){
     int offset = boost::get<int>(*quadruple.arg2);
 
     auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
-    ltac::add_instruction(bb, ltac::Operator::FMOV, reg, address(variable, offset));
+    bb->emplace_back_low(ltac::Operator::FMOV, reg, address(variable, offset));
 
     manager.set_written(quadruple.result);
 }
@@ -1148,26 +1283,26 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
 
         if(mtac::is<int>(*quadruple.arg2)){
             int offset = boost::get<int>(*quadruple.arg2);
-            ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
+            bb->emplace_back_low(ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
         } else {
             assert(ltac::is_variable(*quadruple.arg2));
 
             auto offset = manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg2));
-            ltac::add_instruction(bb, ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
+            bb->emplace_back_low(ltac::Operator::LEA, reg, ltac::Address(ptr_reg, offset));
         }
     } else {
         if(mtac::is<int>(*quadruple.arg2)){
             int offset = boost::get<int>(*quadruple.arg2);
 
             auto reg2 = get_address_in_pseudo_reg(variable, offset);
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::MOV, reg, reg2);
         } else {
             assert(ltac::is_variable(*quadruple.arg2));
 
             auto offset = manager.get_pseudo_reg(ltac::get_variable(*quadruple.arg2));
             auto reg2 = get_address_in_pseudo_reg2(variable, offset);
 
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg, reg2);
+            bb->emplace_back_low(ltac::Operator::MOV, reg, reg2);
         }
     }
     
@@ -1175,13 +1310,37 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
-    ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+    if(quadruple.size == mtac::Size::BYTE){
+        if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
+            auto reg = manager.get_pseudo_reg(*ptr);
+
+            //TODO if the reg is already 8-bit allocatable, use it directly
+                
+            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+
+            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg);
+            mov.size = ltac::Size::BYTE;
+            bb->push_back(std::move(mov));
+
+            uses.push_back(hard_reg);
+        } else {
+            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+            mov.size = convert_size(quadruple.size);
+            bb->push_back(std::move(mov));
+        }
+    } else {
+        ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
+        mov.size = convert_size(quadruple.size);
+        bb->push_back(std::move(mov));
+    }
 }
 
 void ltac::StatementCompiler::compile_DOT_FASSIGN(mtac::Quadruple& quadruple){
     auto reg = manager.get_free_pseudo_float_reg();
     manager.copy(*quadruple.arg2, reg);
-    ltac::add_instruction(bb, ltac::Operator::FMOV, address(quadruple.result, *quadruple.arg1), reg);
+    bb->emplace_back_low(ltac::Operator::FMOV, address(quadruple.result, *quadruple.arg1), reg);
 }
 
 void ltac::StatementCompiler::compile_DOT_PASSIGN(mtac::Quadruple& quadruple){
@@ -1189,9 +1348,9 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(mtac::Quadruple& quadruple){
         auto variable = *ptr;
 
         auto reg = get_address_in_pseudo_reg(variable, 0);
-        ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), reg); 
+        bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), reg); 
     } else if(mtac::is<int>(*quadruple.arg2)){
-        ltac::add_instruction(bb, ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), boost::get<int>(*quadruple.arg2)); 
+        bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), boost::get<int>(*quadruple.arg2)); 
     } else {
         eddic_unreachable("Unsupported rhs type in DOT_PASSIGN");
     }
@@ -1200,13 +1359,13 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(mtac::Quadruple& quadruple){
 void ltac::StatementCompiler::compile_NOT(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
     manager.copy(*quadruple.arg1, reg);
-    ltac::add_instruction(bb, ltac::Operator::NOT, reg); 
+    bb->emplace_back_low(ltac::Operator::NOT, reg); 
 }
 
 void ltac::StatementCompiler::compile_AND(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
     manager.copy(*quadruple.arg1, reg);
-    ltac::add_instruction(bb, ltac::Operator::AND, reg, boost::get<int>(*quadruple.arg2));
+    bb->emplace_back_low(ltac::Operator::AND, reg, boost::get<int>(*quadruple.arg2));
 }
 
 void ltac::StatementCompiler::compile_RETURN(mtac::Quadruple& quadruple){
@@ -1225,16 +1384,16 @@ void ltac::StatementCompiler::compile_RETURN(mtac::Quadruple& quadruple){
             auto reg = manager.get_pseudo_float_reg(variable);
             auto return_reg = manager.get_bound_pseudo_float_reg(descriptor->float_return_register());
             
-            ltac::add_instruction(bb, ltac::Operator::FMOV, return_reg, reg);
+            bb->emplace_back_low(ltac::Operator::FMOV, return_reg, reg);
             float_uses.push_back(return_reg);
         } else {
             auto reg1 = manager.get_bound_pseudo_reg(descriptor->int_return_register1());
-            ltac::add_instruction(bb, ltac::Operator::MOV, reg1, to_arg(*quadruple.arg1));
+            bb->emplace_back_low(ltac::Operator::MOV, reg1, to_arg(*quadruple.arg1));
             uses.push_back(reg1);
 
             if(quadruple.arg2){
                 auto reg2 = manager.get_bound_pseudo_reg(descriptor->int_return_register2());
-                ltac::add_instruction(bb, ltac::Operator::MOV, reg2, to_arg(*quadruple.arg2));
+                bb->emplace_back_low(ltac::Operator::MOV, reg2, to_arg(*quadruple.arg2));
                 uses.push_back(reg2);
             }
         }
@@ -1242,9 +1401,10 @@ void ltac::StatementCompiler::compile_RETURN(mtac::Quadruple& quadruple){
 
     end_bb();
 
-    auto instruction = ltac::add_instruction(bb, ltac::Operator::PRE_RET);
-    instruction->uses = uses;
-    instruction->float_uses = float_uses;
+    ltac::Instruction instruction(ltac::Operator::PRE_RET);
+    instruction.uses = uses;
+    instruction.float_uses = float_uses;
+    bb->push_back(std::move(instruction));
 }
 
 void ltac::StatementCompiler::compile(mtac::Quadruple& quadruple){
@@ -1375,123 +1535,123 @@ void ltac::StatementCompiler::compile(mtac::Quadruple& quadruple){
             compile_CALL(quadruple);
             break;
         case mtac::Operator::LABEL:
-            bb->l_statements.push_back(quadruple.label());
+            bb->emplace_back_low(quadruple.label(), ltac::Operator::LABEL);
             break;
         case mtac::Operator::IF_FALSE_UNARY:
             compare_unary(*quadruple.arg1);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::Z));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::Z);
             break;
         case mtac::Operator::IF_FALSE_FE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::NE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_FNE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::E);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_FL:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::AE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::AE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_FLE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::A));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::A);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_FG:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::BE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::BE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_FGE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::B));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::B);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FALSE_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::NE);
             break;
         case mtac::Operator::IF_FALSE_NOT_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::E);
             break;
         case mtac::Operator::IF_FALSE_LESS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::GE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::GE);
             break;
         case mtac::Operator::IF_FALSE_LESS_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::G));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::G);
             break;
         case mtac::Operator::IF_FALSE_GREATER:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::LE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::LE);
             break;
         case mtac::Operator::IF_FALSE_GREATER_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::L));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::L);
             break;
         case mtac::Operator::IF_UNARY:
             compare_unary(*quadruple.arg1);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NZ));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::NZ);
             break;
         case mtac::Operator::IF_FE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::E);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FNE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::NE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FL:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::B));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::B);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FLE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::BE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::BE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FG:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::A));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::A);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_FGE:
             compare_float_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::AE));
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::P));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::AE);
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::P);
             break;
         case mtac::Operator::IF_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::E));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::E);
             break;
         case mtac::Operator::IF_NOT_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::NE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::NE);
             break;
         case mtac::Operator::IF_LESS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::L));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::L);
             break;
         case mtac::Operator::IF_LESS_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::LE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::LE);
             break;
         case mtac::Operator::IF_GREATER:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::G));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::G);
             break;
         case mtac::Operator::IF_GREATER_EQUALS:
             compare_binary(*quadruple.arg1, *quadruple.arg2);
-            bb->l_statements.push_back(std::make_shared<ltac::Jump>(quadruple.block->label, ltac::JumpType::GE));
+            bb->emplace_back_low(quadruple.block->label, ltac::Operator::GE);
             break;
         case mtac::Operator::NOP:
             //No code necessary

@@ -6,17 +6,16 @@
 //=======================================================================
 
 #include <iostream>
+#include <iomanip>
 #include <memory>
 
 #include "assert.hpp"
 #include "variant.hpp"
-#include "VisitorUtils.hpp"
 #include "Utils.hpp"
 
 #include "mtac/Program.hpp"
 
 #include "ltac/Printer.hpp"
-#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
@@ -30,8 +29,6 @@ std::string to_string(ltac::Operator op){
             return "ENTER"; 
         case ltac::Operator::FMOV:
             return "FMOV"; 
-        case ltac::Operator::MEMSET:
-            return "MEMSET"; 
         case ltac::Operator::LEAVE:
             return "LEAVE"; 
         case ltac::Operator::RET:
@@ -111,49 +108,46 @@ std::string to_string(ltac::Operator op){
             return "PRE_PARAM"; 
         case ltac::Operator::NOP:
             return "NOP"; 
+        case ltac::Operator::XORPS:
+            return "XORPS"; 
+        case ltac::Operator::MOVDQU:
+            return "MOVDQU"; 
+        case ltac::Operator::CALL:
+            return "call";
+        case ltac::Operator::ALWAYS:
+            return "always";
+        case ltac::Operator::NE:
+            return "ne";
+        case ltac::Operator::E:
+            return "e";
+        case ltac::Operator::GE:
+            return "ge";
+        case ltac::Operator::G:
+            return "g";
+        case ltac::Operator::LE:
+            return "le";
+        case ltac::Operator::L:
+            return "l";
+        case ltac::Operator::AE:
+            return "ae";
+        case ltac::Operator::A:
+            return "a";
+        case ltac::Operator::BE:
+            return "be";
+        case ltac::Operator::B:
+            return "b";
+        case ltac::Operator::P:
+            return "p";
+        case ltac::Operator::Z:
+            return "z";
+        case ltac::Operator::NZ:
+            return "nz";
         default:
             eddic_unreachable("The instruction operator is not supported");
     }
 }
 
-std::string to_string(ltac::JumpType type){
-    switch(type){
-        case ltac::JumpType::CALL:
-            return "call";
-        case ltac::JumpType::ALWAYS:
-            return "always";
-        case ltac::JumpType::NE:
-            return "ne";
-        case ltac::JumpType::E:
-            return "e";
-        case ltac::JumpType::GE:
-            return "ge";
-        case ltac::JumpType::G:
-            return "g";
-        case ltac::JumpType::LE:
-            return "le";
-        case ltac::JumpType::L:
-            return "l";
-        case ltac::JumpType::AE:
-            return "ae";
-        case ltac::JumpType::A:
-            return "a";
-        case ltac::JumpType::BE:
-            return "be";
-        case ltac::JumpType::B:
-            return "b";
-        case ltac::JumpType::P:
-            return "p";
-        case ltac::JumpType::Z:
-            return "z";
-        case ltac::JumpType::NZ:
-            return "nz";
-        default:
-            eddic_unreachable("The jump type is not supported");
-    }
-}
-
-struct DebugVisitor : public boost::static_visitor<> {
+struct DebugVisitor {
     std::ostream& out;
 
     DebugVisitor(std::ostream& out) : out(out) {}
@@ -161,14 +155,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(mtac::Program& program){
         out << "LTAC Program " << std::endl << std::endl; 
 
-        visit_each_non_variant(*this, program.functions);
+        for(auto& function : program){
+            (*this)(function);
+        }
     }
 
     void operator()(mtac::Function& function){
         out << "Function " << function.get_name() << std::endl;
 
         for(auto& bb : function){
-            visit_non_variant(*this, bb);
+            (*this)(bb);
         }
 
         out << std::endl;
@@ -177,45 +173,60 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(mtac::basic_block_p bb){
         pretty_print(bb, out);
 
-        visit_each(*this, bb->l_statements);
+        for(auto& statement : bb->l_statements){
+            (*this)(statement);
+        }
     }
 
-    void operator()(const ltac::Statement& statement){
-        visit(*this, statement);
-    }
+    void operator()(const ltac::Instruction& quadruple){
+        out << "\t";
 
-    void operator()(std::shared_ptr<ltac::Instruction> quadruple){
-        out << "\t" << to_string(quadruple->op);
+        if(quadruple.is_jump()){
+            out << "jmp (" << to_string(quadruple.op) << ") " << quadruple.label << std::endl;
+        } else if(quadruple.is_label()){
+            out << quadruple.label << ":" << std::endl;
+        } else {
+            out << to_string(quadruple.op);
 
-        if(quadruple->arg1){
-            out << " " << *quadruple->arg1;
-            
-            if(quadruple->arg2){
-                out << ", " << *quadruple->arg2;
-
-                if(quadruple->arg3){
-                    out << ", " << *quadruple->arg3;
+            if(quadruple.size != ltac::Size::DEFAULT){
+                switch(quadruple.size){
+                    case ltac::Size::BYTE:
+                        out << " BYTE";
+                        break;
+                    case ltac::Size::WORD:
+                        out << " WORD";
+                        break;
+                    case ltac::Size::DOUBLE_WORD:
+                        out << " DWORD";
+                        break;
+                    default:
+                        out << " QWORD";
+                        break;
                 }
             }
+
+            if(quadruple.arg1){
+                out << " " << *quadruple.arg1;
+
+                if(quadruple.arg2){
+                    out << ", " << *quadruple.arg2;
+
+                    if(quadruple.arg3){
+                        out << ", " << *quadruple.arg3;
+                    }
+                }
+            }
+
+            out << std::endl;
         }
-
-        out << std::endl;
-    }
-
-    void operator()(const std::shared_ptr<ltac::Jump>& jmp){
-        out << "\tjmp (" << to_string(jmp->type) << ") " << jmp->label << std::endl;
-    }
-
-    void operator()(const std::string& label){
-        out << "\t" << label << ":" << std::endl;
     }
 };
 
 } //end of anonymous namespace
 
-void ltac::print_statement(const ltac::Statement& statement, std::ostream& out){
+void ltac::print_statement(const ltac::Instruction& statement, std::ostream& out){
    DebugVisitor visitor(out);
-   visit(visitor, statement); 
+   visitor(statement); 
 }
 
 void ltac::Printer::print(mtac::Program& program) const {
@@ -228,7 +239,7 @@ void ltac::Printer::print(mtac::Function& function) const {
    visitor(function); 
 }
 
-void ltac::Printer::print(ltac::Statement& statement) const {
+void ltac::Printer::print(ltac::Instruction& statement) const {
    DebugVisitor visitor(std::cout);
-   visit(visitor, statement); 
+   visitor(statement); 
 }

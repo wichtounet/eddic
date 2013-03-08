@@ -8,6 +8,7 @@
 #include "Variable.hpp"
 #include "iterators.hpp"
 #include "FunctionContext.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/reference_resolver.hpp"
 #include "mtac/Program.hpp"
@@ -28,6 +29,8 @@ mtac::Argument variant_cast(Offset source){
 }
 
 void mtac::resolve_references(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "resolve_references");
+
     for(auto& function : program.functions){
         //This pass is run before basic blocks are extracted
         auto& statements = function.get_statements();

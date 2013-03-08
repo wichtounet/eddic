@@ -79,14 +79,14 @@ struct LiveRegistersProblem {
     typedef mtac::Domain<LiveRegisterValues<ltac::Register, ltac::FloatRegister>> ProblemDomain;
 
     //The direction
-    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Backward);
+    STATIC_CONSTANT(bool, Low, true);
 
     ProblemDomain Boundary(mtac::Function& function);
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Instruction& statement, ProblemDomain& in);
 
     ProblemDomain top_element(){
         return ProblemDomain();
@@ -104,14 +104,14 @@ struct LivePseudoRegistersProblem {
     typedef mtac::Domain<LiveRegisterValues<ltac::PseudoRegister, ltac::PseudoFloatRegister>> ProblemDomain;
 
     //The direction
-    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Low_Backward);
+    STATIC_CONSTANT(mtac::DataFlowType, Type, mtac::DataFlowType::Backward);
+    STATIC_CONSTANT(bool, Low, true);
 
     ProblemDomain Boundary(mtac::Function& function);
     ProblemDomain Init(mtac::Function& function);
    
     void meet(ProblemDomain& in, const ProblemDomain& out);
-    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Statement& statement, ProblemDomain& in);
-    bool optimize(ltac::Statement& statement, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> results);
+    ProblemDomain transfer(mtac::basic_block_p basic_block, ltac::Instruction& statement, ProblemDomain& in);
 
     ProblemDomain top_element(){
         return ProblemDomain();

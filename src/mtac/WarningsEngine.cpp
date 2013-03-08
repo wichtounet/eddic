@@ -16,7 +16,7 @@ using namespace eddic;
 void mtac::collect_warnings(mtac::Program& program, std::shared_ptr<Configuration> configuration){
     if(configuration->option_defined("warning-unused")){
         for(auto& function : program.functions){
-            if(program.call_graph.node(function.definition())->in_edges.size() == 0){
+            if(program.call_graph.node(function.definition())->in_edges.size() == 0 && !function.is_main()){
                 warn("Unused function: " + function.get_name());
             }
         }

@@ -15,13 +15,14 @@
 
 using namespace eddic;
 
-mtac::Function::Function(std::shared_ptr<FunctionContext> c, const std::string& n, eddic::Function& definition) : context(c), _definition(&definition), name(n) {
+mtac::Function::Function(std::shared_ptr<FunctionContext> c, std::string n, eddic::Function& definition) : context(c), _definition(&definition), name(std::move(n)) {
     //Nothing to do   
 }
         
 mtac::Function::Function(mtac::Function&& rhs) : 
             context(std::move(rhs.context)), _definition(rhs._definition), 
             statements(std::move(rhs.statements)), 
+            _pure(std::move(rhs._pure)), _standard(std::move(rhs._standard)),
             count(std::move(rhs.count)), index(std::move(rhs.index)),
             entry(std::move(rhs.entry)), exit(std::move(rhs.exit)), 
             _use_registers(std::move(rhs._use_registers)), _use_float_registers(std::move(rhs._use_float_registers)),
@@ -40,6 +41,8 @@ mtac::Function& mtac::Function::operator=(mtac::Function&& rhs){
     _definition = rhs._definition;
     context = std::move(rhs.context); 
     statements = std::move(rhs.statements); 
+    _pure = std::move(rhs._pure);
+    _standard = std::move(rhs._standard);
     count = std::move(rhs.count); 
     index = std::move(rhs.index);
     entry = std::move(rhs.entry); 
@@ -90,6 +93,14 @@ bool& mtac::Function::pure(){
 
 bool mtac::Function::pure() const {
     return _pure;
+}
+
+bool& mtac::Function::standard(){
+    return _standard;
+}
+
+bool mtac::Function::standard() const {
+    return _standard;
 }
 
 mtac::Quadruple& mtac::Function::find(std::size_t uid){
@@ -361,7 +372,17 @@ std::size_t mtac::Function::size() const {
     std::size_t size = 0;
 
     for(auto& block : *this){
-        size += block->statements.size();
+        size += block->size();
+    }
+
+    return size;
+}
+
+std::size_t mtac::Function::size_no_nop() const {
+    std::size_t size = 0;
+
+    for(auto& block : *this){
+        size += block->size_no_nop();
     }
 
     return size;
@@ -371,8 +392,25 @@ std::pair<mtac::basic_block_iterator, mtac::basic_block_iterator> mtac::Function
     return std::make_pair(begin(), end());
 }
 
-std::vector<mtac::Loop>& mtac::Function::loops(){
+std::vector<mtac::loop>& mtac::Function::loops(){
     return m_loops;
+}
+
+std::size_t mtac::Function::position(const basic_block_p& bb) const {
+    std::size_t position = 0;
+
+    auto it = begin();
+
+    while(it != end()){
+        if(*it == bb){
+            return position;
+        }
+        
+        ++position;
+        ++it;
+    }
+
+    eddic_unreachable("This basic block is not part of the function");
 }
 
 bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){

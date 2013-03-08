@@ -5,12 +5,10 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#ifndef MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
-#define MTAC_COMMON_SUBEXPRESSION_ELIMINATION_H
+#ifndef MTAC_GLOBAL_CSE_H
+#define MTAC_GLOBAL_CSE_H
 
 #include <memory>
-#include <unordered_set>
-#include <list>
 
 #include <boost/utility.hpp>
 
@@ -18,6 +16,7 @@
 
 #include "assert.hpp"
 
+#include "mtac/cse.hpp"
 #include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/forward.hpp"
@@ -28,22 +27,16 @@ namespace eddic {
 
 namespace mtac {
 
-struct Expression {
-    std::size_t expression;
-    basic_block_p source;
-};
+typedef std::set<expression> Expressions;
 
-std::ostream& operator<<(std::ostream& stream, const Expression& expression);
-
-typedef std::vector<Expression> Expressions;
-
-class CommonSubexpressionElimination {
+class global_cse {
     public:
         //The type of data managed
         typedef Domain<Expressions> ProblemDomain;
 
         //The direction
-        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward_Block);
+        STATIC_CONSTANT(bool, Low, false);
         
         mtac::EscapedVariables pointer_escaped;
 
@@ -51,26 +44,29 @@ class CommonSubexpressionElimination {
         ProblemDomain Boundary(mtac::Function& function);
 
         void meet(ProblemDomain& in, const ProblemDomain& out);
-        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
+        void transfer(mtac::basic_block_p basic_block, ProblemDomain& in);
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
 
         boost::optional<Expressions> init;
 
     private:
-        ProblemDomain top_element();
-        ProblemDomain default_element();
-        
         std::unordered_set<std::size_t> optimized;
         mtac::Function* function;
+
+        std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Eval;
+        std::unordered_map<mtac::basic_block_p, std::set<mtac::expression>> Kill;
 };
 
 template<>
-struct pass_traits<CommonSubexpressionElimination> {
+struct pass_traits<global_cse> {
     STATIC_CONSTANT(pass_type, type, pass_type::DATA_FLOW);
     STATIC_STRING(name, "common_subexpression_elimination");
     STATIC_CONSTANT(unsigned int, property_flags, 0);
     STATIC_CONSTANT(unsigned int, todo_after_flags, 0);
 };
+
+bool operator==(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
+bool operator!=(const mtac::Domain<Expressions>& lhs, const mtac::Domain<Expressions>& rhs);
 
 } //end of mtac
 

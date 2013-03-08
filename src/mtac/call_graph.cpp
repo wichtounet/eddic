@@ -7,6 +7,7 @@
 
 #include "assert.hpp"
 #include "Function.hpp"
+#include "GlobalContext.hpp"
 
 #include "mtac/call_graph.hpp"
 #include "mtac/Program.hpp"
@@ -103,6 +104,8 @@ bool mtac::call_graph::is_reachable(eddic::Function& function){
 }
 
 void mtac::build_call_graph(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "build_cg");
+
     auto& cg = program.call_graph;
 
     for(auto& function : program){
@@ -118,4 +121,22 @@ void mtac::build_call_graph(mtac::Program& program){
             cg.entry = cg.node(function.definition());
         }
     }
+}
+
+void post_dfs_visit(mtac::call_graph_node_p& node, std::vector<std::reference_wrapper<eddic::Function>>& order){
+    for(auto& edge : node->out_edges){
+        if(edge->target->function != node->function){
+            post_dfs_visit(edge->target, order);
+        }
+    }
+
+    order.push_back(node->function);
+}
+        
+std::vector<std::reference_wrapper<eddic::Function>> mtac::call_graph::topological_order(){
+    std::vector<std::reference_wrapper<eddic::Function>> order;   
+
+    post_dfs_visit(entry, order);
+
+    return order;
 }

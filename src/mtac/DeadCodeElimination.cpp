@@ -5,7 +5,9 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
-#include <list>
+#define BOOST_NO_RTTI
+#define BOOST_NO_TYPEID
+#include <boost/range/adaptors.hpp>
 
 #include "Type.hpp"
 #include "FunctionContext.hpp"
@@ -19,31 +21,82 @@
 #include "mtac/Offset.hpp"
 #include "mtac/Quadruple.hpp"
 
-#include "ltac/Statement.hpp"
-
 using namespace eddic;
 
 bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     bool optimized = false;
 
+    std::vector<std::size_t> to_delete;
+
+    //1. DCE based on data-flow analysis
+
     mtac::LiveVariableAnalysisProblem problem;
     auto results = mtac::data_flow(function, problem);
 
     for(auto& block : function){
-        auto it = iterate(block->statements);
+        auto& out = results->OUT[block];
 
-        while(it.has_next()){
-            auto& quadruple = *it;
-
+        for(auto& quadruple : boost::adaptors::reverse(block->statements)){
             if(quadruple.result && mtac::erase_result(quadruple.op)){
-                if(results->OUT_S[quadruple.uid()].top() || results->OUT_S[quadruple.uid()].values().find(quadruple.result) == results->OUT_S[quadruple.uid()].values().end()){
-                    it.erase();
-                    optimized=true;
-                    continue;
+                if(out.top() || out.values().find(quadruple.result) == out.values().end()){
+                    to_delete.push_back(quadruple.uid());
                 }
             }
 
-            ++it;
+            problem.transfer(block, quadruple, out);
+        }
+    }
+
+    //Delete what has been found on previous steps
+
+    if(!to_delete.empty()){
+        optimized = true;
+
+        for(auto& block : function){
+            for(auto& quadruple : block->statements){
+                if(std::find(to_delete.begin(), to_delete.end(), quadruple.uid()) != to_delete.end()){
+                    mtac::transform_to_nop(quadruple);
+                }
+            }
+        }
+    }
+
+    //2. Remove variables that contribute only to themselves
+    //TODO This could probably be done directly in the data-flow DCE
+
+    std::unordered_set<std::shared_ptr<Variable>> candidates;
+
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            if(quadruple.result && mtac::erase_result(quadruple.op)){
+                if_init_equals(quadruple.arg1, quadruple.result, [&candidates, &quadruple](){ candidates.insert(quadruple.result);});
+                if_init_equals(quadruple.arg2, quadruple.result, [&candidates, &quadruple](){ candidates.insert(quadruple.result);});
+            }
+        }
+    }
+    
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            if(quadruple.result && mtac::erase_result(quadruple.op)){
+                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg1, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var);});
+                if_init_not_equals<std::shared_ptr<Variable>>(quadruple.arg2, quadruple.result, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var);});
+            } else {
+                candidates.erase(quadruple.result);
+
+                if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var); });
+                if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&candidates](std::shared_ptr<Variable>& var){ candidates.erase(var); });
+            }
+        }
+    }
+
+    if(!candidates.empty()){
+        for(auto& block : function){
+            for(auto& quadruple : block->statements){
+                if(quadruple.result && mtac::erase_result(quadruple.op) && candidates.find(quadruple.result) != candidates.end()){
+                    mtac::transform_to_nop(quadruple);
+                    optimized = true;
+                } 
+            }
         }
     }
 
@@ -91,9 +144,8 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                             mtac::Offset offset(quadruple.result, *offset_ptr);
 
                             if(problem.pointer_escaped->find(quadruple.result) == problem.pointer_escaped->end() && used_offsets.find(offset) == used_offsets.end()){
-                                it.erase();
+                                mtac::transform_to_nop(quadruple);
                                 optimized=true;
-                                continue;
                             }
                         }
                     }

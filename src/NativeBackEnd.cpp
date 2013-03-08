@@ -11,6 +11,7 @@
 #include "AssemblyFileWriter.hpp"
 #include "Assembler.hpp"
 #include "FloatPool.hpp"
+#include "GlobalContext.hpp"
 
 //Low-level Three Address Code
 #include "ltac/Compiler.hpp"
@@ -19,6 +20,7 @@
 #include "ltac/aggregates.hpp"
 #include "ltac/prologue.hpp"
 #include "ltac/stack_offsets.hpp"
+#include "ltac/stack_space.hpp"
 #include "ltac/register_allocator.hpp"
 #include "ltac/pre_alloc_cleanup.hpp"
 
@@ -51,6 +53,10 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
         printer.print(program);
     }
 
+    //Init the structures and arrays
+    //Must be done before register allocation to profit from it
+    ltac::alloc_stack_space(program);
+
     //Allocate pseudo registers into hard registers
     ltac::register_allocation(program, platform);
     
@@ -82,6 +88,8 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
         auto object_file_name = input_file_name + ".o";
 
         {
+            timing_timer timer(program.context->timing(), "assembly_generation");
+
             //Generate assembly from TAC
             AssemblyFileWriter writer(asm_file_name);
 
@@ -96,6 +104,8 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
 
         //If it's necessary, assemble and link the assembly
         if(!configuration->option_defined("assembly")){
+            timing_timer timer(program.context->timing(), "assemble");
+
             assemble(platform, asm_file_name, object_file_name, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
             //Remove temporary files

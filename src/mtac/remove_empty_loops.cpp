@@ -10,7 +10,7 @@
 #include "FunctionContext.hpp"
 #include "logging.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/ControlFlowGraph.hpp"
@@ -31,15 +31,21 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
     while(lit.has_next()){
         auto loop = *lit;
 
-        if(loop.has_estimate()){
+        if(loop.has_estimate() && loop.blocks().size() == 1){
             auto it = loop.estimate();
             auto bb = *loop.begin();
 
-            if(bb->statements.size() == 2){
-                auto& first = bb->statements.front();
+            if(bb->size_no_nop() == 2){
+                std::shared_ptr<Variable> result;
+                for(auto&  statement : bb->statements){
+                    if(statement.op != mtac::Operator::NOP){
+                       result = statement.result; 
+                       break;
+                    }
+                }
 
                 auto& basic_induction_variables = loop.basic_induction_variables();
-                if(basic_induction_variables.find(first.result) != basic_induction_variables.end()){
+                if(basic_induction_variables.find(result) != basic_induction_variables.end()){
                     auto linear_equation = basic_induction_variables.begin()->second;
                     auto initial_value = loop.initial_value();
 
@@ -53,7 +59,7 @@ bool mtac::remove_empty_loops::operator()(mtac::Function& function){
                         bb->statements.clear();
                         loop_removed = true;
 
-                        bb->emplace_back(first.result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN);
+                        bb->emplace_back(result, static_cast<int>(initial_value + it * linear_equation.d), mtac::Operator::ASSIGN);
                     }
 
                     if(loop_removed){

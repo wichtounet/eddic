@@ -8,15 +8,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "boost_cfg.hpp"
-
 #include <vector>
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-
-#include <boost/lexical_cast.hpp>
 
 namespace eddic {
 
@@ -38,24 +34,6 @@ bool are_equals(const std::vector<T>& a, const std::vector<T>& b){
     }
 
     return true;
-}
-
-/*!
- * \brief Find the index of an element inside a vector. 
- * \param vector The vector to search into.   
- * \param search The element to search into the vector.   
- * \return The index of the element in the vector..
- * \throw runtime_error If the element is not contained in the vector. 
- */
-template<typename T>
-unsigned int index(const std::vector<T>& vector, T& search){
-    for(unsigned int i = 0; i < vector.size(); ++i){
-        if(vector[i] == search){
-            return i;
-        }
-    }
-
-    throw std::runtime_error("The element is not contained in the vector");
 }
 
 /*!
@@ -91,7 +69,7 @@ template <typename T>
 inline std::string toString(T number) {
     //PERF: If necessary, use karma
     //PERF: If necessary, come again to lexical_cast
-    return boost::lexical_cast<std::string>(number); 
+    return std::to_string(number);
 }
 
 bool has_extension(const std::string& file, const std::string& extension);

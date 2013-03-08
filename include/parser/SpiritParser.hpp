@@ -9,10 +9,13 @@
 #define SPIRIT_PARSER_H
 
 #include <string>
+#include <memory>
 
 #include "ast/SourceFile.hpp"
 
 namespace eddic {
+
+struct GlobalContext;
 
 namespace parser {
 
@@ -30,7 +33,7 @@ struct SpiritParser {
      * \param program The Abstract Syntax Tree root to fill. 
      * \return true if the file was valid, false otherwise
      */
-    bool parse(const std::string& file, ast::SourceFile& program);
+    bool parse(const std::string& file, ast::SourceFile& program, std::shared_ptr<GlobalContext> context);
 };
 
 }

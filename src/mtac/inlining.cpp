@@ -27,20 +27,6 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<mtac::basic_block_p, mtac::basic_block_p> BBClones;
-
-struct BBReplace {
-    BBClones& clones;
-
-    BBReplace(BBClones& clones) : clones(clones) {}
-
-    void operator()(mtac::Quadruple& goto_){
-        if(clones.find(goto_.block) != clones.end()){
-            goto_.block = clones[goto_.block];
-        }
-    }
-};
-
 mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic_block_p bb){
     auto safe_block = dest_function.new_bb();
 
@@ -67,7 +53,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         log::emit<Trace>("Inlining") << "No need to split " << bb << log::endl;
 
         //Erase the call
-        bb->statements.erase(bb->statements.begin());
+        mtac::transform_to_nop(bb->statements.front());
 
         //The basic block remains the same
         return bb;
@@ -105,10 +91,10 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
     }
 }
 
-BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
+mtac::BBClones clone(mtac::Function& source_function, mtac::Function& dest_function, mtac::basic_block_p bb){
     LOG<Trace>("Inlining") << "Clone " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
 
-    BBClones bb_clones;
+    mtac::BBClones bb_clones;
 
     std::vector<mtac::basic_block_p> cloned;
 
@@ -197,9 +183,7 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
 
                     variable_clones[src_var] = dest_var;
 
-                    statement.op = mtac::Operator::NOP;
-                    statement.arg1.reset();
-                    statement.arg2.reset();
+                    mtac::transform_to_nop(statement);
                 } else if(src_var->type() == STRING){
                     if(!string_states.count(src_var)){
                         auto dest_var = dest_definition.context()->newVariable(src_var);
@@ -299,9 +283,8 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
     return constant;
 }
 
-void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clones, mtac::Quadruple& call, mtac::basic_block_p basic_block){
+void adapt_instructions(mtac::VariableClones& variable_clones, mtac::BBClones& bb_clones, mtac::Quadruple& call, mtac::basic_block_p basic_block){
     mtac::VariableReplace variable_replacer(variable_clones);
-    BBReplace bb_replacer(bb_clones);
 
     auto new_bb = basic_block->prev;
 
@@ -314,7 +297,7 @@ void adapt_instructions(mtac::VariableClones& variable_clones, BBClones& bb_clon
             auto& quadruple = *ssit;
 
             variable_replacer.replace(quadruple);
-            bb_replacer(quadruple);
+            mtac::replace_bbs(bb_clones, quadruple);
 
             if(quadruple.op == mtac::Operator::RETURN){
                 auto label = "label";
@@ -390,6 +373,8 @@ bool can_be_inlined(mtac::Function& function){
     return true;
 }
 
+const int SMALL_FUNCTION = 12;
+
 bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::Function& target_function, mtac::Quadruple& call, mtac::basic_block_p bb){
     //Do not inline recursive calls
     if(source_function.get_name() == target_function.get_name()){
@@ -397,33 +382,32 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
     }
 
     if(can_be_inlined(target_function)){
-        auto source_size = source_function.size();
-        auto target_size = target_function.size();
+        auto caller_size = source_function.size();
+        auto callee_size = target_function.size();
 
         auto constant_parameters = count_constant_parameters(target_function, source_function, bb, call);
 
         //If all parameters are constant, there are high chances of further optimizations
         if(target_function.definition().parameters().size() == constant_parameters){
-            return target_size < 100 && source_size < 300;
+            return callee_size < 100 && caller_size < 300;
         }
 
         //For inner loop, increase the chances of inlining
         if(call.depth > 1){
-            return source_size < 250 && target_size < 75;
+            return caller_size < 250 && callee_size < 75;
         }
         
         //For single loop, increase a bit the changes of inlining
         if(call.depth > 0){
-            return source_size < 150 && target_size < 50;
+            return caller_size < 150 && callee_size < 50;
         }
 
         //function called once
         if(program.call_graph.node(target_function.definition())->in_edges.size() == 1){
-            return source_size < 100 && target_size < 100;
+            return caller_size < 100 && callee_size < 100;
         } 
 
-        //Inline little functions
-        return target_size < 10 && source_size < 200;
+        return callee_size < SMALL_FUNCTION && caller_size < 200;
     }
 
     return false;
@@ -441,14 +425,12 @@ bool non_standard_target(mtac::Quadruple& call, mtac::Program& program){
     return true;
 }
 
-mtac::Function& get_target(mtac::Quadruple& call, mtac::Program& program){
-    auto& target_definition = call.function();
-    return program.mtac_function(target_definition);
-}
-
-bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
+bool call_site_inlining(mtac::Function& dest_function, mtac::Function& source_function, mtac::Program& program){
     auto bit = dest_function.begin();
     auto bend = dest_function.end();
+    
+    auto& source_definition = source_function.definition();
+    auto& dest_definition = dest_function.definition();
         
     while(bit != bend){
         auto basic_block = *bit;
@@ -463,51 +445,48 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Program& program){
                     continue;
                 }
 
-                auto& source_function = get_target(src_call, program);
+                if(src_call.function() == source_definition){
+                    if(will_inline(program, dest_function, source_function, src_call, basic_block)){
+                        auto call = src_call;
+                        auto src_call_uid = src_call.uid();
 
-                auto& source_definition = source_function.definition();
-                auto& dest_definition = dest_function.definition();
+                        LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
+                        source_function.context->global()->stats().inc_counter("inlined_functions");
 
-                if(will_inline(program, dest_function, source_function, src_call, basic_block)){
-                    auto call = src_call;
-                    auto src_call_uid = src_call.uid();
+                        basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
 
-                    LOG<Trace>("Inlining") << "Inline " << source_function.get_name() << " into " << dest_function.get_name() << log::endl;
-                    source_function.context->global()->stats().inc_counter("inlined_functions");
+                        //Copy the parameters
+                        auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
 
-                    basic_block = split_if_necessary(dest_function, basic_block, src_call_uid);
+                        //Allocate storage for the local variables of the inlined function
+                        for(auto& variable : source_definition.context()->stored_variables()){
+                            variable_clones[variable] = dest_definition.context()->newVariable(variable);
+                        }
 
-                    //Copy the parameters
-                    auto variable_clones = copy_parameters(source_function, dest_function, basic_block);
+                        auto safe = create_safe_block(dest_function, basic_block);
 
-                    //Allocate storage for the local variables of the inlined function
-                    for(auto& variable : source_definition.context()->stored_variables()){
-                        variable_clones[variable] = dest_definition.context()->newVariable(variable);
-                    }
+                        //Clone all the source basic blocks in the dest function
+                        auto bb_clones = clone(source_function, dest_function, safe);
 
-                    auto safe = create_safe_block(dest_function, basic_block);
+                        //Fix all the instructions (clones and return)
+                        adapt_instructions(variable_clones, bb_clones, call, safe);
 
-                    //Clone all the source basic blocks in the dest function
-                    auto bb_clones = clone(source_function, dest_function, safe);
+                        //The target function is called one less time
+                        --program.call_graph.edge(dest_definition, source_definition)->count;
 
-                    //Fix all the instructions (clones and return)
-                    adapt_instructions(variable_clones, bb_clones, call, safe);
-
-                    //The target function is called one less time
-                    --program.call_graph.edge(dest_definition, source_definition)->count;
-
-                    //There are perhaps new references to functions
-                    for(auto& block : source_function){
-                        for(auto& statement : block){
-                            if(statement.op == mtac::Operator::CALL){
-                                program.call_graph.add_edge(dest_definition, statement.function());
+                        //There are perhaps new references to functions
+                        for(auto& block : source_function){
+                            for(auto& statement : block){
+                                if(statement.op == mtac::Operator::CALL){
+                                    program.call_graph.add_edge(dest_definition, statement.function());
+                                }
                             }
                         }
-                    }
 
-                    //All the iterators are invalidated at this point
-                    //The loop will be restarted
-                    return true;
+                        //All the iterators are invalidated at this point
+                        //The loop will be restarted
+                        return true;
+                    }
                 }
             }
 
@@ -534,13 +513,54 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     bool optimized = false;
     auto global_context = program.context;
 
-    for(auto& function : program.functions){
-        bool local = false;
-        do {
-            local = call_site_inlining(function, program);
-            optimized |= local;
-        } while(local);
+    auto& call_graph = program.call_graph;
+
+    auto order = call_graph.topological_order();
+    call_graph.compute_reachable();
+
+    typedef std::reference_wrapper<eddic::Function> func_ref;
+
+    for(auto& function_ref : order){
+        auto& function = function_ref.get();
+
+        //Consider only reachable functions
+        if(call_graph.is_reachable(function)){
+            //Standard function are assembly functions, cannot be inlined
+            if(!function.standard()){
+                auto cg_node = call_graph.node(function);
+
+                //Collect the callers of the functions
+
+                std::vector<func_ref> callers;
+                for(auto& in_edge : cg_node->in_edges){
+                    if(in_edge->count > 0){
+                        callers.push_back(in_edge->source->function);
+                    }
+                }
+
+                //Sort them to inline the edges in the order of the topological sort
+
+                std::sort(callers.begin(), callers.end(), 
+                        [&order](const func_ref& lhs, const func_ref& rhs){ return std::find(order.begin(), order.end(), lhs) < std::find(order.begin(),order.end(), rhs); });
+
+                auto& source_function = program.mtac_function(function);
+
+                for(auto& caller : callers){
+                    if(call_graph.is_reachable(caller.get())){
+                        auto& dest_function = program.mtac_function(caller.get());
+
+                        bool local = false;
+                        do {
+                            local = call_site_inlining(dest_function, source_function, program);
+                            optimized |= local;
+                        } while(local);
+                    }
+                }
+            }
+        }
     }
+
+    call_graph.release_reachable();
 
     return optimized;
 }

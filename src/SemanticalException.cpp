@@ -6,13 +6,14 @@
 //=======================================================================
 
 #include <iostream>
+#include <iomanip>
 
 #include "SemanticalException.hpp"
 
 using namespace eddic;
 
-SemanticalException::SemanticalException(const std::string& message) : m_message(message) {}
-SemanticalException::SemanticalException(const std::string& message, const eddic::ast::Position& position) : m_message(message), m_position(position) {}
+SemanticalException::SemanticalException(std::string message) : m_message(std::move(message)) {}
+SemanticalException::SemanticalException(std::string message, eddic::ast::Position position) : m_message(std::move(message)), m_position(std::move(position)) {}
 
 SemanticalException::~SemanticalException() throw() {}
 
@@ -33,6 +34,8 @@ void eddic::output_exception(const SemanticalException& e){
         auto& position = *e.position();
 
         std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
+        std::cout << position.theLine << std::endl;
+        std::cout << std::setw(position.column) << " ^- here" << std::endl;
     } else {
         std::cout << e.what() << std::endl;
     }

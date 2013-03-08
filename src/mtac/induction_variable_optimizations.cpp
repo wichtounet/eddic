@@ -12,7 +12,7 @@
 #include "logging.hpp"
 #include "Variable.hpp"
 
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/induction_variable_optimizations.hpp"
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Function.hpp"
@@ -25,7 +25,7 @@ using namespace eddic;
 
 namespace {
 
-bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
+bool strength_reduce(mtac::loop& loop, mtac::LinearEquation& basic_equation, mtac::Function& function){
     auto& dependent_induction_variables = loop.dependent_induction_variables();
 
     mtac::basic_block_p pre_header = nullptr;
@@ -89,7 +89,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
 
             //Create the preheader if necessary
             if(!pre_header){
-                pre_header = mtac::find_pre_header(loop, function);
+                pre_header = loop.find_safe_preheader(function, true);
             }
 
             pre_header->emplace_back(tj, equation.e, mtac::Operator::MUL, i);
@@ -106,7 +106,7 @@ bool strength_reduce(mtac::Loop& loop, mtac::LinearEquation& basic_equation, mta
     return optimized;
 }
 
-void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
+void induction_variable_removal(mtac::Function& function, mtac::loop& loop){
     auto& dependent_induction_variables = loop.dependent_induction_variables();
     
     mtac::Usage usage = compute_read_usage(loop);
@@ -114,10 +114,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
 
     //Remove generated copy when useless
     for(auto& bb : loop){
-        auto it = iterate(bb->statements);
-
-        while(it.has_next()){
-            auto& quadruple = *it;
+        for(auto& quadruple : bb->statements){
             auto op = quadruple.op;
 
             if(op == mtac::Operator::ASSIGN && mtac::isVariable(*quadruple.arg1)){
@@ -127,15 +124,14 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
                 //If j = tj generated in strength reduction phase
                 if(dependent_induction_variables.count(j) && dependent_induction_variables.count(tj)){
                     if(dependent_induction_variables[tj].generated && usage.read[j] == 0){
-                        LOG<Trace>("Loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
+                        LOG<Trace>("loops") << "Remove copy " << j->name() << "=" << tj->name() << " generated during strength reduction" << log::endl;
 
                         //There is one less read of tj
                         --usage.read[tj];
 
                         dependent_induction_variables.erase(j);
 
-                        it.erase();
-                        continue;
+                        mtac::transform_to_nop(quadruple);
                     }
                 }
             }
@@ -154,12 +150,9 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
                     //There is one less read of j
                     --usage.read[j];
 
-                    it.erase();
-                    continue;
+                    mtac::transform_to_nop(quadruple);
                 }
             }
-
-            ++it;
         }
     }
 
@@ -169,17 +162,13 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     for(auto& var : dependent_induction_variables){
         if(usage.read[var.first] == 1){
             auto& def = function.find(var.second.def);
-
-            def.op = mtac::Operator::NOP;
-            def.result = nullptr;
-            def.arg1.reset();
-            def.arg2.reset();
+            mtac::transform_to_nop(def);
 
             usage.read[var.first] = 0;
 
             removed_variables.push_back(var.first);
 
-            LOG<Trace>("Loops") << "Remove DIV " << var.first->name() << log::endl;
+            LOG<Trace>("loops") << "Remove DIV " << var.first->name() << log::endl;
         }
     }
 
@@ -188,7 +177,7 @@ void induction_variable_removal(mtac::Function& function, mtac::Loop& loop){
     }
 }
 
-void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
+void induction_variable_replace(mtac::Function& function, mtac::loop& loop){
     auto& basic_induction_variables = loop.basic_induction_variables();
     auto& dependent_induction_variables = loop.dependent_induction_variables();
     
@@ -247,7 +236,7 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
             return;
         }
 
-        LOG<Trace>("Loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
+        LOG<Trace>("loops") << "Replace BIV " << biv->name() << " by DIV " << div->name() << log::endl;
        
         auto div_equation = dependent_induction_variables[div];
         auto new_end = div_equation.e * (end-1) + div_equation.d;
@@ -275,30 +264,31 @@ void induction_variable_replace(mtac::Function& function, mtac::Loop& loop){
             
         //The unique assignment to i is not useful anymore 
         auto& def = function.find(basic_induction_variables[biv].def);
-        def.op = mtac::Operator::NOP;
-        def.result = nullptr;
-        def.arg1.reset();
-        def.arg2.reset();
+        mtac::transform_to_nop(def);
 
         //Not a basic induction variable anymore
         basic_induction_variables.erase(biv);
     }
 }
 
-bool loop_induction_variables_optimization(mtac::Loop& loop, mtac::Function& function){
+bool loop_induction_variables_optimization(mtac::loop& loop, mtac::Function& function){
     bool optimized = false;
     
     //1. Strength reduction on each dependent induction variables
     for(auto& basic : loop.basic_induction_variables()){
         optimized |= strength_reduce(loop, basic.second, function);
     }
-    
+
     for(auto& biv : loop.basic_induction_variables()){
-        LOG<Trace>("Loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        if(biv.second.div){
+            LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.i->name() << " / " << biv.second.e << " + " << biv.second.d << log::endl;
+        } else {
+            LOG<Trace>("loops") << "BIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << log::endl;
+        }
     }
     
     for(auto& biv : loop.dependent_induction_variables()){
-        LOG<Trace>("Loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
+        LOG<Trace>("loops") << "DIV: " << biv.first->name() << " = " << biv.second.e << " * " << biv.second.i->name() << " + " << biv.second.d << " g:" << biv.second.generated << log::endl;
     }
 
     //2. Removal of dependent induction variables

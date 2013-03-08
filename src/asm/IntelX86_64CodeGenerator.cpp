@@ -16,7 +16,7 @@
 
 #include "mtac/Program.hpp"
 
-#include "ltac/Statement.hpp"
+#include "ltac/Instruction.hpp"
 
 #include "asm/StringConverter.hpp"
 #include "asm/IntelX86_64CodeGenerator.hpp"
@@ -32,6 +32,18 @@ namespace {
 const std::string registers[14] = {
     "rax", "rbx", "rcx", "rdx", "rsi", "rdi", 
     "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"};
+
+const std::string registers_8[14] = {
+    "al", "bl", "cl", "dl", "", "", 
+    "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"};
+
+const std::string registers_16[14] = {
+    "ax", "bx", "cx", "dx", "si", "di", 
+    "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"};
+
+const std::string registers_32[14] = {
+    "eax", "ebx", "ecx", "edx", "esi", "edi", 
+    "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"};
 
 const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7"};
 
@@ -55,7 +67,7 @@ struct X86_64StringConverter : public as::StringConverter, public boost::static_
     }
 
     std::string operator()(int value) const {
-       return ::toString(value);
+       return std::to_string(value);
     }
 
     std::string operator()(const std::string& value) const {
@@ -92,279 +104,296 @@ using namespace x86_64;
 
 namespace {
 
-struct X86_64StatementCompiler : public boost::static_visitor<> {
-    AssemblyFileWriter& writer;
+std::string get_register_8(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    auto sub_reg = registers_8[reg.reg];
+    eddic_assert(!sub_reg.empty(), "The register is not 8-bit allocatable");
+    return sub_reg;
+}
 
-    X86_64StatementCompiler(AssemblyFileWriter& writer) : writer(writer) {
-        //Nothing else to init
-    }
+std::string get_register_16(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    return registers_16[reg.reg];
+}
 
-    void operator()(std::shared_ptr<ltac::Instruction> instruction){
-        switch(instruction->op){
-            case ltac::Operator::MOV:
-                if(instruction->size != ltac::Size::DEFAULT){
-                    switch(instruction->size){
-                        case ltac::Size::BYTE:
-                            writer.stream() << "movzx " << *instruction->arg1 << ", byte " << *instruction->arg2 << '\n';
-                            break;
-                        case ltac::Size::WORD:
-                            writer.stream() << "movzx " << *instruction->arg1 << ", word " << *instruction->arg2 << '\n';
-                            break;
-                        case ltac::Size::DOUBLE_WORD:
-                            writer.stream() << "movzx " << *instruction->arg1 << ", dword " << *instruction->arg2 << '\n';
-                            break;
-                        default:
-                            writer.stream() << "mov " << *instruction->arg1 << ", qword " << *instruction->arg2 << '\n';
-                            break;
-                    }
+std::string get_register_32(ltac::Register& reg){
+    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    return registers_32[reg.reg];
+}
 
-                    break;
-                }
-
-                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
-                    writer.stream() << "movq " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                } else if(boost::get<ltac::Register>(&*instruction->arg1) && boost::get<ltac::FloatRegister>(&*instruction->arg2)){
-                    writer.stream() << "movq " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                } else if(boost::get<ltac::Address>(&*instruction->arg1)){
-                    writer.stream() << "mov qword " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                } else {
-                    writer.stream() << "mov " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                }
-
-                break;
-            case ltac::Operator::FMOV:
-                if(boost::get<ltac::FloatRegister>(&*instruction->arg1) && boost::get<ltac::Register>(&*instruction->arg2)){
-                    writer.stream() << "movq " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                } else {
-                    writer.stream() << "movsd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                }
-
-                break;
-            case ltac::Operator::MEMSET:
-                writer.stream() << "push rcx" << '\n';
-                writer.stream() << "push rax" << '\n';
-                writer.stream() << "push rdi" << '\n';
-                
-                writer.stream() << "mov rcx, " << *instruction->arg2 << '\n';
-                writer.stream() << "xor rax, rax" << '\n';
-                writer.stream() << "lea rdi, " << *instruction->arg1 << '\n';
-                
-                //Because of the pushs...
-                if(auto* ptr = boost::get<ltac::Address>(&*instruction->arg1)){
-                    if(ptr->base_register){
-                        if(auto* reg_ptr = boost::get<ltac::Register>(&*ptr->base_register)){
-                            if(*reg_ptr == ltac::SP){
-                                writer.stream() << "add rdi, 24" << '\n';
-                            }
+void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instruction){
+    switch(instruction.op){
+        case ltac::Operator::LABEL:
+            writer.stream() << "." << instruction.label << ":" << '\n';
+            break;
+        case ltac::Operator::MOV:
+            if(instruction.size != ltac::Size::DEFAULT){
+                if(boost::get<ltac::Address>(&*instruction.arg1)){
+                    if(auto* ptr = boost::get<ltac::Register>(&*instruction.arg2)){
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << get_register_8(*ptr) << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << get_register_16(*ptr) << '\n';
+                                break;
+                            case ltac::Size::DOUBLE_WORD:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << get_register_32(*ptr) << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                        }
+                    } else {
+                        switch(instruction.size){
+                            case ltac::Size::BYTE:
+                                writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            case ltac::Size::WORD:
+                                writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            case ltac::Size::DOUBLE_WORD:
+                                writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
+                            default:
+                                writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+                                break;
                         }
                     }
-                }
-                
-                writer.stream() << "rep stosq" << '\n';
-
-                writer.stream() << "pop rdi" << '\n';
-                writer.stream() << "pop rax" << '\n';
-                writer.stream() << "pop rcx" << '\n';
-
-                break;
-            case ltac::Operator::ENTER:
-                writer.stream() << "push rbp" << '\n';
-                writer.stream() << "mov rbp, rsp" << '\n';
-                break;
-            case ltac::Operator::LEAVE:
-                writer.stream() << "mov rsp, rbp" << '\n';
-                writer.stream() << "pop rbp" << '\n';
-                break;
-            case ltac::Operator::RET:
-                writer.stream() << "ret" << '\n';
-                break;
-            case ltac::Operator::CMP_INT:
-                writer.stream() << "cmp " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMP_FLOAT:
-                writer.stream() << "ucomisd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::OR:
-                writer.stream() << "or " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::XOR:
-                writer.stream() << "xor " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::PUSH:
-                if(boost::get<ltac::Address>(&*instruction->arg1)){
-                    writer.stream() << "push qword " << *instruction->arg1 << '\n';
                 } else {
-                    writer.stream() << "push " << *instruction->arg1 << '\n';
+                    //TODO The instruction should always be mov (and not movzx) to avoid having something context-dependent
+                    //movzx should be chosen higher
+
+                    switch(instruction.size){
+                        case ltac::Size::BYTE:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::WORD:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
+                            break;
+                        case ltac::Size::DOUBLE_WORD:
+                            writer.stream() << "movzx " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
+                            break;
+                        default:
+                            writer.stream() << "mov " << *instruction.arg1 << ", qword " << *instruction.arg2 << '\n';
+                            break;
+                    }
                 }
 
                 break;
-            case ltac::Operator::POP:
-                writer.stream() << "pop " << *instruction->arg1 << '\n';
-                break;
-            case ltac::Operator::LEA:
-                writer.stream() << "lea " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::SHIFT_LEFT:
-                writer.stream() << "sal " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::SHIFT_RIGHT:
-                writer.stream() << "sar " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::ADD:
-                writer.stream() << "add " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::SUB:
-                writer.stream() << "sub " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::MUL2:
-            case ltac::Operator::MUL3:
-                if(instruction->arg3){
-                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << ", " << *instruction->arg3 << '\n';
-                } else {
-                    writer.stream() << "imul " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                }
+            }
 
-                break;
-            case ltac::Operator::DIV:
-                writer.stream() << "idiv " << *instruction->arg1 << '\n';
-                break;
-            case ltac::Operator::FADD:
-                writer.stream() << "addsd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::FSUB:
-                writer.stream() << "subsd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::FMUL:
-                writer.stream() << "mulsd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::FDIV:
-                writer.stream() << "divsd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::INC:
-                writer.stream() << "inc " << *instruction->arg1 << '\n';
-                break;
-            case ltac::Operator::DEC:
-                writer.stream() << "dec " << *instruction->arg1 << '\n';
-                break;
-            case ltac::Operator::NEG:
-                writer.stream() << "neg " << *instruction->arg1 << '\n';
-                break;
-            case ltac::Operator::NOT:
-                writer.stream() << "btc " << *instruction->arg1 << ", 0" << '\n';
-                break;
-            case ltac::Operator::AND:
-                writer.stream() << "and " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::I2F:
-                writer.stream() << "cvtsi2sd " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::F2I:
-                writer.stream() << "cvttsd2si " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVE:
-                writer.stream() << "cmove " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVNE:
-                writer.stream() << "cmovne " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVA:
-                writer.stream() << "cmova " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVAE:
-                writer.stream() << "cmovae " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVB:
-                writer.stream() << "cmovb " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVBE:
-                writer.stream() << "cmovbe " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVG:
-                writer.stream() << "cmovg " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVGE:
-                writer.stream() << "cmovge " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVL:
-                writer.stream() << "cmovl " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::CMOVLE:
-                writer.stream() << "cmovle " << *instruction->arg1 << ", " << *instruction->arg2 << '\n';
-                break;
-            case ltac::Operator::NOP:
-                //Nothing to output for a nop
-                break;
-            default:
-                eddic_unreachable("The operator is not supported");
-        }
-    }
+            if(boost::get<ltac::FloatRegister>(&*instruction.arg1) && boost::get<ltac::Register>(&*instruction.arg2)){
+                writer.stream() << "movq " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            } else if(boost::get<ltac::Register>(&*instruction.arg1) && boost::get<ltac::FloatRegister>(&*instruction.arg2)){
+                writer.stream() << "movq " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            } else if(boost::get<ltac::Address>(&*instruction.arg1)){
+                writer.stream() << "mov qword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            } else {
+                writer.stream() << "mov " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            }
 
-    void operator()(std::shared_ptr<ltac::Jump> jump){
-        switch(jump->type){
-            case ltac::JumpType::CALL:
-                writer.stream() << "call " << jump->label << '\n';
-                break;
-            case ltac::JumpType::ALWAYS:
-                writer.stream() << "jmp " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::NE:
-                writer.stream() << "jne " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::E:
-                writer.stream() << "je " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::GE:
-                writer.stream() << "jge " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::G:
-                writer.stream() << "jg " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::LE:
-                writer.stream() << "jle " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::L:
-                writer.stream() << "jl " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::AE:
-                writer.stream() << "jae " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::A:
-                writer.stream() << "ja" << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::BE:
-                writer.stream() << "jbe " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::B:
-                writer.stream() << "jb " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::P:
-                writer.stream() << "jp " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::Z:
-                writer.stream() << "jz " << "." << jump->label << '\n';
-                break;
-            case ltac::JumpType::NZ:
-                writer.stream() << "jnz " << "." << jump->label << '\n';
-                break;
-            default:
-                eddic_unreachable("The jump type is not supported");
-        }
-    }
+            break;
+        case ltac::Operator::FMOV:
+            if(boost::get<ltac::FloatRegister>(&*instruction.arg1) && boost::get<ltac::Register>(&*instruction.arg2)){
+                writer.stream() << "movq " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            } else {
+                writer.stream() << "movsd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            }
 
-    void operator()(std::string& label){
-        writer.stream() << "." << label << ":" << '\n';
+            break;
+        case ltac::Operator::ENTER:
+            writer.stream() << "push rbp" << '\n';
+            writer.stream() << "mov rbp, rsp" << '\n';
+            break;
+        case ltac::Operator::LEAVE:
+            writer.stream() << "mov rsp, rbp" << '\n';
+            writer.stream() << "pop rbp" << '\n';
+            break;
+        case ltac::Operator::RET:
+            writer.stream() << "ret" << '\n';
+            break;
+        case ltac::Operator::CMP_INT:
+            writer.stream() << "cmp " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMP_FLOAT:
+            writer.stream() << "ucomisd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::OR:
+            writer.stream() << "or " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::XOR:
+            writer.stream() << "xor " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::PUSH:
+            if(boost::get<ltac::Address>(&*instruction.arg1)){
+                writer.stream() << "push qword " << *instruction.arg1 << '\n';
+            } else {
+                writer.stream() << "push " << *instruction.arg1 << '\n';
+            }
+
+            break;
+        case ltac::Operator::POP:
+            writer.stream() << "pop " << *instruction.arg1 << '\n';
+            break;
+        case ltac::Operator::LEA:
+            writer.stream() << "lea " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::SHIFT_LEFT:
+            writer.stream() << "sal " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::SHIFT_RIGHT:
+            writer.stream() << "sar " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::ADD:
+            writer.stream() << "add " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::SUB:
+            writer.stream() << "sub " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::MUL2:
+        case ltac::Operator::MUL3:
+            if(instruction.arg3){
+                writer.stream() << "imul " << *instruction.arg1 << ", " << *instruction.arg2 << ", " << *instruction.arg3 << '\n';
+            } else {
+                writer.stream() << "imul " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            }
+
+            break;
+        case ltac::Operator::DIV:
+            writer.stream() << "idiv " << *instruction.arg1 << '\n';
+            break;
+        case ltac::Operator::FADD:
+            writer.stream() << "addsd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::FSUB:
+            writer.stream() << "subsd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::FMUL:
+            writer.stream() << "mulsd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::FDIV:
+            writer.stream() << "divsd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::INC:
+            writer.stream() << "inc " << *instruction.arg1 << '\n';
+            break;
+        case ltac::Operator::DEC:
+            writer.stream() << "dec " << *instruction.arg1 << '\n';
+            break;
+        case ltac::Operator::NEG:
+            writer.stream() << "neg " << *instruction.arg1 << '\n';
+            break;
+        case ltac::Operator::NOT:
+            writer.stream() << "btc " << *instruction.arg1 << ", 0" << '\n';
+            break;
+        case ltac::Operator::AND:
+            writer.stream() << "and " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::I2F:
+            writer.stream() << "cvtsi2sd " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::F2I:
+            writer.stream() << "cvttsd2si " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVE:
+            writer.stream() << "cmove " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVNE:
+            writer.stream() << "cmovne " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVA:
+            writer.stream() << "cmova " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVAE:
+            writer.stream() << "cmovae " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVB:
+            writer.stream() << "cmovb " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVBE:
+            writer.stream() << "cmovbe " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVG:
+            writer.stream() << "cmovg " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVGE:
+            writer.stream() << "cmovge " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVL:
+            writer.stream() << "cmovl " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::CMOVLE:
+            writer.stream() << "cmovle " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::XORPS:
+            writer.stream() << "xorps " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::MOVDQU:
+            writer.stream() << "movdqu " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
+            break;
+        case ltac::Operator::NOP:
+            //Nothing to output for a nop
+            break;
+        case ltac::Operator::CALL:
+            writer.stream() << "call " << instruction.label << '\n';
+            break;
+        case ltac::Operator::ALWAYS:
+            writer.stream() << "jmp " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::NE:
+            writer.stream() << "jne " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::E:
+            writer.stream() << "je " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::GE:
+            writer.stream() << "jge " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::G:
+            writer.stream() << "jg " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::LE:
+            writer.stream() << "jle " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::L:
+            writer.stream() << "jl " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::AE:
+            writer.stream() << "jae " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::A:
+            writer.stream() << "ja" << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::BE:
+            writer.stream() << "jbe " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::B:
+            writer.stream() << "jb " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::P:
+            writer.stream() << "jp " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::Z:
+            writer.stream() << "jz " << "." << instruction.label << '\n';
+            break;
+        case ltac::Operator::NZ:
+            writer.stream() << "jnz " << "." << instruction.label << '\n';
+            break;
+        default:
+            eddic_unreachable(("The operator " + std::to_string(static_cast<int>(instruction.op)) + " is not supported").c_str());
     }
-};
+}
 
 } //end of anonymous namespace
 
 void as::IntelX86_64CodeGenerator::compile(mtac::Function& function){
     writer.stream() << '\n' << function.get_name() << ":" << '\n';
 
-    X86_64StatementCompiler compiler(writer);
-    
     for(auto& bb : function){
-        visit_each(compiler, bb->l_statements);
+        for(auto& statement : bb->l_statements){
+            compile_statement(writer, statement);
+        }
     }
 }
 
@@ -459,6 +488,14 @@ void as::IntelX86_64CodeGenerator::declareStringArray(const std::string& name, u
 
 void as::IntelX86_64CodeGenerator::declareIntVariable(const std::string& name, int value){
     writer.stream() << "V" << name << " dq " << value << '\n';
+}
+
+void as::IntelX86_64CodeGenerator::declareBoolVariable(const std::string& name, bool value){
+    writer.stream() << "V" << name << " db " << value << '\n';
+}
+
+void as::IntelX86_64CodeGenerator::declareCharVariable(const std::string& name, char value){
+    writer.stream() << "V" << name << " db " << value << '\n';
 }
 
 void as::IntelX86_64CodeGenerator::declareStringVariable(const std::string& name, const std::string& label, int size){

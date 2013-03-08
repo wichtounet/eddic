@@ -8,7 +8,7 @@
 #include "VisitorUtils.hpp"
 
 #include "mtac/variable_usage.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Quadruple.hpp"
@@ -16,34 +16,6 @@
 using namespace eddic;
 
 namespace {
-
-struct VariableReadCollector {
-    mtac::Usage& usage;
-
-    VariableReadCollector(mtac::Usage& usage) : usage(usage) {}
-
-    void inc_usage(std::shared_ptr<Variable> variable){
-        ++usage.read[variable];
-    }
-
-    template<typename T>
-    void collect_optional(T& opt){
-        if(opt){
-            if(auto* variablePtr = boost::get<std::shared_ptr<Variable>>(&*opt)){
-                inc_usage(*variablePtr);
-            }
-        }
-    }
-
-    void collect(mtac::Quadruple& quadruple){
-        if(!mtac::erase_result(quadruple.op)){
-            inc_usage(quadruple.result);
-        }
-
-        collect_optional(quadruple.arg1);
-        collect_optional(quadruple.arg2);
-    }
-};
 
 struct UsageCollector {
     std::shared_ptr<Variable> var;
@@ -69,11 +41,15 @@ struct UsageCollector {
 template<typename Container>
 mtac::Usage compute_read_usage(Container& loop){
     mtac::Usage usage;
-    VariableReadCollector collector(usage);
 
     for(auto& bb : loop){
         for(auto& quadruple : bb->statements){
-           collector.collect(quadruple);
+            if(!mtac::erase_result(quadruple.op)){
+                ++usage.read[quadruple.result];
+            }
+
+            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
+            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
         }
     }
 
@@ -96,9 +72,29 @@ mtac::Usage compute_write_usage(Container& loop){
     return usage;
 }
 
+struct VariableUsageCollector {
+    mtac::VariableUsage& usage;
+    int depth_factor;
+    int current_depth;
+
+    VariableUsageCollector(mtac::VariableUsage& usage, int depth_factor) : usage(usage), depth_factor(depth_factor) {}
+
+    inline void inc_usage(std::shared_ptr<Variable> variable){
+        usage[variable] += pow(depth_factor, current_depth);
+    }
+
+    void collect(mtac::Quadruple& quadruple){
+        current_depth = quadruple.depth;
+
+        inc_usage(quadruple.result);
+        mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [this](std::shared_ptr<Variable>& var){inc_usage(var);});
+        mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [this](std::shared_ptr<Variable>& var){inc_usage(var);});
+    }
+};
+
 } //end of anonymous namespace
 
-mtac::Usage mtac::compute_read_usage(mtac::Loop& loop){
+mtac::Usage mtac::compute_read_usage(mtac::loop& loop){
     return ::compute_read_usage(loop);
 }
 
@@ -106,7 +102,7 @@ mtac::Usage mtac::compute_read_usage(mtac::Function& function){
     return ::compute_read_usage(function);
 }
 
-mtac::Usage mtac::compute_write_usage(mtac::Loop& loop){
+mtac::Usage mtac::compute_write_usage(mtac::loop& loop){
     return ::compute_write_usage(loop);
 }
 
@@ -124,4 +120,22 @@ bool mtac::use_variable(mtac::basic_block_p bb, std::shared_ptr<Variable> var){
     }
 
     return false;
+}
+
+mtac::VariableUsage mtac::compute_variable_usage(mtac::Function& function){
+    return compute_variable_usage_with_depth(function, 1);
+}
+
+mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& function, int factor){
+    mtac::VariableUsage usage;
+
+    VariableUsageCollector collector(usage, factor);
+
+    for(auto& block : function){
+        for(auto& quadruple : block->statements){
+            collector.collect(quadruple);
+        }
+    }
+
+    return usage;
 }

@@ -20,7 +20,7 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 
-#include "PerfsTimer.hpp"
+#include "GlobalContext.hpp"
 
 #include "lexer/SpiritLexer.hpp"
 
@@ -34,8 +34,8 @@ namespace spirit = boost::spirit;
 
 using namespace eddic;
 
-bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program){
-    PerfsTimer timer("Parsing");
+bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program, std::shared_ptr<GlobalContext> context){
+    timing_timer timer(context->timing(), "parsing");
 
     std::ifstream in(file.c_str());
     in.unsetf(std::ios::skipws);

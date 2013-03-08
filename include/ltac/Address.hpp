@@ -37,9 +37,9 @@ struct Address {
     boost::optional<std::string> absolute;
 
     Address();
-    Address(const std::string& absolute);
-    Address(const std::string& absolute, const ltac::AddressRegister& reg);
-    Address(const std::string& absolute, int displacement);
+    Address(std::string absolute);
+    Address(std::string absolute, const ltac::AddressRegister& reg);
+    Address(std::string absolute, int displacement);
     
     Address(int displacement);
     Address(const ltac::AddressRegister& reg, int displacement);

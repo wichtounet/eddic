@@ -13,8 +13,8 @@
 
 using namespace eddic;
 
-Function::Function(std::shared_ptr<const Type> return_type, const std::string& name, const std::string& mangled_name) 
-        : _return_type(return_type), _name(name), _mangled_name(mangled_name) {
+Function::Function(std::shared_ptr<const Type> return_type, std::string name, std::string mangled_name) 
+        : _return_type(return_type), _name(std::move(name)), _mangled_name(std::move(mangled_name)) {
     //Nothing to do
 }
 
@@ -102,6 +102,10 @@ unsigned int Function::parameter_position_by_type(const std::string& name) const
 
 bool eddic::operator==(const eddic::Function& lhs, const eddic::Function& rhs){
     return lhs.mangled_name() == rhs.mangled_name();
+}
+
+bool eddic::operator!=(const eddic::Function& lhs, const eddic::Function& rhs){
+    return lhs.mangled_name() != rhs.mangled_name();
 }
 
 std::shared_ptr<FunctionContext>& Function::context(){

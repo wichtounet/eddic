@@ -28,31 +28,31 @@ mtac::Quadruple::Quadruple(mtac::Operator o) : _uid(++uid_counter), op(o) {
     //Nothing to init    
 }
 
-mtac::Quadruple::Quadruple(std::shared_ptr<Variable> result, mtac::Argument a1, mtac::Operator o) : _uid(++uid_counter), result(result), arg1(a1), op(o) {
+mtac::Quadruple::Quadruple(std::shared_ptr<Variable> result, mtac::Argument a1, mtac::Operator o) : _uid(++uid_counter), result(result), arg1(std::move(a1)), op(o) {
     //Nothing to init    
 }
 
-mtac::Quadruple::Quadruple(std::shared_ptr<Variable> result, mtac::Argument a1, mtac::Operator o, mtac::Argument a2) : _uid(++uid_counter), result(result), arg1(a1), arg2(a2), op(o) {
+mtac::Quadruple::Quadruple(std::shared_ptr<Variable> result, mtac::Argument a1, mtac::Operator o, mtac::Argument a2) : _uid(++uid_counter), result(result), arg1(std::move(a1)), arg2(std::move(a2)), op(o) {
     //Nothing to init    
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1) : _uid(++uid_counter), arg1(a1), op(o) {
+mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1) : _uid(++uid_counter), arg1(std::move(a1)), op(o) {
     //Nothing to init    
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1, mtac::Argument a2) : _uid(++uid_counter), arg1(a1), arg2(a2), op(o) {
+mtac::Quadruple::Quadruple(mtac::Operator o, mtac::Argument a1, mtac::Argument a2) : _uid(++uid_counter), arg1(std::move(a1)), arg2(std::move(a2)), op(o) {
     //Nothing to init    
 }
     
-mtac::Quadruple::Quadruple(const std::string& param, mtac::Operator op) : _uid(++uid_counter), op(op), m_param(param){
+mtac::Quadruple::Quadruple(std::string param, mtac::Operator op) : _uid(++uid_counter), op(op), m_param(std::move(param)){
     //Nothing to init
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function) : _uid(++uid_counter), result(param), arg1(arg), op(op), m_function(&function) {
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function) : _uid(++uid_counter), result(param), arg1(std::move(arg)), op(op), m_function(&function) {
     //Nothing to init
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& param, eddic::Function& function) : _uid(++uid_counter), arg1(arg), op(op), m_function(&function), m_param(param){
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string param, eddic::Function& function) : _uid(++uid_counter), arg1(std::move(arg)), op(op), m_function(&function), m_param(std::move(param)){
     //Nothing to init
 }
 
@@ -60,7 +60,7 @@ mtac::Quadruple::Quadruple(mtac::Operator op, eddic::Function& function, std::sh
     eddic_assert(m_function, "Function is mandatory for calls");
 }
 
-mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, const std::string& label) : _uid(++uid_counter), arg1(arg), op(op), m_param(label) {
+mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string label) : _uid(++uid_counter), arg1(std::move(arg)), op(op), m_param(std::move(label)) {
     //Nothing to init
 }
 
@@ -198,6 +198,35 @@ std::string printTarget(const mtac::Quadruple& quadruple){
     }
 }
 
+std::string size(mtac::Size size){
+    switch(size){
+        case mtac::Size::DEFAULT:
+            return "";
+        case mtac::Size::BYTE:
+            return " (byte)";
+        case mtac::Size::WORD:
+            return " (word)";
+        case mtac::Size::DOUBLE_WORD:
+            return " (dword)";
+        case mtac::Size::QUAD_WORD:
+            return " (qword)";
+    }
+}
+
+}
+
+void mtac::transform_to_nop(mtac::Quadruple& quadruple){
+    //Transform it to a NOP
+    quadruple.op = mtac::Operator::NOP;
+
+    //Clear all informations
+    quadruple.arg1.reset();
+    quadruple.arg2.reset();
+    quadruple.result = nullptr;
+    quadruple.secondary = nullptr;
+    quadruple.block = nullptr;
+    quadruple.m_function = nullptr;
+    quadruple.m_param.clear();
 }
 
 std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadruple& quadruple){
@@ -207,100 +236,100 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
 
     switch(op){
         case mtac::Operator::ASSIGN:
-            stream << "\t" << quadruple.result << " = (normal) " << *quadruple.arg1 << " : " << quadruple.depth ;
+            stream << "\t" << quadruple.result << " = (normal) " << size(quadruple.size) << *quadruple.arg1 << " : " << quadruple.depth ;
             break;
         case mtac::Operator::FASSIGN:
-            stream << "\t" << quadruple.result << " = (float) " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (float) " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::PASSIGN:
-            stream << "\t" << quadruple.result << " = (pointer) " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (pointer) " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::ADD:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " + " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " + " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FADD:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " + (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " + (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::SUB:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " - " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " - " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FSUB:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " - (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " - (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::MUL:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " * " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " * " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FMUL:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " * (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " * (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DIV:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " / " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " / " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FDIV:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " / (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " / (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::MOD:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " % " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " % " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::AND:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " & " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " & " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::EQUALS:
         case mtac::Operator::FE:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " == " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " == " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::NOT_EQUALS:
         case mtac::Operator::FNE:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " != " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " != " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::GREATER:
         case mtac::Operator::FG:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " > " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " > " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::GREATER_EQUALS:
         case mtac::Operator::FGE:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " >= " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " >= " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::LESS:
         case mtac::Operator::FL:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " < " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " < " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::LESS_EQUALS:
         case mtac::Operator::FLE:
-            stream << "\t" << quadruple.result << " = " << *quadruple.arg1 << " <= " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = " << size(quadruple.size) << *quadruple.arg1 << " <= " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::MINUS:
-            stream << "\t" << quadruple.result << " = - " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = - " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FMINUS:
-            stream << "\t" << quadruple.result << " = - (float) " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = - (float) " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::NOT:
-            stream << "\t" << quadruple.result << " = ! " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = ! " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::I2F:
-            stream << "\t" << quadruple.result << " = (cast float) " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (cast float) " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::F2I:
-            stream << "\t" << quadruple.result << " = (cast int) " << *quadruple.arg1 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (cast int) " << size(quadruple.size) << *quadruple.arg1 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT:
-            stream << "\t" << quadruple.result << " = (normal) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (normal)" << size(quadruple.size) << " (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::FDOT:
-            stream << "\t" << quadruple.result << " = (float) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (float)" << size(quadruple.size) << " (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::PDOT:
-            stream << "\t" << quadruple.result << " = (pointer) (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << quadruple.result << " = (pointer)" << size(quadruple.size) << " (" << *quadruple.arg1 << ")" << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_ASSIGN:
-            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (normal)" << size(quadruple.size) << " " << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_FASSIGN:
-            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (float) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (float) " << size(quadruple.size) << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::DOT_PASSIGN:
-            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (pointer) " << *quadruple.arg2 << " : "<< quadruple.depth;
+            stream << "\t" << "(" << quadruple.result << ")" << *quadruple.arg1 << " = (pointer) " << size(quadruple.size) << *quadruple.arg2 << " : "<< quadruple.depth;
             break;
         case mtac::Operator::RETURN:
             stream << "\t" << "return";
@@ -332,24 +361,24 @@ std::ostream& eddic::mtac::operator<<(std::ostream& stream, const mtac::Quadrupl
             break;
         case mtac::Operator::PARAM:
             if(quadruple.param()){
-                stream << "\t" << "param " << "(" << quadruple.param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
+                stream << "\t" << "param " << size(quadruple.size) << "(" << quadruple.param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
             } else {
                 if(quadruple.std_param().length() > 0){
-                    stream << "\t" << "param " << "(std::" << quadruple.std_param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
+                    stream << "\t" << "param " << size(quadruple.size) << "(std::" << quadruple.std_param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
                 } else {
-                    stream << "\t" << "param " << *quadruple.arg1 << " : " << quadruple.depth;
+                    stream << "\t" << "param " << size(quadruple.size) << *quadruple.arg1 << " : " << quadruple.depth;
                 }
             }
 
             break;
         case  mtac::Operator::PPARAM:
             if(quadruple.param()){
-                stream << "\t" << "param address " << "(" << quadruple.param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
+                stream << "\t" << "param address " << size(quadruple.size) << "(" << quadruple.param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
             } else {
                 if(quadruple.std_param().length() > 0){
-                    stream << "\t" << "param address " << "(std::" << quadruple.std_param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
+                    stream << "\t" << "param address " << size(quadruple.size) << "(std::" << quadruple.std_param() << ") " << *quadruple.arg1 << " : " << quadruple.depth;
                 } else {
-                    stream << "\t" << "param address " << *quadruple.arg1 << " : " << quadruple.depth;
+                    stream << "\t" << "param address " << size(quadruple.size) << *quadruple.arg1 << " : " << quadruple.depth;
                 }
             }
 

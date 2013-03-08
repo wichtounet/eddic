@@ -79,7 +79,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
 
         bool possible = true;
         for(auto& member : struct_type->members){
-            if(member->type->is_array() || member->type->is_custom_type() || member->type->is_template_type()){
+            if(member->type->is_array()){
                 possible = false;
                 break;
             }

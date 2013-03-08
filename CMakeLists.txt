@@ -5,7 +5,7 @@ project("EDDI Compiler")
 #Set the version number
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 2)
-set(VERSION_PATCH 2)
+set(VERSION_PATCH 3)
 
 #Boost is necessary
 FIND_PACKAGE(Boost REQUIRED) 
@@ -27,7 +27,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS           "-std=c++11 -Qunused-arguments")
     set(CMAKE_CXX_FLAGS_DEBUG     "-g -pedantic -Wuninitialized -Wsometimes-uninitialized -Wall -Wextra -Wno-long-long -Winit-self -Wdocumentation")
-    set(CMAKE_CXX_FLAGS_RELEASE   "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fno-omit-frame-pointer -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE   "-DLOGGING_DISABLE -DNDEBUG -O3 -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic can only be compiled on gcc and clang for now")
 endif()
@@ -75,6 +75,12 @@ add_custom_target(cases bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/cases.sh ${CMAKE_
     COMMENT "Compiling cases" VERBATIM
 )
 
+# Add a custom target to gather timings
+add_custom_target(timing bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/timing.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Computing timings" VERBATIM
+)
+
 # Add a custom target to gather git stats
 add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -99,6 +105,46 @@ file(GLOB to_remove src/eddi.cpp)
 list(REMOVE_ITEM compiler_files ${to_remove})
 
 add_library(Compiler OBJECT ${compiler_files})
+
+# Set different options
+
+file(
+	GLOB_RECURSE
+	mtac_files
+	src/mtac/*.cpp
+)
+
+file(
+	GLOB_RECURSE
+	ltac_files
+	src/ltac/*.cpp
+)
+
+file(
+	GLOB_RECURSE
+	asm_files
+	src/asm/*.cpp
+)
+
+# Disable exceptions for MTAC and LTAC and ASM
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${mtac_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
+)
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${mtac_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
+)
+
+SET_SOURCE_FILES_PROPERTIES(
+    ${asm_files}
+    PROPERTIES
+    COMPILE_FLAGS "-fno-exceptions -fno-rtti"
+)
 
 # Create the eddic executable
 
@@ -140,7 +186,6 @@ add_boost_test(eddic_boost_test
     SamplesSuite/samples_includes
     SamplesSuite/samples_optimize
     SamplesSuite/samples_problem
-    SamplesSuite/samples_sort
     SamplesSuite/samples_identifiers
     SamplesSuite/samples_registers
     SamplesSuite/samples_structures
@@ -232,8 +277,12 @@ add_boost_test(eddic_boost_test
     OptimizationSuite/remove_empty_loops
     OptimizationSuite/invariant_code_motion
     OptimizationSuite/complete_loop_peeling
+    OptimizationSuite/complete_loop_peeling_2
     OptimizationSuite/loop_unrolling
-    OptimizationSuite/common_subexpr_elimination
+    OptimizationSuite/loop_unswitching
+    OptimizationSuite/global_cse
+    OptimizationSuite/local_cse
+    OptimizationSuite/cmov_opt
     #Unit tests
     toString
     toNumber

@@ -21,8 +21,6 @@
 #include "timing.hpp"
 #include "GlobalContext.hpp"
 
-#include "ltac/Statement.hpp"
-
 #include "mtac/pass_traits.hpp"
 #include "mtac/Utils.hpp"
 #include "mtac/Pass.hpp"
@@ -45,11 +43,13 @@
 #include "mtac/loop_analysis.hpp"
 #include "mtac/induction_variable_optimizations.hpp"
 #include "mtac/loop_unrolling.hpp"
+#include "mtac/loop_unswitching.hpp"
 #include "mtac/complete_loop_peeling.hpp"
 #include "mtac/remove_empty_loops.hpp"
 #include "mtac/loop_invariant_code_motion.hpp"
 #include "mtac/parameter_propagation.hpp"
 #include "mtac/pure_analysis.hpp"
+#include "mtac/local_cse.hpp"
 
 //The optimization visitors
 #include "mtac/ArithmeticIdentities.hpp"
@@ -62,7 +62,7 @@
 #include "mtac/GlobalOptimizations.hpp"
 #include "mtac/ConstantPropagationProblem.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
-#include "mtac/CommonSubexpressionElimination.hpp"
+#include "mtac/global_cse.hpp"
 
 #include "ltac/Register.hpp"
 #include "ltac/FloatRegister.hpp"
@@ -98,7 +98,8 @@ typedef boost::mpl::vector<
         mtac::conditional_propagation*,
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
-        mtac::CommonSubexpressionElimination*,
+        mtac::local_cse*,
+        mtac::global_cse*,
         mtac::PointerPropagation*,
         mtac::MathPropagation*,
         mtac::optimize_branches*,
@@ -110,8 +111,9 @@ typedef boost::mpl::vector<
         mtac::loop_invariant_code_motion*,
         mtac::loop_induction_variables_optimization*,
         mtac::remove_empty_loops*,
-        mtac::complete_loop_peeling*,
         mtac::loop_unrolling*,
+        mtac::loop_unswitching*,
+        mtac::complete_loop_peeling*, //Must be kept last since it can mess up the loop analysis
         mtac::clean_variables*
     > passes;
 
@@ -152,8 +154,8 @@ typedef boost::mpl::vector<
         mtac::pure_analysis*,
         mtac::all_optimizations*,
         mtac::remove_empty_functions*,
-        mtac::remove_unused_functions*,
         mtac::inline_functions*,
+        mtac::remove_unused_functions*,
         mtac::parameter_propagation*
     > ipa_passes;
 
@@ -203,18 +205,7 @@ struct pass_runner {
 
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
-        for(auto& block : *function){
-            auto it = iterate(block->statements);
-
-            while(it.has_next()){
-                if(it->op == mtac::Operator::NOP){
-                    it.erase();
-                    continue;
-                }
-
-                ++it;
-            }
-        }
+        //TODO Remove that
     }
     
     template<typename Pass>
@@ -400,14 +391,9 @@ struct pass_runner {
         auto pass = make_pass<Pass>();
 
         if(has_to_be_run(pass)){
-            bool local = false;
-            {
-                PerfsTimer perfs_timer(mtac::pass_traits<Pass>::name());
-                timing_timer timer(system, mtac::pass_traits<Pass>::name());
+            timing_timer timer(system, mtac::pass_traits<Pass>::name());
 
-                local = apply<Pass>(pass);
-            }
-
+            bool local = local = apply<Pass>(pass);
             if(local){
                 program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
                 apply_todo<Pass>();
@@ -423,24 +409,24 @@ struct pass_runner {
 } //end of anonymous namespace
 
 void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
-    timing_system timing_system(configuration);    
-    PerfsTimer timer("Whole optimizations");
+    timing_timer timer(program.context->timing(), "whole_optimizations");
         
     //Build the CFG of each functions (also needed for register allocation)
     for(auto& function : program.functions){
+        timing_timer timer(program.context->timing(), "build_cfg");
         mtac::build_control_flow_graph(function);
     }
 
     if(configuration->option_defined("fglobal-optimization")){
         //Apply Interprocedural Optimizations
-        pass_runner runner(program, string_pool, configuration, platform, timing_system);
+        pass_runner runner(program, string_pool, configuration, platform, program.context->timing());
         do{
             runner.optimized = false;
             boost::mpl::for_each<ipa_passes>(boost::ref(runner));
         } while(runner.optimized);
     } else {
         //Even if global optimizations are disabled, perform basic optimization (only constant folding)
-        pass_runner runner(program, string_pool, configuration, platform, timing_system);
+        pass_runner runner(program, string_pool, configuration, platform, program.context->timing());
         boost::mpl::for_each<ipa_basic_passes>(boost::ref(runner));
     }
 }

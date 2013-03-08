@@ -19,7 +19,7 @@
 #include "mtac/forward.hpp"
 #include "mtac/basic_block.hpp"
 #include "mtac/basic_block_iterator.hpp"
-#include "mtac/Loop.hpp"
+#include "mtac/loop.hpp" //TODO Use a forward declaration
 #include "mtac/Quadruple.hpp"
 
 #include "ltac/Register.hpp"
@@ -48,7 +48,7 @@ namespace mtac {
  */
 class Function : public std::enable_shared_from_this<Function> {
     public:
-        Function(std::shared_ptr<FunctionContext> context, const std::string& name, eddic::Function& definition);
+        Function(std::shared_ptr<FunctionContext> context, std::string name, eddic::Function& definition);
 
         //Function cannot be copied
         Function(const Function& rhs) = delete;
@@ -72,6 +72,7 @@ class Function : public std::enable_shared_from_this<Function> {
         }
 
         mtac::Quadruple& find(std::size_t uid);
+        ltac::Instruction& find_low(std::size_t uid);
 
         std::vector<mtac::Quadruple>& get_statements();
         const std::vector<mtac::Quadruple>& get_statements() const;
@@ -119,6 +120,16 @@ class Function : public std::enable_shared_from_this<Function> {
         basic_block_const_iterator end() const {
             return basic_block_const_iterator(nullptr, exit);
         }
+
+        /*!
+         * \brief Return the position of the basic block inside the instruction stream of the function. 
+         *
+         * The basic block must be part of the function. This runs in O(n).
+         *
+         * \param bb The basic block to search
+         * \return the position of the basic block inside the instruction stream of the function.
+         */
+        std::size_t position(const basic_block_p& bb) const;
         
         basic_block_iterator at(basic_block_p bb);
 
@@ -130,10 +141,11 @@ class Function : public std::enable_shared_from_this<Function> {
 
         std::pair<basic_block_iterator, basic_block_iterator> blocks();
 
-        std::vector<mtac::Loop>& loops();
+        std::vector<mtac::loop>& loops();
 
         std::size_t bb_count() const;
         std::size_t size() const;
+        std::size_t size_no_nop() const;
         
         std::size_t pseudo_registers() const ;
         void set_pseudo_registers(std::size_t pseudo_registers);
@@ -153,12 +165,50 @@ class Function : public std::enable_shared_from_this<Function> {
         void variable_use(ltac::Register reg);
         void variable_use(ltac::FloatRegister reg);
 
+        /*!
+         * \brief Indicate if this function is the main function.
+         * \return true if it is the main function, false otherwise. 
+         */
         bool is_main() const;
 
+        /*!
+         * \brief Indicate if the function is pure. 
+         *
+         * A pure function cannot modify value of global variables, edit pointers or call unpure functions. 
+         * \return true if the function is pure, false otherise. 
+         */
         bool& pure();
+
+        /*!
+         * \brief Indicate if the function is pure. 
+         *
+         * A pure function cannot modify value of global variables, edit pointers or call unpure functions. 
+         * \return true if the function is pure, false otherise. 
+         */
         bool pure() const;
 
+        /*!
+         * \brief Indicate if the function comes from the standard library or is a user function. 
+         * \return true if the function comes from the standard library, false otherwise. 
+         */
+        bool& standard();
+
+        /*!
+         * \brief Indicate if the function comes from the standard library or is a user function. 
+         * \return true if the function comes from the standard library, false otherwise. 
+         */
+        bool standard() const;
+
+        /*!
+         * \brief Return the function definition for this MTAC function. 
+         * \return the function definition of this function.
+         */
         eddic::Function& definition();
+
+        /*!
+         * \brief Return the function definition for this MTAC function. 
+         * \return the function definition of this function.
+         */
         const eddic::Function& definition() const;
 
         std::shared_ptr<FunctionContext> context;
@@ -170,6 +220,7 @@ class Function : public std::enable_shared_from_this<Function> {
         std::vector<mtac::Quadruple> statements;
 
         bool _pure = false;
+        bool _standard = false;
         
         //There is no basic blocks at the beginning
         std::size_t count = 0;
@@ -186,7 +237,7 @@ class Function : public std::enable_shared_from_this<Function> {
         std::size_t last_pseudo_registers = 0;
         std::size_t last_float_pseudo_registers = 0;
 
-        std::vector<mtac::Loop> m_loops;
+        std::vector<mtac::loop> m_loops;
 
         std::string name;
 };

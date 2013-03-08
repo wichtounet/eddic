@@ -17,9 +17,6 @@ enum class Operator : unsigned int {
     FMOV,
     MUL3,
 
-    //Set the memory to 0
-    MEMSET,
-
     //Enter stack frame
     ENTER,
 
@@ -29,6 +26,8 @@ enum class Operator : unsigned int {
     //Return from function
     RET,
     PRE_RET,
+
+    LABEL,
 
     //Comparisons
     CMP_INT,
@@ -84,7 +83,34 @@ enum class Operator : unsigned int {
     //Special placeholders to indicate the start of parameter passing
     PRE_PARAM,
 
-    NOP
+    NOP,
+
+    XORPS,
+    MOVDQU,
+
+    ALWAYS,
+
+    CALL,
+
+    //Egality
+    NE,
+    E,
+    
+    //signed comparisons
+    GE,
+    G,
+    LE,
+    L,
+
+    //unsigned comparisons
+    B,
+    BE,
+    A,
+    AE,
+
+    P,      //Parity
+    Z,      //Zero
+    NZ      //Not zero
 };
 
 bool erase_result(ltac::Operator op);

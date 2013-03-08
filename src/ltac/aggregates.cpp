@@ -15,11 +15,12 @@
 #include "mtac/Program.hpp"
 
 #include "ltac/aggregates.hpp"
-#include "ltac/Statement.hpp"
 
 using namespace eddic;
 
 void ltac::allocate_aggregates(mtac::Program& program){
+    timing_timer timer(program.context->timing(), "aggregates_aloocation");
+
     auto global_context = program.context;
     auto platform = global_context->target_platform();
 
