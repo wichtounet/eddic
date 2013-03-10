@@ -24,20 +24,6 @@ using namespace eddic;
 
 namespace {
 
-void init_depth(mtac::basic_block_p bb){
-    bb->depth = 0;
-    for(auto& quadruple : bb->statements){
-        quadruple.depth = 0;
-    }
-}
-
-void increase_depth(mtac::basic_block_p bb){
-    ++bb->depth;
-    for(auto& quadruple : bb->statements){
-        ++quadruple.depth;
-    }
-}
-
 mtac::InductionVariables find_all_candidates(mtac::loop& loop){
     mtac::InductionVariables candidates;
 
@@ -587,7 +573,7 @@ void estimate_iterations(mtac::Function& function){
 bool mtac::loop_analysis::operator()(mtac::Function& function){
     //Set the depth of all basic blocks to 0
     for(auto& bb : function){
-        init_depth(bb);
+        bb->depth = 0;
     }
     
     //Find all loops in the function
@@ -619,7 +605,7 @@ bool mtac::loop_analysis::operator()(mtac::Function& function){
     //Set the real depth of each basic blocks
     for(auto& loop : function.loops()){
         for(auto& bb : loop){
-            increase_depth(bb);
+            ++bb->depth;
         }
     }
 

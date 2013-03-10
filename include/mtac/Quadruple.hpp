@@ -39,7 +39,6 @@ struct Quadruple {
         boost::optional<mtac::Argument> arg2;
         mtac::Operator op;
         tac::Size size;
-        unsigned int depth = 0;
 
         std::shared_ptr<Variable> secondary; //For CALL
 

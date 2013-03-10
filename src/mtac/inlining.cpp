@@ -393,12 +393,12 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
         }
 
         //For inner loop, increase the chances of inlining
-        if(call.depth > 1){
+        if(bb->depth > 1){
             return caller_size < 250 && callee_size < 75;
         }
         
         //For single loop, increase a bit the changes of inlining
-        if(call.depth > 0){
+        if(bb->depth > 0){
             return caller_size < 150 && callee_size < 50;
         }
 
