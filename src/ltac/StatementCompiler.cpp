@@ -38,21 +38,6 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
     return ltac::Address(ltac::BP, offsetReg, 1, offset);
 }
 
-tac::Size convert_size(tac::Size size){
-    switch(size){
-        case tac::Size::BYTE:
-            return tac::Size::BYTE;
-        case tac::Size::WORD:
-            return tac::Size::WORD;
-        case tac::Size::DOUBLE_WORD:
-            return tac::Size::DOUBLE_WORD;
-        case tac::Size::QUAD_WORD:
-            return tac::Size::QUAD_WORD;
-        case tac::Size::DEFAULT:
-            return tac::Size::DEFAULT;
-    }
-}
-
 } //end of anonymous namespace
 
 ltac::StatementCompiler::StatementCompiler(std::shared_ptr<FloatPool> float_pool) : manager(float_pool), float_pool(float_pool) {}
@@ -693,7 +678,7 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
     
     //Copy it in the register
-    manager.copy(*quadruple.arg1, reg, convert_size(quadruple.size));
+    manager.copy(*quadruple.arg1, reg, quadruple.size);
 
     //The variable has been written
     manager.set_written(quadruple.result);
@@ -711,11 +696,11 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
 
         if(position.isStack()){
             ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg);
-            mov.size = convert_size(quadruple.size);
+            mov.size = quadruple.size;
             bb->push_back(std::move(mov));
         } else if(position.isGlobal()){
             ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg);
-            mov.size = convert_size(quadruple.size);
+            mov.size = quadruple.size;
             bb->push_back(std::move(mov));
         } else {
             eddic_unreachable("Invalid position");
@@ -1197,7 +1182,7 @@ void ltac::StatementCompiler::compile_F2I(mtac::Quadruple& quadruple){
 }
 
 void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
-    auto size = convert_size(quadruple.size);
+    auto size = quadruple.size;
     
     if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
         auto variable = *var_ptr;
@@ -1327,12 +1312,12 @@ void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
             uses.push_back(hard_reg);
         } else {
             ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
-            mov.size = convert_size(quadruple.size);
+            mov.size = quadruple.size;
             bb->push_back(std::move(mov));
         }
     } else {
         ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
-        mov.size = convert_size(quadruple.size);
+        mov.size = quadruple.size;
         bb->push_back(std::move(mov));
     }
 }
