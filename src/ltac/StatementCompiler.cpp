@@ -680,22 +680,13 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
     if(manager.is_escaped(quadruple.result)){
         auto position = quadruple.result->position();
             
-        //TODO if the reg is already 8-bit allocatable, use it directly
-
-        //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
-        auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
-
-        bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
-
         if(position.isStack()){
-            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg, quadruple.size);
+            write_8_bit_to(reg, ltac::Address(ltac::BP, position.offset()), quadruple.size);
         } else if(position.isGlobal()){
-            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg, quadruple.size);
+            write_8_bit_to(reg, ltac::Address("V" + position.name()), quadruple.size);
         } else {
             eddic_unreachable("Invalid position");
         }
-        
-        uses.push_back(hard_reg);
         
         manager.remove_from_pseudo_reg(quadruple.result); 
     }
@@ -1170,6 +1161,20 @@ void ltac::StatementCompiler::compile_F2I(mtac::Quadruple& quadruple){
     manager.set_written(quadruple.result);
 }
 
+void ltac::StatementCompiler::write_8_bit(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size){
+    if(size == tac::Size::BYTE){
+        //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+        auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+
+        bb->emplace_back_low(ltac::Operator::MOV, hard_reg, arg, size);
+        bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
+
+        uses.push_back(hard_reg);
+    } else {
+        bb->emplace_back_low(ltac::Operator::MOV, reg, arg, size);
+    }
+}
+
 void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
     auto size = quadruple.size;
     
@@ -1179,32 +1184,14 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
         if(variable->type()->is_pointer() || (variable->type()->is_dynamic_array() && !variable->position().isParameter())){
             auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
             
-            //TODO if the reg is already 8-bit allocatable, use it directly
-            
-            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
-            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
-            
-            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2), size);
-            bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
-
-            uses.push_back(hard_reg);
+            write_8_bit(reg, address(variable, *quadruple.arg2), quadruple.size);
+        } else if(ltac::is_float_var(quadruple.result)){
+            auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
+            bb->emplace_back_low(ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2), size);
         } else {
-            if(ltac::is_float_var(quadruple.result)){
-                auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
-                bb->emplace_back_low(ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2), size);
-            } else {
-                auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
+            auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
-                //TODO if the reg is already 8-bit allocatable, use it directly
-
-                //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
-                auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
-                
-                bb->emplace_back_low(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2), size);
-                bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
-
-                uses.push_back(hard_reg);
-            }
+            write_8_bit(reg, address(variable, *quadruple.arg2), quadruple.size);
         }
     } else if(auto* string_ptr = boost::get<std::string>(&*quadruple.arg1)){
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
@@ -1271,20 +1258,26 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
     manager.set_written(quadruple.result);
 }
 
+void ltac::StatementCompiler::write_8_bit_to(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size){
+    if(size == tac::Size::BYTE){
+        //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
+        auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+
+        bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
+        bb->emplace_back_low(ltac::Operator::MOV, arg, hard_reg, size);
+
+        uses.push_back(hard_reg);
+    } else {
+        bb->emplace_back_low(ltac::Operator::MOV, arg, reg, size);
+    }
+}
+
 void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
     if(quadruple.size == tac::Size::BYTE){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             auto reg = manager.get_pseudo_reg(*ptr);
 
-            //TODO if the reg is already 8-bit allocatable, use it directly
-                
-            //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
-            auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
-            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
-
-            bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg, quadruple.size);
-
-            uses.push_back(hard_reg);
+            write_8_bit_to(reg, address(quadruple.result, *quadruple.arg1), quadruple.size);
         } else {
             bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2), quadruple.size);
         }

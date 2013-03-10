@@ -85,6 +85,9 @@ class StatementCompiler {
 
         std::tuple<std::shared_ptr<const Type>, bool, unsigned int> common_param(mtac::Quadruple& param);
         int function_stack_size(eddic::Function& function);
+
+        void write_8_bit(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
+        void write_8_bit_to(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
     
         void compile_ASSIGN(mtac::Quadruple& quadruple);
         void compile_PASSIGN(mtac::Quadruple& quadruple);
