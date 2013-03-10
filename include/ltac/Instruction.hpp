@@ -39,7 +39,7 @@ struct Instruction {
         boost::optional<Argument> arg1;
         boost::optional<Argument> arg2;
         boost::optional<Argument> arg3;
-        tac::Size size = tac::Size::DEFAULT;
+        tac::Size size;
     
         std::string label;                      //Only if jump
         eddic::Function* target_function;       //Only if a call
@@ -56,23 +56,20 @@ struct Instruction {
         std::vector<ltac::Register> hard_kills;
         std::vector<ltac::FloatRegister> hard_float_kills;
 
-        //Default constructor
-        Instruction();
-
         //Instructions no param
-        Instruction(Operator op);
+        Instruction(Operator op, tac::Size = tac::Size::DEFAULT);
 
         //Instructions with unary operator
-        Instruction(Operator op, Argument arg1);
+        Instruction(Operator op, Argument arg1, tac::Size = tac::Size::DEFAULT);
 
         //Instructions with binary operator
-        Instruction(Operator op, Argument arg1, Argument arg2);
+        Instruction(Operator op, Argument arg1, Argument arg2, tac::Size = tac::Size::DEFAULT);
 
         //Instructions with ternary operator
-        Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3);
+        Instruction(Operator op, Argument arg1, Argument arg2, Argument arg3, tac::Size = tac::Size::DEFAULT);
         
         //Jump, calls and labels
-        Instruction(std::string label, Operator op);
+        Instruction(std::string label, Operator op, tac::Size = tac::Size::DEFAULT);
 
         //Copy constructors
         Instruction(const Instruction& rhs);
