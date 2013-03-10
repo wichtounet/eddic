@@ -123,8 +123,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.integer;
 
     integer_suffix %=
-            qi::eps
-        >>  lexer.integer
+            lexer.integer
         >>  lexer.identifier;
 
     float_ %= 
