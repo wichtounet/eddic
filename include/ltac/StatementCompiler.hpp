@@ -88,6 +88,10 @@ class StatementCompiler {
 
         void write_8_bit(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
         void write_8_bit_to(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
+        
+        void perform_div(mtac::Quadruple& quadruple);
+        void compile_DIV(mtac::Quadruple& quadruple);
+        void compile_MOD(mtac::Quadruple& quadruple);
     
         void compile_ASSIGN(mtac::Quadruple& quadruple);
         void compile_PASSIGN(mtac::Quadruple& quadruple);
@@ -95,8 +99,6 @@ class StatementCompiler {
         void compile_ADD(mtac::Quadruple& quadruple);
         void compile_SUB(mtac::Quadruple& quadruple);
         void compile_MUL(mtac::Quadruple& quadruple);
-        void compile_DIV(mtac::Quadruple& quadruple);
-        void compile_MOD(mtac::Quadruple& quadruple);
         void compile_FADD(mtac::Quadruple& quadruple);
         void compile_FSUB(mtac::Quadruple& quadruple);
         void compile_FMUL(mtac::Quadruple& quadruple);

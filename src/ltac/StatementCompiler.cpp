@@ -832,6 +832,33 @@ void ltac::StatementCompiler::compile_MUL(mtac::Quadruple& quadruple){
     manager.set_written(quadruple.result);
 }
 
+void ltac::StatementCompiler::perform_div(mtac::Quadruple& quadruple){
+    auto a_reg = manager.get_bound_pseudo_reg(descriptor->a_register());
+    auto d_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
+
+    manager.copy(*quadruple.arg1, a_reg);
+
+    bb->emplace_back_low(ltac::Operator::MOV, d_reg, a_reg);
+    bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
+
+    if(mtac::isInt(*quadruple.arg2)){
+        auto reg = manager.get_free_pseudo_reg();
+        manager.move(*quadruple.arg2, reg);
+
+        ltac::Instruction instruction(ltac::Operator::DIV, reg);
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
+    } else {
+        ltac::Instruction instruction(ltac::Operator::DIV, to_arg(*quadruple.arg2));
+        instruction.uses.push_back(a_reg);
+        instruction.uses.push_back(d_reg);
+        bb->push_back(std::move(instruction));
+    }
+
+    manager.set_written(quadruple.result);
+}
+
 void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
     //This optimization cannot be done in the peephole optimizer
     //Form x = x / y when y is power of two
@@ -847,63 +874,21 @@ void ltac::StatementCompiler::compile_DIV(mtac::Quadruple& quadruple){
         }
     }
 
+    perform_div(quadruple);
+
     auto result_reg = manager.get_pseudo_reg_no_move(quadruple.result);
     auto a_reg = manager.get_bound_pseudo_reg(descriptor->a_register());
-    auto d_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
 
-    manager.copy(*quadruple.arg1, a_reg);
-
-    bb->emplace_back_low(ltac::Operator::MOV, d_reg, a_reg);
-    bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
-
-    if(mtac::isInt(*quadruple.arg2)){
-        auto reg = manager.get_free_pseudo_reg();
-        manager.move(*quadruple.arg2, reg);
-
-        ltac::Instruction instruction(ltac::Operator::DIV, reg);
-        instruction.uses.push_back(a_reg);
-        instruction.uses.push_back(d_reg);
-        bb->push_back(std::move(instruction));
-    } else {
-        ltac::Instruction instruction(ltac::Operator::DIV, to_arg(*quadruple.arg2));
-        instruction.uses.push_back(a_reg);
-        instruction.uses.push_back(d_reg);
-        bb->push_back(std::move(instruction));
-    }
-    
     bb->emplace_back_low(ltac::Operator::MOV, result_reg, a_reg);
-
-    manager.set_written(quadruple.result);
 }
 
 void ltac::StatementCompiler::compile_MOD(mtac::Quadruple& quadruple){
+    perform_div(quadruple);
+    
     auto result_reg = manager.get_pseudo_reg_no_move(quadruple.result);
-    auto a_reg = manager.get_bound_pseudo_reg(descriptor->a_register());
     auto d_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
 
-    manager.copy(*quadruple.arg1, a_reg);
-
-    bb->emplace_back_low(ltac::Operator::MOV, d_reg, a_reg);
-    bb->emplace_back_low(ltac::Operator::SHIFT_RIGHT, d_reg, static_cast<int>(INT->size(platform) * 8 - 1));
-
-    if(mtac::isInt(*quadruple.arg2)){
-        auto reg = manager.get_free_pseudo_reg();
-        manager.move(*quadruple.arg2, reg);
-
-        ltac::Instruction instruction(ltac::Operator::DIV, reg);
-        instruction.uses.push_back(a_reg);
-        instruction.uses.push_back(d_reg);
-        bb->push_back(std::move(instruction));
-    } else {
-        ltac::Instruction instruction(ltac::Operator::DIV, to_arg(*quadruple.arg2));
-        instruction.uses.push_back(a_reg);
-        instruction.uses.push_back(d_reg);
-        bb->push_back(std::move(instruction));
-    }
-
     bb->emplace_back_low(ltac::Operator::MOV, result_reg, d_reg);
-
-    manager.set_written(quadruple.result);
 }
 
 void ltac::StatementCompiler::compile_FADD(mtac::Quadruple& quadruple){
