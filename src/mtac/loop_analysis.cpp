@@ -138,11 +138,6 @@ void find_dependent_induction_variables(mtac::loop& loop, mtac::Function& functi
                 continue;
             }
 
-            //TODO: Remove that by being sure that NOPs are getting cleared of all their arguments when created and when transformed
-            if(quadruple.op == mtac::Operator::NOP){
-                continue;
-            }
-
             //We know for sure that all the candidates have a first arg
             auto arg1 = *quadruple.arg1;
 
