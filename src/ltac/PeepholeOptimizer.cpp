@@ -571,13 +571,6 @@ void add_escaped_registers(RegisterUsage& usage, mtac::Function& function, Platf
     }
 
     add_param_registers(usage, platform);
-
-    for(auto& var : function.context->stored_variables()){
-        if(var->position().is_register() && mtac::is_single_int_register(var->type())){
-            //TODO Check if that can still happens
-            usage.insert(ltac::Register(descriptor->int_variable_register(var->position().offset())));
-        }
-    }
 }
 
 void collect_usage(RegisterUsage& usage, boost::optional<ltac::Argument>& arg){
