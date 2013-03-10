@@ -95,7 +95,6 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
             eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
-                //TODO Perhaps not useful anymore
                 if(variable->type() == CHAR || variable->type() == BOOL){
                     bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()), tac::Size::BYTE);
                 } else {
