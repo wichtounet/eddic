@@ -44,13 +44,6 @@ void mtac::remove_edge(mtac::basic_block_p from, mtac::basic_block_p to){
 }
 
 void mtac::build_control_flow_graph(mtac::Function& function){
-    //Destroy the CFG
-    //TODO Normally, this should not be necessary
-    for(auto& block : function){
-        block->successors.clear();
-        block->predecessors.clear();
-    }
-
     //Add the edges
     for(auto& block : function){
         //Get the following block
