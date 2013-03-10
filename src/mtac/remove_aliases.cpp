@@ -201,25 +201,6 @@ bool mtac::remove_aliases::operator()(mtac::Function& function){
                         }
                     }
                 } 
-
-                //TODO Perhaps not valid anymore with the new properties of the temporaries
-                if(position.is_temporary()){
-                    auto sources = get_sources(var, function);
-
-                    if(pointer_escaped->find(var) == pointer_escaped->end()){
-                        if(sources.size() == 1){
-                            if(is_not_direct_alias(var, sources[0], function) && sources[0]->type() != STRING){
-                                VariableReplace replacer(var, sources[0]);
-
-                                for(auto& block : function){
-                                    for(auto& statement : block->statements){
-                                        optimized |= replacer.optimize(statement);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
