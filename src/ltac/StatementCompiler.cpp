@@ -435,18 +435,14 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
             bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
-            mov.size = tac::Size::BYTE;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg, tac::Size::BYTE);
 
             uses.push_back(hard_reg);
         } else {
             //If it is not a variable it can only be an int (char value)
             auto value = boost::get<int>(*param.arg1);
             
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value);
-            mov.size = tac::Size::BYTE;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value, tac::Size::BYTE);
         }
 
         return;
@@ -488,10 +484,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
                 bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
                 bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
-
-                ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
-                mov.size = tac::Size::BYTE;
-                bb->push_back(std::move(mov));
+                bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg, tac::Size::BYTE);
 
                 uses.push_back(hard_reg);
             } else {
@@ -695,13 +688,9 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
         bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
         if(position.isStack()){
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg);
-            mov.size = quadruple.size;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address(ltac::BP, position.offset()), hard_reg, quadruple.size);
         } else if(position.isGlobal()){
-            ltac::Instruction mov(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg);
-            mov.size = quadruple.size;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), hard_reg, quadruple.size);
         } else {
             eddic_unreachable("Invalid position");
         }
@@ -1195,19 +1184,14 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
             //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
             auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
             
-            ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
-            instruction.size = size;
-            bb->push_back(std::move(instruction));
-            
+            bb->emplace_back_low(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2), size);
             bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
 
             uses.push_back(hard_reg);
         } else {
             if(ltac::is_float_var(quadruple.result)){
                 auto reg = manager.get_pseudo_float_reg_no_move(quadruple.result);
-                ltac::Instruction instruction(ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2));
-                instruction.size = size;
-                bb->push_back(std::move(instruction));
+                bb->emplace_back_low(ltac::Operator::FMOV, reg, address(variable, *quadruple.arg2), size);
             } else {
                 auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
@@ -1216,10 +1200,7 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
                 //Necessary to obtain an hard reg here to be sure that it 8-bit allocatable
                 auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
                 
-                ltac::Instruction instruction(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2));
-                instruction.size = size;
-                bb->push_back(std::move(instruction));
-
+                bb->emplace_back_low(ltac::Operator::MOV, hard_reg, address(variable, *quadruple.arg2), size);
                 bb->emplace_back_low(ltac::Operator::MOV, reg, hard_reg);
 
                 uses.push_back(hard_reg);
@@ -1229,14 +1210,10 @@ void ltac::StatementCompiler::compile_DOT(mtac::Quadruple& quadruple){
         auto reg = manager.get_pseudo_reg_no_move(quadruple.result);
 
         if(auto* offset_ptr = boost::get<int>(&*quadruple.arg2)){
-            ltac::Instruction instruction(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, *offset_ptr));
-            instruction.size = size;
-            bb->push_back(std::move(instruction));
+            bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, *offset_ptr), size);
         } else if(auto* offset_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             auto offset_reg = manager.get_pseudo_reg(*offset_ptr);
-            ltac::Instruction instruction(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, offset_reg));
-            instruction.size = size;
-            bb->push_back(std::move(instruction));
+            bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(*string_ptr, offset_reg), size);
         }
     }
 
@@ -1305,20 +1282,14 @@ void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
             auto hard_reg = manager.get_bound_pseudo_reg(descriptor->d_register());
             bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
-            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg);
-            mov.size = tac::Size::BYTE;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg, quadruple.size);
 
             uses.push_back(hard_reg);
         } else {
-            ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
-            mov.size = quadruple.size;
-            bb->push_back(std::move(mov));
+            bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2), quadruple.size);
         }
     } else {
-        ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2));
-        mov.size = quadruple.size;
-        bb->push_back(std::move(mov));
+        bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), to_arg(*quadruple.arg2), quadruple.size);
     }
 }
 

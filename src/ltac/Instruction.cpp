@@ -13,27 +13,27 @@ using namespace eddic;
 
 static std::atomic<std::size_t> uid_counter(0);
 
-ltac::Instruction::Instruction(ltac::Operator op, ltac::Size size) : 
+ltac::Instruction::Instruction(ltac::Operator op, tac::Size size) : 
         _uid(++uid_counter), op(op), size(size) {
     //Nothing to init
 }
 
-ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Size size) : 
+ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, tac::Size size) : 
         _uid(++uid_counter), op(op), arg1(arg1), size(size) {
     //Nothing to init
 }
 
-ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Size size) : 
+ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, tac::Size size) : 
         _uid(++uid_counter), op(op), arg1(arg1), arg2(arg2), size(size) {
     //Nothing to init
 }
 
-ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3, ltac::Size size) : 
+ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Argument arg2, ltac::Argument arg3, tac::Size size) : 
         _uid(++uid_counter), op(op), arg1(arg1), arg2(arg2), arg3(arg3), size(size) {
     //Nothing to init
 }
 
-ltac::Instruction::Instruction(std::string label, ltac::Operator op, ltac::Size size) : 
+ltac::Instruction::Instruction(std::string label, ltac::Operator op, tac::Size size) : 
         _uid(++uid_counter), op(op), label(std::move(label)), size(size) {
     //Nothing to init
 }
