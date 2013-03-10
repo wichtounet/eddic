@@ -10,6 +10,7 @@
 #include "Function.hpp"
 
 #include "mtac/Function.hpp"
+#include "mtac/loop.hpp"
 #include "mtac/ControlFlowGraph.hpp"
 #include "mtac/basic_block.hpp"
 
