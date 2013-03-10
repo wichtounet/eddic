@@ -204,18 +204,8 @@ struct pass_runner {
             program(program), pool(pool), configuration(configuration), platform(platform), system(system) {};
 
     template<typename Pass>
-    inline typename std::enable_if<mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP, void>::type remove_nop(){
-        //TODO Remove that
-    }
-    
-    template<typename Pass>
-    inline typename std::enable_if<!(mtac::pass_traits<Pass>::todo_after_flags & mtac::TODO_REMOVE_NOP), void>::type remove_nop(){
-        //NOP
-    }
-    
-    template<typename Pass>
     inline void apply_todo(){
-        remove_nop<Pass>();
+        //No todo are implemented
     }
 
     template<typename Pass>

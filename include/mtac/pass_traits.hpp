@@ -28,7 +28,7 @@ enum class pass_type : unsigned int {
 };
 
 enum TODO {
-    TODO_REMOVE_NOP = 1
+    TODO_NONE = 1 //Just here to not let the enum empty
 };
 
 enum PROPERTY {
