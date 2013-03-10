@@ -58,9 +58,6 @@ struct Quadruple {
         Quadruple(Quadruple&& rhs) noexcept;
         Quadruple& operator=(Quadruple&& rhs) noexcept;
 
-        //Default constructor
-        explicit Quadruple();
-
         //Quadruples without assign to result and no param
         explicit Quadruple(mtac::Operator op);
 

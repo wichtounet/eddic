@@ -20,10 +20,6 @@ using namespace eddic;
 
 static std::atomic<std::size_t> uid_counter(0);
 
-mtac::Quadruple::Quadruple() : _uid(++uid_counter) {
-    //Nothing to init    
-}
-
 mtac::Quadruple::Quadruple(mtac::Operator o) : _uid(++uid_counter), op(o) {
     //Nothing to init    
 }
