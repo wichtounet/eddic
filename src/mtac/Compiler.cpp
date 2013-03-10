@@ -288,7 +288,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
         case ast::Operator::DIV:
             {
                 if(type == INT || type == FLOAT){
-                    auto right_value = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
+                    auto right_value = moveToArgument(boost::get<ast::Value>(operation.get<1>()), function);
                     auto temp = function.context->new_temporary(type);
 
                     if(type == FLOAT){
@@ -313,7 +313,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
         case ast::Operator::GREATER_EQUALS:
             {
                 auto t1 = function.context->new_temporary(INT);
-                auto right = moveToArgument(boost::get<ast::Value>(*operation.get<1>()), function);
+                auto right = moveToArgument(boost::get<ast::Value>(operation.get<1>()), function);
 
                 if(type == INT || type == CHAR || type->is_pointer() || type->is_dynamic_array()){
                     function.emplace_back(t1, left[0], mtac::toRelationalOperator(op), right);
@@ -337,7 +337,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                 function.emplace_back(mtac::Operator::IF_FALSE_UNARY, left[0], falseLabel);
 
-                jump_if_false(function, falseLabel, boost::get<ast::Value>(*operation.get<1>()));
+                jump_if_false(function, falseLabel, boost::get<ast::Value>(operation.get<1>()));
 
                 function.emplace_back(t1, 1, mtac::Operator::ASSIGN);
                 function.emplace_back(endLabel, mtac::Operator::GOTO);
@@ -361,7 +361,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                 function.emplace_back(mtac::Operator::IF_UNARY, left[0], trueLabel);
 
-                jump_if_true(function, trueLabel, boost::get<ast::Value>(*operation.get<1>()));
+                jump_if_true(function, trueLabel, boost::get<ast::Value>(operation.get<1>()));
 
                 function.emplace_back(t1, 0, mtac::Operator::ASSIGN);
                 function.emplace_back(endLabel, mtac::Operator::GOTO);
@@ -378,7 +378,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
         case ast::Operator::BRACKET:
             {
-                auto index_value = boost::get<ast::Value>(*operation_value);
+                auto index_value = boost::get<ast::Value>(operation_value);
 
                 if(type == STRING){
                     assert(left.size()  == 1 || left.size() == 2);
@@ -460,7 +460,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
             {
                 assert(left.size() == 1);
                 auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-                auto member = boost::get<std::string>(*operation_value);
+                auto member = boost::get<std::string>(operation_value);
 
                 std::shared_ptr<const Type> member_type;
                 unsigned int offset = 0;
@@ -486,7 +486,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
         case ast::Operator::CALL:
             {
                 auto global_context = function.context->global();
-                auto call_operation_value = boost::get<ast::CallOperationValue>(*operation_value);
+                auto call_operation_value = boost::get<ast::CallOperationValue>(operation_value);
                 auto& definition = global_context->getFunction(call_operation_value.mangled_name);
 
                 auto left_value = left[0];
@@ -1192,7 +1192,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             assert(mtac::isVariable(left[0]));
             auto array_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
-            auto& index_value = boost::get<ast::Value>(*last_operation.get<1>());
+            auto& index_value = boost::get<ast::Value>(last_operation.get<1>());
             auto index = index_of_array(array_variable, index_value, function); 
         
             auto left_type = array_variable->type()->data_type();
@@ -1228,7 +1228,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             assert(mtac::isVariable(left[0]));
             auto struct_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
-            auto& member = boost::get<std::string>(*last_operation.get<1>());
+            auto& member = boost::get<std::string>(last_operation.get<1>());
 
             unsigned int offset = 0;
             std::shared_ptr<const Type> member_type;

@@ -40,10 +40,10 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
         value.Content->first = visit(*this, value.Content->first);
 
         for(auto& op : value.Content->operations){
-            if(op.get<1>()){
-                if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+            if(ast::has_operation_value(op)){
+                if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
-                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
                     for(auto& v : ptr->values){
                         v = visit(*this, v);
                     }
@@ -135,10 +135,10 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
         value.Content->first = visit(*this, value.Content->first);
         
         for(auto& op : value.Content->operations){
-            if(op.get<1>()){
-                if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+            if(ast::has_operation_value(op)){
+                if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
-                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
                     for(auto& v : ptr->values){
                         v = visit(*this, v);
                     }

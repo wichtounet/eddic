@@ -32,8 +32,7 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
 
         template<typename V>
         ast::OperationValue operator()(const V& arg) const {
-            ast::OperationValueVariant var = arg;
-            ast::OperationValue value = var;
+            ast::OperationValue value = arg;
             return value;
         }
     };

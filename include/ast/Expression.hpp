@@ -40,9 +40,8 @@ typedef boost::variant<
         Value, 
         std::string, 
         CallOperationValue
-    >  OperationValueVariant;
+    >  OperationValue;
 
-typedef boost::optional<OperationValueVariant> OperationValue;
 typedef boost::tuple<Operator, OperationValue> Operation;
 typedef std::vector<Operation> Operations;
 
@@ -61,6 +60,8 @@ struct ASTExpression {
 
     mutable long references = 0;
 };
+
+bool has_operation_value(const ast::Operation& operation);
 
 /*!
  * \typedef Expression
