@@ -25,8 +25,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  value;
     
     default_case %=
-            qi::eps
-        >>  lexer.default_
+            lexer.default_
         >>  lexer.double_dot
         >>  *(instruction);
 
@@ -343,8 +342,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.string_literal;
 
     program %=
-            qi::eps 
-        >>  qi::position(position_begin)
+            qi::position(position_begin)
         >>  *(
                     function 
                 |   template_function 

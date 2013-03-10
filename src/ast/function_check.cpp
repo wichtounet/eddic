@@ -439,10 +439,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             
             auto type = visit(ast::GetTypeVisitor(), value.Content->first);
             for(auto& op : value.Content->operations){
-                if(op.get<1>()){
-                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                if(ast::has_operation_value(op)){
+                    if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                         check_value(*ptr);
-                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
                         check_each(ptr->values);
                     }
                 }
@@ -461,7 +461,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     //Reference the structure
                     struct_type->add_reference();
 
-                    auto member = boost::get<std::string>(*op.get<1>());
+                    auto member = boost::get<std::string>(op.get<1>());
                     bool found = false;
 
                     do {
@@ -488,7 +488,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         throw SemanticalException("Member functions can only be used with structures", value.Content->position);
                     }
 
-                    auto& call_value = boost::get<ast::CallOperationValue>(*op.get<1>());
+                    auto& call_value = boost::get<ast::CallOperationValue>(op.get<1>());
                     std::string name = call_value.function_name;
 
                     auto types = get_types(call_value.values);

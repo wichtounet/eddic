@@ -63,12 +63,12 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     bool operator()(ast::Expression& value) const {
         if(visit(*this, value.Content->first)){
             for(auto& op : value.Content->operations){
-                if(op.get<1>()){
-                    if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){
+                if(ast::has_operation_value(op)){
+                    if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                         if(!visit(*this, *ptr)){
                             return false;
                         }
-                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){
+                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
                         for(auto& v : ptr->values){
                             if(!visit(*this, v)){
                                 return false;

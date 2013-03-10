@@ -81,6 +81,12 @@ add_custom_target(timing bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/timing.sh ${CMAK
     COMMENT "Computing timings" VERBATIM
 )
 
+# Add a custom target to gather timings
+add_custom_target(time_parsing bash ${CMAKE_CURRENT_SOURCE_DIR}/tools/time_parsing.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Time parsing" VERBATIM
+)
+
 # Add a custom target to gather git stats
 add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

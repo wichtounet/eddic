@@ -141,10 +141,10 @@ void operator()(ast::BuiltinOperator& builtin){\
 #define VISIT_COMPOSED_VALUE(value)\
 visit(*this, value.Content->first);\
 for(auto& op : value.Content->operations){\
-    if(op.get<1>()){\
-        if(auto* ptr = boost::get<ast::Value>(&*op.get<1>())){\
+    if(ast::has_operation_value(op)){\
+        if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){\
             visit(*this, *ptr);\
-        } else if(auto* ptr = boost::get<ast::CallOperationValue>(&*op.get<1>())){\
+        } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){\
             visit_each(*this, ptr->values);\
         }\
     }\

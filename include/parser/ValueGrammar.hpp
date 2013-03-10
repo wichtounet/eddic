@@ -26,20 +26,6 @@ namespace parser {
  * \brief Grammar representing values in EDDI language.
  */
 struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
-    struct cast_impl {
-        template < typename A >
-        struct result { typedef ast::OperationValue type; };
-
-        template<typename V>
-        ast::OperationValue operator()(const V& arg) const {
-            ast::OperationValueVariant var = arg;
-            ast::OperationValue value = var;
-            return value;
-        }
-    };
-
-    boost::phoenix::function<cast_impl> cast;
-
     ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
     
     qi::rule<lexer::Iterator, ast::Assignment()> assignment;
@@ -79,16 +65,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::rule<lexer::Iterator, ast::Value()> unary_expression;
     qi::rule<lexer::Iterator, ast::Value()> cast_expression;
     
-    //Versions with cast to ast::OperationValue
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_call_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_identifier;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_cast_expression;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_additive_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_multiplicative_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_relational_value;
-    qi::rule<lexer::Iterator, ast::OperationValue()> casted_logicalAnd_value;
-
     /* Operators */
 
     qi::symbols<char, ast::Operator> multiplicative_op;
