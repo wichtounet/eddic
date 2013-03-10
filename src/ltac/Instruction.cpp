@@ -12,11 +12,6 @@
 using namespace eddic;
 
 static std::atomic<std::size_t> uid_counter(0);
-    
-//Default constructor
-ltac::Instruction::Instruction() : _uid(++uid_counter) {
-    //Nothing to init
-}
 
 ltac::Instruction::Instruction(ltac::Operator op) : _uid(++uid_counter), op(op) {
     //Nothing to init

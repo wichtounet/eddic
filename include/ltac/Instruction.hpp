@@ -56,9 +56,6 @@ struct Instruction {
         std::vector<ltac::Register> hard_kills;
         std::vector<ltac::FloatRegister> hard_float_kills;
 
-        //Default constructor
-        Instruction();
-
         //Instructions no param
         Instruction(Operator op);
 
