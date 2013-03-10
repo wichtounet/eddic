@@ -38,7 +38,7 @@ struct Quadruple {
         boost::optional<mtac::Argument> arg1;
         boost::optional<mtac::Argument> arg2;
         mtac::Operator op;
-        tac::Size size = tac::Size::DEFAULT;
+        tac::Size size;
         unsigned int depth = 0;
 
         std::shared_ptr<Variable> secondary; //For CALL
@@ -59,31 +59,31 @@ struct Quadruple {
         Quadruple& operator=(Quadruple&& rhs) noexcept;
 
         //Quadruples without assign to result and no param
-        explicit Quadruple(mtac::Operator op);
+        explicit Quadruple(mtac::Operator op, tac::Size = tac::Size::DEFAULT);
 
         //Quadruple for unary operators
-        explicit Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op);
+        explicit Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, tac::Size = tac::Size::DEFAULT);
 
         //Quadruple for binary operators
-        explicit Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2);
+        explicit Quadruple(std::shared_ptr<Variable> result, mtac::Argument arg1, mtac::Operator op, mtac::Argument arg2, tac::Size = tac::Size::DEFAULT);
 
         //Quadruples without assign to result
-        explicit Quadruple(mtac::Operator op, mtac::Argument arg1);
+        explicit Quadruple(mtac::Operator op, mtac::Argument arg1, tac::Size = tac::Size::DEFAULT);
 
         //Quadruples without assign to result
-        explicit Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2);
+        explicit Quadruple(mtac::Operator op, mtac::Argument arg1, mtac::Argument arg2, tac::Size = tac::Size::DEFAULT);
 
         //Quadruples manipulating labels (reversed param order to not be ambiguous because of std::string)
-        explicit Quadruple(std::string param, mtac::Operator op);
+        explicit Quadruple(std::string param, mtac::Operator op, tac::Size = tac::Size::DEFAULT);
 
         //Quadruples for params
-        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function);
-        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::string param, eddic::Function& function);
+        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::shared_ptr<Variable> param, eddic::Function& function, tac::Size = tac::Size::DEFAULT);
+        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::string param, eddic::Function& function, tac::Size = tac::Size::DEFAULT);
 
-        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::string label);
+        explicit Quadruple(mtac::Operator op, mtac::Argument arg, std::string label, tac::Size = tac::Size::DEFAULT);
 
         //Quadruple for calls
-        explicit Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr);
+        explicit Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1 = nullptr, std::shared_ptr<Variable> return2 = nullptr, tac::Size = tac::Size::DEFAULT);
 
         const std::string& label() const;
         const std::string& std_param() const;
