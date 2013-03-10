@@ -2,8 +2,7 @@ eddic 1.2.3 - 2013.03.08
 
 * Language: char and bool now take only 1 byte
 * Language: Fix bug with use i++ in for loop
-* Language: Automatic generation of copy constructors for structures with
-structure fields
+* Language: Automatic generation of copy constructors for structures with structure fields
 * Optimizer: Improve the speed of the data-flow framework
 * Optimizer: Loop Unswitching
 * Optimizer: Iterate the call graph in postorder to inline functions
