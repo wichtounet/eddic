@@ -247,9 +247,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         } else if(member_type == INT || member_type->is_pointer() || member_type->is_dynamic_array()){
             function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
         } else if(member_type == CHAR || member_type == BOOL){
-            mtac::Quadruple dot(temp, var, mtac::Operator::DOT, static_cast<int>(offset));
-            dot.size = tac::Size::BYTE;
-            function.push_back(std::move(dot));
+            function.emplace_back(temp, var, mtac::Operator::DOT, static_cast<int>(offset), tac::Size::BYTE);
         } else if(member_type->is_custom_type() && T == ArgumentType::REFERENCE){
             //In this case, the reference is not initialized, will be used to refer to the member
         } else {
@@ -393,9 +391,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     function.emplace_back(pointer_temp, left[0], mtac::Operator::ASSIGN);
 
                     //Get the specified char 
-                    mtac::Quadruple quadruple(t1, pointer_temp, mtac::Operator::DOT, index);
-                    quadruple.size = tac::Size::BYTE;
-                    function.emplace_back(std::move(quadruple));
+                    function.emplace_back(t1, pointer_temp, mtac::Operator::DOT, index, tac::Size::BYTE);
 
                     left = {t1};
                 } else {
@@ -430,9 +426,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                                 temp = function.context->new_temporary(data_type);
                             }
                             
-                            mtac::Quadruple dot(temp, left[0], mtac::Operator::DOT, index);
-                            dot.size = tac::Size::BYTE;
-                            function.push_back(std::move(dot));
+                            function.emplace_back(temp, left[0], mtac::Operator::DOT, index, tac::Size::BYTE);
 
                             left = {temp};
                         } else if (data_type == STRING){
@@ -882,9 +876,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         } else if(type == CHAR || type == BOOL){
             auto temp = function.context->new_temporary(type);
 
-            mtac::Quadruple dot(temp, variable, mtac::Operator::DOT, 0);
-            dot.size = tac::Size::BYTE;
-            function.push_back(std::move(dot));
+            function.emplace_back(temp, variable, mtac::Operator::DOT, 0, tac::Size::BYTE);
 
             return {temp};
         } else if(type == FLOAT){
@@ -1138,9 +1130,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         } else if(type == CHAR || type == BOOL){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             
-            mtac::Quadruple mov(variable, values[0], mtac::Operator::ASSIGN);
-            mov.size = tac::Size::BYTE;
-            function.push_back(std::move(mov));
+            function.emplace_back(variable, values[0], mtac::Operator::ASSIGN, tac::Size::BYTE);
         } else if(type->is_array() || type == INT){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::ASSIGN);
@@ -1218,9 +1208,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             if(left_type->is_pointer()){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_PASSIGN, values[0]);
             } else if(left_type == CHAR || left_type == BOOL){
-                mtac::Quadruple mov(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
-                mov.size = tac::Size::BYTE;
-                function.push_back(std::move(mov));
+                function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0], tac::Size::BYTE);
             } else if(right_type->is_array() || right_type == INT || right_type == CHAR || right_type == BOOL){
                 function.emplace_back(array_variable, index, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == STRING){
@@ -1265,9 +1253,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
                 } else if(member_type->is_array() || member_type == INT){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
                 } else if(member_type == CHAR || member_type == BOOL){
-                    mtac::Quadruple mov(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0]);
-                    mov.size = tac::Size::BYTE;
-                    function.push_back(std::move(mov));
+                    function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_ASSIGN, values[0], tac::Size::BYTE);
                 } else if(member_type == FLOAT){
                     function.emplace_back(struct_variable, static_cast<int>(offset), mtac::Operator::DOT_FASSIGN, values[0]);
                 } else if(member_type == STRING){
@@ -1300,9 +1286,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             } else if(right_type->is_array() || right_type == INT){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
             } else if(right_type == CHAR || right_type == BOOL){
-                mtac::Quadruple dot_assign(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
-                dot_assign.size = tac::Size::BYTE;
-                function.push_back(std::move(dot_assign));
+                function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0], tac::Size::BYTE);
             } else if(right_type == STRING){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_ASSIGN, values[0]);
                 function.emplace_back(pointer_variable, static_cast<int>(INT->size(platform)), mtac::Operator::DOT_ASSIGN, values[1]);
