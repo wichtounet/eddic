@@ -80,7 +80,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
     }
 }
 
-void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg, ltac::Size size){
+void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister reg, tac::Size size){
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&argument)){
         auto variable = *ptr;
         
@@ -98,7 +98,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
                 //TODO Perhaps not useful anymore
                 if(variable->type() == CHAR || variable->type() == BOOL){
                     ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-                    mov.size = ltac::Size::BYTE;
+                    mov.size = tac::Size::BYTE;
                     bb->push_back(std::move(mov));
                 } else {
                     ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));

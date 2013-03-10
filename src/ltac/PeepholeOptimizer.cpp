@@ -299,7 +299,7 @@ inline bool multiple_statement_optimizations_second(ltac::Instruction& i1, ltac:
 
             bool possible = true;
 
-            if(i1.size != ltac::Size::DEFAULT){
+            if(i1.size != tac::Size::DEFAULT){
                 possible = false;
             } else if(auto* ptr = boost::get<ltac::Address>(&*i1.arg2)){
                 if(ptr->base_register && boost::get<ltac::Register>(*ptr->base_register) == reg11){
@@ -527,7 +527,7 @@ bool copy_propagation(mtac::Function& function, Platform platform){
             }
 
             //Optimize MOV
-            if(instruction.op == ltac::Operator::MOV && instruction.size == ltac::Size::DEFAULT){
+            if(instruction.op == ltac::Operator::MOV && instruction.size == tac::Size::DEFAULT){
                 if(ltac::is_reg(*instruction.arg2)){
                     auto reg2 = boost::get<ltac::Register>(*instruction.arg2);
 

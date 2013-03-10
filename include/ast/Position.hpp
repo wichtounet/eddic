@@ -11,6 +11,8 @@
 #include <string>
 #include <ostream>
 
+#include <boost/range/iterator_range.hpp>
+
 namespace eddic {
 
 namespace ast {

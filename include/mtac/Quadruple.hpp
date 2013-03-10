@@ -12,6 +12,8 @@
 #include <ostream>
 #include <boost/optional.hpp>
 
+#include "tac/Size.hpp"
+
 #include "mtac/Operator.hpp"
 #include "mtac/Argument.hpp"
 
@@ -25,14 +27,6 @@ namespace mtac {
 class basic_block;
 typedef std::shared_ptr<basic_block> basic_block_p;
 
-enum class Size : char {
-    DEFAULT,
-    BYTE,
-    WORD,
-    DOUBLE_WORD,
-    QUAD_WORD
-};
-
 //TODO Quadruple should be made smaller to allow faster removal
 
 struct Quadruple {
@@ -44,7 +38,7 @@ struct Quadruple {
         boost::optional<mtac::Argument> arg1;
         boost::optional<mtac::Argument> arg2;
         mtac::Operator op;
-        mtac::Size size = mtac::Size::DEFAULT;
+        tac::Size size = tac::Size::DEFAULT;
         unsigned int depth = 0;
 
         std::shared_ptr<Variable> secondary; //For CALL

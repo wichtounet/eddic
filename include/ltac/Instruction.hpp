@@ -22,19 +22,13 @@
 #include "ltac/Address.hpp"
 #include "ltac/Argument.hpp"
 
+#include "tac/Size.hpp"
+
 namespace eddic {
 
 class Function;
 
 namespace ltac {
-
-enum class Size : char {
-    DEFAULT,
-    BYTE,
-    WORD,
-    DOUBLE_WORD,
-    QUAD_WORD
-};
 
 struct Instruction {
     private:
@@ -45,7 +39,7 @@ struct Instruction {
         boost::optional<Argument> arg1;
         boost::optional<Argument> arg2;
         boost::optional<Argument> arg3;
-        ltac::Size size = ltac::Size::DEFAULT;
+        tac::Size size = tac::Size::DEFAULT;
     
         std::string label;                      //Only if jump
         eddic::Function* target_function;       //Only if a call

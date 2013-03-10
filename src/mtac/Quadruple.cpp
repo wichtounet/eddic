@@ -198,17 +198,17 @@ std::string printTarget(const mtac::Quadruple& quadruple){
     }
 }
 
-std::string size(mtac::Size size){
+std::string size(tac::Size size){
     switch(size){
-        case mtac::Size::DEFAULT:
+        case tac::Size::DEFAULT:
             return "";
-        case mtac::Size::BYTE:
+        case tac::Size::BYTE:
             return " (byte)";
-        case mtac::Size::WORD:
+        case tac::Size::WORD:
             return " (word)";
-        case mtac::Size::DOUBLE_WORD:
+        case tac::Size::DOUBLE_WORD:
             return " (dword)";
-        case mtac::Size::QUAD_WORD:
+        case tac::Size::QUAD_WORD:
             return " (qword)";
     }
 }
