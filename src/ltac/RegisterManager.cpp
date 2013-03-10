@@ -97,18 +97,12 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
             if(position.isParameter() || position.isStack()){
                 //TODO Perhaps not useful anymore
                 if(variable->type() == CHAR || variable->type() == BOOL){
-                    ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-                    mov.size = tac::Size::BYTE;
-                    bb->push_back(std::move(mov));
+                    bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()), tac::Size::BYTE);
                 } else {
-                    ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()));
-                    mov.size = size;
-                    bb->push_back(std::move(mov));
+                    bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address(ltac::BP, position.offset()), size);
                 }
             } else if(position.isGlobal()){
-                ltac::Instruction mov(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()));
-                mov.size = size;
-                bb->push_back(std::move(mov));
+                bb->emplace_back_low(ltac::Operator::MOV, reg, ltac::Address("V" + position.name()), size);
             }
         }
     } else {
