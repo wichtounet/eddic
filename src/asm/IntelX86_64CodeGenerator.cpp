@@ -127,17 +127,17 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
             writer.stream() << "." << instruction.label << ":" << '\n';
             break;
         case ltac::Operator::MOV:
-            if(instruction.size != ltac::Size::DEFAULT){
+            if(instruction.size != tac::Size::DEFAULT){
                 if(boost::get<ltac::Address>(&*instruction.arg1)){
                     if(auto* ptr = boost::get<ltac::Register>(&*instruction.arg2)){
                         switch(instruction.size){
-                            case ltac::Size::BYTE:
+                            case tac::Size::BYTE:
                                 writer.stream() << "mov byte " << *instruction.arg1 << ", " << get_register_8(*ptr) << '\n';
                                 break;
-                            case ltac::Size::WORD:
+                            case tac::Size::WORD:
                                 writer.stream() << "mov word " << *instruction.arg1 << ", " << get_register_16(*ptr) << '\n';
                                 break;
-                            case ltac::Size::DOUBLE_WORD:
+                            case tac::Size::DOUBLE_WORD:
                                 writer.stream() << "mov dword " << *instruction.arg1 << ", " << get_register_32(*ptr) << '\n';
                                 break;
                             default:
@@ -146,13 +146,13 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
                         }
                     } else {
                         switch(instruction.size){
-                            case ltac::Size::BYTE:
+                            case tac::Size::BYTE:
                                 writer.stream() << "mov byte " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
                                 break;
-                            case ltac::Size::WORD:
+                            case tac::Size::WORD:
                                 writer.stream() << "mov word " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
                                 break;
-                            case ltac::Size::DOUBLE_WORD:
+                            case tac::Size::DOUBLE_WORD:
                                 writer.stream() << "mov dword " << *instruction.arg1 << ", " << *instruction.arg2 << '\n';
                                 break;
                             default:
@@ -165,13 +165,13 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
                     //movzx should be chosen higher
 
                     switch(instruction.size){
-                        case ltac::Size::BYTE:
+                        case tac::Size::BYTE:
                             writer.stream() << "movzx " << *instruction.arg1 << ", byte " << *instruction.arg2 << '\n';
                             break;
-                        case ltac::Size::WORD:
+                        case tac::Size::WORD:
                             writer.stream() << "movzx " << *instruction.arg1 << ", word " << *instruction.arg2 << '\n';
                             break;
-                        case ltac::Size::DOUBLE_WORD:
+                        case tac::Size::DOUBLE_WORD:
                             writer.stream() << "movzx " << *instruction.arg1 << ", dword " << *instruction.arg2 << '\n';
                             break;
                         default:

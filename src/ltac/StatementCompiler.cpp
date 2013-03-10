@@ -38,18 +38,18 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
     return ltac::Address(ltac::BP, offsetReg, 1, offset);
 }
 
-ltac::Size convert_size(mtac::Size size){
+tac::Size convert_size(tac::Size size){
     switch(size){
-        case mtac::Size::BYTE:
-            return ltac::Size::BYTE;
-        case mtac::Size::WORD:
-            return ltac::Size::WORD;
-        case mtac::Size::DOUBLE_WORD:
-            return ltac::Size::DOUBLE_WORD;
-        case mtac::Size::QUAD_WORD:
-            return ltac::Size::QUAD_WORD;
-        case mtac::Size::DEFAULT:
-            return ltac::Size::DEFAULT;
+        case tac::Size::BYTE:
+            return tac::Size::BYTE;
+        case tac::Size::WORD:
+            return tac::Size::WORD;
+        case tac::Size::DOUBLE_WORD:
+            return tac::Size::DOUBLE_WORD;
+        case tac::Size::QUAD_WORD:
+            return tac::Size::QUAD_WORD;
+        case tac::Size::DEFAULT:
+            return tac::Size::DEFAULT;
     }
 }
 
@@ -451,7 +451,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
             ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
-            mov.size = ltac::Size::BYTE;
+            mov.size = tac::Size::BYTE;
             bb->push_back(std::move(mov));
 
             uses.push_back(hard_reg);
@@ -460,7 +460,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             auto value = boost::get<int>(*param.arg1);
             
             ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), value);
-            mov.size = ltac::Size::BYTE;
+            mov.size = tac::Size::BYTE;
             bb->push_back(std::move(mov));
         }
 
@@ -505,7 +505,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
                 bb->emplace_back_low(ltac::Operator::SUB, ltac::SP, 1);
 
                 ltac::Instruction mov(ltac::Operator::MOV, ltac::Address(ltac::SP, 0), hard_reg);
-                mov.size = ltac::Size::BYTE;
+                mov.size = tac::Size::BYTE;
                 bb->push_back(std::move(mov));
 
                 uses.push_back(hard_reg);
@@ -1310,7 +1310,7 @@ void ltac::StatementCompiler::compile_PDOT(mtac::Quadruple& quadruple){
 }
 
 void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
-    if(quadruple.size == mtac::Size::BYTE){
+    if(quadruple.size == tac::Size::BYTE){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
             auto reg = manager.get_pseudo_reg(*ptr);
 
@@ -1321,7 +1321,7 @@ void ltac::StatementCompiler::compile_DOT_ASSIGN(mtac::Quadruple& quadruple){
             bb->emplace_back_low(ltac::Operator::MOV, hard_reg, reg);
 
             ltac::Instruction mov(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), hard_reg);
-            mov.size = ltac::Size::BYTE;
+            mov.size = tac::Size::BYTE;
             bb->push_back(std::move(mov));
 
             uses.push_back(hard_reg);
