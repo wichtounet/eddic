@@ -80,17 +80,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         ("%=", ast::Operator::MOD)
         ;
 
-    //Only here to cast ast::Value to ast::OperationValue via the the boost::phoenix function
-
-    casted_value = value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_call_value = call_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_identifier = lexer.identifier[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_cast_expression = cast_expression[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_multiplicative_value = multiplicative_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_additive_value = additive_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_relational_value = relational_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-    casted_logicalAnd_value = logicalAnd_value[boost::spirit::qi::_val = cast(boost::spirit::qi::_1)];
-
     /* Terminal values */
     
     new_array %=
@@ -185,16 +174,16 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  +(
                          lexer.left_bracket 
                      >>  boost::spirit::attr(ast::Operator::BRACKET) 
-                     >>  casted_value 
+                     >>  value 
                      >>  lexer.right_bracket
                 |
                          lexer.dot
                      >>  boost::spirit::attr(ast::Operator::CALL) 
-                     >>  casted_call_value 
+                     >>  call_value 
                 |
                          lexer.dot 
                      >>  boost::spirit::attr(ast::Operator::DOT) 
-                     >>  casted_identifier 
+                     >>  qi::as<std::string>()[((lexer.identifier))]
                 |
                     qi::adapttokens[postfix_op]       
             );
@@ -229,27 +218,27 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     multiplicative_value %=
             qi::position(position_begin)
         >>  cast_expression
-        >>  *(qi::adapttokens[multiplicative_op] >> casted_cast_expression);
+        >>  *(qi::adapttokens[multiplicative_op] >> cast_expression);
     
     additive_value %=
             qi::position(position_begin)
         >>  multiplicative_value
-        >>  *(qi::adapttokens[additive_op] >> casted_multiplicative_value);
+        >>  *(qi::adapttokens[additive_op] >> multiplicative_value);
    
     relational_value %=
             qi::position(position_begin)
         >>  additive_value
-        >>  *(qi::adapttokens[relational_op] >> casted_additive_value);  
+        >>  *(qi::adapttokens[relational_op] >> additive_value);  
     
     logicalAnd_value %=
             qi::position(position_begin)
         >>  relational_value
-        >>  *(qi::adapttokens[logical_and_op] >> casted_relational_value);  
+        >>  *(qi::adapttokens[logical_and_op] >> relational_value);  
     
     logicalOr_value %=
             qi::position(position_begin)
         >>  logicalAnd_value
-        >>  *(qi::adapttokens[logical_or_op] >> casted_logicalAnd_value);  
+        >>  *(qi::adapttokens[logical_or_op] >> logicalAnd_value);  
 
     ternary %=
             qi::position(position_begin)
@@ -328,13 +317,4 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     DEBUG_RULE(unary_expression);
     DEBUG_RULE(cast_expression);
     DEBUG_RULE(postfix_expression);
-    
-    DEBUG_RULE(casted_value);
-    DEBUG_RULE(casted_call_value);
-    DEBUG_RULE(casted_identifier);
-    DEBUG_RULE(casted_cast_expression);
-    DEBUG_RULE(casted_additive_value);
-    DEBUG_RULE(casted_multiplicative_value);
-    DEBUG_RULE(casted_relational_value);
-    DEBUG_RULE(casted_logicalAnd_value);
 }
