@@ -135,7 +135,7 @@ SET_SOURCE_FILES_PROPERTIES(
 )
 
 SET_SOURCE_FILES_PROPERTIES(
-    ${mtac_files}
+    ${ltac_files}
     PROPERTIES
     COMPILE_FLAGS "-fno-exceptions -fno-rtti"
 )
