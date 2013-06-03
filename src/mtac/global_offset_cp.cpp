@@ -13,7 +13,7 @@
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 
-#include "mtac/OffsetConstantPropagationProblem.hpp"
+#include "mtac/global_offset_cp.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 
