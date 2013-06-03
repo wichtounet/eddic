@@ -60,7 +60,7 @@
 
 //The data-flow problems
 #include "mtac/GlobalOptimizations.hpp"
-#include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/global_cp.hpp"
 #include "mtac/OffsetConstantPropagationProblem.hpp"
 #include "mtac/global_cse.hpp"
 
