@@ -40,7 +40,7 @@ class OffsetConstantPropagationProblem {
         typedef Domain<OffsetConstantPropagationValues> ProblemDomain;
 
         //The direction
-        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Forward);
+        STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward);
         STATIC_CONSTANT(bool, Low, false);
 
         std::unordered_set<Offset, mtac::OffsetHash> escaped;
@@ -55,10 +55,10 @@ class OffsetConstantPropagationProblem {
             //By default, return the top element
             return top_element();
         }
-
+        
         void meet(ProblemDomain& in, const ProblemDomain& out);
-        ProblemDomain transfer(mtac::basic_block_p basic_block, mtac::Quadruple& statement, ProblemDomain& in);
-        bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> results);
+        void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in);
+        bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> global_results);
 
     private:
         ProblemDomain top_element();
@@ -67,6 +67,9 @@ class OffsetConstantPropagationProblem {
         std::shared_ptr<StringPool> string_pool;
         Platform platform;
 };
+
+bool operator==(const mtac::Domain<OffsetConstantPropagationValues>& lhs, const mtac::Domain<OffsetConstantPropagationValues>& rhs);
+bool operator!=(const mtac::Domain<OffsetConstantPropagationValues>& lhs, const mtac::Domain<OffsetConstantPropagationValues>& rhs);
 
 template<>
 struct pass_traits<OffsetConstantPropagationProblem> {

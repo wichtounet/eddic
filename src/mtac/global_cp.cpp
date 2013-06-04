@@ -10,7 +10,7 @@
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 
-#include "mtac/ConstantPropagationProblem.hpp"
+#include "mtac/global_cp.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 

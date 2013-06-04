@@ -13,7 +13,7 @@
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
 
-#include "mtac/OffsetConstantPropagationProblem.hpp"
+#include "mtac/global_offset_cp.hpp"
 #include "mtac/Quadruple.hpp"
 #include "mtac/Utils.hpp"
 
@@ -118,9 +118,7 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& in){
-    auto out = in;
-
+void mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basic_block*/, mtac::Quadruple& quadruple, ProblemDomain& out){
     //Store the value assigned to result+arg1
     if(quadruple.op == mtac::Operator::DOT_ASSIGN || quadruple.op == mtac::Operator::DOT_FASSIGN || quadruple.op == mtac::Operator::DOT_PASSIGN){
         if(auto* ptr = boost::get<int>(&*quadruple.arg1)){
@@ -196,8 +194,6 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block
             ++it;
         }
     }
-
-    return out;
 }
 
 bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, std::shared_ptr<mtac::DataFlowResults<ProblemDomain>> global_results){
@@ -259,6 +255,25 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
     }
 
     return optimized;
+}
+
+bool mtac::operator==(const mtac::Domain<OffsetConstantPropagationValues>& lhs, const mtac::Domain<OffsetConstantPropagationValues>& rhs){
+    if(lhs.top() || rhs.top()){
+        return lhs.top() == rhs.top();
+    }
+
+    auto& lhs_values = lhs.values();
+    auto& rhs_values = rhs.values();
+
+    if(lhs_values.size() != rhs_values.size()){
+        return false;
+    }
+
+    return lhs_values == rhs_values;
+}
+
+bool mtac::operator!=(const mtac::Domain<OffsetConstantPropagationValues>& lhs, const mtac::Domain<OffsetConstantPropagationValues>& rhs){
+    return !(lhs == rhs);
 }
 
 ProblemDomain mtac::OffsetConstantPropagationProblem::top_element(){
