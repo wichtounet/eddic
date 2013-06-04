@@ -10,6 +10,7 @@
 #include "Assembler.hpp"
 #include "PerfsTimer.hpp"
 #include "Utils.hpp"
+#include "SemanticalException.hpp"
 
 using namespace eddic;
 
@@ -67,4 +68,14 @@ void eddic::assemble(Platform platform, const std::string& s, const std::string&
    } else {
        assembleWithoutDebug(platform, s, o, output, verbose);
    }
+}
+
+void eddic::verify_dependencies(){
+    if(system("nasm -v") != 0){
+        throw SemanticalException("Error: Unable to use nasm");
+    }
+
+    if(system("ld -v") != 0){
+        throw SemanticalException("Error: Unable to use ld");
+    }
 }

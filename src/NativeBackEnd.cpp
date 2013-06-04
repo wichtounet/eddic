@@ -106,6 +106,8 @@ void NativeBackEnd::generate(mtac::Program& program, Platform platform){
         if(!configuration->option_defined("assembly")){
             timing_timer timer(program.context->timing(), "assemble");
 
+            verify_dependencies();
+
             assemble(platform, asm_file_name, object_file_name, output, configuration->option_defined("debug"), configuration->option_defined("verbose"));
 
             //Remove temporary files

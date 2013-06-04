@@ -23,6 +23,8 @@ namespace eddic {
  */
 void assemble(Platform platform, const std::string& s, const std::string& o, const std::string& output, bool debug, bool verbose);
 
+void verify_dependencies();
+
 } //end of eddic
 
 #endif
