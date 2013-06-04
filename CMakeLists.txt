@@ -280,6 +280,7 @@ add_boost_test(eddic_boost_test
     BugFixesSuite/while_bug
     OptimizationSuite/parameter_propagation
     OptimizationSuite/global_cp
+    OptimizationSuite/global_offset_cp
     OptimizationSuite/remove_empty_functions
     OptimizationSuite/remove_empty_loops
     OptimizationSuite/invariant_code_motion

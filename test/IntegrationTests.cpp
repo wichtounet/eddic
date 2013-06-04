@@ -655,6 +655,12 @@ BOOST_AUTO_TEST_CASE( global_cp ){
     BOOST_REQUIRE_EQUAL(stats.counter("constant_propagation_true"), 1);
 }
 
+BOOST_AUTO_TEST_CASE( global_offset_cp ){
+    auto& stats = compute_stats_mtac("global_offset_cp.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("offset_constant_propagation_true"), 1);
+}
+
 BOOST_AUTO_TEST_CASE( remove_empty_functions ){
     auto& stats = compute_stats_mtac("remove_empty_functions.eddi");
 
