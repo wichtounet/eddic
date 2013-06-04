@@ -279,6 +279,7 @@ add_boost_test(eddic_boost_test
     StandardLibSuite/std_vector
     BugFixesSuite/while_bug
     OptimizationSuite/parameter_propagation
+    OptimizationSuite/global_cp
     OptimizationSuite/remove_empty_functions
     OptimizationSuite/remove_empty_loops
     OptimizationSuite/invariant_code_motion

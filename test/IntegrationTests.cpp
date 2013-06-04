@@ -649,6 +649,12 @@ BOOST_AUTO_TEST_CASE( parameter_propagation ){
     BOOST_REQUIRE_EQUAL(stats.counter("propagated_parameter"), 5);
 }
 
+BOOST_AUTO_TEST_CASE( global_cp ){
+    auto& stats = compute_stats_mtac("global_cp.eddi");
+
+    BOOST_REQUIRE_EQUAL(stats.counter("constant_propagation_true"), 1);
+}
+
 BOOST_AUTO_TEST_CASE( remove_empty_functions ){
     auto& stats = compute_stats_mtac("remove_empty_functions.eddi");
 
