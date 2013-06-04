@@ -200,13 +200,13 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
     bool optimized = false;
 
     for(auto& block : function){
+        auto& results = global_results->IN[block];
+
+        if(results.top()){
+            continue;
+        }
+        
         for(auto& quadruple : block->statements){
-            auto& results = global_results->IN_S[quadruple.uid()];
-
-            if(results.top()){
-                continue;
-            }
-
             //If constant replace the value assigned to result by the value stored for arg1+arg2
             if(quadruple.op == mtac::Operator::DOT){
                 if(auto* ptr = boost::get<int>(&*quadruple.arg2)){
@@ -251,6 +251,8 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
                     }
                 }
             }
+            
+            transfer(block, quadruple, results);
         }
     }
 

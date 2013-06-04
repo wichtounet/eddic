@@ -1,0 +1,8 @@
+include<print>
+
+void main(){
+    int b[5];
+    b[0] = 55;
+
+    int c = b[0];
+}
