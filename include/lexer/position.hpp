@@ -39,8 +39,6 @@ namespace boost { namespace spirit { namespace qi
             bool parse(Iterator& first, Iterator const& last
                     , Context& /*context*/, Skipper const& skipper, Attribute& attr) const
         {
-            qi::skip_over(first, last, skipper);
-            
             auto& pos = position_begin.get_position();
 
 			attr.theLine = position_begin.get_currentline();
