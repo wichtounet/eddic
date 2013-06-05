@@ -8,12 +8,12 @@ int main(int argc, char* args[])
 
     using namespace eddic;
     using namespace eddic::parser;
-    
-    SpiritParser parser;
 
-    for (int i=0; i<10; i++)
+    for (int i=0; i<5; i++)
         for (auto& fname : argv)
         {
+            SpiritParser parser;
+
             eddic::ast::SourceFile program;
             parser.parse(fname, program, std::make_shared<GlobalContext>(Platform::INTEL_X86_64));
         }

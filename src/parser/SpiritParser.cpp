@@ -35,7 +35,7 @@ namespace spirit = boost::spirit;
 using namespace eddic;
 
 bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program, std::shared_ptr<GlobalContext> context){
-    //timing_timer timer(context->timing(), "parsing");
+    timing_timer timer(context->timing(), "parsing");
 
     std::ifstream in(file.c_str(), std::ios::binary);
     in.unsetf(std::ios::skipws);
