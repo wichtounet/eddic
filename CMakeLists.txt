@@ -110,6 +110,9 @@ file(
 file(GLOB to_remove src/eddi.cpp)
 list(REMOVE_ITEM compiler_files ${to_remove})
 
+file(GLOB to_remove src/parser/main.cpp)
+list(REMOVE_ITEM compiler_files ${to_remove})
+
 add_library(Compiler OBJECT ${compiler_files})
 
 # Set different options
@@ -155,8 +158,10 @@ SET_SOURCE_FILES_PROPERTIES(
 # Create the eddic executable
 
 add_executable(eddic $<TARGET_OBJECTS:Compiler> src/eddi.cpp)
+add_executable(time_parse $<TARGET_OBJECTS:Compiler> src/parser/main.cpp)
 
 target_link_libraries (eddic boost_program_options)
+target_link_libraries (time_parse boost_program_options)
 
 # Enable testing
 INCLUDE(CTest)
