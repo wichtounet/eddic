@@ -25,45 +25,55 @@ namespace parser {
  * \class ValueGrammar
  * \brief Grammar representing values in EDDI language.
  */
-struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
-    ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
-    
-    qi::rule<lexer::Iterator, ast::Assignment()> assignment;
-    qi::rule<lexer::Iterator, ast::Ternary()> ternary;
-    qi::rule<lexer::Iterator, ast::Value()> value;
-    qi::rule<lexer::Iterator, ast::Value()> primary_value;
-    qi::rule<lexer::Iterator, ast::Cast()> cast_value;
-    qi::rule<lexer::Iterator, ast::Value()> conditional_expression;
-    qi::rule<lexer::Iterator, ast::CallOperationValue()> call_value;
-    
-    qi::rule<lexer::Iterator, ast::Expression()> postfix_expression;
-    qi::rule<lexer::Iterator, ast::Expression()> postfix_expression_helper;
+struct ValueGrammar : 
+    qi::grammar<lexer::Iterator, 
+    ast::Value(lexer::pos_iterator_type const&),
+    qi::locals<lexer::pos_iterator_type> > 
+{
+    ValueGrammar(const lexer::Lexer& lexer);
 
-    qi::rule<lexer::Iterator, ast::Expression()> additive_value;
-    qi::rule<lexer::Iterator, ast::Expression()> multiplicative_value;
-    qi::rule<lexer::Iterator, ast::Expression()> relational_value;
-    qi::rule<lexer::Iterator, ast::Expression()> logicalAnd_value;
-    qi::rule<lexer::Iterator, ast::Expression()> logicalOr_value;
-
-    qi::rule<lexer::Iterator, ast::Integer()> integer;
-    qi::rule<lexer::Iterator, ast::IntegerSuffix()> integer_suffix;
-    qi::rule<lexer::Iterator, ast::Float()> float_;
-    qi::rule<lexer::Iterator, ast::Literal()> string_literal;
-    qi::rule<lexer::Iterator, ast::CharLiteral()> char_literal;
-    qi::rule<lexer::Iterator, ast::VariableValue()> variable_value;
-    qi::rule<lexer::Iterator, ast::BuiltinOperator()> builtin_operator;
-    qi::rule<lexer::Iterator, ast::FunctionCall()> function_call;
-    qi::rule<lexer::Iterator, ast::True()> true_;
-    qi::rule<lexer::Iterator, ast::False()> false_;
-    qi::rule<lexer::Iterator, ast::Null()> null;
-    qi::rule<lexer::Iterator, ast::New()> new_;
-    qi::rule<lexer::Iterator, ast::NewArray()> new_array;
-    qi::rule<lexer::Iterator, ast::PrefixOperation()> prefix_operation;
-    qi::rule<lexer::Iterator, ast::PrefixOperation()> unary_operation;
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type> >;
     
-    qi::rule<lexer::Iterator, ast::Value()> assignment_expression;
-    qi::rule<lexer::Iterator, ast::Value()> unary_expression;
-    qi::rule<lexer::Iterator, ast::Value()> cast_expression;
+    Rule<ast::Assignment,      lexer::pos_iterator_type const&> assignment;
+    Rule<ast::Expression,      lexer::pos_iterator_type const&> postfix_expression;
+    Rule<ast::FunctionCall,    lexer::pos_iterator_type const&> function_call;
+    Rule<ast::PrefixOperation, lexer::pos_iterator_type const&> prefix_operation;
+
+  private:
+    Rule<ast::Value, lexer::pos_iterator_type const&> start;
+
+    Rule<ast::Ternary>            ternary;
+    Rule<ast::Value>              value;
+    Rule<ast::Value>              primary_value;
+    Rule<ast::Cast>               cast_value;
+    Rule<ast::Value>              conditional_expression;
+    Rule<ast::CallOperationValue> call_value;
+
+    Rule<ast::Expression>         postfix_expression_helper;
+
+    Rule<ast::Expression>         additive_value;
+    Rule<ast::Expression>         multiplicative_value;
+    Rule<ast::Expression>         relational_value;
+    Rule<ast::Expression>         logicalAnd_value;
+    Rule<ast::Expression>         logicalOr_value;
+
+    Rule<ast::Integer>            integer;
+    Rule<ast::IntegerSuffix>      integer_suffix;
+    Rule<ast::Float>              float_;
+    Rule<ast::Literal>            string_literal;
+    Rule<ast::CharLiteral>        char_literal;
+    Rule<ast::VariableValue>      variable_value;
+    Rule<ast::BuiltinOperator>    builtin_operator;
+    Rule<ast::True>               true_;
+    Rule<ast::False>              false_;
+    Rule<ast::Null>               null;
+    Rule<ast::New>                new_;
+    Rule<ast::NewArray>           new_array;
+    Rule<ast::PrefixOperation>    unary_operation;
+
+    Rule<ast::Value>              assignment_expression;
+    Rule<ast::Value>              unary_expression;
+    Rule<ast::Value>              cast_expression;
     
     /* Operators */
 
@@ -80,8 +90,6 @@ struct ValueGrammar : qi::grammar<lexer::Iterator, ast::Value()> {
     qi::symbols<char, ast::BuiltinType> builtin_op;
     
     TypeGrammar type;
-    
-    const lexer::pos_iterator_type& position_begin;
 };
 
 } //end of parser

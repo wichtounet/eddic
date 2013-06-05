@@ -35,9 +35,9 @@ namespace spirit = boost::spirit;
 using namespace eddic;
 
 bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& program, std::shared_ptr<GlobalContext> context){
-    timing_timer timer(context->timing(), "parsing");
+    //timing_timer timer(context->timing(), "parsing");
 
-    std::ifstream in(file.c_str());
+    std::ifstream in(file.c_str(), std::ios::binary);
     in.unsetf(std::ios::skipws);
    
     //Collect the size of the file
@@ -51,11 +51,15 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
     lexer::pos_iterator_type position_begin(contents.begin(), contents.end(), file);
     lexer::pos_iterator_type position_end;
 
-    lexer::Lexer lexer;
-    parser::EddiGrammar grammar(lexer, position_begin); 
+    static const lexer::Lexer lexer;
+    static const parser::EddiGrammar grammar(lexer); 
     
     try {
-        bool r = spirit::lex::tokenize_and_parse(position_begin, position_end, lexer, grammar, program);
+		bool r = spirit::lex::tokenize_and_parse(
+				position_begin, position_end,
+				lexer, 
+				grammar(boost::phoenix::cref(position_begin)),
+			   	program);
 
         if(r && position_begin == position_end) {
             return true;
