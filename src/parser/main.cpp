@@ -9,7 +9,7 @@ int main(int argc, char* args[])
     using namespace eddic;
     using namespace eddic::parser;
 
-    for (int i=0; i<5; i++)
+    for (int i=0; i<100; i++)
         for (auto& fname : argv)
         {
             SpiritParser parser;
