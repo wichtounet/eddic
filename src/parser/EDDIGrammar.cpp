@@ -13,14 +13,19 @@
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
-        EddiGrammar::base_type(program, "EDDI Grammar"), 
-        value(lexer, position_begin), 
-        type(lexer, position_begin),
-        position_begin(position_begin){
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
+        EddiGrammar::base_type(start, "EDDI Grammar"), 
+        value_grammar(lexer), 
+        type_grammar(lexer)
+{
+    auto const value = value_grammar(qi::_a);
+    auto const& type = type_grammar;
+    auto local_begin = qi::lazy(boost::phoenix::construct<qi::position>(qi::_a));
+
+    start %= qi::eps [ qi::_a = qi::_r1 ] >> program;
 
     delete_ %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.delete_
         >>  value;
     
@@ -30,14 +35,14 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  *(instruction);
 
     switch_case %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.case_
         >>  value
         >>  lexer.double_dot
         >>  (*instruction);
 
     switch_ %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.switch_
         >>  lexer.left_parenth
         >>  value
@@ -74,7 +79,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace
         >>  *(else_if_)
         >>  -(else_);
-    
+
     for_ %= 
             lexer.for_ 
         >   lexer.left_parenth 
@@ -89,7 +94,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   lexer.right_brace;
     
     foreach_ = 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  type 
@@ -102,9 +107,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_brace 
         >>  *(instruction)
         >>  lexer.right_brace;
-    
+
     foreachin_ = 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.foreach_ 
         >>  lexer.left_parenth 
         >>  type 
@@ -124,7 +129,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   lexer.left_brace 
         >   *(instruction)
         >   lexer.right_brace;
-    
+
     do_while_ %=
             lexer.do_ 
         >   lexer.left_brace 
@@ -135,9 +140,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >   value 
         >   lexer.right_parenth
         >   lexer.stop;
-    
+
     struct_declaration %= 
-            qi::position(position_begin)
+            local_begin
         >>  type 
         >>  lexer.identifier 
         >>  lexer.left_parenth
@@ -145,13 +150,13 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_parenth;
 
     declaration %= 
-            qi::position(position_begin)
+            local_begin
         >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value);
     
     arrayDeclaration %= 
-            qi::position(position_begin)
+            local_begin
         >>  type
         >>  lexer.identifier 
         >>  lexer.left_bracket
@@ -159,20 +164,20 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_bracket;
 
     return_ %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.return_
         >>  value
         >>  lexer.stop;
     
     globalDeclaration %= 
-            qi::position(position_begin)
+            local_begin
         >>  type 
         >>  lexer.identifier 
         >>  -(lexer.assign >> value)
         >>  lexer.stop;
-    
+
     globalArrayDeclaration %= 
-            qi::position(position_begin)
+            local_begin
         >>  type 
         >>  lexer.identifier 
         >>  lexer.left_bracket
@@ -181,19 +186,19 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.stop;
 
     swap %= 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.identifier 
         >>  lexer.swap 
         >>  lexer.identifier;
     
     instruction %= 
             switch_
-        |   (value.assignment > lexer.stop)
-        |   (value.postfix_expression > lexer.stop)
-        |   (value.function_call > lexer.stop)
+        |   (value_grammar.assignment(qi::_a) > lexer.stop)
+        |   (value_grammar.postfix_expression(qi::_a) > lexer.stop)
+        |   (value_grammar.function_call(qi::_a) > lexer.stop)
         |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
-        |   (value.prefix_operation > lexer.stop)
+        |   (value_grammar.prefix_operation(qi::_a) > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   if_
         |   for_
@@ -207,18 +212,18 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         ;
 
     repeatable_instruction = 
-            value.assignment 
+            value_grammar.assignment(qi::_a) 
         |   swap 
-        |   value.postfix_expression
-        |   value.prefix_operation
-        |   value.function_call;
-    
+        |   value_grammar.postfix_expression(qi::_a)
+        |   value_grammar.prefix_operation(qi::_a)
+        |   value_grammar.function_call(qi::_a);
+
     arg %= 
             type 
         >>  lexer.identifier;
-    
+
     template_function %= 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.template_
         >>  qi::omit[lexer.less]
         >>  +(
@@ -239,9 +244,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
-    
+
     function %= 
-            qi::position(position_begin)
+            local_begin
         >>  type 
         >>  lexer.identifier
         >>  lexer.left_parenth
@@ -252,13 +257,13 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace;
 
     member_declaration %=
-            qi::position(position_begin)
+            local_begin
         >>  type
         >>  lexer.identifier
         >>  lexer.stop;
-    
+
     constructor %= 
-            qi::position(position_begin)
+            local_begin
         >>  qi::omit[lexer.this_]
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
@@ -266,9 +271,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
-    
+
     destructor %= 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.tilde     
         >>  qi::omit[lexer.this_]
         >>  lexer.left_parenth
@@ -276,9 +281,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
-    
+
     template_struct %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.template_
         >>  qi::omit[lexer.less]
         >>  +(
@@ -310,7 +315,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace;
 
     struct_ %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.struct_
         >>  lexer.identifier
         >>  -(
@@ -330,19 +335,19 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
         >>  lexer.right_brace;
 
     standardImport %= 
-            qi::position(position_begin)
+            local_begin
         >>  lexer.include
         >>  qi::omit[lexer.less]
         >>  lexer.identifier
         >>  qi::omit[lexer.greater];
 
     import %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.include
         >>  lexer.string_literal;
 
     program %=
-            qi::position(position_begin)
+            local_begin
         >>  *(
                     function 
                 |   template_function 
@@ -355,12 +360,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_ite
             );
 
     /* Debugging rules */
-    DEBUG_RULE(program);
-    DEBUG_RULE(function);
-    DEBUG_RULE(template_function);
-    DEBUG_RULE(instruction);
-    DEBUG_RULE(struct_);
-    DEBUG_RULE(globalDeclaration);
-    DEBUG_RULE(constructor);
-    DEBUG_RULE(destructor);
+    //DEBUG_RULE(program);
+    //DEBUG_RULE(function);
+    //DEBUG_RULE(template_function);
+    //DEBUG_RULE(instruction);
+    //DEBUG_RULE(struct_);
+    //DEBUG_RULE(globalDeclaration);
+    //DEBUG_RULE(constructor);
+    //DEBUG_RULE(destructor);
 }
