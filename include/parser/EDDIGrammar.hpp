@@ -10,6 +10,7 @@
 
 #include "boost_cfg.hpp"
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 
 #include "lexer/SpiritLexer.hpp"
 
@@ -28,57 +29,62 @@ namespace parser {
  * \class EDDIGrammar
  * \brief Grammar representing the whole EDDI syntax.  
  */
-struct EddiGrammar : qi::grammar<lexer::Iterator, ast::SourceFile()> {
-    EddiGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin);
+struct EddiGrammar : qi::grammar<lexer::Iterator, 
+    ast::SourceFile(lexer::pos_iterator_type),
+    qi::locals<lexer::pos_iterator_type> >
+{
+    EddiGrammar(const lexer::Lexer& lexer);
+
+  private:
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type> >;
+    Rule<ast::SourceFile, lexer::pos_iterator_type> start;
 
     /* First level blocks */
-    qi::rule<lexer::Iterator, ast::SourceFile()> program;
-    qi::rule<lexer::Iterator, ast::GlobalVariableDeclaration()> globalDeclaration;
-    qi::rule<lexer::Iterator, ast::GlobalArrayDeclaration()> globalArrayDeclaration;
-    qi::rule<lexer::Iterator, ast::TemplateFunctionDeclaration()> template_function;
-    qi::rule<lexer::Iterator, ast::FunctionDeclaration()> function;
-    qi::rule<lexer::Iterator, ast::FunctionParameter()> arg;
+    Rule<ast::SourceFile>                  program;
+    Rule<ast::GlobalVariableDeclaration>   globalDeclaration;
+    Rule<ast::GlobalArrayDeclaration>      globalArrayDeclaration;
+    Rule<ast::TemplateFunctionDeclaration> template_function;
+    Rule<ast::FunctionDeclaration>         function;
+    Rule<ast::FunctionParameter>           arg;
 
     /* Instructions */
-    qi::rule<lexer::Iterator, ast::Instruction()> instruction;
-    qi::rule<lexer::Iterator, ast::Instruction()> repeatable_instruction;
-    qi::rule<lexer::Iterator, ast::Swap()> swap;
-    qi::rule<lexer::Iterator, ast::VariableDeclaration()> declaration;
-    qi::rule<lexer::Iterator, ast::StructDeclaration()> struct_declaration;
-    qi::rule<lexer::Iterator, ast::ArrayDeclaration()> arrayDeclaration;
-    qi::rule<lexer::Iterator, ast::Return()> return_;
-    qi::rule<lexer::Iterator, ast::Switch()> switch_;
-    qi::rule<lexer::Iterator, ast::SwitchCase()> switch_case;
-    qi::rule<lexer::Iterator, ast::DefaultCase()> default_case;
-    qi::rule<lexer::Iterator, ast::Delete()> delete_;
+    Rule<ast::Instruction>         instruction;
+    Rule<ast::Instruction>         repeatable_instruction;
+    Rule<ast::Swap>                swap;
+    Rule<ast::VariableDeclaration> declaration;
+    Rule<ast::StructDeclaration>   struct_declaration;
+    Rule<ast::ArrayDeclaration>    arrayDeclaration;
+    Rule<ast::Return>              return_;
+    Rule<ast::Switch>              switch_;
+    Rule<ast::SwitchCase>          switch_case;
+    Rule<ast::DefaultCase>         default_case;
+    Rule<ast::Delete>              delete_;
 
     /* Loops */
-    qi::rule<lexer::Iterator, ast::While()> while_;
-    qi::rule<lexer::Iterator, ast::DoWhile()> do_while_;
-    qi::rule<lexer::Iterator, ast::For()> for_;
-    qi::rule<lexer::Iterator, ast::Foreach()> foreach_;
-    qi::rule<lexer::Iterator, ast::ForeachIn()> foreachin_;
+    Rule<ast::While>     while_;
+    Rule<ast::DoWhile>   do_while_;
+    Rule<ast::For>       for_;
+    Rule<ast::Foreach>   foreach_;
+    Rule<ast::ForeachIn> foreachin_;
 
     /* Branches  */
-    qi::rule<lexer::Iterator, ast::If()> if_;
-    qi::rule<lexer::Iterator, ast::Else()> else_;
-    qi::rule<lexer::Iterator, ast::ElseIf()> else_if_;
+    Rule<ast::If>     if_;
+    Rule<ast::Else>   else_;
+    Rule<ast::ElseIf> else_if_;
  
     /* Imports  */
-    qi::rule<lexer::Iterator, ast::StandardImport()> standardImport;
-    qi::rule<lexer::Iterator, ast::Import()> import;
+    Rule<ast::StandardImport> standardImport;
+    Rule<ast::Import>         import;
 
     /* Structures */
-    qi::rule<lexer::Iterator, ast::Struct()> struct_;
-    qi::rule<lexer::Iterator, ast::TemplateStruct()> template_struct;
-    qi::rule<lexer::Iterator, ast::MemberDeclaration()> member_declaration;
-    qi::rule<lexer::Iterator, ast::Constructor()> constructor;
-    qi::rule<lexer::Iterator, ast::Destructor()> destructor;
+    Rule<ast::Struct>            struct_;
+    Rule<ast::TemplateStruct>    template_struct;
+    Rule<ast::MemberDeclaration> member_declaration;
+    Rule<ast::Constructor>       constructor;
+    Rule<ast::Destructor>        destructor;
    
-    ValueGrammar value;
-    TypeGrammar type;
-
-    const lexer::pos_iterator_type& position_begin;
+    const ValueGrammar value_grammar;
+    const TypeGrammar type_grammar;
 };
 
 } //end of parser

@@ -10,13 +10,18 @@
 
 #include "lexer/adapttokens.hpp"
 #include "lexer/position.hpp"
+#include <boost/spirit/include/phoenix.hpp>
 
 using namespace eddic;
 
-parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_iterator_type& position_begin) : 
-        ValueGrammar::base_type(value, "_value Grammar"),
-        type(lexer, position_begin),
-        position_begin(position_begin){
+parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) : 
+        ValueGrammar::base_type(start, "_value Grammar"),
+        type(lexer)
+{
+    auto local_begin     = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_a) );
+    auto inherited_begin = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_r1) );
+
+    start %= qi::eps [ qi::_a = qi::_r1 ] >> value;
 
     /* Match operators into symbols */
     
@@ -83,7 +88,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     /* Terminal values */
     
     new_array %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.new_
         >>  type.type
         >>  lexer.left_bracket
@@ -91,7 +96,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.right_bracket;
 
     new_ %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.new_
         >>  type.type
         >>  lexer.left_parenth
@@ -99,7 +104,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.right_parenth;
    
     variable_value %= 
-            qi::position(position_begin)
+            local_begin
         >>  
             (
                     lexer.this_
@@ -147,7 +152,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   string_literal
         |   char_literal
         |   builtin_operator
-        |   function_call
+        |   function_call(qi::_a)
         |   new_array
         |   new_
         |   variable_value
@@ -168,7 +173,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.right_parenth;
 
     postfix_expression %=
-            qi::position(position_begin)
+            inherited_begin
         >>  primary_value
         >>  +(
                          lexer.left_bracket 
@@ -188,23 +193,23 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
             );
 
     prefix_operation %=
-            qi::position(position_begin)
+            inherited_begin
         >>  qi::adapttokens[prefix_op]  
         >>  unary_expression;
     
     unary_operation %=
-            qi::position(position_begin)
+            local_begin
         >>  qi::adapttokens[unary_op]   
         >>  cast_expression;
     
     unary_expression %=
-            postfix_expression
-        |   prefix_operation
+            postfix_expression(qi::_a)
+        |   prefix_operation(qi::_a)
         |   unary_operation
         |   primary_value;
 
     cast_value %=
-            qi::position(position_begin)
+            local_begin
         >>  lexer.left_parenth
         >>  type.type
         >>  lexer.right_parenth
@@ -215,32 +220,32 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         |   unary_expression;
     
     multiplicative_value %=
-            qi::position(position_begin)
+            local_begin
         >>  cast_expression
         >>  *(qi::adapttokens[multiplicative_op] >> cast_expression);
     
     additive_value %=
-            qi::position(position_begin)
+            local_begin
         >>  multiplicative_value
         >>  *(qi::adapttokens[additive_op] >> multiplicative_value);
    
     relational_value %=
-            qi::position(position_begin)
+            local_begin
         >>  additive_value
         >>  *(qi::adapttokens[relational_op] >> additive_value);  
     
     logicalAnd_value %=
-            qi::position(position_begin)
+            local_begin
         >>  relational_value
         >>  *(qi::adapttokens[logical_and_op] >> relational_value);  
     
     logicalOr_value %=
-            qi::position(position_begin)
+            local_begin
         >>  logicalAnd_value
         >>  *(qi::adapttokens[logical_or_op] >> logicalAnd_value);  
 
     ternary %=
-            qi::position(position_begin)
+            local_begin
         >>  logicalOr_value 
         >>  lexer.question_mark
         >>  conditional_expression 
@@ -252,11 +257,11 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
          |  logicalOr_value;
 
     assignment_expression %=
-            assignment
+            assignment(qi::_a)
         |   conditional_expression;
     
     assignment %= 
-            qi::position(position_begin)
+            inherited_begin
         >>  unary_expression
         >>  qi::adapttokens[assign_op]
         >>  assignment_expression;
@@ -264,7 +269,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
     value = assignment_expression.alias();
    
     function_call %=
-            qi::position(position_begin)
+            inherited_begin
         >>  lexer.identifier
         >>  -(
                     qi::omit[lexer.less]
@@ -276,7 +281,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
         >>  lexer.right_parenth;
    
     builtin_operator %=
-            qi::position(position_begin)
+            local_begin
         >>  qi::adapttokens[builtin_op]
         >>  lexer.left_parenth
         >>  value >> *( lexer.comma > value)
@@ -284,36 +289,36 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer, const lexer::pos_i
 
     //Configure debugging and rule naming
     
-    DEBUG_RULE(value);
-    DEBUG_RULE(primary_value);
-    DEBUG_RULE(cast_value);
-    DEBUG_RULE(conditional_expression);
-    DEBUG_RULE(additive_value);
-    DEBUG_RULE(multiplicative_value);
-    DEBUG_RULE(relational_value);
-    DEBUG_RULE(logicalAnd_value);
-    DEBUG_RULE(logicalOr_value);
-    DEBUG_RULE(integer);
-    DEBUG_RULE(integer_suffix);
-    DEBUG_RULE(float_);
-    DEBUG_RULE(function_call);
-    DEBUG_RULE(true_);
-    DEBUG_RULE(false_);
-    DEBUG_RULE(null);
-    DEBUG_RULE(new_);
-    DEBUG_RULE(new_array);
-    DEBUG_RULE(unary_operation);
-    DEBUG_RULE(assignment);
-    DEBUG_RULE(prefix_operation);
-    DEBUG_RULE(builtin_operator);
-    DEBUG_RULE(variable_value);
-    DEBUG_RULE(ternary);
-    DEBUG_RULE(string_literal);
-    DEBUG_RULE(char_literal);
-    DEBUG_RULE(call_value);
+    //DEBUG_RULE(value);
+    //DEBUG_RULE(primary_value);
+    //DEBUG_RULE(cast_value);
+    //DEBUG_RULE(conditional_expression);
+    //DEBUG_RULE(additive_value);
+    //DEBUG_RULE(multiplicative_value);
+    //DEBUG_RULE(relational_value);
+    //DEBUG_RULE(logicalAnd_value);
+    //DEBUG_RULE(logicalOr_value);
+    //DEBUG_RULE(integer);
+    //DEBUG_RULE(integer_suffix);
+    //DEBUG_RULE(float_);
+    //DEBUG_RULE(function_call);
+    //DEBUG_RULE(true_);
+    //DEBUG_RULE(false_);
+    //DEBUG_RULE(null);
+    //DEBUG_RULE(new_);
+    //DEBUG_RULE(new_array);
+    //DEBUG_RULE(unary_operation);
+    //DEBUG_RULE(assignment);
+    //DEBUG_RULE(prefix_operation);
+    //DEBUG_RULE(builtin_operator);
+    //DEBUG_RULE(variable_value);
+    //DEBUG_RULE(ternary);
+    //DEBUG_RULE(string_literal);
+    //DEBUG_RULE(char_literal);
+    //DEBUG_RULE(call_value);
     
-    DEBUG_RULE(assignment_expression);
-    DEBUG_RULE(unary_expression);
-    DEBUG_RULE(cast_expression);
-    DEBUG_RULE(postfix_expression);
+    //DEBUG_RULE(assignment_expression);
+    //DEBUG_RULE(unary_expression);
+    //DEBUG_RULE(cast_expression);
+    //DEBUG_RULE(postfix_expression);
 }

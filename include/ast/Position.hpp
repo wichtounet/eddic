@@ -23,7 +23,7 @@ namespace ast {
  */
 struct Position {
     std::string file;       /*!< The source file */
-    std::string theLine;    /*!< The source line content */
+	std::string theLine;    /*!< The source line content */
     int line;               /*!< The source line number */
     int column;             /*!< The source column number */
 };
