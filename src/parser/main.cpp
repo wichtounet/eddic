@@ -2,7 +2,6 @@
 #include "ast/SourceFile.hpp"
 #include "parser/SpiritParser.hpp"
 
-
 int main(int argc, char* args[])
 {
     const std::vector<std::string> argv(args+1, args+argc);

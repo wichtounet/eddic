@@ -43,7 +43,7 @@ namespace boost { namespace spirit { namespace qi
             
             auto& pos = position_begin.get_position();
 
-            attr.theLine = position_begin.get_currentline();
+			attr.theLine = position_begin.get_currentline();
             attr.file = pos.file;
             attr.column = pos.column;
             attr.line = pos.line;
