@@ -41,8 +41,7 @@ namespace boost { namespace spirit { namespace qi
         {
             auto& pos = position_begin.get_position();
 
-			attr.theLine = position_begin.get_currentline();
-            attr.file = pos.file;
+            attr.file = 0; //TODO Find a way to have the correct file number
             attr.column = pos.column;
             attr.line = pos.line;
 

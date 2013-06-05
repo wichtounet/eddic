@@ -34,7 +34,7 @@ void eddic::output_exception(const SemanticalException& e){
         auto& position = *e.position();
 
         std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-        std::cout << position.theLine << std::endl;
+        std::cout << "TODO Find the line using the context" << std::endl;
         std::cout << std::setw(position.column) << " ^- here" << std::endl;
     } else {
         std::cout << e.what() << std::endl;

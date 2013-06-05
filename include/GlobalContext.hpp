@@ -105,6 +105,10 @@ struct GlobalContext final : public Context {
         int total_size_of_struct(std::shared_ptr<const Struct> struct_) const;
         bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
 
+        std::size_t new_file(const std::string& file_name, std::string content);
+        std::string& get_file_content(std::size_t file);
+        const std::string& get_file_name(std::size_t file);
+
         const FunctionMap& functions() const;
 
         Platform target_platform() const;
@@ -118,6 +122,9 @@ struct GlobalContext final : public Context {
         statistics m_statistics;
         timing_system m_timing;
         Platform platform;
+
+        std::vector<std::string> file_names;
+        std::vector<std::string> file_contents;
 
         void addPrintFunction(const std::string& function, std::shared_ptr<const Type> parameterType);
         void defineStandardFunctions();
