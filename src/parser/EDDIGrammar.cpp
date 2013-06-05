@@ -27,7 +27,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     delete_ %=
             local_begin
         >>  lexer.delete_
-        >>  value;
+        >  value;
     
     default_case %=
             lexer.default_
@@ -37,9 +37,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     switch_case %=
             local_begin
         >>  lexer.case_
-        >>  value
-        >>  lexer.double_dot
-        >>  (*instruction);
+        >   value
+        >   lexer.double_dot
+        >   (*instruction);
 
     switch_ %=
             local_begin
@@ -56,12 +56,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     else_if_ %= 
             lexer.else_ 
         >>  lexer.if_ 
-        >>  lexer.left_parenth 
-        >>  value 
-        >>  lexer.right_parenth 
-        >>  lexer.left_brace
-        >>  *(instruction)
-        >>  lexer.right_brace;
+        >   lexer.left_parenth 
+        >   value 
+        >   lexer.right_parenth 
+        >   lexer.left_brace
+        >   *(instruction)
+        >   lexer.right_brace;
 
     else_ %= 
             lexer.else_ 
@@ -166,8 +166,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     return_ %=
             local_begin
         >>  lexer.return_
-        >>  value
-        >>  lexer.stop;
+        >   value
+        >   lexer.stop;
     
     globalDeclaration %= 
             local_begin
