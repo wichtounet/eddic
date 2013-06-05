@@ -44,13 +44,13 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     switch_ %=
             local_begin
         >>  lexer.switch_
-        >>  lexer.left_parenth
-        >>  value
-        >>  lexer.right_parenth
-        >>  lexer.left_brace
-        >>  *(switch_case)
-        >>  -(default_case)
-        >>  lexer.right_brace
+        >  lexer.left_parenth
+        >  value
+        >  lexer.right_parenth
+        >  lexer.left_brace
+        >  *(switch_case)
+        >  -(default_case)
+        >  lexer.right_brace
             ;
 
     else_if_ %= 
