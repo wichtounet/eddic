@@ -83,7 +83,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
-            output_exception(e);
+            output_exception(e, program->context);
         }
 
         code = 1;

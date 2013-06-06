@@ -9,8 +9,11 @@
 #define SEMANTICAL_EXCEPTION_H
 
 #include <string>
+#include <memory>
 
 #include <boost/optional.hpp>
+
+#include "GlobalContext.hpp"
 
 #include "ast/Position.hpp"
 
@@ -46,7 +49,7 @@ class SemanticalException: public std::exception {
         virtual const char* what() const throw();
 };
 
-void output_exception(const SemanticalException& e);
+void output_exception(const SemanticalException& e, std::shared_ptr<GlobalContext> context);
 
 } //end of eddic
 
