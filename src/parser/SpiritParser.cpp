@@ -63,7 +63,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
 		bool r = spirit::lex::tokenize_and_parse(
 				position_begin, position_end,
 				lexer, 
-				grammar(boost::phoenix::cref(position_begin)),
+				grammar(boost::phoenix::cref(position_begin), current_file),
 			   	program);
 
         if(r && position_begin == position_end) {

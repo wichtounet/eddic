@@ -27,20 +27,20 @@ namespace parser {
  */
 struct ValueGrammar : 
     qi::grammar<lexer::Iterator, 
-    ast::Value(lexer::pos_iterator_type const&),
-    qi::locals<lexer::pos_iterator_type> > 
+    ast::Value(lexer::pos_iterator_type, int),
+    qi::locals<lexer::pos_iterator_type, int> > 
 {
     ValueGrammar(const lexer::Lexer& lexer);
 
-    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type> >;
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
     
-    Rule<ast::Assignment,      lexer::pos_iterator_type const&> assignment;
-    Rule<ast::Expression,      lexer::pos_iterator_type const&> postfix_expression;
-    Rule<ast::FunctionCall,    lexer::pos_iterator_type const&> function_call;
-    Rule<ast::PrefixOperation, lexer::pos_iterator_type const&> prefix_operation;
+    Rule<ast::Assignment,      lexer::pos_iterator_type const&, int> assignment;
+    Rule<ast::Expression,      lexer::pos_iterator_type const&, int> postfix_expression;
+    Rule<ast::FunctionCall,    lexer::pos_iterator_type const&, int> function_call;
+    Rule<ast::PrefixOperation, lexer::pos_iterator_type const&, int> prefix_operation;
 
   private:
-    Rule<ast::Value, lexer::pos_iterator_type const&> start;
+    Rule<ast::Value, lexer::pos_iterator_type, int> start;
 
     Rule<ast::Ternary>            ternary;
     Rule<ast::Value>              value;

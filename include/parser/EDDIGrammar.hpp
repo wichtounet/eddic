@@ -30,14 +30,14 @@ namespace parser {
  * \brief Grammar representing the whole EDDI syntax.  
  */
 struct EddiGrammar : qi::grammar<lexer::Iterator, 
-    ast::SourceFile(lexer::pos_iterator_type),
-    qi::locals<lexer::pos_iterator_type> >
+    ast::SourceFile(lexer::pos_iterator_type, int),
+    qi::locals<lexer::pos_iterator_type, int> >
 {
     EddiGrammar(const lexer::Lexer& lexer);
 
   private:
-    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type> >;
-    Rule<ast::SourceFile, lexer::pos_iterator_type> start;
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
+    Rule<ast::SourceFile, lexer::pos_iterator_type, int> start;
 
     /* First level blocks */
     Rule<ast::SourceFile>                  program;

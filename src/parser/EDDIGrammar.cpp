@@ -18,11 +18,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         value_grammar(lexer), 
         type_grammar(lexer)
 {
-    auto const value = value_grammar(qi::_a);
+    auto const value = value_grammar(qi::_a, qi::_b);
     auto const& type = type_grammar;
-    auto local_begin = qi::lazy(boost::phoenix::construct<qi::position>(qi::_a));
+    auto local_begin = qi::lazy(boost::phoenix::construct<qi::position>(qi::_a, qi::_b));
 
-    start %= qi::eps [ qi::_a = qi::_r1 ] >> program;
+    start %= qi::eps [ qi::_a = qi::_r1, qi::_b = qi::_r2 ] >> program;
 
     delete_ %=
             local_begin
@@ -193,12 +193,12 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
     
     instruction %= 
             switch_
-        |   (value_grammar.assignment(qi::_a) > lexer.stop)
-        |   (value_grammar.postfix_expression(qi::_a) > lexer.stop)
-        |   (value_grammar.function_call(qi::_a) > lexer.stop)
+        |   (value_grammar.assignment(qi::_a, qi::_b) > lexer.stop)
+        |   (value_grammar.postfix_expression(qi::_a, qi::_b) > lexer.stop)
+        |   (value_grammar.function_call(qi::_a, qi::_b) > lexer.stop)
         |   (struct_declaration >> lexer.stop)
         |   (declaration >> lexer.stop)
-        |   (value_grammar.prefix_operation(qi::_a) > lexer.stop)
+        |   (value_grammar.prefix_operation(qi::_a, qi::_b) > lexer.stop)
         |   (arrayDeclaration >> lexer.stop)
         |   if_
         |   for_
@@ -212,11 +212,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         ;
 
     repeatable_instruction = 
-            value_grammar.assignment(qi::_a) 
+            value_grammar.assignment(qi::_a, qi::_b) 
         |   swap 
-        |   value_grammar.postfix_expression(qi::_a)
-        |   value_grammar.prefix_operation(qi::_a)
-        |   value_grammar.function_call(qi::_a);
+        |   value_grammar.postfix_expression(qi::_a, qi::_b)
+        |   value_grammar.prefix_operation(qi::_a, qi::_b)
+        |   value_grammar.function_call(qi::_a, qi::_b);
 
     arg %= 
             type 

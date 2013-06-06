@@ -18,10 +18,10 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) :
         ValueGrammar::base_type(start, "_value Grammar"),
         type(lexer)
 {
-    auto local_begin     = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_a) );
-    auto inherited_begin = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_r1) );
+    auto local_begin     = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_a, qi::_b) );
+    auto inherited_begin = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_r1, qi::_r2) );
 
-    start %= qi::eps [ qi::_a = qi::_r1 ] >> value;
+    start %= qi::eps [ qi::_a = qi::_r1, qi::_b = qi::_r2 ] >> value;
 
     /* Match operators into symbols */
     
@@ -152,7 +152,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) :
         |   string_literal
         |   char_literal
         |   builtin_operator
-        |   function_call(qi::_a)
+        |   function_call(qi::_a, qi::_b)
         |   new_array
         |   new_
         |   variable_value
@@ -203,8 +203,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) :
         >>  cast_expression;
     
     unary_expression %=
-            postfix_expression(qi::_a)
-        |   prefix_operation(qi::_a)
+            postfix_expression(qi::_a, qi::_b)
+        |   prefix_operation(qi::_a, qi::_b)
         |   unary_operation
         |   primary_value;
 
@@ -257,7 +257,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) :
          |  logicalOr_value;
 
     assignment_expression %=
-            assignment(qi::_a)
+            assignment(qi::_a, qi::_b)
         |   conditional_expression;
     
     assignment %= 
