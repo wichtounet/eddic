@@ -358,14 +358,4 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
                 |   struct_
                 |   template_struct
             );
-
-    /* Debugging rules */
-    //DEBUG_RULE(program);
-    //DEBUG_RULE(function);
-    //DEBUG_RULE(template_function);
-    //DEBUG_RULE(instruction);
-    //DEBUG_RULE(struct_);
-    //DEBUG_RULE(globalDeclaration);
-    //DEBUG_RULE(constructor);
-    //DEBUG_RULE(destructor);
 }
