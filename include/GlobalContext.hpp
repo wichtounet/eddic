@@ -105,7 +105,7 @@ struct GlobalContext final : public Context {
         int total_size_of_struct(std::shared_ptr<const Struct> struct_) const;
         bool is_recursively_nested(std::shared_ptr<const Struct> struct_) const;
 
-        std::size_t new_file(const std::string& file_name, std::string content);
+        std::size_t new_file(const std::string& file_name);
         std::string& get_file_content(std::size_t file);
         const std::string& get_file_name(std::size_t file);
 

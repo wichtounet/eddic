@@ -246,11 +246,11 @@ timing_system& GlobalContext::timing(){
     return m_timing;
 }
 
-std::size_t GlobalContext::new_file(const std::string& file_name, std::string content){
+std::size_t GlobalContext::new_file(const std::string& file_name){
     int index = file_contents.size();
 
     file_names.push_back(file_name);
-    file_contents.emplace_back(std::move(content));
+    file_contents.emplace_back("");
 
     return index;
 }

@@ -45,13 +45,11 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
     std::size_t size(static_cast<size_t>(in.tellg()));
     in.seekg(0, std::istream::beg);
 
-    std::string contents(size, 0);
-    in.read(&contents[0], size);    
-
-    //TODO Make sure it is a move not a copy
-    int current_file = context->new_file(file, contents);
+    int current_file = context->new_file(file);
 
     std::string& file_contents = context->get_file_content(current_file);
+    file_contents.resize(size);
+    in.read(&file_contents[0], size);
 
     lexer::pos_iterator_type position_begin(file_contents.begin(), file_contents.end(), file);
     lexer::pos_iterator_type position_end;
