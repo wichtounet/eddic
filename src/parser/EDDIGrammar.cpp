@@ -13,9 +13,9 @@
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) : 
-        EddiGrammar::base_type(start, "EDDI Grammar"), 
-        value_grammar(lexer), 
+parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
+        EddiGrammar::base_type(start, "EDDI Grammar"),
+        value_grammar(lexer),
         type_grammar(lexer)
 {
     auto const value = value_grammar(qi::_a, qi::_b);
@@ -28,7 +28,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
             local_begin
         >>  lexer.delete_
         >  value;
-    
+
     default_case %=
             lexer.default_
         >>  lexer.double_dot
@@ -53,112 +53,112 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >  lexer.right_brace
             ;
 
-    else_if_ %= 
-            lexer.else_ 
-        >>  lexer.if_ 
-        >   lexer.left_parenth 
-        >   value 
-        >   lexer.right_parenth 
+    else_if_ %=
+            lexer.else_
+        >>  lexer.if_
+        >   lexer.left_parenth
+        >   value
+        >   lexer.right_parenth
         >   lexer.left_brace
         >   *(instruction)
         >   lexer.right_brace;
 
-    else_ %= 
-            lexer.else_ 
+    else_ %=
+            lexer.else_
         >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
 
-    if_ %= 
-            lexer.if_ 
-        >>  lexer.left_parenth 
-        >>  value 
-        >>  lexer.right_parenth 
-        >>  lexer.left_brace 
-        >>  *(instruction) 
+    if_ %=
+            lexer.if_
+        >>  lexer.left_parenth
+        >>  value
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
+        >>  *(instruction)
         >>  lexer.right_brace
         >>  *(else_if_)
         >>  -(else_);
 
-    for_ %= 
-            lexer.for_ 
-        >   lexer.left_parenth 
-        >   -declaration 
-        >   lexer.stop 
-        >   -value 
-        >   lexer.stop 
-        >   -repeatable_instruction 
-        >   lexer.right_parenth 
+    for_ %=
+            lexer.for_
+        >   lexer.left_parenth
+        >   -declaration
+        >   lexer.stop
+        >   -value
+        >   lexer.stop
+        >   -repeatable_instruction
+        >   lexer.right_parenth
         >   lexer.left_brace
         >   (*instruction)
         >   lexer.right_brace;
-    
-    foreach_ = 
+
+    foreach_ =
             local_begin
-        >>  lexer.foreach_ 
-        >>  lexer.left_parenth 
-        >>  type 
-        >>  lexer.identifier 
-        >>  lexer.from_ 
-        >>  lexer.integer 
-        >>  lexer.to_ 
-        >>  lexer.integer 
-        >>  lexer.right_parenth 
-        >>  lexer.left_brace 
+        >>  lexer.foreach_
+        >>  lexer.left_parenth
+        >>  type
+        >>  lexer.identifier
+        >>  lexer.from_
+        >>  lexer.integer
+        >>  lexer.to_
+        >>  lexer.integer
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
 
-    foreachin_ = 
+    foreachin_ =
             local_begin
-        >>  lexer.foreach_ 
-        >>  lexer.left_parenth 
-        >>  type 
-        >>  lexer.identifier 
-        >>  lexer.in_ 
-        >>  lexer.identifier 
-        >>  lexer.right_parenth 
-        >>  lexer.left_brace 
+        >>  lexer.foreach_
+        >>  lexer.left_parenth
+        >>  type
+        >>  lexer.identifier
+        >>  lexer.in_
+        >>  lexer.identifier
+        >>  lexer.right_parenth
+        >>  lexer.left_brace
         >>  *(instruction)
         >>  lexer.right_brace;
-    
+
     while_ %=
-            lexer.while_ 
-        >   lexer.left_parenth 
-        >   value 
-        >   lexer.right_parenth 
-        >   lexer.left_brace 
+            lexer.while_
+        >   lexer.left_parenth
+        >   value
+        >   lexer.right_parenth
+        >   lexer.left_brace
         >   *(instruction)
         >   lexer.right_brace;
 
     do_while_ %=
-            lexer.do_ 
-        >   lexer.left_brace 
+            lexer.do_
+        >   lexer.left_brace
         >   *(instruction)
         >   lexer.right_brace
-        >   lexer.while_  
-        >   lexer.left_parenth 
-        >   value 
+        >   lexer.while_
+        >   lexer.left_parenth
+        >   value
         >   lexer.right_parenth
         >   lexer.stop;
 
-    struct_declaration %= 
+    struct_declaration %=
             local_begin
-        >>  type 
-        >>  lexer.identifier 
+        >>  type
+        >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -(value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
 
-    declaration %= 
-            local_begin
-        >>  type 
-        >>  lexer.identifier 
-        >>  -(lexer.assign >> value);
-    
-    arrayDeclaration %= 
+    declaration %=
             local_begin
         >>  type
-        >>  lexer.identifier 
+        >>  lexer.identifier
+        >>  -(lexer.assign >> value);
+
+    arrayDeclaration %=
+            local_begin
+        >>  type
+        >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket;
@@ -168,30 +168,30 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.return_
         >   value
         >   lexer.stop;
-    
-    globalDeclaration %= 
+
+    globalDeclaration %=
             local_begin
-        >>  type 
-        >>  lexer.identifier 
+        >>  type
+        >>  lexer.identifier
         >>  -(lexer.assign >> value)
         >>  lexer.stop;
 
-    globalArrayDeclaration %= 
+    globalArrayDeclaration %=
             local_begin
-        >>  type 
-        >>  lexer.identifier 
+        >>  type
+        >>  lexer.identifier
         >>  lexer.left_bracket
         >>  value
         >>  lexer.right_bracket
         >>  lexer.stop;
 
-    swap %= 
+    swap %=
             local_begin
-        >>  lexer.identifier 
-        >>  lexer.swap 
+        >>  lexer.identifier
+        >>  lexer.swap
         >>  lexer.identifier;
-    
-    instruction %= 
+
+    instruction %=
             switch_
         |   (value_grammar.assignment(qi::_a, qi::_b) > lexer.stop)
         |   (value_grammar.postfix_expression(qi::_a, qi::_b) > lexer.stop)
@@ -211,18 +211,19 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         |   (delete_ > lexer.stop)
         ;
 
-    repeatable_instruction = 
-            value_grammar.assignment(qi::_a, qi::_b) 
-        |   swap 
+    repeatable_instruction =
+            value_grammar.assignment(qi::_a, qi::_b)
+        |   swap
         |   value_grammar.postfix_expression(qi::_a, qi::_b)
         |   value_grammar.prefix_operation(qi::_a, qi::_b)
         |   value_grammar.function_call(qi::_a, qi::_b);
 
-    arg %= 
-            type 
-        >>  lexer.identifier;
+    auto arg = boost::spirit::qi::as<ast::FunctionParameter>()[(
+            type
+        >>  lexer.identifier
+        )];
 
-    template_function %= 
+    template_function %=
             local_begin
         >>  lexer.template_
         >>  qi::omit[lexer.less]
@@ -236,7 +237,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
                    )
             )
         >>  qi::omit[lexer.greater]
-        >>  type 
+        >>  type
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
@@ -245,9 +246,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
-    function %= 
+    function %=
             local_begin
-        >>  type 
+        >>  type
         >>  lexer.identifier
         >>  lexer.left_parenth
         >>  -( arg >> *( lexer.comma > arg))
@@ -262,7 +263,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.identifier
         >>  lexer.stop;
 
-    constructor %= 
+    constructor %=
             local_begin
         >>  qi::omit[lexer.this_]
         >>  lexer.left_parenth
@@ -272,9 +273,9 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
-    destructor %= 
+    destructor %=
             local_begin
-        >>  lexer.tilde     
+        >>  lexer.tilde
         >>  qi::omit[lexer.this_]
         >>  lexer.left_parenth
         >>  lexer.right_parenth
@@ -300,7 +301,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.identifier
         >>  -(
                     lexer.extends
-                >>  type 
+                >>  type
              )
         >>  lexer.left_brace
         >>  *(
@@ -320,7 +321,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
         >>  lexer.identifier
         >>  -(
                     lexer.extends
-                >>  type 
+                >>  type
              )
         >>  lexer.left_brace
         >>  *(
@@ -334,27 +335,29 @@ parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
              )
         >>  lexer.right_brace;
 
-    standardImport %= 
+    auto standard_import = boost::spirit::qi::as<ast::StandardImport>()[(
             local_begin
         >>  lexer.include
         >>  qi::omit[lexer.less]
         >>  lexer.identifier
-        >>  qi::omit[lexer.greater];
+        >>  qi::omit[lexer.greater]
+        )];
 
-    import %=
+    auto import = boost::spirit::qi::as<ast::Import>()[(
             local_begin
         >>  lexer.include
-        >>  lexer.string_literal;
+        >>  lexer.string_literal
+        )];
 
     program %=
             local_begin
         >>  *(
-                    function 
-                |   template_function 
-                |   globalDeclaration 
-                |   globalArrayDeclaration 
-                |   standardImport 
-                |   import 
+                    function
+                |   template_function
+                |   globalDeclaration
+                |   globalArrayDeclaration
+                |   standard_import
+                |   import
                 |   struct_
                 |   template_struct
             );

@@ -25,15 +25,15 @@ namespace parser {
  * \class ValueGrammar
  * \brief Grammar representing values in EDDI language.
  */
-struct ValueGrammar : 
-    qi::grammar<lexer::Iterator, 
+struct ValueGrammar :
+    qi::grammar<lexer::Iterator,
     ast::Value(lexer::pos_iterator_type, int),
-    qi::locals<lexer::pos_iterator_type, int> > 
+    qi::locals<lexer::pos_iterator_type, int> >
 {
     ValueGrammar(const lexer::Lexer& lexer);
 
     template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
-    
+
     Rule<ast::Assignment,      lexer::pos_iterator_type const&, int> assignment;
     Rule<ast::Expression,      lexer::pos_iterator_type const&, int> postfix_expression;
     Rule<ast::FunctionCall,    lexer::pos_iterator_type const&, int> function_call;
@@ -57,16 +57,7 @@ struct ValueGrammar :
     Rule<ast::Expression>         logicalAnd_value;
     Rule<ast::Expression>         logicalOr_value;
 
-    Rule<ast::Integer>            integer;
-    Rule<ast::IntegerSuffix>      integer_suffix;
-    Rule<ast::Float>              float_;
-    Rule<ast::Literal>            string_literal;
-    Rule<ast::CharLiteral>        char_literal;
-    Rule<ast::VariableValue>      variable_value;
     Rule<ast::BuiltinOperator>    builtin_operator;
-    Rule<ast::True>               true_;
-    Rule<ast::False>              false_;
-    Rule<ast::Null>               null;
     Rule<ast::New>                new_;
     Rule<ast::NewArray>           new_array;
     Rule<ast::PrefixOperation>    unary_operation;
@@ -74,7 +65,7 @@ struct ValueGrammar :
     Rule<ast::Value>              assignment_expression;
     Rule<ast::Value>              unary_expression;
     Rule<ast::Value>              cast_expression;
-    
+
     /* Operators */
 
     qi::symbols<char, ast::Operator> multiplicative_op;
@@ -88,7 +79,7 @@ struct ValueGrammar :
     qi::symbols<char, ast::Operator> unary_op;
 
     qi::symbols<char, ast::BuiltinType> builtin_op;
-    
+
     TypeGrammar type;
 };
 
