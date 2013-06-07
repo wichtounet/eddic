@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer) : 
+parser::TypeGrammar::TypeGrammar(const lexer::StaticLexer& lexer) :
         TypeGrammar::base_type(type, "Type Grammar")
 {
     auto const_ = (
@@ -42,7 +42,7 @@ parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer) :
         >>  lexer.left_bracket
         >>  lexer.right_bracket
     )];
-    
+
     auto pointer_type = boost::spirit::qi::as<ast::PointerType>()[(
             (
                     template_type

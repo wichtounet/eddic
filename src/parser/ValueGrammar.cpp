@@ -14,7 +14,7 @@
 
 using namespace eddic;
 
-parser::ValueGrammar::ValueGrammar(const lexer::Lexer& lexer) :
+parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         ValueGrammar::base_type(start, "_value Grammar"),
         type(lexer)
 {

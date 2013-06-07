@@ -26,10 +26,10 @@ namespace parser {
  * \class TypeGrammar
  * \brief Grammar representing types in EDDI language.
  */
-struct TypeGrammar : qi::grammar<lexer::Iterator, ast::Type()> {
-    TypeGrammar(const lexer::Lexer& lexer);
+struct TypeGrammar : qi::grammar<lexer::StaticIterator, ast::Type()> {
+    TypeGrammar(const lexer::StaticLexer& lexer);
 
-    qi::rule<lexer::Iterator, ast::Type()> type;
+    qi::rule<lexer::StaticIterator, ast::Type()> type;
 };
 
 } //end of parser

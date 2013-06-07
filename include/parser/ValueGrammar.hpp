@@ -26,13 +26,13 @@ namespace parser {
  * \brief Grammar representing values in EDDI language.
  */
 struct ValueGrammar :
-    qi::grammar<lexer::Iterator,
+    qi::grammar<lexer::StaticIterator,
     ast::Value(lexer::pos_iterator_type, int),
     qi::locals<lexer::pos_iterator_type, int> >
 {
-    ValueGrammar(const lexer::Lexer& lexer);
+    ValueGrammar(const lexer::StaticLexer& lexer);
 
-    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::StaticIterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
 
     Rule<ast::Assignment,      lexer::pos_iterator_type const&, int> assignment;
     Rule<ast::Expression,      lexer::pos_iterator_type const&, int> postfix_expression;

@@ -13,7 +13,7 @@
 
 using namespace eddic;
 
-parser::EddiGrammar::EddiGrammar(const lexer::Lexer& lexer) :
+parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         EddiGrammar::base_type(start, "EDDI Grammar"),
         value_grammar(lexer),
         type_grammar(lexer)

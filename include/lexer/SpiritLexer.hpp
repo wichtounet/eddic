@@ -17,10 +17,13 @@
 
 #include <boost/spirit/include/classic_position_iterator.hpp>
 #include <boost/spirit/include/lex_lexertl.hpp>
+#include <boost/spirit/include/lex_static_lexertl.hpp>
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_functor_parser.hpp>
 #include <boost/spirit/include/classic_attribute.hpp>
 #include <boost/spirit/include/classic_symbols.hpp>
+
+#include "lexer/static_lexer.hpp"
 
 namespace eddic {
 
@@ -36,6 +39,7 @@ namespace lex = boost::spirit::lex;
  * This class is used to do lexical analysis on an EDDI source file. This file is based on a Boost Spirit Lexer. It's
  * used by the parser to parse a source file.
  */
+
 template<typename L>
 class SpiritLexer : public lex::lexer<L> {
     public:
@@ -202,6 +206,10 @@ typedef lex::lexertl::actor_lexer<Tok> lexer_type;
 //Typedef for the parsers
 typedef lexer::lexer_type::iterator_type Iterator;
 typedef lexer::SpiritLexer<lexer::lexer_type> Lexer;
+
+typedef boost::spirit::lex::lexertl::static_actor_lexer<lexer::Tok, boost::spirit::lex::lexertl::static_::lexer_sl> static_lexer_type;
+typedef lexer::SpiritLexer<static_lexer_type> StaticLexer;
+typedef static_lexer_type::iterator_type StaticIterator;
 
 } //end of lexer
 
