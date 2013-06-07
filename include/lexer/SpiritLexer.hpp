@@ -31,10 +31,10 @@ namespace lex = boost::spirit::lex;
 
 /*!
  * \class SimpleLexer
- * \brief The EDDI lexer. 
+ * \brief The EDDI lexer.
  *
- * This class is used to do lexical analysis on an EDDI source file. This file is based on a Boost Spirit Lexer. It's 
- * used by the parser to parse a source file. 
+ * This class is used to do lexical analysis on an EDDI source file. This file is based on a Boost Spirit Lexer. It's
+ * used by the parser to parse a source file.
  */
 template<typename L>
 class SpiritLexer : public lex::lexer<L> {
@@ -75,12 +75,12 @@ class SpiritLexer : public lex::lexer<L> {
             char_literal = "'.'";
 
             /* Constructs  */
-            left_parenth = '('; 
-            right_parenth = ')'; 
-            left_brace = '{'; 
-            right_brace = '}'; 
-            left_bracket = '['; 
-            right_bracket = ']'; 
+            left_parenth = '(';
+            right_parenth = ')';
+            left_brace = '{';
+            right_brace = '}';
+            left_bracket = '[';
+            right_bracket = ']';
 
             stop = ';';
             comma = ',';
@@ -95,8 +95,8 @@ class SpiritLexer : public lex::lexer<L> {
             /* Assignment operators */
             swap = "<=>";
             assign = '=';
-           
-            /* compound assignment operators */ 
+
+            /* compound assignment operators */
             compound_add = "\\+=";
             compound_sub = "-=";
             compound_mul = "\\*=";
@@ -133,31 +133,32 @@ class SpiritLexer : public lex::lexer<L> {
             whitespaces = "[ \\t\\n]+";
             multiline_comment = "\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/";
             singleline_comment = "\\/\\/[^\n]*";
-            
+
             //Ignore whitespaces
             this->self += whitespaces [lex::_pass = lex::pass_flags::pass_ignore];
 
             this->self += left_parenth | right_parenth | left_brace | right_brace | left_bracket | right_bracket;
+            this->self += float_ | integer | string_literal ;
             this->self += assign | swap;
             this->self += comma | stop | dot;
-            this->self += double_dot | question_mark | tilde;
             this->self += addition | subtraction | multiplication | division | modulo;
             this->self += compound_add | compound_sub | compound_mul | compound_div | compound_mod;
-            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
-            this->self += template_ | type | extends;
             this->self += increment | decrement;
+            this->self += for_ | do_ | while_ | true_ | false_ | if_ | else_ | from_ | to_ | in_ | foreach_ | return_ | const_ | include | struct_ | null | this_;
             this->self += new_ | delete_;
             this->self += and_ | or_;
             this->self += addressof;
             this->self += equals | not_equals | greater_equals | less_equals | greater | less | not_;
+            this->self += double_dot | question_mark | tilde;
+            this->self += template_ | type | extends;
             this->self += case_ | switch_ | default_;
-            this->self += float_ | integer | identifier | string_literal | char_literal;
+            this->self += identifier | char_literal;
 
             //Ignore comments
-            this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
-            this->self += singleline_comment [lex::_pass = lex::pass_flags::pass_ignore]; 
+            this->self += multiline_comment [lex::_pass = lex::pass_flags::pass_ignore];
+            this->self += singleline_comment [lex::_pass = lex::pass_flags::pass_ignore];
         }
-      
+
         typedef lex::token_def<lex::omit> ConsumedToken;
         typedef lex::token_def<std::string> StringToken;
         typedef lex::token_def<int> IntegerToken;
@@ -167,7 +168,7 @@ class SpiritLexer : public lex::lexer<L> {
         StringToken identifier, string_literal, char_literal;
         IntegerToken integer;
         FloatToken float_;
-        
+
         CharToken addition, subtraction, multiplication, division, modulo, not_, addressof;
         StringToken increment, decrement;
         StringToken compound_add, compound_sub, compound_mul, compound_div, compound_mod;
@@ -178,7 +179,7 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken stop, comma, dot;
         ConsumedToken assign, swap;
         ConsumedToken question_mark, double_dot, tilde;
-        
+
         //Keywords
         ConsumedToken if_, else_, for_, while_, do_, from_, in_, to_, foreach_, return_;
         ConsumedToken true_, false_;
