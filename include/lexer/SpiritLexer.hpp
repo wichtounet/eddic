@@ -198,17 +198,20 @@ class SpiritLexer : public lex::lexer<L> {
         ConsumedToken whitespaces, singleline_comment, multiline_comment;
 };
 
+//Token definitions
 typedef std::string::iterator base_iterator_type;
 typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
 typedef boost::spirit::lex::lexertl::token<pos_iterator_type> Tok;
-typedef lex::lexertl::actor_lexer<Tok> lexer_type;
+
+//Lexer Types
+typedef lex::lexertl::actor_lexer<Tok> dynamic_lexer_type;
+typedef boost::spirit::lex::lexertl::static_actor_lexer<lexer::Tok, boost::spirit::lex::lexertl::static_::lexer_sl> static_lexer_type;
 
 //Typedef for the parsers
-typedef lexer::lexer_type::iterator_type Iterator;
-typedef lexer::SpiritLexer<lexer::lexer_type> Lexer;
-
-typedef boost::spirit::lex::lexertl::static_actor_lexer<lexer::Tok, boost::spirit::lex::lexertl::static_::lexer_sl> static_lexer_type;
+typedef lexer::SpiritLexer<dynamic_lexer_type> DynamicLexer;
 typedef lexer::SpiritLexer<static_lexer_type> StaticLexer;
+
+//Iterators
 typedef static_lexer_type::iterator_type StaticIterator;
 
 } //end of lexer

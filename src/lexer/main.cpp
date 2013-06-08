@@ -10,7 +10,7 @@ using namespace eddic;
 
 int main(int argc, char* argv[]){
     // create the lexer object instance needed to invoke the generator
-    lexer::Lexer spirit_lexer; // the token definition
+    lexer::DynamicLexer spirit_lexer; // the token definition
 
     // open the output file, where the generated tokenizer function will be
     // written to

@@ -77,7 +77,7 @@ bool parser::SpiritParser::parse(const std::string& file, ast::SourceFile& progr
 
             return false;
         }
-    } catch (const qi::expectation_failure<lexer::lexer_type::iterator_type>& exception) {
+    } catch (const qi::expectation_failure<lexer::static_lexer_type::iterator_type>& exception) {
         std::cout << "Parsing failed" << std::endl;
 
         auto pos_begin = (*exception.first).value().begin();
