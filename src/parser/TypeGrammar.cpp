@@ -5,44 +5,51 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
 
+//#define BOOST_SPIRIT_DEBUG
+//#include <boost/spirit/include/qi.hpp>
+
 #include "parser/TypeGrammar.hpp"
 #include "lexer/position.hpp"
 
 using namespace eddic;
 
-parser::TypeGrammar::TypeGrammar(const lexer::Lexer& lexer) : 
+parser::TypeGrammar::TypeGrammar(const lexer::StaticLexer& lexer) :
         TypeGrammar::base_type(type, "Type Grammar")
 {
-   
-    const_ %=
+    auto const_ = (
             (lexer.const_ > boost::spirit::attr(true))
-        |   boost::spirit::attr(false);
+        |   boost::spirit::attr(false)
+    );
 
-    array_type %=
+    auto simple_type = boost::spirit::qi::as<ast::SimpleType>()[(
+            const_
+        >>  lexer.identifier
+    )];
+
+    auto template_type = boost::spirit::qi::as<ast::TemplateType>()[(
+            lexer.identifier
+        >>  qi::omit[lexer.less]
+        >>  type
+        >>  *(lexer.comma >> type)
+        >>  qi::omit[lexer.greater]
+    )];
+
+    auto array_type = boost::spirit::qi::as<ast::ArrayType>()[(
             (
                     template_type
                 |   simple_type
             )
         >>  lexer.left_bracket
-        >>  lexer.right_bracket;
-    
-    pointer_type %=
+        >>  lexer.right_bracket
+    )];
+
+    auto pointer_type = boost::spirit::qi::as<ast::PointerType>()[(
             (
                     template_type
                 |   simple_type
             )
-        >>  lexer.multiplication;
-
-    simple_type %=
-            const_
-        >>  lexer.identifier;
-
-    template_type %=
-            lexer.identifier
-        >>  qi::omit[lexer.less]
-        >>  type
-        >>  *(lexer.comma >> type)
-        >>  qi::omit[lexer.greater];                
+        >>  lexer.multiplication
+    )];
 
     type %=
             array_type

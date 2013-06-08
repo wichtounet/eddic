@@ -27,17 +27,17 @@ namespace parser {
 
 /*!
  * \class EDDIGrammar
- * \brief Grammar representing the whole EDDI syntax.  
+ * \brief Grammar representing the whole EDDI syntax.
  */
-struct EddiGrammar : qi::grammar<lexer::Iterator, 
-    ast::SourceFile(lexer::pos_iterator_type),
-    qi::locals<lexer::pos_iterator_type> >
+struct EddiGrammar : qi::grammar<lexer::StaticIterator,
+    ast::SourceFile(lexer::pos_iterator_type, int),
+    qi::locals<lexer::pos_iterator_type, int> >
 {
-    EddiGrammar(const lexer::Lexer& lexer);
+    EddiGrammar(const lexer::StaticLexer& lexer);
 
   private:
-    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::Iterator, A(Inherited...), qi::locals<lexer::pos_iterator_type> >;
-    Rule<ast::SourceFile, lexer::pos_iterator_type> start;
+    template <typename A, typename... Inherited> using Rule = qi::rule<lexer::StaticIterator, A(Inherited...), qi::locals<lexer::pos_iterator_type, int>>;
+    Rule<ast::SourceFile, lexer::pos_iterator_type, int> start;
 
     /* First level blocks */
     Rule<ast::SourceFile>                  program;
@@ -71,10 +71,6 @@ struct EddiGrammar : qi::grammar<lexer::Iterator,
     Rule<ast::If>     if_;
     Rule<ast::Else>   else_;
     Rule<ast::ElseIf> else_if_;
- 
-    /* Imports  */
-    Rule<ast::StandardImport> standardImport;
-    Rule<ast::Import>         import;
 
     /* Structures */
     Rule<ast::Struct>            struct_;
@@ -82,7 +78,7 @@ struct EddiGrammar : qi::grammar<lexer::Iterator,
     Rule<ast::MemberDeclaration> member_declaration;
     Rule<ast::Constructor>       constructor;
     Rule<ast::Destructor>        destructor;
-   
+
     const ValueGrammar value_grammar;
     const TypeGrammar type_grammar;
 };

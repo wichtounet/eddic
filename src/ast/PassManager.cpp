@@ -72,7 +72,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
                 }
             } catch (const SemanticalException& e){
                 if(!configuration->option_defined("quiet")){
-                    output_exception(e);
+                    output_exception(e, program.Content->context);
                 }
 
                 valid = false;

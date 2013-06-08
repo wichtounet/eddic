@@ -26,7 +26,7 @@ namespace boost { namespace spirit { namespace qi
 {
     struct position : primitive_parser<position>
     {
-        position(const eddic::lexer::pos_iterator_type& position_begin) : position_begin(position_begin) {}
+        position(const eddic::lexer::pos_iterator_type& position_begin, int current_file) : position_begin(position_begin), current_file(current_file) {}
 
         template <typename Context, typename Iterator>
         struct attribute
@@ -39,12 +39,9 @@ namespace boost { namespace spirit { namespace qi
             bool parse(Iterator& first, Iterator const& last
                     , Context& /*context*/, Skipper const& skipper, Attribute& attr) const
         {
-            qi::skip_over(first, last, skipper);
-            
             auto& pos = position_begin.get_position();
 
-			attr.theLine = position_begin.get_currentline();
-            attr.file = pos.file;
+            attr.file = current_file;
             attr.column = pos.column;
             attr.line = pos.line;
 
@@ -58,6 +55,7 @@ namespace boost { namespace spirit { namespace qi
         }
 
         const eddic::lexer::pos_iterator_type& position_begin;
+        int current_file;
     };
 
     ///////////////////////////////////////////////////////////////////////////

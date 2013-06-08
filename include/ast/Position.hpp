@@ -22,8 +22,7 @@ namespace ast {
  * \brief Define a position in the source code. 
  */
 struct Position {
-    std::string file;       /*!< The source file */
-	std::string theLine;    /*!< The source line content */
+    int file;               /*!< The source file */
     int line;               /*!< The source line number */
     int column;             /*!< The source column number */
 };

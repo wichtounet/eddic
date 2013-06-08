@@ -245,3 +245,20 @@ statistics& GlobalContext::stats(){
 timing_system& GlobalContext::timing(){
     return m_timing;
 }
+
+std::size_t GlobalContext::new_file(const std::string& file_name){
+    int index = file_contents.size();
+
+    file_names.push_back(file_name);
+    file_contents.emplace_back("");
+
+    return index;
+}
+
+std::string& GlobalContext::get_file_content(std::size_t file){
+    return file_contents[file];
+}
+
+const std::string& GlobalContext::get_file_name(std::size_t file){
+    return file_names[file];
+}

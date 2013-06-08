@@ -409,7 +409,7 @@ void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
             visit(visitor, block);
         } catch (const SemanticalException& e){
             if(!configuration->option_defined("quiet")){
-                output_exception(e);
+                output_exception(e, program.Content->context);
             }
             valid = false;
         }

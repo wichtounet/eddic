@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 #include "SemanticalException.hpp"
@@ -29,12 +30,23 @@ boost::optional<eddic::ast::Position> SemanticalException::position() const {
     return m_position;
 }
 
-void eddic::output_exception(const SemanticalException& e){
+void eddic::output_exception(const SemanticalException& e, std::shared_ptr<GlobalContext> context){
     if(e.position()){
         auto& position = *e.position();
 
+        int current_line;
+        std::istringstream f(context->get_file_content(position.file));
+        std::string line;    
+        while (std::getline(f, line)) {
+            if(current_line == position.line){
+                break;
+            }
+
+            ++current_line;
+        }
+
         std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
-        std::cout << position.theLine << std::endl;
+        std::cout << line << std::endl;
         std::cout << std::setw(position.column) << " ^- here" << std::endl;
     } else {
         std::cout << e.what() << std::endl;
