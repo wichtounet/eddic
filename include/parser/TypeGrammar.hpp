@@ -29,6 +29,9 @@ namespace parser {
 struct TypeGrammar : qi::grammar<lexer::StaticIterator, ast::Type()> {
     TypeGrammar(const lexer::StaticLexer& lexer);
 
+    qi::rule<lexer::StaticIterator, ast::ArrayType()> array_type;
+    qi::rule<lexer::StaticIterator, ast::PointerType()> pointer_type;
+    qi::rule<lexer::StaticIterator, ast::TemplateType()> template_type;
     qi::rule<lexer::StaticIterator, ast::Type()> type;
 };
 

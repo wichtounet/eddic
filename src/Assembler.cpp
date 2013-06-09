@@ -18,7 +18,7 @@ namespace {
 
 void exec(const std::string& command, bool verbose) {
     PerfsTimer timer("Exec " + command);
-    
+
     if(verbose){
         std::cout << "eddic : exec command : " << command << std::endl;
     }
@@ -71,11 +71,11 @@ void eddic::assemble(Platform platform, const std::string& s, const std::string&
 }
 
 void eddic::verify_dependencies(){
-    if(system("nasm -v") != 0){
+    if(system("nasm -v >> /dev/null") != 0){
         throw SemanticalException("Error: Unable to use nasm");
     }
 
-    if(system("ld -v") != 0){
+    if(system("ld -v >> /dev/null") != 0){
         throw SemanticalException("Error: Unable to use ld");
     }
 }
