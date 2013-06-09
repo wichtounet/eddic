@@ -26,30 +26,27 @@ parser::TypeGrammar::TypeGrammar(const lexer::StaticLexer& lexer) :
         >>  lexer.identifier
     )];
 
-    auto template_type = boost::spirit::qi::as<ast::TemplateType>()[(
+    template_type %=
             lexer.identifier
         >>  qi::omit[lexer.less]
         >>  type
         >>  *(lexer.comma >> type)
-        >>  qi::omit[lexer.greater]
-    )];
+        >>  qi::omit[lexer.greater];
 
-    auto array_type = boost::spirit::qi::as<ast::ArrayType>()[(
+    array_type %=
             (
                     template_type
                 |   simple_type
             )
         >>  lexer.left_bracket
-        >>  lexer.right_bracket
-    )];
+        >>  lexer.right_bracket;
 
-    auto pointer_type = boost::spirit::qi::as<ast::PointerType>()[(
-            (
+    pointer_type %=
+           (
                     template_type
                 |   simple_type
             )
-        >>  lexer.multiplication
-    )];
+        >>  lexer.multiplication;
 
     type %=
             array_type
