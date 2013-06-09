@@ -47,8 +47,6 @@ void ltac::StatementCompiler::end_bb(){
         return;
     }
 
-    end_bb_no_spill();
-
     for(auto& var : manager.local){
         if(manager.is_written(var)){
             auto position = var->position();
@@ -82,6 +80,8 @@ void ltac::StatementCompiler::end_bb(){
             manager.remove_from_pseudo_reg(var);
         }
     }
+
+    end_bb_no_spill();
 }
 
 void ltac::StatementCompiler::end_bb_no_spill(){
