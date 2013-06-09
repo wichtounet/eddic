@@ -27,38 +27,38 @@ struct PseudoRegisters {
          * Deleted copy constructor
          */
         PseudoRegisters(const PseudoRegisters<Reg>& rhs) = delete;
-        
+
         /*!
-         * Deleted copy assignment operator. 
+         * Deleted copy assignment operator.
          */
         PseudoRegisters& operator=(const PseudoRegisters<Reg>& rhs) = delete;
 
         /*!
-         * Indicates if the given variable is in a register. 
-         * \param variable The variable to test. 
-         * \return true if the variable is hold in a register, otherwise false. 
+         * Indicates if the given variable is in a register.
+         * \param variable The variable to test.
+         * \return true if the variable is hold in a register, otherwise false.
          */
         bool inRegister(std::shared_ptr<Variable> variable);
-        
+
         /*!
-         * Indicates if the given variable is in the given register. 
-         * \param variable The variable to test. 
-         * \param reg The register to test. 
-         * \return true if the variable is hold in the given register, otherwise false. 
+         * Indicates if the given variable is in the given register.
+         * \param variable The variable to test.
+         * \param reg The register to test.
+         * \return true if the variable is hold in the given register, otherwise false.
          */
         bool inRegister(std::shared_ptr<Variable> variable, Reg reg);
 
         /*!
-         * Return the register in which the variable is hold. 
-         * \param The variable to test. 
+         * Return the register in which the variable is hold.
+         * \param variable The variable to test.
          * \return The register in which the variable is hold.
          */
         Reg operator[](const std::shared_ptr<Variable> variable);
 
         /*!
-         * Set the location of the given variable to the given register. 
-         * \param variable The variable to set the location for. 
-         * \param reg The register that holds the variable. 
+         * Set the location of the given variable to the given register.
+         * \param variable The variable to set the location for.
+         * \param reg The register that holds the variable.
          */
         void setLocation(std::shared_ptr<Variable> variable, Reg reg);
 
@@ -67,7 +67,7 @@ struct PseudoRegisters {
 
         Reg get_new_reg();
         int last_reg();
-        
+
         Reg get_bound_reg(unsigned short);
 
         std::vector<Reg>& registers();
@@ -83,12 +83,12 @@ template<typename Reg>
 PseudoRegisters<Reg>::PseudoRegisters() {
     //Nothing to do
 }
-        
+
 template<typename Reg>
 int PseudoRegisters<Reg>::last_reg() {
     return current_reg;
 }
-        
+
 template<typename Reg>
 std::vector<Reg>& PseudoRegisters<Reg>::registers(){
     return m_registers;
@@ -145,7 +145,7 @@ Reg PseudoRegisters<Reg>::get_new_reg(){
 template<typename Reg>
 void PseudoRegisters<Reg>::setLocation(std::shared_ptr<Variable> variable, Reg reg){
     variables[variable] = reg;
-    
+
     assert(inRegister(variable, reg));
 }
 

@@ -36,8 +36,8 @@ namespace boost { namespace spirit { namespace qi
 
         template <typename Iterator, typename Context
             , typename Skipper, typename Attribute>
-            bool parse(Iterator& first, Iterator const& last
-                    , Context& /*context*/, Skipper const& skipper, Attribute& attr) const
+            bool parse(Iterator& /*first*/, Iterator const& /*last*/
+                    , Context& /*context*/, Skipper const& /*skipper*/, Attribute& attr) const
         {
             auto& pos = position_begin.get_position();
 

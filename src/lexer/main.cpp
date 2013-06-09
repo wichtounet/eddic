@@ -8,7 +8,7 @@
 
 using namespace eddic;
 
-int main(int argc, char* argv[]){
+int main(int, char*[]){
     // create the lexer object instance needed to invoke the generator
     lexer::DynamicLexer spirit_lexer; // the token definition
 

@@ -21,7 +21,7 @@ SemanticalException::~SemanticalException() throw() {}
 const char* SemanticalException::what() const throw() {
     return m_message.c_str();
 }
-        
+
 const std::string& SemanticalException::message() const {
     return m_message;
 }
@@ -34,9 +34,9 @@ void eddic::output_exception(const SemanticalException& e, std::shared_ptr<Globa
     if(e.position()){
         auto& position = *e.position();
 
-        int current_line;
+        int current_line = 0;
         std::istringstream f(context->get_file_content(position.file));
-        std::string line;    
+        std::string line;
         while (std::getline(f, line)) {
             if(current_line == position.line){
                 break;
