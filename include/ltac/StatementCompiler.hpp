@@ -30,20 +30,21 @@ class StatementCompiler {
         std::shared_ptr<Configuration> configuration;
 
         StatementCompiler(std::shared_ptr<FloatPool> float_pool);
-    
+
         /*!
          * Deleted copy constructor
          */
         StatementCompiler(const StatementCompiler& rhs) = delete;
 
         /*!
-         * Deleted copy assignment operator. 
+         * Deleted copy assignment operator.
          */
         StatementCompiler& operator=(const StatementCompiler& rhs) = delete;
 
         void collect_parameters(eddic::Function& definition);
-        
+
         void end_bb();
+        void end_bb_no_spill();
 
         bool ended = false;
 
@@ -55,7 +56,7 @@ class StatementCompiler {
         ltac::RegisterManager manager;
 
         mtac::basic_block_p bb;
-   
+
     private:
         std::shared_ptr<FloatPool> float_pool;
 
@@ -64,7 +65,7 @@ class StatementCompiler {
         //Uses for the next call
         std::vector<ltac::PseudoRegister> uses;
         std::vector<ltac::PseudoFloatRegister> float_uses;
-        
+
         void pass_in_int_register(mtac::Argument& argument, int position);
         void pass_in_float_register(mtac::Argument& argument, int position);
 
@@ -73,14 +74,14 @@ class StatementCompiler {
         void compare_unary(mtac::Argument arg1);
 
         void set_if_cc(ltac::Operator set, mtac::Quadruple& quadruple, bool floats);
-        
+
         ltac::PseudoRegister to_register(std::shared_ptr<Variable> var);
-        
+
         ltac::PseudoRegister get_address_in_pseudo_reg(std::shared_ptr<Variable> var, int offset);
         ltac::PseudoRegister get_address_in_pseudo_reg2(std::shared_ptr<Variable> var, ltac::PseudoRegister offset);
 
         ltac::Argument to_arg(mtac::Argument argument);
-        
+
         ltac::Address address(std::shared_ptr<Variable> var, mtac::Argument offset);
 
         std::tuple<std::shared_ptr<const Type>, bool, unsigned int> common_param(mtac::Quadruple& param);
@@ -88,11 +89,11 @@ class StatementCompiler {
 
         void write_8_bit(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
         void write_8_bit_to(const ltac::PseudoRegister& reg, ltac::Argument arg, tac::Size size);
-        
+
         void perform_div(mtac::Quadruple& quadruple);
         void compile_DIV(mtac::Quadruple& quadruple);
         void compile_MOD(mtac::Quadruple& quadruple);
-    
+
         void compile_ASSIGN(mtac::Quadruple& quadruple);
         void compile_PASSIGN(mtac::Quadruple& quadruple);
         void compile_FASSIGN(mtac::Quadruple& quadruple);
