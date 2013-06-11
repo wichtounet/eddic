@@ -86,7 +86,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
 
         //Transfer the remaining statements to split_block
         split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end());
-        bb->statements.erase(pit, bb->statements.end());
+        std::for_each(pit, bb->statements.end(), mtac::transform_to_nop);
 
         return split_block;
     }

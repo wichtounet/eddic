@@ -92,9 +92,9 @@ struct pass_traits<all_basic_optimizations> {
 };
 
 typedef boost::mpl::vector<
-        mtac::ArithmeticIdentities*, 
-        mtac::ReduceInStrength*, 
-        mtac::ConstantFolding*, 
+        mtac::ArithmeticIdentities*,
+        mtac::ReduceInStrength*,
+        mtac::ConstantFolding*,
         mtac::conditional_propagation*,
         mtac::ConstantPropagationProblem*,
         mtac::OffsetConstantPropagationProblem*,
@@ -134,14 +134,14 @@ struct pass_traits<all_optimizations> {
 
 namespace {
 
-template<typename T, typename Sign>                                
-struct has_gate {                                                      
-    typedef char yes[1];                                           
-    typedef char no [2];                                            
-    template <typename U, U> struct type_check;                     
-    template <typename _1> static yes &chk(type_check<Sign, &_1::gate> *); 
-    template <typename   > static no  &chk(...);                   
-    static bool const value = sizeof(chk<T>(0)) == sizeof(yes);     
+template<typename T, typename Sign>
+struct has_gate {
+    typedef char yes[1];
+    typedef char no [2];
+    template <typename U, U> struct type_check;
+    template <typename _1> static yes &chk(type_check<Sign, &_1::gate> *);
+    template <typename   > static no  &chk(...);
+    static bool const value = sizeof(chk<T>(0)) == sizeof(yes);
 };
 
 typedef boost::mpl::vector<
@@ -200,7 +200,7 @@ struct pass_runner {
     Platform platform;
     timing_system& system;
 
-    pass_runner(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) : 
+    pass_runner(mtac::Program& program, std::shared_ptr<StringPool> pool, std::shared_ptr<Configuration> configuration, Platform platform, timing_system& system) :
             program(program), pool(pool), configuration(configuration), platform(platform), system(system) {};
 
     template<typename Pass>
@@ -212,37 +212,37 @@ struct pass_runner {
     inline typename std::enable_if<need_pool<Pass>::value, void>::type set_pool(Pass& pass){
         pass.set_pool(pool);
     }
-    
+
     template<typename Pass>
     inline typename disable_if<need_pool<Pass>::value, void>::type set_pool(Pass&){
         //NOP
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<need_platform<Pass>::value, void>::type set_platform(Pass& pass){
         pass.set_platform(platform);
     }
-    
+
     template<typename Pass>
     inline typename disable_if<need_platform<Pass>::value, void>::type set_platform(Pass&){
         //NOP
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<need_configuration<Pass>::value, void>::type set_configuration(Pass& pass){
         pass.set_configuration(configuration);
     }
-    
+
     template<typename Pass>
     inline typename disable_if<need_configuration<Pass>::value, void>::type set_configuration(Pass&){
         //NOP
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<need_program<Pass>::value, Pass>::type construct(){
         return Pass(program);
     }
-    
+
     template<typename Pass>
     inline typename disable_if<need_program<Pass>::value, Pass>::type construct(){
         return Pass();
@@ -258,27 +258,27 @@ struct pass_runner {
 
         return pass;
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass& pass){
         return pass.gate(configuration);
     }
-    
+
     template<typename Pass>
     inline typename disable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass&){
         return true;
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, bool>::type apply(Pass& pass){
         return pass(program);
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB, bool>::type apply(Pass&){
         for(auto& function : program.functions){
             this->function = &function;
-    
+
             if(log::enabled<Debug>()){
                 LOG<Debug>("Optimizer") << "Start optimizations on " << function.get_name() << log::endl;
 
@@ -290,7 +290,7 @@ struct pass_runner {
 
         return false;
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::CUSTOM, bool>::type apply(Pass& pass){
         return pass(*function);
@@ -306,15 +306,15 @@ struct pass_runner {
 
         return visitor.optimized;
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::DATA_FLOW, bool>::type apply(Pass& problem){
         auto results = mtac::data_flow(*function, problem);
-        
+
         //Once the data-flow problem is fixed, statements can be optimized
         return problem.optimize(*function, results);
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB, bool>::type apply(Pass& visitor){
         bool optimized = false;
@@ -331,7 +331,7 @@ struct pass_runner {
 
         return optimized;
     }
-    
+
     template<typename Pass>
     inline typename std::enable_if<mtac::pass_traits<Pass>::type == mtac::pass_type::BB_TWO_PASS, bool>::type apply(Pass& visitor){
         bool optimized = false;
@@ -354,15 +354,15 @@ struct pass_runner {
 
         return optimized;
     }
-    
+
     template<typename Pass>
-    inline typename std::enable_if<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type 
+    inline typename std::enable_if<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type
     debug_local(bool local){
         LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
     }
 
     template<typename Pass>
-    inline typename std::enable_if<boost::type_traits::ice_and<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type 
+    inline typename std::enable_if<boost::type_traits::ice_and<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type
     debug_local(bool local){
         if(log::enabled<Debug>()){
             if(local){
@@ -400,7 +400,7 @@ struct pass_runner {
 
 void mtac::Optimizer::optimize(mtac::Program& program, std::shared_ptr<StringPool> string_pool, Platform platform, std::shared_ptr<Configuration> configuration) const {
     timing_timer timer(program.context->timing(), "whole_optimizations");
-        
+
     //Build the CFG of each functions (also needed for register allocation)
     for(auto& function : program.functions){
         timing_timer timer(program.context->timing(), "build_cfg");
