@@ -25,8 +25,8 @@
 #include <BoostTestTargetConfig.h>
 
 /*
- * \def TEST_APPLICATION(file) 
- * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
+ * \def TEST_APPLICATION(file)
+ * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode.
  */
 #define TEST_APPLICATION(file)\
 BOOST_AUTO_TEST_CASE( applications_##file ){\
@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE( applications_##file ){\
 }
 
 /*
- * \def TEST_SAMPLE(file) 
- * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode. 
+ * \def TEST_SAMPLE(file)
+ * Generate a test case that verify that the sample compiles in both 32 and 64 bits mode.
  */
 #define TEST_SAMPLE(file)\
 BOOST_AUTO_TEST_CASE( samples_##file ){\
@@ -60,7 +60,7 @@ inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& so
     const char** argv = new const char*[4 + params.size()];
     argv[0] = "./bin/test";
     argv[1] = "--quiet";
-    
+
     for(std::size_t i = 0; i < params.size(); ++i){
         argv[2 + i] = params[i].c_str();
     }
@@ -74,7 +74,7 @@ inline std::shared_ptr<eddic::Configuration> parse_options(const std::string& so
         log += " ";
         log += argv[i];
     }
-    
+
     BOOST_TEST_MESSAGE(log);
 
     auto configuration = eddic::parseOptions(4 + params.size(), argv);
@@ -93,7 +93,7 @@ void assert_compiles(const std::string& file, const std::string& param1, const s
     int code = compiler.compile(file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 0);
-    
+
     remove("./" + param3);
 }
 
@@ -104,7 +104,7 @@ void assert_compilation_error(const std::string& file, const std::string& param1
     int code = compiler.compile("test/cases/" + file, configuration);
 
     BOOST_REQUIRE_EQUAL (code, 1);
-    
+
     remove("./" + param3);
 }
 
@@ -122,9 +122,9 @@ std::string get_output(const std::string& file, const std::string& param1, const
 
     BOOST_REQUIRE_EQUAL (code, 0);
 
-    std::string out = eddic::execCommand("./" + param3); 
+    std::string out = eddic::execCommand("./" + param3);
     remove("./" + param3);
-    
+
     return out;
 }
 
@@ -174,7 +174,7 @@ void validate(const std::string& file, T... arguments){
 
 void assert_output_equals(const std::string& file, const std::string& output, const std::string& param1, const std::string& param2, const std::string& param3){
     auto out = get_output(file, param1, param2, param3);
-    
+
     BOOST_CHECK_EQUAL (output, out);
 }
 
@@ -228,7 +228,7 @@ TEST_SAMPLE(structures)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Specific tests */ 
+/* Specific tests */
 
 BOOST_AUTO_TEST_SUITE(SpecificSuite)
 
@@ -496,12 +496,12 @@ static void test_args(const std::string& arg1, const std::string& arg2, const st
 
     BOOST_REQUIRE_EQUAL (code, 0);
 
-    std::string out = eddic::execCommand("./" + arg3); 
+    std::string out = eddic::execCommand("./" + arg3);
     BOOST_CHECK_EQUAL ("./" + arg3 + "|", out);
-    
-    out = eddic::execCommand("./" + arg3 + " arg1 arg2 arg3"); 
+
+    out = eddic::execCommand("./" + arg3 + " arg1 arg2 arg3");
     BOOST_CHECK_EQUAL ("./" + arg3 + "|arg1|arg2|arg3|", out);
-    
+
     remove("./" + arg3);
 }
 
@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE( args ){
 
 BOOST_AUTO_TEST_SUITE_END()
 
-/* Template tests */ 
+/* Template tests */
 
 BOOST_AUTO_TEST_SUITE(TemplateSuite)
 
@@ -605,7 +605,7 @@ BOOST_AUTO_TEST_CASE( std_vector ){
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-    
+
 /* Unit test for bug fixes regression */
 
 BOOST_AUTO_TEST_SUITE(BugFixesSuite)
@@ -615,7 +615,7 @@ BOOST_AUTO_TEST_CASE( while_bug ){
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-    
+
 /* Unit test for optimization regression */
 
 BOOST_AUTO_TEST_SUITE(OptimizationSuite)
@@ -676,7 +676,7 @@ BOOST_AUTO_TEST_CASE( remove_empty_loops ){
 BOOST_AUTO_TEST_CASE( invariant_code_motion ){
     auto& stats = compute_stats_mtac("invariant_code_motion.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 1);
+    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 2);
 }
 
 BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
