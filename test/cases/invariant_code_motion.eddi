@@ -8,5 +8,26 @@ void main(){
         int c = ga * 55;
         b += c;
     }
+
+    int c = 9;
+    for(int i = 0; i < 25; ++i){
+        if(i == 0){
+            int d = ga * 88;
+            c += d;
+        } else {
+            c += 9;
+        }
+    }
+
+    int d = 10;
+    for(int i = 0; i < 100; ++i){
+        for(int j = 0; j < 100; ++j){
+            int e = ga * 99;
+            d += e;
+        }
+    }
+
     print(b);
+    print(c);
+    print(d);
 }
