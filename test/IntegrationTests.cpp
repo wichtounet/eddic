@@ -676,7 +676,7 @@ BOOST_AUTO_TEST_CASE( remove_empty_loops ){
 BOOST_AUTO_TEST_CASE( invariant_code_motion ){
     auto& stats = compute_stats_mtac("invariant_code_motion.eddi");
 
-    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 2);
+    BOOST_REQUIRE_EQUAL(stats.counter("invariant_moved"), 3);
 }
 
 BOOST_AUTO_TEST_CASE( complete_loop_peeling ){
