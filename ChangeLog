@@ -13,7 +13,6 @@ eddic 1.2.3 - 2013.03.08
 * Compiler: Parts of the compiler are compiled with RTTI disabled
 * Compiler: Implement performance kernels to test the generated code
 
-
 eddic 1.2.2 - 2013.01.26
 
 * Language: When structures are passed by value, they are copy constructed
