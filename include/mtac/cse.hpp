@@ -13,8 +13,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#include "variant_hash.hpp"
-
 #include "mtac/Quadruple.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 #include "mtac/Operator.hpp"
@@ -99,20 +97,16 @@ std::ostream& operator<<(std::ostream& stream, const expression& expression);
 
 namespace std {
     template<>
-    class hash<eddic::mtac::expression> {
-        private:
-            std::hash<eddic::mtac::Argument> hasher_arg;
+    struct hash<eddic::mtac::expression> {
+        size_t operator()(const eddic::mtac::expression& val) const {
+            std::size_t seed = 13;
 
-        public:
-            size_t operator()(const eddic::mtac::expression& val) const {
-                std::size_t seed = 13;
+            boost::hash_combine(seed, val.arg1);
+            boost::hash_combine(seed, val.arg2);
+            boost::hash_combine(seed, static_cast<unsigned int>(val.op));
 
-                boost::hash_combine(seed, hasher_arg(val.arg1));
-                boost::hash_combine(seed, hasher_arg(val.arg2));
-                boost::hash_combine(seed, static_cast<unsigned int>(val.op));
-                
-                return seed;
-            }
+            return seed;
+        }
     };
 }
 
