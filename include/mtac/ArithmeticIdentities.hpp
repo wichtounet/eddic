@@ -6,7 +6,7 @@
 //=======================================================================
 
 #ifndef MTAC_ARITHMETIC_IDENTITIES_H
-#define MTAC_ARITHMETIC_IDENTIES_H
+#define MTAC_ARITHMETIC_IDENTITIES_H
 
 #include "mtac/forward.hpp"
 #include "mtac/pass_traits.hpp"
