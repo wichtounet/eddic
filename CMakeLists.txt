@@ -8,7 +8,8 @@ set(VERSION_MINOR 2)
 set(VERSION_PATCH 3)
 
 #Boost is necessary
-FIND_PACKAGE(Boost REQUIRED)
+SET(Boost_USE_STATIC_LIBS ON)
+FIND_PACKAGE(Boost 1.52 COMPONENTS program_options unit_test_framework REQUIRED)
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Activate warnings and C++11 support
@@ -152,7 +153,7 @@ add_executable(eddic $<TARGET_OBJECTS:Compiler> src/eddi.cpp)
 add_executable(time_parse $<TARGET_OBJECTS:Compiler> src/parser/main.cpp)
 add_executable(generate_lexer $<TARGET_OBJECTS:Compiler> src/lexer/main.cpp)
 
-target_link_libraries (eddic boost_program_options)
+target_link_libraries (eddic ${Boost_LIBRARIES})
 target_link_libraries (time_parse boost_program_options)
 target_link_libraries (generate_lexer boost_program_options)
 
@@ -172,7 +173,7 @@ file(
 include(BoostTestTargets.cmake)
 add_boost_test(eddic_boost_test
     SOURCES ${test_files}
-    LIBRARIES boost_program_options
+    LIBRARIES ${Boost_LIBRARIES}
     TESTS
     ApplicationsSuite/applications_hangman
     SamplesSuite/samples_arrays
@@ -298,8 +299,6 @@ add_boost_test(eddic_boost_test
     bb_remove_bb
     bb_at
     )
-
-target_link_libraries (${eddic_boost_test_TARGET_NAME} boost_program_options)
 
 # Specifications for the installation of eddic
 
