@@ -27,8 +27,6 @@
 #include "parser/SpiritParser.hpp"
 #include "parser/EDDIGrammar.hpp"
 
-#include <cxxabi.h>
-
 namespace qi = boost::spirit::qi;
 namespace spirit = boost::spirit;
 
