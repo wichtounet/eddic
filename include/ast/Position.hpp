@@ -22,9 +22,9 @@ namespace ast {
  * \brief Define a position in the source code. 
  */
 struct Position {
-    int file;               /*!< The source file */
-    int line;               /*!< The source line number */
-    int column;             /*!< The source column number */
+    int file = 0;               /*!< The source file */
+    int line = 0;               /*!< The source line number */
+    int column = 0;             /*!< The source column number */
 };
 
 std::ostream& operator<< (std::ostream& stream, Position position);
