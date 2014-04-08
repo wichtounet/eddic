@@ -154,8 +154,8 @@ add_executable(time_parse $<TARGET_OBJECTS:Compiler> src/parser/main.cpp)
 add_executable(generate_lexer $<TARGET_OBJECTS:Compiler> src/lexer/main.cpp)
 
 target_link_libraries (eddic ${Boost_LIBRARIES})
-target_link_libraries (time_parse boost_program_options)
-target_link_libraries (generate_lexer boost_program_options)
+target_link_libraries (time_parse ${Boost_LIBRARIES})
+target_link_libraries (generate_lexer ${Boost_LIBRARIES})
 
 # Enable testing
 INCLUDE(CTest)
