@@ -14,8 +14,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Activate warnings and C++11 support
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS           "-std=c++1y -stdlib=libc++ -Qunused-arguments")
-    set(CMAKE_CXX_FLAGS_DEBUG     "-g -pedantic -Wuninitialized -Wsometimes-uninitialized -Wall -Wextra -Wno-long-long -Winit-self -Wdocumentation")
+    set(CMAKE_CXX_FLAGS           "-g -std=c++1y -stdlib=libc++ -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wall -Wextra -Wno-long-long -Winit-self -Wdocumentation -pedantic")
     set(CMAKE_CXX_FLAGS_RELEASE   "-DLOGGING_DISABLE -DNDEBUG -O3 -march=native")
 else()
     MESSAGE(FATAL_ERROR "ERROR: eddic can only be compiled on clang for now")
