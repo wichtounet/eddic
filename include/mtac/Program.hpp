@@ -46,7 +46,7 @@ struct Program {
     std::vector<Function> functions;
     Mode mode = Mode::MTAC;
 
-    call_graph call_graph;
+    mtac::call_graph call_graph;
 
     /*!
      * Create a new Program
