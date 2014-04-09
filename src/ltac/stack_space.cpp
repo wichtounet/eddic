@@ -27,8 +27,7 @@ void optimize_ranges(std::vector<std::pair<int, int>>& memset_ranges){
     while(it != memset_ranges.end()){
         auto& range = *it;
 
-        auto second_it = it;
-        ++second_it;
+        auto second_it = std::next(it);
 
         while(second_it != memset_ranges.end()){
             auto& second_range = *second_it;
