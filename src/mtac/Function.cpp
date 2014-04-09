@@ -208,31 +208,19 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
     --count;
 
     for(auto& succ : block->successors){
-        auto it = iterate(succ->predecessors);
-
-        while(it.has_next()){
-            auto pred = *it;
-
-            if(pred == block){
-                it.erase();
-            } else {
-                ++it;
-            }
-        }
+        auto& pred = succ->predecessors;
+        
+        pred.erase(std::remove_if(pred.begin(), pred.end(), [&block](auto& p){
+            return p == block;
+        }), pred.end());
     }
     
     for(auto& pred : block->predecessors){
-        auto it = iterate(pred->successors);
-
-        while(it.has_next()){
-            auto succ = *it;
-
-            if(succ == block){
-                it.erase();
-            } else {
-                ++it;
-            }
-        }
+        auto& succ = pred->successors;
+        
+        succ.erase(std::remove_if(succ.begin(), succ.end(), [&block](auto& p){
+            return p == block;
+        }), succ.end());
 
         //If there is a Fall through edge, redirect it
         if(pred == block->prev){
