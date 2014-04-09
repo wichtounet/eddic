@@ -673,19 +673,16 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::Function& function, P
     auto colors = hard_registers<Pseudo>(platform);
 
     //Handle bound registers
-    auto it = iterate(order);
-    while(it.has_next()){
-        auto reg = *it;
-
+    order.erase(std::remove_if(order.begin(), order.end(), [&graph, &allocation](auto& reg){
         //Handle bound registers
         if(graph.convert(reg).bound){
             LOG<Trace>("registers") << "Alloc " << graph.convert(reg).binding << " to pseudo " << graph.convert(reg) << " (bound)" << log::endl;
             allocation[reg] = graph.convert(reg).binding;
-            it.erase();
-        } else {
-            ++it;
+            return true;
         }
-    }
+
+        return false;
+    }), order.end());
 
     while(!order.empty()){
         std::size_t reg = order.back();
