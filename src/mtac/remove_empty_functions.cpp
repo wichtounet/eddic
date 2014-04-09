@@ -20,31 +20,19 @@ using namespace eddic;
 bool mtac::remove_empty_functions::operator()(mtac::Program& program){
     std::vector<std::string> removed_functions;
 
-    bool changes = false;
+    program.functions.erase(std::remove_if(program.functions.begin(), program.functions.end(), 
+        [&program,&removed_functions](auto& function){
+            if(!function.is_main() && function.size_no_nop() == 0){
+                program.context->stats().inc_counter("empty_function_removed");
+                LOG<Debug>("Optimizer") << "Remove empty function " << function.get_name() << log::endl;
+                
+                removed_functions.push_back(function.get_name());
 
-    auto it = iterate(program.functions);
+                return true;
+            }
 
-    while(it.has_next()){
-        auto& function = *it;
-
-        if(function.is_main()){
-            ++it;
-            continue;
-        }
-
-        unsigned int statements = function.size_no_nop();
-
-        if(statements == 0){
-            program.context->stats().inc_counter("empty_function_removed");
-            LOG<Debug>("Optimizer") << "Remove empty function " << function.get_name() << log::endl;
-            changes = true;
-
-            removed_functions.push_back(function.get_name());
-            it.erase();
-        } else {
-            ++it;
-        }
-    }
+            return false;
+        }), program.functions.end());
 
     if(!removed_functions.empty()){
         for(auto& function : program.functions){
@@ -104,5 +92,5 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
         }
     }
 
-    return changes;
+    return !removed_functions.empty();
 }
