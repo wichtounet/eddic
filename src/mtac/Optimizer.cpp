@@ -179,16 +179,6 @@ struct need_program {
     static const bool value = mtac::pass_traits<Pass>::property_flags & mtac::PROPERTY_PROGRAM;
 };
 
-template <bool B, typename T = void>
-struct disable_if {
-    typedef T type;
-};
-
-template <typename T>
-struct disable_if<true,T> {
-    //SFINAE
-};
-
 struct pass_runner {
     bool optimized = false;
 
@@ -209,42 +199,42 @@ struct pass_runner {
     }
 
     template<typename Pass>
-    inline typename std::enable_if<need_pool<Pass>::value, void>::type set_pool(Pass& pass){
+    inline typename std::enable_if_t<need_pool<Pass>::value, void> set_pool(Pass& pass){
         pass.set_pool(pool);
     }
 
     template<typename Pass>
-    inline typename disable_if<need_pool<Pass>::value, void>::type set_pool(Pass&){
+    inline typename std::enable_if_t<!need_pool<Pass>::value, void> set_pool(Pass&){
         //NOP
     }
 
     template<typename Pass>
-    inline typename std::enable_if<need_platform<Pass>::value, void>::type set_platform(Pass& pass){
+    inline typename std::enable_if_t<need_platform<Pass>::value, void> set_platform(Pass& pass){
         pass.set_platform(platform);
     }
 
     template<typename Pass>
-    inline typename disable_if<need_platform<Pass>::value, void>::type set_platform(Pass&){
+    inline typename std::enable_if_t<!need_platform<Pass>::value, void> set_platform(Pass&){
         //NOP
     }
 
     template<typename Pass>
-    inline typename std::enable_if<need_configuration<Pass>::value, void>::type set_configuration(Pass& pass){
+    inline typename std::enable_if_t<need_configuration<Pass>::value, void> set_configuration(Pass& pass){
         pass.set_configuration(configuration);
     }
 
     template<typename Pass>
-    inline typename disable_if<need_configuration<Pass>::value, void>::type set_configuration(Pass&){
+    inline typename std::enable_if_t<!need_configuration<Pass>::value, void> set_configuration(Pass&){
         //NOP
     }
 
     template<typename Pass>
-    inline typename std::enable_if<need_program<Pass>::value, Pass>::type construct(){
+    inline typename std::enable_if_t<need_program<Pass>::value, Pass> construct(){
         return Pass(program);
     }
 
     template<typename Pass>
-    inline typename disable_if<need_program<Pass>::value, Pass>::type construct(){
+    inline typename std::enable_if_t<!need_program<Pass>::value, Pass> construct(){
         return Pass();
     }
 
@@ -260,12 +250,12 @@ struct pass_runner {
     }
 
     template<typename Pass>
-    inline typename std::enable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass& pass){
+    inline typename std::enable_if_t<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool> has_to_be_run(Pass& pass){
         return pass.gate(configuration);
     }
 
     template<typename Pass>
-    inline typename disable_if<has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool>::type has_to_be_run(Pass&){
+    inline typename std::enable_if_t<!has_gate<Pass, bool(Pass::*)(std::shared_ptr<Configuration>)>::value, bool> has_to_be_run(Pass&){
         return true;
     }
 
