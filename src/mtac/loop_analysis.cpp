@@ -43,9 +43,7 @@ void clean_defaults(mtac::InductionVariables& induction_variables){
 
     //Erase induction variables that have been created by default
     while(it.has_next()){
-        auto equation = (*it).second;
-
-        if(!equation.i){
+        if(!it->second.i){
             it.erase();
             continue;
         }
