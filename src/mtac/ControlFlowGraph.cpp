@@ -20,27 +20,8 @@ void mtac::make_edge(mtac::basic_block_p from, mtac::basic_block_p to){
 }
 
 void mtac::remove_edge(mtac::basic_block_p from, mtac::basic_block_p to){
-    auto sit = iterate(from->successors);
-
-    while(sit.has_next()){
-        if(*sit == to){
-            sit.erase();
-            break;
-        }
-
-        ++sit;
-    }
-    
-    auto pit = iterate(to->predecessors);
-
-    while(pit.has_next()){
-        if(*pit == from){
-            pit.erase();
-            break;
-        }
-
-        ++pit;
-    }
+    from->successors.erase(std::remove(from->successors.begin(), from->successors.end(), to), from->successors.end());
+    to->predecessors.erase(std::remove(to->predecessors.begin(), to->predecessors.end(), from), to->predecessors.end());
 }
 
 void mtac::build_control_flow_graph(mtac::Function& function){
