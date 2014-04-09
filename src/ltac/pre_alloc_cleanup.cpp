@@ -28,18 +28,13 @@ void ltac::pre_alloc_cleanup(mtac::Program& program){
 
     for(auto& function : program.functions){
         for(auto& bb : function){
-            auto it = iterate(bb->l_statements);
-
-            while(it.has_next()){
-                auto& instruction = *it;
-
+            bb->l_statements.erase(std::remove_if(bb->l_statements.begin(), bb->l_statements.end(), [](auto& instruction){
                 if(instruction.op == ltac::Operator::MOV && is_pseudo_reg(instruction.arg1) && is_pseudo_reg(instruction.arg2)){
                     auto reg1 = boost::get<ltac::PseudoRegister>(*instruction.arg1);
                     auto reg2 = boost::get<ltac::PseudoRegister>(*instruction.arg2);
 
                     if(reg1 == reg2){
-                        it.erase();
-                        continue;
+                        return true;
                     }
                 }
 
@@ -48,13 +43,12 @@ void ltac::pre_alloc_cleanup(mtac::Program& program){
                     auto reg2 = boost::get<ltac::PseudoFloatRegister>(*instruction.arg2);
 
                     if(reg1 == reg2){
-                        it.erase();
-                        continue;
+                        return true;
                     }
                 }
 
-                ++it;
-            }
+                return false;
+            }), bb->l_statements.end());
         }
     }
 }
