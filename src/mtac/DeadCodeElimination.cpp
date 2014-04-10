@@ -121,11 +121,7 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
     }
 
     for(auto& block : function){
-        auto it = iterate(block->statements);
-
-        while(it.has_next()){
-            auto& quadruple = *it;
-
+        for(auto& quadruple : block->statements){
             if(quadruple.op == mtac::Operator::DOT_ASSIGN || quadruple.op == mtac::Operator::DOT_FASSIGN || quadruple.op == mtac::Operator::DOT_PASSIGN){
                 if(invalidated_offsets.find(quadruple.result) == invalidated_offsets.end()){
                     //Arrays are a problem because they are not considered as escaped after being passed in parameters
@@ -136,7 +132,6 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                                 auto member_type = function.context->global()->member_type(struct_type, *offset_ptr);
 
                                 if(member_type->is_pointer()){
-                                    ++it;
                                     continue;
                                 }
                             }
@@ -151,8 +146,6 @@ bool mtac::dead_code_elimination::operator()(mtac::Function& function){
                     }
                 }
             }
-
-            ++it;
         }
     }
 
