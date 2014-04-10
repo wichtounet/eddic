@@ -28,6 +28,8 @@ Function::Function(Function&& rhs) :
    rhs._standard = false;
 }
 
+//TODO Why is context not moved ?
+
 Function& Function::operator=(Function&& rhs){
     _struct_type = std::move(rhs._struct_type);
     _return_type = std::move(rhs._return_type);

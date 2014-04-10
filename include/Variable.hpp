@@ -51,8 +51,9 @@ class Variable {
         Variable(std::string name, std::shared_ptr<const Type> type, Position position, Val value);
         Variable(std::string name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset);
 
-        Variable(Variable&& rhs) noexcept = default;
-        Variable& operator=(Variable&& rhs) noexcept = default;
+        //TODO Find out why cannot be noexcept
+        Variable(Variable&& rhs) = default;
+        Variable& operator=(Variable&& rhs) = default;
 
         std::size_t references() const;
         void add_reference();

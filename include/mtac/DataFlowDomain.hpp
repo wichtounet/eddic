@@ -62,19 +62,11 @@ struct Domain<std::unordered_map<Key, Value, Hasher, Equals>> {
         //Nothing to init
     }
 
-    Domain(const Domain& rhs) : int_values(rhs.int_values) {}
-    Domain& operator=(const Domain& rhs){
-        int_values = rhs.int_values;
-
-        return *this;
-    }
-
-    Domain(Domain&& rhs) : int_values(std::move(rhs.int_values)) {}
-    Domain& operator=(Domain&& rhs){
-        int_values = std::move(rhs.int_values);
-
-        return *this;
-    }
+    Domain(const Domain& rhs) = default;
+    Domain& operator=(const Domain& rhs) = default;
+    
+    Domain(Domain&& rhs) = default;
+    Domain& operator=(Domain&& rhs) = default;
 
     Values& values(){
         return *int_values;

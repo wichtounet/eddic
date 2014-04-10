@@ -38,6 +38,9 @@ class Type : public std::enable_shared_from_this<Type> {
          */
         Type& operator=(const Type& rhs) = delete;
 
+        Type(Type&& rhs) noexcept = default;
+        Type& operator=(Type&& rhs) noexcept = default;
+
         /*!
          * Return the number of elements of the array type.
          * \return The number of elements.
