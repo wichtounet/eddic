@@ -18,4 +18,11 @@
 //For those who need variant with more than 20 template parameters
 #include <boost/mpl/vector.hpp>
 
+template<typename T, typename V, typename Functor>
+void exec_if_type(V& variant, Functor&& fun){
+    if(auto* ptr = boost::get<T>(&*variant)){
+        fun(*ptr);
+    }
+}
+
 #endif

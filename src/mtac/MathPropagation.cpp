@@ -30,17 +30,17 @@ void mtac::MathPropagation::operator()(mtac::Quadruple& quadruple){
         }
 
         if(quadruple.op == mtac::Operator::ASSIGN){
-            if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
+            exec_if_type<std::shared_ptr<Variable>>(quadruple.arg1, [&](auto& var){
                 //We only duplicate the math operation if the variable is used once to not add overhead
-                if(!quadruple.result->type()->is_array() && (*ptr)->type() != STRING && usage[*ptr] == 1 && assigns.find(*ptr) != assigns.end()){
-                    auto& assign = assigns.at(*ptr).get();
+                if(!quadruple.result->type()->is_array() && var->type() != STRING && usage[var] == 1 && assigns.find(var) != assigns.end()){
+                    auto& assign = assigns.at(var).get();
                     quadruple.op = assign.op;
                     quadruple.arg1 = assign.arg1;
                     quadruple.arg2 = assign.arg2;
 
                     optimized = true;
                 }
-            }
+            });
         }
     }
 }
