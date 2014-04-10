@@ -150,16 +150,16 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
-        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : functionCall.Content->values){
+            value = visit(*this, value);
         }
 
         return functionCall;
     }
     
     ast::Value operator()(ast::New& new_){
-        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : new_.Content->values){
+            value = visit(*this, value);
         }
 
         return new_;
@@ -193,8 +193,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
-        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : builtin.Content->values){
+            value = visit(*this, value);
         }
 
         return builtin;
