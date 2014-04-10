@@ -77,6 +77,21 @@ void visit_all_statements(Visitor& visitor, mtac::Function& function){
 }
 
 /*!
+ * \brief Execute the given functor if the given variant is of the given template type. 
+ * \param variant The variant. 
+ * \param functor The functor to execute. Must have an operator()(T).
+ * \tparam T The type that must be contained in the variant. 
+ * \tparam Variant The variant type. 
+ * \tparam Functor the type of the functor. 
+ */
+template<typename T, typename Variant, typename Functor>
+void if_type(Variant& variant, Functor&& functor){
+    if(auto* ptr = boost::get<T>(&*variant)){
+        functor(*ptr);
+    }
+}
+
+/*!
  * \brief Execute the given functor if the given optional variant is initialized and of the given template type. 
  * \param opt_variant The optional variant. 
  * \param functor The functor to execute. Must have an operator()(T).
