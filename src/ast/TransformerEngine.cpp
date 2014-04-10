@@ -63,16 +63,16 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
-        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : functionCall.Content->values){
+            value = visit(*this, value);
         }
 
         return functionCall;
     }
     
     ast::Value operator()(ast::New& new_){
-        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : new_.Content->values){
+            value = visit(*this, value);
         }
 
         return new_;
@@ -106,8 +106,8 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
-        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
-            *it = visit(*this, *it);
+        for(auto& value : builtin.Content->values){
+            value = visit(*this, value);
         }
 
         return builtin;
@@ -454,9 +454,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             if_.Content->condition = first_condition;
             if_.Content->instructions = cases[0].instructions;
 
-            for(std::size_t i = 1; i < cases.size(); ++i){
-                auto case_ = cases[i];
-
+            for(const auto& case_ : cases){
                 ast::Expression condition;
                 condition.Content->context = switch_.Content->context;
                 condition.Content->first = switch_.Content->value; 
@@ -493,9 +491,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             if_.Content->condition = first_condition;
             if_.Content->instructions = cases[0].instructions;
 
-            for(std::size_t i = 1; i < cases.size(); ++i){
-                auto case_ = cases[i];
-            
+            for(const auto& case_ : cases){
                 ast::FunctionCall condition;
                 condition.Content->context = switch_.Content->context;
                 condition.Content->position = case_.position;
