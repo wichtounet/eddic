@@ -100,7 +100,7 @@ void if_type(Variant& variant, Functor&& functor){
  * \tparam Functor the type of the functor. 
  */
 template<typename T, typename OptVariant, typename Functor>
-void if_init(OptVariant& opt_variant, Functor functor){
+void if_init(OptVariant& opt_variant, Functor&& functor){
     if(opt_variant){
         if(auto* ptr = boost::get<T>(&*opt_variant)){
             functor(*ptr);
@@ -118,7 +118,7 @@ void if_init(OptVariant& opt_variant, Functor functor){
  * \tparam Functor the type of the functor. 
  */
 template<typename T, typename OptVariant, typename Functor>
-void if_init_equals(OptVariant& opt_variant, T& cmp, Functor functor){
+void if_init_equals(OptVariant& opt_variant, T& cmp, Functor&& functor){
     if(opt_variant){
         if(auto* ptr = boost::get<T>(&*opt_variant)){
             if(*ptr == cmp){
@@ -138,7 +138,7 @@ void if_init_equals(OptVariant& opt_variant, T& cmp, Functor functor){
  * \tparam Functor the type of the functor. 
  */
 template<typename T, typename OptVariant, typename Functor>
-void if_init_not_equals(OptVariant& opt_variant, T& cmp, Functor functor){
+void if_init_not_equals(OptVariant& opt_variant, T& cmp, Functor&& functor){
     if(opt_variant){
         if(auto* ptr = boost::get<T>(&*opt_variant)){
             if(*ptr != cmp){
