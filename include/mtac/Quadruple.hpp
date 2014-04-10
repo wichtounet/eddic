@@ -53,6 +53,8 @@ struct Quadruple {
         Quadruple(const Quadruple& rhs);
         Quadruple& operator=(const Quadruple& rhs);
         
+        //TODO Apparently, it is not really noexcept
+        
         //Move constructors
         Quadruple(Quadruple&& rhs) noexcept;
         Quadruple& operator=(Quadruple&& rhs) noexcept;
