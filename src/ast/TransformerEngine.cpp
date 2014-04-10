@@ -604,14 +604,14 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& functionCall){
-        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : functionCall.Content->values){
+            value = visit(transformer, value);
         }
     }
     
     void operator()(ast::BuiltinOperator& builtin){
-        for(auto it = iterate(builtin.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : builtin.Content->values){
+            value = visit(transformer, value);
         }
     }
     
@@ -653,14 +653,14 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::StructDeclaration& declaration){
-        for(auto it = iterate(declaration.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : declaration.Content->values){
+            value = visit(transformer, value);
         }
     }
     
     void operator()(ast::New& new_){
-        for(auto it = iterate(new_.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : new_.Content->values){
+            value = visit(transformer, value);
         }
     }
     
@@ -781,8 +781,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& functionCall){
-        for(auto it = iterate(functionCall.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : functionCall.Content->values){
+            value = visit(transformer, value);
         }
     }
     
@@ -813,8 +813,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::StructDeclaration& declaration){
-        for(auto it = iterate(declaration.Content->values); it.has_next(); ++it){
-            *it = visit(transformer, *it);
+        for(auto& value : declaration.Content->values){
+            value = visit(transformer, value);
         }
     }
     
