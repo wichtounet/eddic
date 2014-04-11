@@ -20,3 +20,5 @@ CTestTestfile.cmake
 DartConfiguration.tcl
 Testing
 reports
+test_reports
+tests.tmp.log
