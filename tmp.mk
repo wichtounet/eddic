@@ -231,6 +231,9 @@ update_test_list: bin/boosttest--eddic_boost_test
 	./$(RELEASE_TEST_EXE) --log_level=test_suite --log_sink=stdout > tests.tmp.log
 	bash tools/generate_tests.sh
 
+cppcheck:
+	cppcheck --platform=unix64 --enable=all --std=c++11 -I include src
+
 -include tests.mk
 
 -include $(RELEASE_D_FILES)
