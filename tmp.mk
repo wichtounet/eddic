@@ -1,6 +1,6 @@
 default: release
 
-.PHONY: default release debug all clean
+.PHONY: default release debug all clean cppcheck doc
 
 BOOST_PREFIX=$(HOME)/build/modular-boost/
 
@@ -233,6 +233,9 @@ update_test_list: bin/boosttest--eddic_boost_test
 
 cppcheck:
 	cppcheck --platform=unix64 --enable=all --std=c++11 -I include src
+    
+doc:
+	doxygen doc/Doxyfile
 
 -include tests.mk
 
