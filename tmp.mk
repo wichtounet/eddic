@@ -237,6 +237,24 @@ cppcheck:
 doc:
 	doxygen doc/Doxyfile
 
+stats:
+	bash tools/stats.sh release/bin/eddic .
+
+cases:
+	bash tools/cases.sh release/bin/eddic .
+
+timing:
+	bash tools/timing.sh release/bin/eddic .
+
+time_parsing:
+	bash tools/time_parsing.sh release/bin/eddic .
+
+gitstats:
+	gitstats .
+
+sloccount:
+	sloccount .
+
 -include tests.mk
 
 -include $(RELEASE_D_FILES)
