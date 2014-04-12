@@ -52,67 +52,83 @@ RELEASE_D_FILES=$(CPP_FILES_ALL:%.cpp=release/%.cpp.d)
 
 debug/src/%.cpp.o: src/%.cpp
 	@ mkdir -p debug/src/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/%.cpp.o: src/%.cpp
 	@ mkdir -p release/src/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/ast/%.cpp.o: src/ast/%.cpp
 	@ mkdir -p debug/src/ast/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/ast/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/ast/%.cpp.o: src/ast/%.cpp
 	@ mkdir -p release/src/ast/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/ast/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/lexer/%.cpp.o: src/lexer/%.cpp
 	@ mkdir -p debug/src/lexer/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/lexer/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/lexer/%.cpp.o: src/lexer/%.cpp
 	@ mkdir -p release/src/lexer/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/lexer/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/parser/%.cpp.o: src/parser/%.cpp
 	@ mkdir -p debug/src/parser/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/parser/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/parser/%.cpp.o: src/parser/%.cpp
 	@ mkdir -p release/src/parser/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/parser/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/asm/%.cpp.o: src/asm/%.cpp
 	@ mkdir -p debug/src/asm/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/asm/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/asm/%.cpp.o: src/asm/%.cpp
 	@ mkdir -p release/src/asm/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/asm/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -o $@ -c $<
 
 debug/src/mtac/%.cpp.o: src/mtac/%.cpp
 	@ mkdir -p debug/src/mtac/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/mtac/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/mtac/%.cpp.o: src/mtac/%.cpp
 	@ mkdir -p release/src/mtac/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/mtac/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -o $@ -c $<
 
 debug/src/ltac/%.cpp.o: src/ltac/%.cpp
 	@ mkdir -p debug/src/ltac/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/ltac/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/ltac/%.cpp.o: src/ltac/%.cpp
 	@ mkdir -p release/src/ltac/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/ltac/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -o $@ -c $<
 
 debug/test/%.cpp.o: test/%.cpp
 	@ mkdir -p debug/test/
-	$(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/test/$*.cpp.d
+	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/test/%.cpp.o: test/%.cpp
 	@ mkdir -p release/test/
-	$(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/test/$*.cpp.d
+	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 # Link the various binaries
 
@@ -147,72 +163,6 @@ debug/bin/test: $(DEBUG_TEST_O_FILES_NON_EXEC)
 release/bin/test: $(RELEASE_TEST_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
 	$(LD) $(LD_TEST_FLAGS) $(RELEASE_FLAGS) -o $@ $?
-
-# Generate the dependency files
-
-debug/src/%.cpp.d: src/%.cpp
-	@ mkdir -p debug/src/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/$*.cpp.o src/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/%.cpp.d: src/%.cpp
-	@ mkdir -p release/src/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/$*.cpp.o src/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/ast/%.cpp.d: src/ast/%.cpp
-	@ mkdir -p debug/src/ast/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/ast/$*.cpp.o src/ast/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/ast/%.cpp.d: src/ast/%.cpp
-	@ mkdir -p release/src/ast/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/ast/$*.cpp.o src/ast/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/lexer/%.cpp.d: src/lexer/%.cpp
-	@ mkdir -p debug/src/lexer/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/lexer/$*.cpp.o src/lexer/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/lexer/%.cpp.d: src/lexer/%.cpp
-	@ mkdir -p release/src/lexer/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/lexer/$*.cpp.o src/lexer/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/parser/%.cpp.d: src/parser/%.cpp
-	@ mkdir -p debug/src/parser/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/parser/$*.cpp.o src/parser/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/parser/%.cpp.d: src/parser/%.cpp
-	@ mkdir -p release/src/parser/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/parser/$*.cpp.o src/parser/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/asm/%.cpp.d: src/asm/%.cpp
-	@ mkdir -p debug/src/asm/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/asm/$*.cpp.o src/asm/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/asm/%.cpp.d: src/asm/%.cpp
-	@ mkdir -p release/src/asm/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/asm/$*.cpp.o src/asm/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/mtac/%.cpp.d: src/mtac/%.cpp
-	@ mkdir -p debug/src/mtac/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/mtac/$*.cpp.o src/mtac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/mtac/%.cpp.d: src/mtac/%.cpp
-	@ mkdir -p release/src/mtac/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/mtac/$*.cpp.o src/mtac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/src/ltac/%.cpp.d: src/ltac/%.cpp
-	@ mkdir -p debug/src/ltac/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/ltac/$*.cpp.o src/ltac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/src/ltac/%.cpp.d: src/ltac/%.cpp
-	@ mkdir -p release/src/ltac/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/ltac/$*.cpp.o src/ltac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-debug/test/%.cpp.d: test/%.cpp
-	@ mkdir -p debug/test/
-	@ $(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/test/$*.cpp.o test/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
-
-release/test/%.cpp.d: test/%.cpp
-	@ mkdir -p release/test/
-	@ $(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/test/$*.cpp.o test/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 # Management targets
 
