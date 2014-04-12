@@ -21,8 +21,9 @@
 
 #include "mtac/Program.hpp"
 
+#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE eddic_test_suite
-#include <BoostTestTargetConfig.h>
+#include <boost/test/unit_test.hpp>
 
 /*
  * \def TEST_APPLICATION(file)

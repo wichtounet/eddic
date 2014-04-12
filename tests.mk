@@ -1,492 +1,983 @@
-test_bb_entry_exit_count : $(TEST_EXE)
+debug_test_bb_entry_exit_count : $(DEBUG_TEST_EXE)
 	 @ echo "Run bb_entry_exit_count" > test_reports/test_bb_entry_exit_count.log
-	 @ ./$(TEST_EXE) --run_test=bb_entry_exit_count --report_sin=stdout >> test_reports/test_bb_entry_exit_count.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=bb_entry_exit_count --report_sin=stdout >> test_reports/test_bb_entry_exit_count.log
 
-test_bb_iterators : $(TEST_EXE)
+release_test_bb_entry_exit_count : $(RELEASE_TEST_EXE)
+	 @ echo "Run bb_entry_exit_count" > test_reports/test_bb_entry_exit_count.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=bb_entry_exit_count --report_sin=stdout >> test_reports/test_bb_entry_exit_count.log
+
+debug_test_bb_iterators : $(DEBUG_TEST_EXE)
 	 @ echo "Run bb_iterators" > test_reports/test_bb_iterators.log
-	 @ ./$(TEST_EXE) --run_test=bb_iterators --report_sin=stdout >> test_reports/test_bb_iterators.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=bb_iterators --report_sin=stdout >> test_reports/test_bb_iterators.log
 
-test_bb_new_bb : $(TEST_EXE)
+release_test_bb_iterators : $(RELEASE_TEST_EXE)
+	 @ echo "Run bb_iterators" > test_reports/test_bb_iterators.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=bb_iterators --report_sin=stdout >> test_reports/test_bb_iterators.log
+
+debug_test_bb_new_bb : $(DEBUG_TEST_EXE)
 	 @ echo "Run bb_new_bb" > test_reports/test_bb_new_bb.log
-	 @ ./$(TEST_EXE) --run_test=bb_new_bb --report_sin=stdout >> test_reports/test_bb_new_bb.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=bb_new_bb --report_sin=stdout >> test_reports/test_bb_new_bb.log
 
-test_bb_remove_bb : $(TEST_EXE)
+release_test_bb_new_bb : $(RELEASE_TEST_EXE)
+	 @ echo "Run bb_new_bb" > test_reports/test_bb_new_bb.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=bb_new_bb --report_sin=stdout >> test_reports/test_bb_new_bb.log
+
+debug_test_bb_remove_bb : $(DEBUG_TEST_EXE)
 	 @ echo "Run bb_remove_bb" > test_reports/test_bb_remove_bb.log
-	 @ ./$(TEST_EXE) --run_test=bb_remove_bb --report_sin=stdout >> test_reports/test_bb_remove_bb.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=bb_remove_bb --report_sin=stdout >> test_reports/test_bb_remove_bb.log
 
-test_bb_at : $(TEST_EXE)
+release_test_bb_remove_bb : $(RELEASE_TEST_EXE)
+	 @ echo "Run bb_remove_bb" > test_reports/test_bb_remove_bb.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=bb_remove_bb --report_sin=stdout >> test_reports/test_bb_remove_bb.log
+
+debug_test_bb_at : $(DEBUG_TEST_EXE)
 	 @ echo "Run bb_at" > test_reports/test_bb_at.log
-	 @ ./$(TEST_EXE) --run_test=bb_at --report_sin=stdout >> test_reports/test_bb_at.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=bb_at --report_sin=stdout >> test_reports/test_bb_at.log
 
-test_ApplicationsSuite/applications_hangman : $(TEST_EXE)
+release_test_bb_at : $(RELEASE_TEST_EXE)
+	 @ echo "Run bb_at" > test_reports/test_bb_at.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=bb_at --report_sin=stdout >> test_reports/test_bb_at.log
+
+debug_test_ApplicationsSuite/applications_hangman : $(DEBUG_TEST_EXE)
 	 @ echo "Run ApplicationsSuite/applications_hangman" > test_reports/test_ApplicationsSuite-applications_hangman.log
-	 @ ./$(TEST_EXE) --run_test=ApplicationsSuite/applications_hangman --report_sin=stdout >> test_reports/test_ApplicationsSuite-applications_hangman.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=ApplicationsSuite/applications_hangman --report_sin=stdout >> test_reports/test_ApplicationsSuite-applications_hangman.log
 
-test_SamplesSuite/samples_arrays : $(TEST_EXE)
+release_test_ApplicationsSuite/applications_hangman : $(RELEASE_TEST_EXE)
+	 @ echo "Run ApplicationsSuite/applications_hangman" > test_reports/test_ApplicationsSuite-applications_hangman.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=ApplicationsSuite/applications_hangman --report_sin=stdout >> test_reports/test_ApplicationsSuite-applications_hangman.log
+
+debug_test_SamplesSuite/samples_arrays : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_arrays" > test_reports/test_SamplesSuite-samples_arrays.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_arrays --report_sin=stdout >> test_reports/test_SamplesSuite-samples_arrays.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_arrays --report_sin=stdout >> test_reports/test_SamplesSuite-samples_arrays.log
 
-test_SamplesSuite/samples_asm : $(TEST_EXE)
+release_test_SamplesSuite/samples_arrays : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_arrays" > test_reports/test_SamplesSuite-samples_arrays.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_arrays --report_sin=stdout >> test_reports/test_SamplesSuite-samples_arrays.log
+
+debug_test_SamplesSuite/samples_asm : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_asm" > test_reports/test_SamplesSuite-samples_asm.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_asm --report_sin=stdout >> test_reports/test_SamplesSuite-samples_asm.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_asm --report_sin=stdout >> test_reports/test_SamplesSuite-samples_asm.log
 
-test_SamplesSuite/samples_assembly : $(TEST_EXE)
+release_test_SamplesSuite/samples_asm : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_asm" > test_reports/test_SamplesSuite-samples_asm.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_asm --report_sin=stdout >> test_reports/test_SamplesSuite-samples_asm.log
+
+debug_test_SamplesSuite/samples_assembly : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_assembly" > test_reports/test_SamplesSuite-samples_assembly.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_assembly --report_sin=stdout >> test_reports/test_SamplesSuite-samples_assembly.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_assembly --report_sin=stdout >> test_reports/test_SamplesSuite-samples_assembly.log
 
-test_SamplesSuite/samples_bool : $(TEST_EXE)
+release_test_SamplesSuite/samples_assembly : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_assembly" > test_reports/test_SamplesSuite-samples_assembly.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_assembly --report_sin=stdout >> test_reports/test_SamplesSuite-samples_assembly.log
+
+debug_test_SamplesSuite/samples_bool : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_bool" > test_reports/test_SamplesSuite-samples_bool.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_bool --report_sin=stdout >> test_reports/test_SamplesSuite-samples_bool.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_bool --report_sin=stdout >> test_reports/test_SamplesSuite-samples_bool.log
 
-test_SamplesSuite/samples_compound : $(TEST_EXE)
+release_test_SamplesSuite/samples_bool : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_bool" > test_reports/test_SamplesSuite-samples_bool.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_bool --report_sin=stdout >> test_reports/test_SamplesSuite-samples_bool.log
+
+debug_test_SamplesSuite/samples_compound : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_compound" > test_reports/test_SamplesSuite-samples_compound.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_compound --report_sin=stdout >> test_reports/test_SamplesSuite-samples_compound.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_compound --report_sin=stdout >> test_reports/test_SamplesSuite-samples_compound.log
 
-test_SamplesSuite/samples_concat : $(TEST_EXE)
+release_test_SamplesSuite/samples_compound : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_compound" > test_reports/test_SamplesSuite-samples_compound.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_compound --report_sin=stdout >> test_reports/test_SamplesSuite-samples_compound.log
+
+debug_test_SamplesSuite/samples_concat : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_concat" > test_reports/test_SamplesSuite-samples_concat.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_concat --report_sin=stdout >> test_reports/test_SamplesSuite-samples_concat.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_concat --report_sin=stdout >> test_reports/test_SamplesSuite-samples_concat.log
 
-test_SamplesSuite/samples_const : $(TEST_EXE)
+release_test_SamplesSuite/samples_concat : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_concat" > test_reports/test_SamplesSuite-samples_concat.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_concat --report_sin=stdout >> test_reports/test_SamplesSuite-samples_concat.log
+
+debug_test_SamplesSuite/samples_const : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_const" > test_reports/test_SamplesSuite-samples_const.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_const --report_sin=stdout >> test_reports/test_SamplesSuite-samples_const.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_const --report_sin=stdout >> test_reports/test_SamplesSuite-samples_const.log
 
-test_SamplesSuite/samples_functions : $(TEST_EXE)
+release_test_SamplesSuite/samples_const : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_const" > test_reports/test_SamplesSuite-samples_const.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_const --report_sin=stdout >> test_reports/test_SamplesSuite-samples_const.log
+
+debug_test_SamplesSuite/samples_functions : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_functions" > test_reports/test_SamplesSuite-samples_functions.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_functions --report_sin=stdout >> test_reports/test_SamplesSuite-samples_functions.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_functions --report_sin=stdout >> test_reports/test_SamplesSuite-samples_functions.log
 
-test_SamplesSuite/samples_float : $(TEST_EXE)
+release_test_SamplesSuite/samples_functions : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_functions" > test_reports/test_SamplesSuite-samples_functions.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_functions --report_sin=stdout >> test_reports/test_SamplesSuite-samples_functions.log
+
+debug_test_SamplesSuite/samples_float : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_float" > test_reports/test_SamplesSuite-samples_float.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_float.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_float.log
 
-test_SamplesSuite/samples_little_float : $(TEST_EXE)
+release_test_SamplesSuite/samples_float : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_float" > test_reports/test_SamplesSuite-samples_float.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_float.log
+
+debug_test_SamplesSuite/samples_little_float : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_little_float" > test_reports/test_SamplesSuite-samples_little_float.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_little_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_little_float.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_little_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_little_float.log
 
-test_SamplesSuite/samples_casts : $(TEST_EXE)
+release_test_SamplesSuite/samples_little_float : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_little_float" > test_reports/test_SamplesSuite-samples_little_float.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_little_float --report_sin=stdout >> test_reports/test_SamplesSuite-samples_little_float.log
+
+debug_test_SamplesSuite/samples_casts : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_casts" > test_reports/test_SamplesSuite-samples_casts.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_casts --report_sin=stdout >> test_reports/test_SamplesSuite-samples_casts.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_casts --report_sin=stdout >> test_reports/test_SamplesSuite-samples_casts.log
 
-test_SamplesSuite/samples_inc : $(TEST_EXE)
+release_test_SamplesSuite/samples_casts : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_casts" > test_reports/test_SamplesSuite-samples_casts.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_casts --report_sin=stdout >> test_reports/test_SamplesSuite-samples_casts.log
+
+debug_test_SamplesSuite/samples_inc : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_inc" > test_reports/test_SamplesSuite-samples_inc.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_inc --report_sin=stdout >> test_reports/test_SamplesSuite-samples_inc.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_inc --report_sin=stdout >> test_reports/test_SamplesSuite-samples_inc.log
 
-test_SamplesSuite/samples_includes : $(TEST_EXE)
+release_test_SamplesSuite/samples_inc : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_inc" > test_reports/test_SamplesSuite-samples_inc.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_inc --report_sin=stdout >> test_reports/test_SamplesSuite-samples_inc.log
+
+debug_test_SamplesSuite/samples_includes : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_includes" > test_reports/test_SamplesSuite-samples_includes.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_includes --report_sin=stdout >> test_reports/test_SamplesSuite-samples_includes.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_includes --report_sin=stdout >> test_reports/test_SamplesSuite-samples_includes.log
 
-test_SamplesSuite/samples_optimize : $(TEST_EXE)
+release_test_SamplesSuite/samples_includes : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_includes" > test_reports/test_SamplesSuite-samples_includes.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_includes --report_sin=stdout >> test_reports/test_SamplesSuite-samples_includes.log
+
+debug_test_SamplesSuite/samples_optimize : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_optimize" > test_reports/test_SamplesSuite-samples_optimize.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_optimize --report_sin=stdout >> test_reports/test_SamplesSuite-samples_optimize.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_optimize --report_sin=stdout >> test_reports/test_SamplesSuite-samples_optimize.log
 
-test_SamplesSuite/samples_problem : $(TEST_EXE)
+release_test_SamplesSuite/samples_optimize : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_optimize" > test_reports/test_SamplesSuite-samples_optimize.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_optimize --report_sin=stdout >> test_reports/test_SamplesSuite-samples_optimize.log
+
+debug_test_SamplesSuite/samples_problem : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_problem" > test_reports/test_SamplesSuite-samples_problem.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_problem --report_sin=stdout >> test_reports/test_SamplesSuite-samples_problem.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_problem --report_sin=stdout >> test_reports/test_SamplesSuite-samples_problem.log
 
-test_SamplesSuite/samples_identifiers : $(TEST_EXE)
+release_test_SamplesSuite/samples_problem : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_problem" > test_reports/test_SamplesSuite-samples_problem.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_problem --report_sin=stdout >> test_reports/test_SamplesSuite-samples_problem.log
+
+debug_test_SamplesSuite/samples_identifiers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_identifiers" > test_reports/test_SamplesSuite-samples_identifiers.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_identifiers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_identifiers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_identifiers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_identifiers.log
 
-test_SamplesSuite/samples_registers : $(TEST_EXE)
+release_test_SamplesSuite/samples_identifiers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_identifiers" > test_reports/test_SamplesSuite-samples_identifiers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_identifiers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_identifiers.log
+
+debug_test_SamplesSuite/samples_registers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_registers" > test_reports/test_SamplesSuite-samples_registers.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_registers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_registers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_registers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_registers.log
 
-test_SamplesSuite/samples_structures : $(TEST_EXE)
+release_test_SamplesSuite/samples_registers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_registers" > test_reports/test_SamplesSuite-samples_registers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_registers --report_sin=stdout >> test_reports/test_SamplesSuite-samples_registers.log
+
+debug_test_SamplesSuite/samples_structures : $(DEBUG_TEST_EXE)
 	 @ echo "Run SamplesSuite/samples_structures" > test_reports/test_SamplesSuite-samples_structures.log
-	 @ ./$(TEST_EXE) --run_test=SamplesSuite/samples_structures --report_sin=stdout >> test_reports/test_SamplesSuite-samples_structures.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SamplesSuite/samples_structures --report_sin=stdout >> test_reports/test_SamplesSuite-samples_structures.log
 
-test_SpecificSuite/addressof : $(TEST_EXE)
+release_test_SamplesSuite/samples_structures : $(RELEASE_TEST_EXE)
+	 @ echo "Run SamplesSuite/samples_structures" > test_reports/test_SamplesSuite-samples_structures.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SamplesSuite/samples_structures --report_sin=stdout >> test_reports/test_SamplesSuite-samples_structures.log
+
+debug_test_SpecificSuite/addressof : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/addressof" > test_reports/test_SpecificSuite-addressof.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/addressof --report_sin=stdout >> test_reports/test_SpecificSuite-addressof.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/addressof --report_sin=stdout >> test_reports/test_SpecificSuite-addressof.log
 
-test_SpecificSuite/array_foreach_local : $(TEST_EXE)
+release_test_SpecificSuite/addressof : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/addressof" > test_reports/test_SpecificSuite-addressof.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/addressof --report_sin=stdout >> test_reports/test_SpecificSuite-addressof.log
+
+debug_test_SpecificSuite/array_foreach_local : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/array_foreach_local" > test_reports/test_SpecificSuite-array_foreach_local.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/array_foreach_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_local.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/array_foreach_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_local.log
 
-test_SpecificSuite/array_foreach_global : $(TEST_EXE)
+release_test_SpecificSuite/array_foreach_local : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/array_foreach_local" > test_reports/test_SpecificSuite-array_foreach_local.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/array_foreach_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_local.log
+
+debug_test_SpecificSuite/array_foreach_global : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/array_foreach_global" > test_reports/test_SpecificSuite-array_foreach_global.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/array_foreach_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_global.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/array_foreach_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_global.log
 
-test_SpecificSuite/array_foreach_param_local : $(TEST_EXE)
+release_test_SpecificSuite/array_foreach_global : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/array_foreach_global" > test_reports/test_SpecificSuite-array_foreach_global.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/array_foreach_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_global.log
+
+debug_test_SpecificSuite/array_foreach_param_local : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/array_foreach_param_local" > test_reports/test_SpecificSuite-array_foreach_param_local.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/array_foreach_param_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_local.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_local.log
 
-test_SpecificSuite/array_foreach_param_global : $(TEST_EXE)
+release_test_SpecificSuite/array_foreach_param_local : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/array_foreach_param_local" > test_reports/test_SpecificSuite-array_foreach_param_local.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_local --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_local.log
+
+debug_test_SpecificSuite/array_foreach_param_global : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/array_foreach_param_global" > test_reports/test_SpecificSuite-array_foreach_param_global.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/array_foreach_param_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_global.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_global.log
 
-test_SpecificSuite/array_foreach_param_param : $(TEST_EXE)
+release_test_SpecificSuite/array_foreach_param_global : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/array_foreach_param_global" > test_reports/test_SpecificSuite-array_foreach_param_global.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_global --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_global.log
+
+debug_test_SpecificSuite/array_foreach_param_param : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/array_foreach_param_param" > test_reports/test_SpecificSuite-array_foreach_param_param.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/array_foreach_param_param --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_param.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_param --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_param.log
 
-test_SpecificSuite/arrays_in_struct : $(TEST_EXE)
+release_test_SpecificSuite/array_foreach_param_param : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/array_foreach_param_param" > test_reports/test_SpecificSuite-array_foreach_param_param.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/array_foreach_param_param --report_sin=stdout >> test_reports/test_SpecificSuite-array_foreach_param_param.log
+
+debug_test_SpecificSuite/arrays_in_struct : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/arrays_in_struct" > test_reports/test_SpecificSuite-arrays_in_struct.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-arrays_in_struct.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-arrays_in_struct.log
 
-test_SpecificSuite/char_type : $(TEST_EXE)
+release_test_SpecificSuite/arrays_in_struct : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/arrays_in_struct" > test_reports/test_SpecificSuite-arrays_in_struct.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-arrays_in_struct.log
+
+debug_test_SpecificSuite/char_type : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/char_type" > test_reports/test_SpecificSuite-char_type.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/char_type --report_sin=stdout >> test_reports/test_SpecificSuite-char_type.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/char_type --report_sin=stdout >> test_reports/test_SpecificSuite-char_type.log
 
-test_SpecificSuite/char_at : $(TEST_EXE)
+release_test_SpecificSuite/char_type : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/char_type" > test_reports/test_SpecificSuite-char_type.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/char_type --report_sin=stdout >> test_reports/test_SpecificSuite-char_type.log
+
+debug_test_SpecificSuite/char_at : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/char_at" > test_reports/test_SpecificSuite-char_at.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/char_at --report_sin=stdout >> test_reports/test_SpecificSuite-char_at.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/char_at --report_sin=stdout >> test_reports/test_SpecificSuite-char_at.log
 
-test_SpecificSuite/ctor_dtor_heap : $(TEST_EXE)
+release_test_SpecificSuite/char_at : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/char_at" > test_reports/test_SpecificSuite-char_at.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/char_at --report_sin=stdout >> test_reports/test_SpecificSuite-char_at.log
+
+debug_test_SpecificSuite/ctor_dtor_heap : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/ctor_dtor_heap" > test_reports/test_SpecificSuite-ctor_dtor_heap.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/ctor_dtor_heap --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_heap.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/ctor_dtor_heap --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_heap.log
 
-test_SpecificSuite/ctor_dtor_stack : $(TEST_EXE)
+release_test_SpecificSuite/ctor_dtor_heap : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/ctor_dtor_heap" > test_reports/test_SpecificSuite-ctor_dtor_heap.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/ctor_dtor_heap --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_heap.log
+
+debug_test_SpecificSuite/ctor_dtor_stack : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/ctor_dtor_stack" > test_reports/test_SpecificSuite-ctor_dtor_stack.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/ctor_dtor_stack --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_stack.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/ctor_dtor_stack --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_stack.log
 
-test_SpecificSuite/copy_constructors : $(TEST_EXE)
+release_test_SpecificSuite/ctor_dtor_stack : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/ctor_dtor_stack" > test_reports/test_SpecificSuite-ctor_dtor_stack.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/ctor_dtor_stack --report_sin=stdout >> test_reports/test_SpecificSuite-ctor_dtor_stack.log
+
+debug_test_SpecificSuite/copy_constructors : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/copy_constructors" > test_reports/test_SpecificSuite-copy_constructors.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/copy_constructors --report_sin=stdout >> test_reports/test_SpecificSuite-copy_constructors.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/copy_constructors --report_sin=stdout >> test_reports/test_SpecificSuite-copy_constructors.log
 
-test_SpecificSuite/casts : $(TEST_EXE)
+release_test_SpecificSuite/copy_constructors : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/copy_constructors" > test_reports/test_SpecificSuite-copy_constructors.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/copy_constructors --report_sin=stdout >> test_reports/test_SpecificSuite-copy_constructors.log
+
+debug_test_SpecificSuite/casts : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/casts" > test_reports/test_SpecificSuite-casts.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/casts --report_sin=stdout >> test_reports/test_SpecificSuite-casts.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/casts --report_sin=stdout >> test_reports/test_SpecificSuite-casts.log
 
-test_SpecificSuite/compound : $(TEST_EXE)
+release_test_SpecificSuite/casts : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/casts" > test_reports/test_SpecificSuite-casts.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/casts --report_sin=stdout >> test_reports/test_SpecificSuite-casts.log
+
+debug_test_SpecificSuite/compound : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/compound" > test_reports/test_SpecificSuite-compound.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/compound --report_sin=stdout >> test_reports/test_SpecificSuite-compound.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/compound --report_sin=stdout >> test_reports/test_SpecificSuite-compound.log
 
-test_SpecificSuite/delete_any : $(TEST_EXE)
+release_test_SpecificSuite/compound : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/compound" > test_reports/test_SpecificSuite-compound.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/compound --report_sin=stdout >> test_reports/test_SpecificSuite-compound.log
+
+debug_test_SpecificSuite/delete_any : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/delete_any" > test_reports/test_SpecificSuite-delete_any.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/delete_any --report_sin=stdout >> test_reports/test_SpecificSuite-delete_any.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/delete_any --report_sin=stdout >> test_reports/test_SpecificSuite-delete_any.log
 
-test_SpecificSuite/if_ : $(TEST_EXE)
+release_test_SpecificSuite/delete_any : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/delete_any" > test_reports/test_SpecificSuite-delete_any.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/delete_any --report_sin=stdout >> test_reports/test_SpecificSuite-delete_any.log
+
+debug_test_SpecificSuite/if_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/if_" > test_reports/test_SpecificSuite-if_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/if_ --report_sin=stdout >> test_reports/test_SpecificSuite-if_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/if_ --report_sin=stdout >> test_reports/test_SpecificSuite-if_.log
 
-test_SpecificSuite/includes : $(TEST_EXE)
+release_test_SpecificSuite/if_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/if_" > test_reports/test_SpecificSuite-if_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/if_ --report_sin=stdout >> test_reports/test_SpecificSuite-if_.log
+
+debug_test_SpecificSuite/includes : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/includes" > test_reports/test_SpecificSuite-includes.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/includes --report_sin=stdout >> test_reports/test_SpecificSuite-includes.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/includes --report_sin=stdout >> test_reports/test_SpecificSuite-includes.log
 
-test_SpecificSuite/int_arrays : $(TEST_EXE)
+release_test_SpecificSuite/includes : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/includes" > test_reports/test_SpecificSuite-includes.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/includes --report_sin=stdout >> test_reports/test_SpecificSuite-includes.log
+
+debug_test_SpecificSuite/int_arrays : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/int_arrays" > test_reports/test_SpecificSuite-int_arrays.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/int_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-int_arrays.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/int_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-int_arrays.log
 
-test_SpecificSuite/string_arrays : $(TEST_EXE)
+release_test_SpecificSuite/int_arrays : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/int_arrays" > test_reports/test_SpecificSuite-int_arrays.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/int_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-int_arrays.log
+
+debug_test_SpecificSuite/string_arrays : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/string_arrays" > test_reports/test_SpecificSuite-string_arrays.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/string_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-string_arrays.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/string_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-string_arrays.log
 
-test_SpecificSuite/string_foreach : $(TEST_EXE)
+release_test_SpecificSuite/string_arrays : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/string_arrays" > test_reports/test_SpecificSuite-string_arrays.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/string_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-string_arrays.log
+
+debug_test_SpecificSuite/string_foreach : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/string_foreach" > test_reports/test_SpecificSuite-string_foreach.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/string_foreach --report_sin=stdout >> test_reports/test_SpecificSuite-string_foreach.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/string_foreach --report_sin=stdout >> test_reports/test_SpecificSuite-string_foreach.log
 
-test_SpecificSuite/string_pointers : $(TEST_EXE)
+release_test_SpecificSuite/string_foreach : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/string_foreach" > test_reports/test_SpecificSuite-string_foreach.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/string_foreach --report_sin=stdout >> test_reports/test_SpecificSuite-string_foreach.log
+
+debug_test_SpecificSuite/string_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/string_pointers" > test_reports/test_SpecificSuite-string_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/string_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-string_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/string_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-string_pointers.log
 
-test_SpecificSuite/int_pointers : $(TEST_EXE)
+release_test_SpecificSuite/string_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/string_pointers" > test_reports/test_SpecificSuite-string_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/string_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-string_pointers.log
+
+debug_test_SpecificSuite/int_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/int_pointers" > test_reports/test_SpecificSuite-int_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/int_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-int_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/int_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-int_pointers.log
 
-test_SpecificSuite/bool_pointers : $(TEST_EXE)
+release_test_SpecificSuite/int_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/int_pointers" > test_reports/test_SpecificSuite-int_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/int_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-int_pointers.log
+
+debug_test_SpecificSuite/bool_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/bool_pointers" > test_reports/test_SpecificSuite-bool_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/bool_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-bool_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/bool_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-bool_pointers.log
 
-test_SpecificSuite/cmove : $(TEST_EXE)
+release_test_SpecificSuite/bool_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/bool_pointers" > test_reports/test_SpecificSuite-bool_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/bool_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-bool_pointers.log
+
+debug_test_SpecificSuite/cmove : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/cmove" > test_reports/test_SpecificSuite-cmove.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/cmove --report_sin=stdout >> test_reports/test_SpecificSuite-cmove.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/cmove --report_sin=stdout >> test_reports/test_SpecificSuite-cmove.log
 
-test_SpecificSuite/dynamic : $(TEST_EXE)
+release_test_SpecificSuite/cmove : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/cmove" > test_reports/test_SpecificSuite-cmove.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/cmove --report_sin=stdout >> test_reports/test_SpecificSuite-cmove.log
+
+debug_test_SpecificSuite/dynamic : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/dynamic" > test_reports/test_SpecificSuite-dynamic.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/dynamic --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/dynamic --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic.log
 
-test_SpecificSuite/dynamic_arrays_in_struct : $(TEST_EXE)
+release_test_SpecificSuite/dynamic : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/dynamic" > test_reports/test_SpecificSuite-dynamic.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/dynamic --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic.log
+
+debug_test_SpecificSuite/dynamic_arrays_in_struct : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/dynamic_arrays_in_struct" > test_reports/test_SpecificSuite-dynamic_arrays_in_struct.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/dynamic_arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_arrays_in_struct.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/dynamic_arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_arrays_in_struct.log
 
-test_SpecificSuite/dynamic_struct : $(TEST_EXE)
+release_test_SpecificSuite/dynamic_arrays_in_struct : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/dynamic_arrays_in_struct" > test_reports/test_SpecificSuite-dynamic_arrays_in_struct.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/dynamic_arrays_in_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_arrays_in_struct.log
+
+debug_test_SpecificSuite/dynamic_struct : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/dynamic_struct" > test_reports/test_SpecificSuite-dynamic_struct.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/dynamic_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_struct.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/dynamic_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_struct.log
 
-test_SpecificSuite/float_pointers : $(TEST_EXE)
+release_test_SpecificSuite/dynamic_struct : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/dynamic_struct" > test_reports/test_SpecificSuite-dynamic_struct.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/dynamic_struct --report_sin=stdout >> test_reports/test_SpecificSuite-dynamic_struct.log
+
+debug_test_SpecificSuite/float_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/float_pointers" > test_reports/test_SpecificSuite-float_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/float_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-float_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/float_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-float_pointers.log
 
-test_SpecificSuite/struct_pointers : $(TEST_EXE)
+release_test_SpecificSuite/float_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/float_pointers" > test_reports/test_SpecificSuite-float_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/float_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-float_pointers.log
+
+debug_test_SpecificSuite/struct_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/struct_pointers" > test_reports/test_SpecificSuite-struct_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/struct_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/struct_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_pointers.log
 
-test_SpecificSuite/member_pointers : $(TEST_EXE)
+release_test_SpecificSuite/struct_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/struct_pointers" > test_reports/test_SpecificSuite-struct_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/struct_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_pointers.log
+
+debug_test_SpecificSuite/member_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/member_pointers" > test_reports/test_SpecificSuite-member_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-member_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-member_pointers.log
 
-test_SpecificSuite/member_function_calls : $(TEST_EXE)
+release_test_SpecificSuite/member_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/member_pointers" > test_reports/test_SpecificSuite-member_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-member_pointers.log
+
+debug_test_SpecificSuite/member_function_calls : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/member_function_calls" > test_reports/test_SpecificSuite-member_function_calls.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/member_function_calls --report_sin=stdout >> test_reports/test_SpecificSuite-member_function_calls.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/member_function_calls --report_sin=stdout >> test_reports/test_SpecificSuite-member_function_calls.log
 
-test_SpecificSuite/member_functions : $(TEST_EXE)
+release_test_SpecificSuite/member_function_calls : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/member_function_calls" > test_reports/test_SpecificSuite-member_function_calls.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/member_function_calls --report_sin=stdout >> test_reports/test_SpecificSuite-member_function_calls.log
+
+debug_test_SpecificSuite/member_functions : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/member_functions" > test_reports/test_SpecificSuite-member_functions.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/member_functions --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/member_functions --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions.log
 
-test_SpecificSuite/member_functions_param_stack : $(TEST_EXE)
+release_test_SpecificSuite/member_functions : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/member_functions" > test_reports/test_SpecificSuite-member_functions.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/member_functions --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions.log
+
+debug_test_SpecificSuite/member_functions_param_stack : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/member_functions_param_stack" > test_reports/test_SpecificSuite-member_functions_param_stack.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/member_functions_param_stack --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions_param_stack.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/member_functions_param_stack --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions_param_stack.log
 
-test_SpecificSuite/memory : $(TEST_EXE)
+release_test_SpecificSuite/member_functions_param_stack : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/member_functions_param_stack" > test_reports/test_SpecificSuite-member_functions_param_stack.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/member_functions_param_stack --report_sin=stdout >> test_reports/test_SpecificSuite-member_functions_param_stack.log
+
+debug_test_SpecificSuite/memory : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/memory" > test_reports/test_SpecificSuite-memory.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/memory --report_sin=stdout >> test_reports/test_SpecificSuite-memory.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/memory --report_sin=stdout >> test_reports/test_SpecificSuite-memory.log
 
-test_SpecificSuite/pass_member_by_value : $(TEST_EXE)
+release_test_SpecificSuite/memory : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/memory" > test_reports/test_SpecificSuite-memory.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/memory --report_sin=stdout >> test_reports/test_SpecificSuite-memory.log
+
+debug_test_SpecificSuite/pass_member_by_value : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/pass_member_by_value" > test_reports/test_SpecificSuite-pass_member_by_value.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/pass_member_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-pass_member_by_value.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/pass_member_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-pass_member_by_value.log
 
-test_SpecificSuite/ternary : $(TEST_EXE)
+release_test_SpecificSuite/pass_member_by_value : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/pass_member_by_value" > test_reports/test_SpecificSuite-pass_member_by_value.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/pass_member_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-pass_member_by_value.log
+
+debug_test_SpecificSuite/ternary : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/ternary" > test_reports/test_SpecificSuite-ternary.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/ternary --report_sin=stdout >> test_reports/test_SpecificSuite-ternary.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/ternary --report_sin=stdout >> test_reports/test_SpecificSuite-ternary.log
 
-test_SpecificSuite/while_ : $(TEST_EXE)
+release_test_SpecificSuite/ternary : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/ternary" > test_reports/test_SpecificSuite-ternary.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/ternary --report_sin=stdout >> test_reports/test_SpecificSuite-ternary.log
+
+debug_test_SpecificSuite/while_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/while_" > test_reports/test_SpecificSuite-while_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/while_ --report_sin=stdout >> test_reports/test_SpecificSuite-while_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/while_ --report_sin=stdout >> test_reports/test_SpecificSuite-while_.log
 
-test_SpecificSuite/do_while_ : $(TEST_EXE)
+release_test_SpecificSuite/while_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/while_" > test_reports/test_SpecificSuite-while_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/while_ --report_sin=stdout >> test_reports/test_SpecificSuite-while_.log
+
+debug_test_SpecificSuite/do_while_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/do_while_" > test_reports/test_SpecificSuite-do_while_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/do_while_ --report_sin=stdout >> test_reports/test_SpecificSuite-do_while_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/do_while_ --report_sin=stdout >> test_reports/test_SpecificSuite-do_while_.log
 
-test_SpecificSuite/defaults : $(TEST_EXE)
+release_test_SpecificSuite/do_while_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/do_while_" > test_reports/test_SpecificSuite-do_while_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/do_while_ --report_sin=stdout >> test_reports/test_SpecificSuite-do_while_.log
+
+debug_test_SpecificSuite/defaults : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/defaults" > test_reports/test_SpecificSuite-defaults.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/defaults --report_sin=stdout >> test_reports/test_SpecificSuite-defaults.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/defaults --report_sin=stdout >> test_reports/test_SpecificSuite-defaults.log
 
-test_SpecificSuite/float_1 : $(TEST_EXE)
+release_test_SpecificSuite/defaults : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/defaults" > test_reports/test_SpecificSuite-defaults.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/defaults --report_sin=stdout >> test_reports/test_SpecificSuite-defaults.log
+
+debug_test_SpecificSuite/float_1 : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/float_1" > test_reports/test_SpecificSuite-float_1.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/float_1 --report_sin=stdout >> test_reports/test_SpecificSuite-float_1.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/float_1 --report_sin=stdout >> test_reports/test_SpecificSuite-float_1.log
 
-test_SpecificSuite/float_2 : $(TEST_EXE)
+release_test_SpecificSuite/float_1 : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/float_1" > test_reports/test_SpecificSuite-float_1.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/float_1 --report_sin=stdout >> test_reports/test_SpecificSuite-float_1.log
+
+debug_test_SpecificSuite/float_2 : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/float_2" > test_reports/test_SpecificSuite-float_2.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/float_2 --report_sin=stdout >> test_reports/test_SpecificSuite-float_2.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/float_2 --report_sin=stdout >> test_reports/test_SpecificSuite-float_2.log
 
-test_SpecificSuite/for_ : $(TEST_EXE)
+release_test_SpecificSuite/float_2 : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/float_2" > test_reports/test_SpecificSuite-float_2.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/float_2 --report_sin=stdout >> test_reports/test_SpecificSuite-float_2.log
+
+debug_test_SpecificSuite/for_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/for_" > test_reports/test_SpecificSuite-for_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/for_ --report_sin=stdout >> test_reports/test_SpecificSuite-for_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/for_ --report_sin=stdout >> test_reports/test_SpecificSuite-for_.log
 
-test_SpecificSuite/foreach_ : $(TEST_EXE)
+release_test_SpecificSuite/for_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/for_" > test_reports/test_SpecificSuite-for_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/for_ --report_sin=stdout >> test_reports/test_SpecificSuite-for_.log
+
+debug_test_SpecificSuite/foreach_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/foreach_" > test_reports/test_SpecificSuite-foreach_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/foreach_ --report_sin=stdout >> test_reports/test_SpecificSuite-foreach_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/foreach_ --report_sin=stdout >> test_reports/test_SpecificSuite-foreach_.log
 
-test_SpecificSuite/globals_ : $(TEST_EXE)
+release_test_SpecificSuite/foreach_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/foreach_" > test_reports/test_SpecificSuite-foreach_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/foreach_ --report_sin=stdout >> test_reports/test_SpecificSuite-foreach_.log
+
+debug_test_SpecificSuite/globals_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/globals_" > test_reports/test_SpecificSuite-globals_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/globals_ --report_sin=stdout >> test_reports/test_SpecificSuite-globals_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/globals_ --report_sin=stdout >> test_reports/test_SpecificSuite-globals_.log
 
-test_SpecificSuite/inc : $(TEST_EXE)
+release_test_SpecificSuite/globals_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/globals_" > test_reports/test_SpecificSuite-globals_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/globals_ --report_sin=stdout >> test_reports/test_SpecificSuite-globals_.log
+
+debug_test_SpecificSuite/inc : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/inc" > test_reports/test_SpecificSuite-inc.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/inc --report_sin=stdout >> test_reports/test_SpecificSuite-inc.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/inc --report_sin=stdout >> test_reports/test_SpecificSuite-inc.log
 
-test_SpecificSuite/void_ : $(TEST_EXE)
+release_test_SpecificSuite/inc : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/inc" > test_reports/test_SpecificSuite-inc.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/inc --report_sin=stdout >> test_reports/test_SpecificSuite-inc.log
+
+debug_test_SpecificSuite/void_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/void_" > test_reports/test_SpecificSuite-void_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/void_ --report_sin=stdout >> test_reports/test_SpecificSuite-void_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/void_ --report_sin=stdout >> test_reports/test_SpecificSuite-void_.log
 
-test_SpecificSuite/return_string : $(TEST_EXE)
+release_test_SpecificSuite/void_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/void_" > test_reports/test_SpecificSuite-void_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/void_ --report_sin=stdout >> test_reports/test_SpecificSuite-void_.log
+
+debug_test_SpecificSuite/return_string : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/return_string" > test_reports/test_SpecificSuite-return_string.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/return_string --report_sin=stdout >> test_reports/test_SpecificSuite-return_string.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/return_string --report_sin=stdout >> test_reports/test_SpecificSuite-return_string.log
 
-test_SpecificSuite/return_by_value : $(TEST_EXE)
+release_test_SpecificSuite/return_string : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/return_string" > test_reports/test_SpecificSuite-return_string.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/return_string --report_sin=stdout >> test_reports/test_SpecificSuite-return_string.log
+
+debug_test_SpecificSuite/return_by_value : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/return_by_value" > test_reports/test_SpecificSuite-return_by_value.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/return_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-return_by_value.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/return_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-return_by_value.log
 
-test_SpecificSuite/return_int : $(TEST_EXE)
+release_test_SpecificSuite/return_by_value : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/return_by_value" > test_reports/test_SpecificSuite-return_by_value.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/return_by_value --report_sin=stdout >> test_reports/test_SpecificSuite-return_by_value.log
+
+debug_test_SpecificSuite/return_int : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/return_int" > test_reports/test_SpecificSuite-return_int.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/return_int --report_sin=stdout >> test_reports/test_SpecificSuite-return_int.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/return_int --report_sin=stdout >> test_reports/test_SpecificSuite-return_int.log
 
-test_SpecificSuite/return_pointers : $(TEST_EXE)
+release_test_SpecificSuite/return_int : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/return_int" > test_reports/test_SpecificSuite-return_int.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/return_int --report_sin=stdout >> test_reports/test_SpecificSuite-return_int.log
+
+debug_test_SpecificSuite/return_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/return_pointers" > test_reports/test_SpecificSuite-return_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/return_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-return_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/return_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-return_pointers.log
 
-test_SpecificSuite/pointer_arrays : $(TEST_EXE)
+release_test_SpecificSuite/return_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/return_pointers" > test_reports/test_SpecificSuite-return_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/return_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-return_pointers.log
+
+debug_test_SpecificSuite/pointer_arrays : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/pointer_arrays" > test_reports/test_SpecificSuite-pointer_arrays.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/pointer_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-pointer_arrays.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/pointer_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-pointer_arrays.log
 
-test_SpecificSuite/recursive_functions : $(TEST_EXE)
+release_test_SpecificSuite/pointer_arrays : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/pointer_arrays" > test_reports/test_SpecificSuite-pointer_arrays.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/pointer_arrays --report_sin=stdout >> test_reports/test_SpecificSuite-pointer_arrays.log
+
+debug_test_SpecificSuite/recursive_functions : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/recursive_functions" > test_reports/test_SpecificSuite-recursive_functions.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/recursive_functions --report_sin=stdout >> test_reports/test_SpecificSuite-recursive_functions.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/recursive_functions --report_sin=stdout >> test_reports/test_SpecificSuite-recursive_functions.log
 
-test_SpecificSuite/single_inheritance : $(TEST_EXE)
+release_test_SpecificSuite/recursive_functions : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/recursive_functions" > test_reports/test_SpecificSuite-recursive_functions.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/recursive_functions --report_sin=stdout >> test_reports/test_SpecificSuite-recursive_functions.log
+
+debug_test_SpecificSuite/single_inheritance : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/single_inheritance" > test_reports/test_SpecificSuite-single_inheritance.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/single_inheritance --report_sin=stdout >> test_reports/test_SpecificSuite-single_inheritance.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/single_inheritance --report_sin=stdout >> test_reports/test_SpecificSuite-single_inheritance.log
 
-test_SpecificSuite/math : $(TEST_EXE)
+release_test_SpecificSuite/single_inheritance : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/single_inheritance" > test_reports/test_SpecificSuite-single_inheritance.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/single_inheritance --report_sin=stdout >> test_reports/test_SpecificSuite-single_inheritance.log
+
+debug_test_SpecificSuite/math : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/math" > test_reports/test_SpecificSuite-math.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/math --report_sin=stdout >> test_reports/test_SpecificSuite-math.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/math --report_sin=stdout >> test_reports/test_SpecificSuite-math.log
 
-test_SpecificSuite/builtin : $(TEST_EXE)
+release_test_SpecificSuite/math : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/math" > test_reports/test_SpecificSuite-math.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/math --report_sin=stdout >> test_reports/test_SpecificSuite-math.log
+
+debug_test_SpecificSuite/builtin : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/builtin" > test_reports/test_SpecificSuite-builtin.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/builtin --report_sin=stdout >> test_reports/test_SpecificSuite-builtin.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/builtin --report_sin=stdout >> test_reports/test_SpecificSuite-builtin.log
 
-test_SpecificSuite/assign_value : $(TEST_EXE)
+release_test_SpecificSuite/builtin : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/builtin" > test_reports/test_SpecificSuite-builtin.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/builtin --report_sin=stdout >> test_reports/test_SpecificSuite-builtin.log
+
+debug_test_SpecificSuite/assign_value : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/assign_value" > test_reports/test_SpecificSuite-assign_value.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/assign_value --report_sin=stdout >> test_reports/test_SpecificSuite-assign_value.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/assign_value --report_sin=stdout >> test_reports/test_SpecificSuite-assign_value.log
 
-test_SpecificSuite/println : $(TEST_EXE)
+release_test_SpecificSuite/assign_value : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/assign_value" > test_reports/test_SpecificSuite-assign_value.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/assign_value --report_sin=stdout >> test_reports/test_SpecificSuite-assign_value.log
+
+debug_test_SpecificSuite/println : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/println" > test_reports/test_SpecificSuite-println.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/println --report_sin=stdout >> test_reports/test_SpecificSuite-println.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/println --report_sin=stdout >> test_reports/test_SpecificSuite-println.log
 
-test_SpecificSuite/prints : $(TEST_EXE)
+release_test_SpecificSuite/println : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/println" > test_reports/test_SpecificSuite-println.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/println --report_sin=stdout >> test_reports/test_SpecificSuite-println.log
+
+debug_test_SpecificSuite/prints : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/prints" > test_reports/test_SpecificSuite-prints.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/prints --report_sin=stdout >> test_reports/test_SpecificSuite-prints.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/prints --report_sin=stdout >> test_reports/test_SpecificSuite-prints.log
 
-test_SpecificSuite/structures : $(TEST_EXE)
+release_test_SpecificSuite/prints : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/prints" > test_reports/test_SpecificSuite-prints.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/prints --report_sin=stdout >> test_reports/test_SpecificSuite-prints.log
+
+debug_test_SpecificSuite/structures : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/structures" > test_reports/test_SpecificSuite-structures.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/structures --report_sin=stdout >> test_reports/test_SpecificSuite-structures.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/structures --report_sin=stdout >> test_reports/test_SpecificSuite-structures.log
 
-test_SpecificSuite/struct_member_pointers : $(TEST_EXE)
+release_test_SpecificSuite/structures : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/structures" > test_reports/test_SpecificSuite-structures.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/structures --report_sin=stdout >> test_reports/test_SpecificSuite-structures.log
+
+debug_test_SpecificSuite/struct_member_pointers : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/struct_member_pointers" > test_reports/test_SpecificSuite-struct_member_pointers.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/struct_member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_member_pointers.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/struct_member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_member_pointers.log
 
-test_SpecificSuite/struct_array : $(TEST_EXE)
+release_test_SpecificSuite/struct_member_pointers : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/struct_member_pointers" > test_reports/test_SpecificSuite-struct_member_pointers.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/struct_member_pointers --report_sin=stdout >> test_reports/test_SpecificSuite-struct_member_pointers.log
+
+debug_test_SpecificSuite/struct_array : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/struct_array" > test_reports/test_SpecificSuite-struct_array.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/struct_array --report_sin=stdout >> test_reports/test_SpecificSuite-struct_array.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/struct_array --report_sin=stdout >> test_reports/test_SpecificSuite-struct_array.log
 
-test_SpecificSuite/switch_ : $(TEST_EXE)
+release_test_SpecificSuite/struct_array : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/struct_array" > test_reports/test_SpecificSuite-struct_array.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/struct_array --report_sin=stdout >> test_reports/test_SpecificSuite-struct_array.log
+
+debug_test_SpecificSuite/switch_ : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/switch_" > test_reports/test_SpecificSuite-switch_.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/switch_ --report_sin=stdout >> test_reports/test_SpecificSuite-switch_.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/switch_ --report_sin=stdout >> test_reports/test_SpecificSuite-switch_.log
 
-test_SpecificSuite/switch_string : $(TEST_EXE)
+release_test_SpecificSuite/switch_ : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/switch_" > test_reports/test_SpecificSuite-switch_.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/switch_ --report_sin=stdout >> test_reports/test_SpecificSuite-switch_.log
+
+debug_test_SpecificSuite/switch_string : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/switch_string" > test_reports/test_SpecificSuite-switch_string.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/switch_string --report_sin=stdout >> test_reports/test_SpecificSuite-switch_string.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/switch_string --report_sin=stdout >> test_reports/test_SpecificSuite-switch_string.log
 
-test_SpecificSuite/nested : $(TEST_EXE)
+release_test_SpecificSuite/switch_string : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/switch_string" > test_reports/test_SpecificSuite-switch_string.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/switch_string --report_sin=stdout >> test_reports/test_SpecificSuite-switch_string.log
+
+debug_test_SpecificSuite/nested : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/nested" > test_reports/test_SpecificSuite-nested.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/nested --report_sin=stdout >> test_reports/test_SpecificSuite-nested.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/nested --report_sin=stdout >> test_reports/test_SpecificSuite-nested.log
 
-test_SpecificSuite/args : $(TEST_EXE)
+release_test_SpecificSuite/nested : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/nested" > test_reports/test_SpecificSuite-nested.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/nested --report_sin=stdout >> test_reports/test_SpecificSuite-nested.log
+
+debug_test_SpecificSuite/args : $(DEBUG_TEST_EXE)
 	 @ echo "Run SpecificSuite/args" > test_reports/test_SpecificSuite-args.log
-	 @ ./$(TEST_EXE) --run_test=SpecificSuite/args --report_sin=stdout >> test_reports/test_SpecificSuite-args.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=SpecificSuite/args --report_sin=stdout >> test_reports/test_SpecificSuite-args.log
 
-test_TemplateSuite/class_templates : $(TEST_EXE)
+release_test_SpecificSuite/args : $(RELEASE_TEST_EXE)
+	 @ echo "Run SpecificSuite/args" > test_reports/test_SpecificSuite-args.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=SpecificSuite/args --report_sin=stdout >> test_reports/test_SpecificSuite-args.log
+
+debug_test_TemplateSuite/class_templates : $(DEBUG_TEST_EXE)
 	 @ echo "Run TemplateSuite/class_templates" > test_reports/test_TemplateSuite-class_templates.log
-	 @ ./$(TEST_EXE) --run_test=TemplateSuite/class_templates --report_sin=stdout >> test_reports/test_TemplateSuite-class_templates.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=TemplateSuite/class_templates --report_sin=stdout >> test_reports/test_TemplateSuite-class_templates.log
 
-test_TemplateSuite/function_templates : $(TEST_EXE)
+release_test_TemplateSuite/class_templates : $(RELEASE_TEST_EXE)
+	 @ echo "Run TemplateSuite/class_templates" > test_reports/test_TemplateSuite-class_templates.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=TemplateSuite/class_templates --report_sin=stdout >> test_reports/test_TemplateSuite-class_templates.log
+
+debug_test_TemplateSuite/function_templates : $(DEBUG_TEST_EXE)
 	 @ echo "Run TemplateSuite/function_templates" > test_reports/test_TemplateSuite-function_templates.log
-	 @ ./$(TEST_EXE) --run_test=TemplateSuite/function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-function_templates.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=TemplateSuite/function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-function_templates.log
 
-test_TemplateSuite/member_function_templates : $(TEST_EXE)
+release_test_TemplateSuite/function_templates : $(RELEASE_TEST_EXE)
+	 @ echo "Run TemplateSuite/function_templates" > test_reports/test_TemplateSuite-function_templates.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=TemplateSuite/function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-function_templates.log
+
+debug_test_TemplateSuite/member_function_templates : $(DEBUG_TEST_EXE)
 	 @ echo "Run TemplateSuite/member_function_templates" > test_reports/test_TemplateSuite-member_function_templates.log
-	 @ ./$(TEST_EXE) --run_test=TemplateSuite/member_function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-member_function_templates.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=TemplateSuite/member_function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-member_function_templates.log
 
-test_CompilationErrorsSuite/params_assign : $(TEST_EXE)
+release_test_TemplateSuite/member_function_templates : $(RELEASE_TEST_EXE)
+	 @ echo "Run TemplateSuite/member_function_templates" > test_reports/test_TemplateSuite-member_function_templates.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=TemplateSuite/member_function_templates --report_sin=stdout >> test_reports/test_TemplateSuite-member_function_templates.log
+
+debug_test_CompilationErrorsSuite/params_assign : $(DEBUG_TEST_EXE)
 	 @ echo "Run CompilationErrorsSuite/params_assign" > test_reports/test_CompilationErrorsSuite-params_assign.log
-	 @ ./$(TEST_EXE) --run_test=CompilationErrorsSuite/params_assign --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-params_assign.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=CompilationErrorsSuite/params_assign --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-params_assign.log
 
-test_CompilationErrorsSuite/wrong_print : $(TEST_EXE)
+release_test_CompilationErrorsSuite/params_assign : $(RELEASE_TEST_EXE)
+	 @ echo "Run CompilationErrorsSuite/params_assign" > test_reports/test_CompilationErrorsSuite-params_assign.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=CompilationErrorsSuite/params_assign --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-params_assign.log
+
+debug_test_CompilationErrorsSuite/wrong_print : $(DEBUG_TEST_EXE)
 	 @ echo "Run CompilationErrorsSuite/wrong_print" > test_reports/test_CompilationErrorsSuite-wrong_print.log
-	 @ ./$(TEST_EXE) --run_test=CompilationErrorsSuite/wrong_print --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-wrong_print.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=CompilationErrorsSuite/wrong_print --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-wrong_print.log
 
-test_CompilationErrorsSuite/invalid_inheritance : $(TEST_EXE)
+release_test_CompilationErrorsSuite/wrong_print : $(RELEASE_TEST_EXE)
+	 @ echo "Run CompilationErrorsSuite/wrong_print" > test_reports/test_CompilationErrorsSuite-wrong_print.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=CompilationErrorsSuite/wrong_print --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-wrong_print.log
+
+debug_test_CompilationErrorsSuite/invalid_inheritance : $(DEBUG_TEST_EXE)
 	 @ echo "Run CompilationErrorsSuite/invalid_inheritance" > test_reports/test_CompilationErrorsSuite-invalid_inheritance.log
-	 @ ./$(TEST_EXE) --run_test=CompilationErrorsSuite/invalid_inheritance --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-invalid_inheritance.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=CompilationErrorsSuite/invalid_inheritance --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-invalid_inheritance.log
 
-test_StandardLibSuite/std_lib_arrays_sum : $(TEST_EXE)
+release_test_CompilationErrorsSuite/invalid_inheritance : $(RELEASE_TEST_EXE)
+	 @ echo "Run CompilationErrorsSuite/invalid_inheritance" > test_reports/test_CompilationErrorsSuite-invalid_inheritance.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=CompilationErrorsSuite/invalid_inheritance --report_sin=stdout >> test_reports/test_CompilationErrorsSuite-invalid_inheritance.log
+
+debug_test_StandardLibSuite/std_lib_arrays_sum : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_arrays_sum" > test_reports/test_StandardLibSuite-std_lib_arrays_sum.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_arrays_sum --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_arrays_sum.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_arrays_sum --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_arrays_sum.log
 
-test_StandardLibSuite/std_lib_math_min : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_arrays_sum : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_arrays_sum" > test_reports/test_StandardLibSuite-std_lib_arrays_sum.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_arrays_sum --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_arrays_sum.log
+
+debug_test_StandardLibSuite/std_lib_math_min : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_math_min" > test_reports/test_StandardLibSuite-std_lib_math_min.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_math_min --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_min.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_min --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_min.log
 
-test_StandardLibSuite/std_lib_math_max : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_math_min : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_math_min" > test_reports/test_StandardLibSuite-std_lib_math_min.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_min --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_min.log
+
+debug_test_StandardLibSuite/std_lib_math_max : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_math_max" > test_reports/test_StandardLibSuite-std_lib_math_max.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_math_max --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_max.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_max --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_max.log
 
-test_StandardLibSuite/std_lib_math_factorial : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_math_max : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_math_max" > test_reports/test_StandardLibSuite-std_lib_math_max.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_max --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_max.log
+
+debug_test_StandardLibSuite/std_lib_math_factorial : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_math_factorial" > test_reports/test_StandardLibSuite-std_lib_math_factorial.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_math_factorial --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_factorial.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_factorial --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_factorial.log
 
-test_StandardLibSuite/std_lib_math_pow : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_math_factorial : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_math_factorial" > test_reports/test_StandardLibSuite-std_lib_math_factorial.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_factorial --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_factorial.log
+
+debug_test_StandardLibSuite/std_lib_math_pow : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_math_pow" > test_reports/test_StandardLibSuite-std_lib_math_pow.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_math_pow --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_pow.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_pow --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_pow.log
 
-test_StandardLibSuite/std_lib_str_equals : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_math_pow : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_math_pow" > test_reports/test_StandardLibSuite-std_lib_math_pow.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_math_pow --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_math_pow.log
+
+debug_test_StandardLibSuite/std_lib_str_equals : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_str_equals" > test_reports/test_StandardLibSuite-std_lib_str_equals.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_str_equals --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_str_equals.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_str_equals --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_str_equals.log
 
-test_StandardLibSuite/std_lib_string : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_str_equals : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_str_equals" > test_reports/test_StandardLibSuite-std_lib_str_equals.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_str_equals --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_str_equals.log
+
+debug_test_StandardLibSuite/std_lib_string : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_string" > test_reports/test_StandardLibSuite-std_lib_string.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_string --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_string --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string.log
 
-test_StandardLibSuite/std_lib_string_concat : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_string : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_string" > test_reports/test_StandardLibSuite-std_lib_string.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_string --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string.log
+
+debug_test_StandardLibSuite/std_lib_string_concat : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_string_concat" > test_reports/test_StandardLibSuite-std_lib_string_concat.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat.log
 
-test_StandardLibSuite/std_lib_string_concat_int : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_string_concat : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_string_concat" > test_reports/test_StandardLibSuite-std_lib_string_concat.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat.log
+
+debug_test_StandardLibSuite/std_lib_string_concat_int : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_lib_string_concat_int" > test_reports/test_StandardLibSuite-std_lib_string_concat_int.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat_int --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat_int.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat_int --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat_int.log
 
-test_StandardLibSuite/std_linked_list : $(TEST_EXE)
+release_test_StandardLibSuite/std_lib_string_concat_int : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_lib_string_concat_int" > test_reports/test_StandardLibSuite-std_lib_string_concat_int.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_lib_string_concat_int --report_sin=stdout >> test_reports/test_StandardLibSuite-std_lib_string_concat_int.log
+
+debug_test_StandardLibSuite/std_linked_list : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_linked_list" > test_reports/test_StandardLibSuite-std_linked_list.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_linked_list --report_sin=stdout >> test_reports/test_StandardLibSuite-std_linked_list.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_linked_list --report_sin=stdout >> test_reports/test_StandardLibSuite-std_linked_list.log
 
-test_StandardLibSuite/std_vector : $(TEST_EXE)
+release_test_StandardLibSuite/std_linked_list : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_linked_list" > test_reports/test_StandardLibSuite-std_linked_list.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_linked_list --report_sin=stdout >> test_reports/test_StandardLibSuite-std_linked_list.log
+
+debug_test_StandardLibSuite/std_vector : $(DEBUG_TEST_EXE)
 	 @ echo "Run StandardLibSuite/std_vector" > test_reports/test_StandardLibSuite-std_vector.log
-	 @ ./$(TEST_EXE) --run_test=StandardLibSuite/std_vector --report_sin=stdout >> test_reports/test_StandardLibSuite-std_vector.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=StandardLibSuite/std_vector --report_sin=stdout >> test_reports/test_StandardLibSuite-std_vector.log
 
-test_BugFixesSuite/while_bug : $(TEST_EXE)
+release_test_StandardLibSuite/std_vector : $(RELEASE_TEST_EXE)
+	 @ echo "Run StandardLibSuite/std_vector" > test_reports/test_StandardLibSuite-std_vector.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=StandardLibSuite/std_vector --report_sin=stdout >> test_reports/test_StandardLibSuite-std_vector.log
+
+debug_test_BugFixesSuite/while_bug : $(DEBUG_TEST_EXE)
 	 @ echo "Run BugFixesSuite/while_bug" > test_reports/test_BugFixesSuite-while_bug.log
-	 @ ./$(TEST_EXE) --run_test=BugFixesSuite/while_bug --report_sin=stdout >> test_reports/test_BugFixesSuite-while_bug.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=BugFixesSuite/while_bug --report_sin=stdout >> test_reports/test_BugFixesSuite-while_bug.log
 
-test_OptimizationSuite/parameter_propagation : $(TEST_EXE)
+release_test_BugFixesSuite/while_bug : $(RELEASE_TEST_EXE)
+	 @ echo "Run BugFixesSuite/while_bug" > test_reports/test_BugFixesSuite-while_bug.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=BugFixesSuite/while_bug --report_sin=stdout >> test_reports/test_BugFixesSuite-while_bug.log
+
+debug_test_OptimizationSuite/parameter_propagation : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/parameter_propagation" > test_reports/test_OptimizationSuite-parameter_propagation.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/parameter_propagation --report_sin=stdout >> test_reports/test_OptimizationSuite-parameter_propagation.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/parameter_propagation --report_sin=stdout >> test_reports/test_OptimizationSuite-parameter_propagation.log
 
-test_OptimizationSuite/global_cp : $(TEST_EXE)
+release_test_OptimizationSuite/parameter_propagation : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/parameter_propagation" > test_reports/test_OptimizationSuite-parameter_propagation.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/parameter_propagation --report_sin=stdout >> test_reports/test_OptimizationSuite-parameter_propagation.log
+
+debug_test_OptimizationSuite/global_cp : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/global_cp" > test_reports/test_OptimizationSuite-global_cp.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/global_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cp.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/global_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cp.log
 
-test_OptimizationSuite/global_offset_cp : $(TEST_EXE)
+release_test_OptimizationSuite/global_cp : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/global_cp" > test_reports/test_OptimizationSuite-global_cp.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/global_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cp.log
+
+debug_test_OptimizationSuite/global_offset_cp : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/global_offset_cp" > test_reports/test_OptimizationSuite-global_offset_cp.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/global_offset_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_offset_cp.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/global_offset_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_offset_cp.log
 
-test_OptimizationSuite/remove_empty_functions : $(TEST_EXE)
+release_test_OptimizationSuite/global_offset_cp : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/global_offset_cp" > test_reports/test_OptimizationSuite-global_offset_cp.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/global_offset_cp --report_sin=stdout >> test_reports/test_OptimizationSuite-global_offset_cp.log
+
+debug_test_OptimizationSuite/remove_empty_functions : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/remove_empty_functions" > test_reports/test_OptimizationSuite-remove_empty_functions.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/remove_empty_functions --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_functions.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/remove_empty_functions --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_functions.log
 
-test_OptimizationSuite/remove_empty_loops : $(TEST_EXE)
+release_test_OptimizationSuite/remove_empty_functions : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/remove_empty_functions" > test_reports/test_OptimizationSuite-remove_empty_functions.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/remove_empty_functions --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_functions.log
+
+debug_test_OptimizationSuite/remove_empty_loops : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/remove_empty_loops" > test_reports/test_OptimizationSuite-remove_empty_loops.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/remove_empty_loops --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_loops.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/remove_empty_loops --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_loops.log
 
-test_OptimizationSuite/invariant_code_motion : $(TEST_EXE)
+release_test_OptimizationSuite/remove_empty_loops : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/remove_empty_loops" > test_reports/test_OptimizationSuite-remove_empty_loops.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/remove_empty_loops --report_sin=stdout >> test_reports/test_OptimizationSuite-remove_empty_loops.log
+
+debug_test_OptimizationSuite/invariant_code_motion : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/invariant_code_motion" > test_reports/test_OptimizationSuite-invariant_code_motion.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/invariant_code_motion --report_sin=stdout >> test_reports/test_OptimizationSuite-invariant_code_motion.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/invariant_code_motion --report_sin=stdout >> test_reports/test_OptimizationSuite-invariant_code_motion.log
 
-test_OptimizationSuite/complete_loop_peeling : $(TEST_EXE)
+release_test_OptimizationSuite/invariant_code_motion : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/invariant_code_motion" > test_reports/test_OptimizationSuite-invariant_code_motion.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/invariant_code_motion --report_sin=stdout >> test_reports/test_OptimizationSuite-invariant_code_motion.log
+
+debug_test_OptimizationSuite/complete_loop_peeling : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/complete_loop_peeling" > test_reports/test_OptimizationSuite-complete_loop_peeling.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling.log
 
-test_OptimizationSuite/complete_loop_peeling_2 : $(TEST_EXE)
+release_test_OptimizationSuite/complete_loop_peeling : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/complete_loop_peeling" > test_reports/test_OptimizationSuite-complete_loop_peeling.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling.log
+
+debug_test_OptimizationSuite/complete_loop_peeling_2 : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/complete_loop_peeling_2" > test_reports/test_OptimizationSuite-complete_loop_peeling_2.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling_2 --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling_2.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling_2 --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling_2.log
 
-test_OptimizationSuite/loop_unrolling : $(TEST_EXE)
+release_test_OptimizationSuite/complete_loop_peeling_2 : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/complete_loop_peeling_2" > test_reports/test_OptimizationSuite-complete_loop_peeling_2.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/complete_loop_peeling_2 --report_sin=stdout >> test_reports/test_OptimizationSuite-complete_loop_peeling_2.log
+
+debug_test_OptimizationSuite/loop_unrolling : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/loop_unrolling" > test_reports/test_OptimizationSuite-loop_unrolling.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/loop_unrolling --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unrolling.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/loop_unrolling --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unrolling.log
 
-test_OptimizationSuite/loop_unswitching : $(TEST_EXE)
+release_test_OptimizationSuite/loop_unrolling : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/loop_unrolling" > test_reports/test_OptimizationSuite-loop_unrolling.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/loop_unrolling --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unrolling.log
+
+debug_test_OptimizationSuite/loop_unswitching : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/loop_unswitching" > test_reports/test_OptimizationSuite-loop_unswitching.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/loop_unswitching --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unswitching.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/loop_unswitching --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unswitching.log
 
-test_OptimizationSuite/global_cse : $(TEST_EXE)
+release_test_OptimizationSuite/loop_unswitching : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/loop_unswitching" > test_reports/test_OptimizationSuite-loop_unswitching.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/loop_unswitching --report_sin=stdout >> test_reports/test_OptimizationSuite-loop_unswitching.log
+
+debug_test_OptimizationSuite/global_cse : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/global_cse" > test_reports/test_OptimizationSuite-global_cse.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/global_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cse.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/global_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cse.log
 
-test_OptimizationSuite/local_cse : $(TEST_EXE)
+release_test_OptimizationSuite/global_cse : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/global_cse" > test_reports/test_OptimizationSuite-global_cse.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/global_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-global_cse.log
+
+debug_test_OptimizationSuite/local_cse : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/local_cse" > test_reports/test_OptimizationSuite-local_cse.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/local_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-local_cse.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/local_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-local_cse.log
 
-test_OptimizationSuite/cmov_opt : $(TEST_EXE)
+release_test_OptimizationSuite/local_cse : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/local_cse" > test_reports/test_OptimizationSuite-local_cse.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/local_cse --report_sin=stdout >> test_reports/test_OptimizationSuite-local_cse.log
+
+debug_test_OptimizationSuite/cmov_opt : $(DEBUG_TEST_EXE)
 	 @ echo "Run OptimizationSuite/cmov_opt" > test_reports/test_OptimizationSuite-cmov_opt.log
-	 @ ./$(TEST_EXE) --run_test=OptimizationSuite/cmov_opt --report_sin=stdout >> test_reports/test_OptimizationSuite-cmov_opt.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=OptimizationSuite/cmov_opt --report_sin=stdout >> test_reports/test_OptimizationSuite-cmov_opt.log
 
-test_toString : $(TEST_EXE)
+release_test_OptimizationSuite/cmov_opt : $(RELEASE_TEST_EXE)
+	 @ echo "Run OptimizationSuite/cmov_opt" > test_reports/test_OptimizationSuite-cmov_opt.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=OptimizationSuite/cmov_opt --report_sin=stdout >> test_reports/test_OptimizationSuite-cmov_opt.log
+
+debug_test_toString : $(DEBUG_TEST_EXE)
 	 @ echo "Run toString" > test_reports/test_toString.log
-	 @ ./$(TEST_EXE) --run_test=toString --report_sin=stdout >> test_reports/test_toString.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=toString --report_sin=stdout >> test_reports/test_toString.log
 
-test_toNumber : $(TEST_EXE)
+release_test_toString : $(RELEASE_TEST_EXE)
+	 @ echo "Run toString" > test_reports/test_toString.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=toString --report_sin=stdout >> test_reports/test_toString.log
+
+debug_test_toNumber : $(DEBUG_TEST_EXE)
 	 @ echo "Run toNumber" > test_reports/test_toNumber.log
-	 @ ./$(TEST_EXE) --run_test=toNumber --report_sin=stdout >> test_reports/test_toNumber.log
+	 @ ./$(DEBUG_TEST_EXE) --run_test=toNumber --report_sin=stdout >> test_reports/test_toNumber.log
 
-test_all: test_bb_entry_exit_count test_bb_iterators test_bb_new_bb test_bb_remove_bb test_bb_at test_ApplicationsSuite/applications_hangman test_SamplesSuite/samples_arrays test_SamplesSuite/samples_asm test_SamplesSuite/samples_assembly test_SamplesSuite/samples_bool test_SamplesSuite/samples_compound test_SamplesSuite/samples_concat test_SamplesSuite/samples_const test_SamplesSuite/samples_functions test_SamplesSuite/samples_float test_SamplesSuite/samples_little_float test_SamplesSuite/samples_casts test_SamplesSuite/samples_inc test_SamplesSuite/samples_includes test_SamplesSuite/samples_optimize test_SamplesSuite/samples_problem test_SamplesSuite/samples_identifiers test_SamplesSuite/samples_registers test_SamplesSuite/samples_structures test_SpecificSuite/addressof test_SpecificSuite/array_foreach_local test_SpecificSuite/array_foreach_global test_SpecificSuite/array_foreach_param_local test_SpecificSuite/array_foreach_param_global test_SpecificSuite/array_foreach_param_param test_SpecificSuite/arrays_in_struct test_SpecificSuite/char_type test_SpecificSuite/char_at test_SpecificSuite/ctor_dtor_heap test_SpecificSuite/ctor_dtor_stack test_SpecificSuite/copy_constructors test_SpecificSuite/casts test_SpecificSuite/compound test_SpecificSuite/delete_any test_SpecificSuite/if_ test_SpecificSuite/includes test_SpecificSuite/int_arrays test_SpecificSuite/string_arrays test_SpecificSuite/string_foreach test_SpecificSuite/string_pointers test_SpecificSuite/int_pointers test_SpecificSuite/bool_pointers test_SpecificSuite/cmove test_SpecificSuite/dynamic test_SpecificSuite/dynamic_arrays_in_struct test_SpecificSuite/dynamic_struct test_SpecificSuite/float_pointers test_SpecificSuite/struct_pointers test_SpecificSuite/member_pointers test_SpecificSuite/member_function_calls test_SpecificSuite/member_functions test_SpecificSuite/member_functions_param_stack test_SpecificSuite/memory test_SpecificSuite/pass_member_by_value test_SpecificSuite/ternary test_SpecificSuite/while_ test_SpecificSuite/do_while_ test_SpecificSuite/defaults test_SpecificSuite/float_1 test_SpecificSuite/float_2 test_SpecificSuite/for_ test_SpecificSuite/foreach_ test_SpecificSuite/globals_ test_SpecificSuite/inc test_SpecificSuite/void_ test_SpecificSuite/return_string test_SpecificSuite/return_by_value test_SpecificSuite/return_int test_SpecificSuite/return_pointers test_SpecificSuite/pointer_arrays test_SpecificSuite/recursive_functions test_SpecificSuite/single_inheritance test_SpecificSuite/math test_SpecificSuite/builtin test_SpecificSuite/assign_value test_SpecificSuite/println test_SpecificSuite/prints test_SpecificSuite/structures test_SpecificSuite/struct_member_pointers test_SpecificSuite/struct_array test_SpecificSuite/switch_ test_SpecificSuite/switch_string test_SpecificSuite/nested test_SpecificSuite/args test_TemplateSuite/class_templates test_TemplateSuite/function_templates test_TemplateSuite/member_function_templates test_CompilationErrorsSuite/params_assign test_CompilationErrorsSuite/wrong_print test_CompilationErrorsSuite/invalid_inheritance test_StandardLibSuite/std_lib_arrays_sum test_StandardLibSuite/std_lib_math_min test_StandardLibSuite/std_lib_math_max test_StandardLibSuite/std_lib_math_factorial test_StandardLibSuite/std_lib_math_pow test_StandardLibSuite/std_lib_str_equals test_StandardLibSuite/std_lib_string test_StandardLibSuite/std_lib_string_concat test_StandardLibSuite/std_lib_string_concat_int test_StandardLibSuite/std_linked_list test_StandardLibSuite/std_vector test_BugFixesSuite/while_bug test_OptimizationSuite/parameter_propagation test_OptimizationSuite/global_cp test_OptimizationSuite/global_offset_cp test_OptimizationSuite/remove_empty_functions test_OptimizationSuite/remove_empty_loops test_OptimizationSuite/invariant_code_motion test_OptimizationSuite/complete_loop_peeling test_OptimizationSuite/complete_loop_peeling_2 test_OptimizationSuite/loop_unrolling test_OptimizationSuite/loop_unswitching test_OptimizationSuite/global_cse test_OptimizationSuite/local_cse test_OptimizationSuite/cmov_opt test_toString test_toNumber 
+release_test_toNumber : $(RELEASE_TEST_EXE)
+	 @ echo "Run toNumber" > test_reports/test_toNumber.log
+	 @ ./$(RELEASE_TEST_EXE) --run_test=toNumber --report_sin=stdout >> test_reports/test_toNumber.log
+
+debug_test_all: debug_test_bb_entry_exit_count debug_test_bb_iterators debug_test_bb_new_bb debug_test_bb_remove_bb debug_test_bb_at debug_test_ApplicationsSuite/applications_hangman debug_test_SamplesSuite/samples_arrays debug_test_SamplesSuite/samples_asm debug_test_SamplesSuite/samples_assembly debug_test_SamplesSuite/samples_bool debug_test_SamplesSuite/samples_compound debug_test_SamplesSuite/samples_concat debug_test_SamplesSuite/samples_const debug_test_SamplesSuite/samples_functions debug_test_SamplesSuite/samples_float debug_test_SamplesSuite/samples_little_float debug_test_SamplesSuite/samples_casts debug_test_SamplesSuite/samples_inc debug_test_SamplesSuite/samples_includes debug_test_SamplesSuite/samples_optimize debug_test_SamplesSuite/samples_problem debug_test_SamplesSuite/samples_identifiers debug_test_SamplesSuite/samples_registers debug_test_SamplesSuite/samples_structures debug_test_SpecificSuite/addressof debug_test_SpecificSuite/array_foreach_local debug_test_SpecificSuite/array_foreach_global debug_test_SpecificSuite/array_foreach_param_local debug_test_SpecificSuite/array_foreach_param_global debug_test_SpecificSuite/array_foreach_param_param debug_test_SpecificSuite/arrays_in_struct debug_test_SpecificSuite/char_type debug_test_SpecificSuite/char_at debug_test_SpecificSuite/ctor_dtor_heap debug_test_SpecificSuite/ctor_dtor_stack debug_test_SpecificSuite/copy_constructors debug_test_SpecificSuite/casts debug_test_SpecificSuite/compound debug_test_SpecificSuite/delete_any debug_test_SpecificSuite/if_ debug_test_SpecificSuite/includes debug_test_SpecificSuite/int_arrays debug_test_SpecificSuite/string_arrays debug_test_SpecificSuite/string_foreach debug_test_SpecificSuite/string_pointers debug_test_SpecificSuite/int_pointers debug_test_SpecificSuite/bool_pointers debug_test_SpecificSuite/cmove debug_test_SpecificSuite/dynamic debug_test_SpecificSuite/dynamic_arrays_in_struct debug_test_SpecificSuite/dynamic_struct debug_test_SpecificSuite/float_pointers debug_test_SpecificSuite/struct_pointers debug_test_SpecificSuite/member_pointers debug_test_SpecificSuite/member_function_calls debug_test_SpecificSuite/member_functions debug_test_SpecificSuite/member_functions_param_stack debug_test_SpecificSuite/memory debug_test_SpecificSuite/pass_member_by_value debug_test_SpecificSuite/ternary debug_test_SpecificSuite/while_ debug_test_SpecificSuite/do_while_ debug_test_SpecificSuite/defaults debug_test_SpecificSuite/float_1 debug_test_SpecificSuite/float_2 debug_test_SpecificSuite/for_ debug_test_SpecificSuite/foreach_ debug_test_SpecificSuite/globals_ debug_test_SpecificSuite/inc debug_test_SpecificSuite/void_ debug_test_SpecificSuite/return_string debug_test_SpecificSuite/return_by_value debug_test_SpecificSuite/return_int debug_test_SpecificSuite/return_pointers debug_test_SpecificSuite/pointer_arrays debug_test_SpecificSuite/recursive_functions debug_test_SpecificSuite/single_inheritance debug_test_SpecificSuite/math debug_test_SpecificSuite/builtin debug_test_SpecificSuite/assign_value debug_test_SpecificSuite/println debug_test_SpecificSuite/prints debug_test_SpecificSuite/structures debug_test_SpecificSuite/struct_member_pointers debug_test_SpecificSuite/struct_array debug_test_SpecificSuite/switch_ debug_test_SpecificSuite/switch_string debug_test_SpecificSuite/nested debug_test_SpecificSuite/args debug_test_TemplateSuite/class_templates debug_test_TemplateSuite/function_templates debug_test_TemplateSuite/member_function_templates debug_test_CompilationErrorsSuite/params_assign debug_test_CompilationErrorsSuite/wrong_print debug_test_CompilationErrorsSuite/invalid_inheritance debug_test_StandardLibSuite/std_lib_arrays_sum debug_test_StandardLibSuite/std_lib_math_min debug_test_StandardLibSuite/std_lib_math_max debug_test_StandardLibSuite/std_lib_math_factorial debug_test_StandardLibSuite/std_lib_math_pow debug_test_StandardLibSuite/std_lib_str_equals debug_test_StandardLibSuite/std_lib_string debug_test_StandardLibSuite/std_lib_string_concat debug_test_StandardLibSuite/std_lib_string_concat_int debug_test_StandardLibSuite/std_linked_list debug_test_StandardLibSuite/std_vector debug_test_BugFixesSuite/while_bug debug_test_OptimizationSuite/parameter_propagation debug_test_OptimizationSuite/global_cp debug_test_OptimizationSuite/global_offset_cp debug_test_OptimizationSuite/remove_empty_functions debug_test_OptimizationSuite/remove_empty_loops debug_test_OptimizationSuite/invariant_code_motion debug_test_OptimizationSuite/complete_loop_peeling debug_test_OptimizationSuite/complete_loop_peeling_2 debug_test_OptimizationSuite/loop_unrolling debug_test_OptimizationSuite/loop_unswitching debug_test_OptimizationSuite/global_cse debug_test_OptimizationSuite/local_cse debug_test_OptimizationSuite/cmov_opt debug_test_toString debug_test_toNumber 
 	 @ bash ./tools/test_report.sh
 
-.PHONY: test_all test_bb_entry_exit_count test_bb_iterators test_bb_new_bb test_bb_remove_bb test_bb_at test_ApplicationsSuite/applications_hangman test_SamplesSuite/samples_arrays test_SamplesSuite/samples_asm test_SamplesSuite/samples_assembly test_SamplesSuite/samples_bool test_SamplesSuite/samples_compound test_SamplesSuite/samples_concat test_SamplesSuite/samples_const test_SamplesSuite/samples_functions test_SamplesSuite/samples_float test_SamplesSuite/samples_little_float test_SamplesSuite/samples_casts test_SamplesSuite/samples_inc test_SamplesSuite/samples_includes test_SamplesSuite/samples_optimize test_SamplesSuite/samples_problem test_SamplesSuite/samples_identifiers test_SamplesSuite/samples_registers test_SamplesSuite/samples_structures test_SpecificSuite/addressof test_SpecificSuite/array_foreach_local test_SpecificSuite/array_foreach_global test_SpecificSuite/array_foreach_param_local test_SpecificSuite/array_foreach_param_global test_SpecificSuite/array_foreach_param_param test_SpecificSuite/arrays_in_struct test_SpecificSuite/char_type test_SpecificSuite/char_at test_SpecificSuite/ctor_dtor_heap test_SpecificSuite/ctor_dtor_stack test_SpecificSuite/copy_constructors test_SpecificSuite/casts test_SpecificSuite/compound test_SpecificSuite/delete_any test_SpecificSuite/if_ test_SpecificSuite/includes test_SpecificSuite/int_arrays test_SpecificSuite/string_arrays test_SpecificSuite/string_foreach test_SpecificSuite/string_pointers test_SpecificSuite/int_pointers test_SpecificSuite/bool_pointers test_SpecificSuite/cmove test_SpecificSuite/dynamic test_SpecificSuite/dynamic_arrays_in_struct test_SpecificSuite/dynamic_struct test_SpecificSuite/float_pointers test_SpecificSuite/struct_pointers test_SpecificSuite/member_pointers test_SpecificSuite/member_function_calls test_SpecificSuite/member_functions test_SpecificSuite/member_functions_param_stack test_SpecificSuite/memory test_SpecificSuite/pass_member_by_value test_SpecificSuite/ternary test_SpecificSuite/while_ test_SpecificSuite/do_while_ test_SpecificSuite/defaults test_SpecificSuite/float_1 test_SpecificSuite/float_2 test_SpecificSuite/for_ test_SpecificSuite/foreach_ test_SpecificSuite/globals_ test_SpecificSuite/inc test_SpecificSuite/void_ test_SpecificSuite/return_string test_SpecificSuite/return_by_value test_SpecificSuite/return_int test_SpecificSuite/return_pointers test_SpecificSuite/pointer_arrays test_SpecificSuite/recursive_functions test_SpecificSuite/single_inheritance test_SpecificSuite/math test_SpecificSuite/builtin test_SpecificSuite/assign_value test_SpecificSuite/println test_SpecificSuite/prints test_SpecificSuite/structures test_SpecificSuite/struct_member_pointers test_SpecificSuite/struct_array test_SpecificSuite/switch_ test_SpecificSuite/switch_string test_SpecificSuite/nested test_SpecificSuite/args test_TemplateSuite/class_templates test_TemplateSuite/function_templates test_TemplateSuite/member_function_templates test_CompilationErrorsSuite/params_assign test_CompilationErrorsSuite/wrong_print test_CompilationErrorsSuite/invalid_inheritance test_StandardLibSuite/std_lib_arrays_sum test_StandardLibSuite/std_lib_math_min test_StandardLibSuite/std_lib_math_max test_StandardLibSuite/std_lib_math_factorial test_StandardLibSuite/std_lib_math_pow test_StandardLibSuite/std_lib_str_equals test_StandardLibSuite/std_lib_string test_StandardLibSuite/std_lib_string_concat test_StandardLibSuite/std_lib_string_concat_int test_StandardLibSuite/std_linked_list test_StandardLibSuite/std_vector test_BugFixesSuite/while_bug test_OptimizationSuite/parameter_propagation test_OptimizationSuite/global_cp test_OptimizationSuite/global_offset_cp test_OptimizationSuite/remove_empty_functions test_OptimizationSuite/remove_empty_loops test_OptimizationSuite/invariant_code_motion test_OptimizationSuite/complete_loop_peeling test_OptimizationSuite/complete_loop_peeling_2 test_OptimizationSuite/loop_unrolling test_OptimizationSuite/loop_unswitching test_OptimizationSuite/global_cse test_OptimizationSuite/local_cse test_OptimizationSuite/cmov_opt test_toString test_toNumber 
+release_test_all: release_test_bb_entry_exit_count release_test_bb_iterators release_test_bb_new_bb release_test_bb_remove_bb release_test_bb_at release_test_ApplicationsSuite/applications_hangman release_test_SamplesSuite/samples_arrays release_test_SamplesSuite/samples_asm release_test_SamplesSuite/samples_assembly release_test_SamplesSuite/samples_bool release_test_SamplesSuite/samples_compound release_test_SamplesSuite/samples_concat release_test_SamplesSuite/samples_const release_test_SamplesSuite/samples_functions release_test_SamplesSuite/samples_float release_test_SamplesSuite/samples_little_float release_test_SamplesSuite/samples_casts release_test_SamplesSuite/samples_inc release_test_SamplesSuite/samples_includes release_test_SamplesSuite/samples_optimize release_test_SamplesSuite/samples_problem release_test_SamplesSuite/samples_identifiers release_test_SamplesSuite/samples_registers release_test_SamplesSuite/samples_structures release_test_SpecificSuite/addressof release_test_SpecificSuite/array_foreach_local release_test_SpecificSuite/array_foreach_global release_test_SpecificSuite/array_foreach_param_local release_test_SpecificSuite/array_foreach_param_global release_test_SpecificSuite/array_foreach_param_param release_test_SpecificSuite/arrays_in_struct release_test_SpecificSuite/char_type release_test_SpecificSuite/char_at release_test_SpecificSuite/ctor_dtor_heap release_test_SpecificSuite/ctor_dtor_stack release_test_SpecificSuite/copy_constructors release_test_SpecificSuite/casts release_test_SpecificSuite/compound release_test_SpecificSuite/delete_any release_test_SpecificSuite/if_ release_test_SpecificSuite/includes release_test_SpecificSuite/int_arrays release_test_SpecificSuite/string_arrays release_test_SpecificSuite/string_foreach release_test_SpecificSuite/string_pointers release_test_SpecificSuite/int_pointers release_test_SpecificSuite/bool_pointers release_test_SpecificSuite/cmove release_test_SpecificSuite/dynamic release_test_SpecificSuite/dynamic_arrays_in_struct release_test_SpecificSuite/dynamic_struct release_test_SpecificSuite/float_pointers release_test_SpecificSuite/struct_pointers release_test_SpecificSuite/member_pointers release_test_SpecificSuite/member_function_calls release_test_SpecificSuite/member_functions release_test_SpecificSuite/member_functions_param_stack release_test_SpecificSuite/memory release_test_SpecificSuite/pass_member_by_value release_test_SpecificSuite/ternary release_test_SpecificSuite/while_ release_test_SpecificSuite/do_while_ release_test_SpecificSuite/defaults release_test_SpecificSuite/float_1 release_test_SpecificSuite/float_2 release_test_SpecificSuite/for_ release_test_SpecificSuite/foreach_ release_test_SpecificSuite/globals_ release_test_SpecificSuite/inc release_test_SpecificSuite/void_ release_test_SpecificSuite/return_string release_test_SpecificSuite/return_by_value release_test_SpecificSuite/return_int release_test_SpecificSuite/return_pointers release_test_SpecificSuite/pointer_arrays release_test_SpecificSuite/recursive_functions release_test_SpecificSuite/single_inheritance release_test_SpecificSuite/math release_test_SpecificSuite/builtin release_test_SpecificSuite/assign_value release_test_SpecificSuite/println release_test_SpecificSuite/prints release_test_SpecificSuite/structures release_test_SpecificSuite/struct_member_pointers release_test_SpecificSuite/struct_array release_test_SpecificSuite/switch_ release_test_SpecificSuite/switch_string release_test_SpecificSuite/nested release_test_SpecificSuite/args release_test_TemplateSuite/class_templates release_test_TemplateSuite/function_templates release_test_TemplateSuite/member_function_templates release_test_CompilationErrorsSuite/params_assign release_test_CompilationErrorsSuite/wrong_print release_test_CompilationErrorsSuite/invalid_inheritance release_test_StandardLibSuite/std_lib_arrays_sum release_test_StandardLibSuite/std_lib_math_min release_test_StandardLibSuite/std_lib_math_max release_test_StandardLibSuite/std_lib_math_factorial release_test_StandardLibSuite/std_lib_math_pow release_test_StandardLibSuite/std_lib_str_equals release_test_StandardLibSuite/std_lib_string release_test_StandardLibSuite/std_lib_string_concat release_test_StandardLibSuite/std_lib_string_concat_int release_test_StandardLibSuite/std_linked_list release_test_StandardLibSuite/std_vector release_test_BugFixesSuite/while_bug release_test_OptimizationSuite/parameter_propagation release_test_OptimizationSuite/global_cp release_test_OptimizationSuite/global_offset_cp release_test_OptimizationSuite/remove_empty_functions release_test_OptimizationSuite/remove_empty_loops release_test_OptimizationSuite/invariant_code_motion release_test_OptimizationSuite/complete_loop_peeling release_test_OptimizationSuite/complete_loop_peeling_2 release_test_OptimizationSuite/loop_unrolling release_test_OptimizationSuite/loop_unswitching release_test_OptimizationSuite/global_cse release_test_OptimizationSuite/local_cse release_test_OptimizationSuite/cmov_opt release_test_toString release_test_toNumber 
+	 @ bash ./tools/test_report.sh
+
+.PHONY: release_test_all debug_test_alldebug_test_bb_entry_exit_count release_test_bb_entry_exit_count debug_test_bb_iterators release_test_bb_iterators debug_test_bb_new_bb release_test_bb_new_bb debug_test_bb_remove_bb release_test_bb_remove_bb debug_test_bb_at release_test_bb_at debug_test_ApplicationsSuite/applications_hangman release_test_ApplicationsSuite/applications_hangman debug_test_SamplesSuite/samples_arrays release_test_SamplesSuite/samples_arrays debug_test_SamplesSuite/samples_asm release_test_SamplesSuite/samples_asm debug_test_SamplesSuite/samples_assembly release_test_SamplesSuite/samples_assembly debug_test_SamplesSuite/samples_bool release_test_SamplesSuite/samples_bool debug_test_SamplesSuite/samples_compound release_test_SamplesSuite/samples_compound debug_test_SamplesSuite/samples_concat release_test_SamplesSuite/samples_concat debug_test_SamplesSuite/samples_const release_test_SamplesSuite/samples_const debug_test_SamplesSuite/samples_functions release_test_SamplesSuite/samples_functions debug_test_SamplesSuite/samples_float release_test_SamplesSuite/samples_float debug_test_SamplesSuite/samples_little_float release_test_SamplesSuite/samples_little_float debug_test_SamplesSuite/samples_casts release_test_SamplesSuite/samples_casts debug_test_SamplesSuite/samples_inc release_test_SamplesSuite/samples_inc debug_test_SamplesSuite/samples_includes release_test_SamplesSuite/samples_includes debug_test_SamplesSuite/samples_optimize release_test_SamplesSuite/samples_optimize debug_test_SamplesSuite/samples_problem release_test_SamplesSuite/samples_problem debug_test_SamplesSuite/samples_identifiers release_test_SamplesSuite/samples_identifiers debug_test_SamplesSuite/samples_registers release_test_SamplesSuite/samples_registers debug_test_SamplesSuite/samples_structures release_test_SamplesSuite/samples_structures debug_test_SpecificSuite/addressof release_test_SpecificSuite/addressof debug_test_SpecificSuite/array_foreach_local release_test_SpecificSuite/array_foreach_local debug_test_SpecificSuite/array_foreach_global release_test_SpecificSuite/array_foreach_global debug_test_SpecificSuite/array_foreach_param_local release_test_SpecificSuite/array_foreach_param_local debug_test_SpecificSuite/array_foreach_param_global release_test_SpecificSuite/array_foreach_param_global debug_test_SpecificSuite/array_foreach_param_param release_test_SpecificSuite/array_foreach_param_param debug_test_SpecificSuite/arrays_in_struct release_test_SpecificSuite/arrays_in_struct debug_test_SpecificSuite/char_type release_test_SpecificSuite/char_type debug_test_SpecificSuite/char_at release_test_SpecificSuite/char_at debug_test_SpecificSuite/ctor_dtor_heap release_test_SpecificSuite/ctor_dtor_heap debug_test_SpecificSuite/ctor_dtor_stack release_test_SpecificSuite/ctor_dtor_stack debug_test_SpecificSuite/copy_constructors release_test_SpecificSuite/copy_constructors debug_test_SpecificSuite/casts release_test_SpecificSuite/casts debug_test_SpecificSuite/compound release_test_SpecificSuite/compound debug_test_SpecificSuite/delete_any release_test_SpecificSuite/delete_any debug_test_SpecificSuite/if_ release_test_SpecificSuite/if_ debug_test_SpecificSuite/includes release_test_SpecificSuite/includes debug_test_SpecificSuite/int_arrays release_test_SpecificSuite/int_arrays debug_test_SpecificSuite/string_arrays release_test_SpecificSuite/string_arrays debug_test_SpecificSuite/string_foreach release_test_SpecificSuite/string_foreach debug_test_SpecificSuite/string_pointers release_test_SpecificSuite/string_pointers debug_test_SpecificSuite/int_pointers release_test_SpecificSuite/int_pointers debug_test_SpecificSuite/bool_pointers release_test_SpecificSuite/bool_pointers debug_test_SpecificSuite/cmove release_test_SpecificSuite/cmove debug_test_SpecificSuite/dynamic release_test_SpecificSuite/dynamic debug_test_SpecificSuite/dynamic_arrays_in_struct release_test_SpecificSuite/dynamic_arrays_in_struct debug_test_SpecificSuite/dynamic_struct release_test_SpecificSuite/dynamic_struct debug_test_SpecificSuite/float_pointers release_test_SpecificSuite/float_pointers debug_test_SpecificSuite/struct_pointers release_test_SpecificSuite/struct_pointers debug_test_SpecificSuite/member_pointers release_test_SpecificSuite/member_pointers debug_test_SpecificSuite/member_function_calls release_test_SpecificSuite/member_function_calls debug_test_SpecificSuite/member_functions release_test_SpecificSuite/member_functions debug_test_SpecificSuite/member_functions_param_stack release_test_SpecificSuite/member_functions_param_stack debug_test_SpecificSuite/memory release_test_SpecificSuite/memory debug_test_SpecificSuite/pass_member_by_value release_test_SpecificSuite/pass_member_by_value debug_test_SpecificSuite/ternary release_test_SpecificSuite/ternary debug_test_SpecificSuite/while_ release_test_SpecificSuite/while_ debug_test_SpecificSuite/do_while_ release_test_SpecificSuite/do_while_ debug_test_SpecificSuite/defaults release_test_SpecificSuite/defaults debug_test_SpecificSuite/float_1 release_test_SpecificSuite/float_1 debug_test_SpecificSuite/float_2 release_test_SpecificSuite/float_2 debug_test_SpecificSuite/for_ release_test_SpecificSuite/for_ debug_test_SpecificSuite/foreach_ release_test_SpecificSuite/foreach_ debug_test_SpecificSuite/globals_ release_test_SpecificSuite/globals_ debug_test_SpecificSuite/inc release_test_SpecificSuite/inc debug_test_SpecificSuite/void_ release_test_SpecificSuite/void_ debug_test_SpecificSuite/return_string release_test_SpecificSuite/return_string debug_test_SpecificSuite/return_by_value release_test_SpecificSuite/return_by_value debug_test_SpecificSuite/return_int release_test_SpecificSuite/return_int debug_test_SpecificSuite/return_pointers release_test_SpecificSuite/return_pointers debug_test_SpecificSuite/pointer_arrays release_test_SpecificSuite/pointer_arrays debug_test_SpecificSuite/recursive_functions release_test_SpecificSuite/recursive_functions debug_test_SpecificSuite/single_inheritance release_test_SpecificSuite/single_inheritance debug_test_SpecificSuite/math release_test_SpecificSuite/math debug_test_SpecificSuite/builtin release_test_SpecificSuite/builtin debug_test_SpecificSuite/assign_value release_test_SpecificSuite/assign_value debug_test_SpecificSuite/println release_test_SpecificSuite/println debug_test_SpecificSuite/prints release_test_SpecificSuite/prints debug_test_SpecificSuite/structures release_test_SpecificSuite/structures debug_test_SpecificSuite/struct_member_pointers release_test_SpecificSuite/struct_member_pointers debug_test_SpecificSuite/struct_array release_test_SpecificSuite/struct_array debug_test_SpecificSuite/switch_ release_test_SpecificSuite/switch_ debug_test_SpecificSuite/switch_string release_test_SpecificSuite/switch_string debug_test_SpecificSuite/nested release_test_SpecificSuite/nested debug_test_SpecificSuite/args release_test_SpecificSuite/args debug_test_TemplateSuite/class_templates release_test_TemplateSuite/class_templates debug_test_TemplateSuite/function_templates release_test_TemplateSuite/function_templates debug_test_TemplateSuite/member_function_templates release_test_TemplateSuite/member_function_templates debug_test_CompilationErrorsSuite/params_assign release_test_CompilationErrorsSuite/params_assign debug_test_CompilationErrorsSuite/wrong_print release_test_CompilationErrorsSuite/wrong_print debug_test_CompilationErrorsSuite/invalid_inheritance release_test_CompilationErrorsSuite/invalid_inheritance debug_test_StandardLibSuite/std_lib_arrays_sum release_test_StandardLibSuite/std_lib_arrays_sum debug_test_StandardLibSuite/std_lib_math_min release_test_StandardLibSuite/std_lib_math_min debug_test_StandardLibSuite/std_lib_math_max release_test_StandardLibSuite/std_lib_math_max debug_test_StandardLibSuite/std_lib_math_factorial release_test_StandardLibSuite/std_lib_math_factorial debug_test_StandardLibSuite/std_lib_math_pow release_test_StandardLibSuite/std_lib_math_pow debug_test_StandardLibSuite/std_lib_str_equals release_test_StandardLibSuite/std_lib_str_equals debug_test_StandardLibSuite/std_lib_string release_test_StandardLibSuite/std_lib_string debug_test_StandardLibSuite/std_lib_string_concat release_test_StandardLibSuite/std_lib_string_concat debug_test_StandardLibSuite/std_lib_string_concat_int release_test_StandardLibSuite/std_lib_string_concat_int debug_test_StandardLibSuite/std_linked_list release_test_StandardLibSuite/std_linked_list debug_test_StandardLibSuite/std_vector release_test_StandardLibSuite/std_vector debug_test_BugFixesSuite/while_bug release_test_BugFixesSuite/while_bug debug_test_OptimizationSuite/parameter_propagation release_test_OptimizationSuite/parameter_propagation debug_test_OptimizationSuite/global_cp release_test_OptimizationSuite/global_cp debug_test_OptimizationSuite/global_offset_cp release_test_OptimizationSuite/global_offset_cp debug_test_OptimizationSuite/remove_empty_functions release_test_OptimizationSuite/remove_empty_functions debug_test_OptimizationSuite/remove_empty_loops release_test_OptimizationSuite/remove_empty_loops debug_test_OptimizationSuite/invariant_code_motion release_test_OptimizationSuite/invariant_code_motion debug_test_OptimizationSuite/complete_loop_peeling release_test_OptimizationSuite/complete_loop_peeling debug_test_OptimizationSuite/complete_loop_peeling_2 release_test_OptimizationSuite/complete_loop_peeling_2 debug_test_OptimizationSuite/loop_unrolling release_test_OptimizationSuite/loop_unrolling debug_test_OptimizationSuite/loop_unswitching release_test_OptimizationSuite/loop_unswitching debug_test_OptimizationSuite/global_cse release_test_OptimizationSuite/global_cse debug_test_OptimizationSuite/local_cse release_test_OptimizationSuite/local_cse debug_test_OptimizationSuite/cmov_opt release_test_OptimizationSuite/cmov_opt debug_test_toString release_test_toString debug_test_toNumber release_test_toNumber 

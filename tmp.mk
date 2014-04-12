@@ -4,7 +4,8 @@ default: release
 
 BOOST_PREFIX=$(HOME)/build/modular-boost/
 
-TEST_EXE=bin/boosttest--eddic_boost_test
+DEBUG_TEST_EXE=debug/bin/test
+RELEASE_TEST_EXE=release/bin/test
 
 CC=clang++
 LD=clang++
@@ -12,6 +13,7 @@ LD=clang++
 WARNING_FLAGS=-Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic
 CXX_FLAGS=-Iinclude -std=c++1y -stdlib=libc++ $(WARNING_FLAGS) -isystem $(BOOST_PREFIX)/include
 LD_FLAGS=$(CXX_FLAGS) -L $(BOOST_PREFIX)/lib -lboost_program_options
+LD_TEST_FLAGS=$(LD_FLAGS) -lboost_unit_test_framework
 
 DEBUG_FLAGS=-g
 RELEASE_FLAGS=-g -DLOGGING_DISABLE -DNDEBUG -Ofast -march=native -fvectorize -fslp-vectorize-aggressive -fomit-frame-pointer
@@ -38,8 +40,8 @@ RELEASE_O_FILES_NON_EXEC=$(SRC_CPP_FILES_NON_EXEC:%.cpp=release/%.cpp.o)
 
 TEST_CPP_FILES=$(wildcard test/*.cpp)
 
-DEBUG_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=debug/%.cpp.o)
-RELEASE_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=release/%.cpp.o)
+DEBUG_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=debug/%.cpp.o) $(DEBUG_O_FILES_NON_EXEC)
+RELEASE_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=release/%.cpp.o) $(RELEASE_O_FILES_NON_EXEC)
 
 # Actual compilation of all the files
 
@@ -101,11 +103,11 @@ release/src/ltac/%.cpp.o: src/ltac/%.cpp
 
 debug/test/%.cpp.o: test/%.cpp
 	@ mkdir -p debug/test/
-	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
+	$(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/test/%.cpp.o: test/%.cpp
 	@ mkdir -p release/test/
-	$(CC) $(CXX_FLAGS) $(RELEASE_2_FLAGS) -o $@ -c $<
+	$(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 # Link the various binaries
 
@@ -133,6 +135,14 @@ release/bin/generate_lexer: release/src/lexer/main.cpp.o $(RELEASE_O_FILES_NON_E
 	@ mkdir -p release/bin/
 	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $?
 
+debug/bin/test: $(DEBUG_TEST_O_FILES_NON_EXEC)
+	@ mkdir -p debug/bin/
+	$(LD) $(LD_TEST_FLAGS) $(DEBUG_FLAGS) -o $@ $?
+
+release/bin/test: $(RELEASE_TEST_O_FILES_NON_EXEC)
+	@ mkdir -p release/bin/
+	$(LD) $(LD_TEST_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+
 # Generate the dependency files
 
 # TODO
@@ -151,7 +161,7 @@ clean:
 # Custom targets
 
 update_test_list: bin/boosttest--eddic_boost_test
-	./$(TEST_EXE) --log_level=test_suite --log_sink=stdout > tests.tmp.log
+	./$(RELEASE_TEST_EXE) --log_level=test_suite --log_sink=stdout > tests.tmp.log
 	bash tools/generate_tests.sh
 
 -include tests.mk
