@@ -134,35 +134,35 @@ release/test/%.cpp.o: test/%.cpp
 
 debug/bin/eddic: debug/src/eddi.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ $? $(LD_FLAGS)
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/eddic: release/src/eddi.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
 debug/bin/time_parse: debug/src/parser/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/time_parse: release/src/parser/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
 debug/bin/generate_lexer: debug/src/lexer/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/generate_lexer: release/src/lexer/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
 debug/bin/test: $(DEBUG_TEST_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_TEST_FLAGS) $(DEBUG_FLAGS) -o $@ $?
+	$(LD) $(LD_TEST_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/test: $(RELEASE_TEST_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_TEST_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+	$(LD) $(LD_TEST_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
 # Management targets
 
