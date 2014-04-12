@@ -43,6 +43,11 @@ TEST_CPP_FILES=$(wildcard test/*.cpp)
 DEBUG_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=debug/%.cpp.o) $(DEBUG_O_FILES_NON_EXEC)
 RELEASE_TEST_O_FILES_NON_EXEC=$(TEST_CPP_FILES:%.cpp=release/%.cpp.o) $(RELEASE_O_FILES_NON_EXEC)
 
+CPP_FILES_ALL=$(SRC_CPP_FILES_ALL) $(TEST_CPP_FILES)
+
+DEBUG_D_FILES=$(CPP_FILES_ALL:%.cpp=debug/%.cpp.d)
+RELEASE_D_FILES=$(CPP_FILES_ALL:%.cpp=release/%.cpp.d)
+
 # Actual compilation of all the files
 
 debug/src/%.cpp.o: src/%.cpp
@@ -145,12 +150,74 @@ release/bin/test: $(RELEASE_TEST_O_FILES_NON_EXEC)
 
 # Generate the dependency files
 
-# TODO
+debug/src/%.cpp.d: src/%.cpp
+	@ mkdir -p debug/src/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/$*.cpp.o src/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/%.cpp.d: src/%.cpp
+	@ mkdir -p release/src/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/$*.cpp.o src/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/ast/%.cpp.d: src/ast/%.cpp
+	@ mkdir -p debug/src/ast/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/ast/$*.cpp.o src/ast/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/ast/%.cpp.d: src/ast/%.cpp
+	@ mkdir -p release/src/ast/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/ast/$*.cpp.o src/ast/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/lexer/%.cpp.d: src/lexer/%.cpp
+	@ mkdir -p debug/src/lexer/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/lexer/$*.cpp.o src/lexer/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/lexer/%.cpp.d: src/lexer/%.cpp
+	@ mkdir -p release/src/lexer/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/lexer/$*.cpp.o src/lexer/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/parser/%.cpp.d: src/parser/%.cpp
+	@ mkdir -p debug/src/parser/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/parser/$*.cpp.o src/parser/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/parser/%.cpp.d: src/parser/%.cpp
+	@ mkdir -p release/src/parser/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/parser/$*.cpp.o src/parser/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/asm/%.cpp.d: src/asm/%.cpp
+	@ mkdir -p debug/src/asm/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/asm/$*.cpp.o src/asm/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/asm/%.cpp.d: src/asm/%.cpp
+	@ mkdir -p release/src/asm/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/asm/$*.cpp.o src/asm/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/mtac/%.cpp.d: src/mtac/%.cpp
+	@ mkdir -p debug/src/mtac/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/mtac/$*.cpp.o src/mtac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/mtac/%.cpp.d: src/mtac/%.cpp
+	@ mkdir -p release/src/mtac/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/mtac/$*.cpp.o src/mtac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/src/ltac/%.cpp.d: src/ltac/%.cpp
+	@ mkdir -p debug/src/ltac/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/src/ltac/$*.cpp.o src/ltac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/src/ltac/%.cpp.d: src/ltac/%.cpp
+	@ mkdir -p release/src/ltac/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/src/ltac/$*.cpp.o src/ltac/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+debug/test/%.cpp.d: test/%.cpp
+	@ mkdir -p debug/test/
+	@ $(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT debug/test/$*.cpp.o test/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+release/test/%.cpp.d: test/%.cpp
+	@ mkdir -p release/test/
+	@ $(CC) -DBOOST_TEST_DYN_LINK $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT release/test/$*.cpp.o test/$*.cpp | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 # Management targets
 
-debug: debug/bin/eddic debug/bin/time_parse debug/bin/generate_lexer
-release: release/bin/eddic release/bin/time_parse release/bin/generate_lexer
+debug: debug/bin/eddic debug/bin/time_parse debug/bin/generate_lexer debug/bin/test
+release: release/bin/eddic release/bin/time_parse release/bin/generate_lexer release/bin/test
 
 all: debug release 
 
@@ -165,3 +232,6 @@ update_test_list: bin/boosttest--eddic_boost_test
 	bash tools/generate_tests.sh
 
 -include tests.mk
+
+-include $(RELEASE_D_FILES)
+-include $(DEBUG_D_FILES)
