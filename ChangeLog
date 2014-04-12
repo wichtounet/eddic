@@ -1,3 +1,6 @@
+eddic 1.2.4 - in development
+* Replaced CMake by plain old makefiles
+
 eddic 1.2.3 - 2013.03.08
 
 * Language: char and bool now take only 1 byte
