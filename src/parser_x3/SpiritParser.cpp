@@ -29,9 +29,12 @@ namespace x3_ast {
 struct function_declaration;
 struct import;
 
+struct nil {};
+
 typedef x3::variant<
-    x3::forward_ast<function_declaration>,
-    x3::forward_ast<import>> block;
+        x3::forward_ast<import>,
+        x3::forward_ast<function_declaration>
+    > block;
 
 struct source_file {
     std::vector<block> blocks;
@@ -61,10 +64,10 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::import,
-    (std::string, name)
+    (std::string, file)
 )
 
-namespace grammar {
+namespace x3_grammar {
 
     //Rule IDs
 
@@ -79,21 +82,22 @@ namespace grammar {
     auto const import_def = 
             x3::lit("import") 
         >>  '"' 
-        >>  x3::string 
+        >>  *x3::alpha
         >>  '"';
     
-   // auto const function_declaration_def = x3::string > x3::string > '(' > ')';
+    auto const function_declaration_def = *x3::alpha >> *x3::alpha >> '(' >> ')';
     
-    //auto const source_file_def = 
-    //        import
-    //    |   function_declaration;
-
-    /*
+    auto const source_file_def = 
+        *(
+                import
+            |   function_declaration
+         );
+    
     auto const parser = x3::grammar(
         "eddi", 
         source_file = source_file_def,
         function_declaration = function_declaration_def, 
-        import = import_def);*/
+        import = import_def);
 
 } // end of grammar namespace
 
@@ -114,6 +118,24 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     std::string file_contents;
     file_contents.resize(size);
     in.read(&file_contents[0], size);
+
+    auto& parser = x3_grammar::parser;
+
+    x3_ast::source_file result;
+    auto it = file_contents.begin();
+    auto end = file_contents.end();
+    boost::spirit::x3::ascii::space_type space;
+
+    bool r = x3::phrase_parse(it, end, parser, space, result);
+
+    if(r && it == end){
+
+
+        return true;
+    } else {
+
+        return false;
+    }
 
     //TODO Real stuff here
     
