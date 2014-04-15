@@ -38,7 +38,7 @@ struct PseudoRegisters {
          * \param variable The variable to test.
          * \return true if the variable is hold in a register, otherwise false.
          */
-        bool inRegister(std::shared_ptr<Variable> variable);
+        bool inRegister(const std::shared_ptr<Variable>& variable);
 
         /*!
          * Indicates if the given variable is in the given register.
@@ -46,14 +46,14 @@ struct PseudoRegisters {
          * \param reg The register to test.
          * \return true if the variable is hold in the given register, otherwise false.
          */
-        bool inRegister(std::shared_ptr<Variable> variable, Reg reg);
+        bool inRegister(const std::shared_ptr<Variable>& variable, Reg reg);
 
         /*!
          * Return the register in which the variable is hold.
          * \param variable The variable to test.
          * \return The register in which the variable is hold.
          */
-        Reg operator[](const std::shared_ptr<Variable> variable);
+        Reg operator[](const std::shared_ptr<Variable>& variable);
 
         /*!
          * Set the location of the given variable to the given register.
@@ -111,17 +111,17 @@ std::shared_ptr<Variable> PseudoRegisters<Reg>::variable(Reg reg){
 }
 
 template<typename Reg>
-bool PseudoRegisters<Reg>::inRegister(std::shared_ptr<Variable> variable) {
+bool PseudoRegisters<Reg>::inRegister(const std::shared_ptr<Variable>& variable) {
     return variables.find(variable) != variables.end();
 }
 
 template<typename Reg>
-bool PseudoRegisters<Reg>::inRegister(std::shared_ptr<Variable> variable, Reg reg) {
+bool PseudoRegisters<Reg>::inRegister(const std::shared_ptr<Variable>& variable, Reg reg) {
     return inRegister(variable) && variables.at(variable) == reg;
 }
 
 template<typename Reg>
-Reg PseudoRegisters<Reg>::operator[](const std::shared_ptr<Variable> variable){
+Reg PseudoRegisters<Reg>::operator[](const std::shared_ptr<Variable>& variable){
     //This method should never be called without the variable into the map
     assert(inRegister(variable));
 

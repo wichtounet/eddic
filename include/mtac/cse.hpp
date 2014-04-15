@@ -66,7 +66,7 @@ bool is_commutative(mtac::Operator op);
 mtac::Operator assign_op(mtac::Operator op);
 
 bool are_equivalent(mtac::Quadruple& quadruple, const expression& exp);
-bool is_killing(mtac::Quadruple& quadruple, const mtac::expression expression);
+bool is_killing(mtac::Quadruple& quadruple, const mtac::expression& expression);
 
 bool is_valid(mtac::Quadruple& quadruple, mtac::EscapedVariables& escaped);
 

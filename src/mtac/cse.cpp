@@ -68,7 +68,7 @@ bool mtac::is_expression(mtac::Operator op){
     return (op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV) || op == mtac::Operator::DOT;
 }
 
-bool mtac::is_killing(mtac::Quadruple& quadruple, const mtac::expression expression){
+bool mtac::is_killing(mtac::Quadruple& quadruple, const mtac::expression& expression){
     eddic_assert(quadruple.result, "is_killing should only be called on quadruple erasing the result, thus having a result");
 
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg1)){
