@@ -28,14 +28,15 @@ class CodeGenerator {
     public:
         /*!
          * Constructs a CodeGenerator. 
-         * \param The AssemblyFileWriter to use to output code to. 
+         * \param writer The AssemblyFileWriter to use to output code to. 
+         * \param program The program that is compiled. 
          */
         CodeGenerator(AssemblyFileWriter& writer, mtac::Program& program);
         
         /*!
          * Generates codes from the LTAC Program. 
-         * \param program The source LTAC Program. 
          * \param pool The string pool to use. 
+         * \param float_pool The float pool to use. 
          */
         virtual void generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
 

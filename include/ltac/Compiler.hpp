@@ -32,7 +32,6 @@ class Compiler {
         /*!
          * Compile the MTAC Program into an LTAC Program. 
          * \param source The source MTAC Program. 
-         * \param target The target LTAC Program. 
          * \param float_pool The float pool to use. 
          */
         void compile(mtac::Program& source, std::shared_ptr<FloatPool> float_pool);
