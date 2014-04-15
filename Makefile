@@ -28,12 +28,14 @@ SRC_CPP_FILES_LTAC=$(wildcard src/ltac/*.cpp)
 SRC_CPP_FILES_MTAC=$(wildcard src/mtac/*.cpp)
 SRC_CPP_FILES_LEXER=$(wildcard src/lexer/*.cpp)
 SRC_CPP_FILES_PARSER=$(wildcard src/parser/*.cpp)
+SRC_CPP_FILES_PARSER_X3=$(wildcard src/parser_x3/*.cpp)
 
-SRC_CPP_FILES_ALL=$(SRC_CPP_FILES) $(SRC_CPP_FILES_AST) $(SRC_CPP_FILES_ASM) $(SRC_CPP_FILES_LTAC) $(SRC_CPP_FILES_MTAC) $(SRC_CPP_FILES_LEXER) $(SRC_CPP_FILES_PARSER)
+SRC_CPP_FILES_ALL=$(SRC_CPP_FILES) $(SRC_CPP_FILES_AST) $(SRC_CPP_FILES_ASM) $(SRC_CPP_FILES_LTAC) $(SRC_CPP_FILES_MTAC) $(SRC_CPP_FILES_LEXER) $(SRC_CPP_FILES_PARSER) $(SRC_CPP_FILES_PARSER_X3)
 
 SRC_CPP_FILES_NON_EXEC := $(filter-out src/eddi.cpp,$(SRC_CPP_FILES_ALL))
-SRC_CPP_FILES_NON_EXEC := $(filter-out src/parser/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
 SRC_CPP_FILES_NON_EXEC := $(filter-out src/lexer/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
+SRC_CPP_FILES_NON_EXEC := $(filter-out src/parser/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
+SRC_CPP_FILES_NON_EXEC := $(filter-out src/parser_x3/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
 
 DEBUG_O_FILES_NON_EXEC=$(SRC_CPP_FILES_NON_EXEC:%.cpp=debug/%.cpp.o)
 RELEASE_O_FILES_NON_EXEC=$(SRC_CPP_FILES_NON_EXEC:%.cpp=release/%.cpp.o)
@@ -88,6 +90,16 @@ debug/src/parser/%.cpp.o: src/parser/%.cpp
 release/src/parser/%.cpp.o: src/parser/%.cpp
 	@ mkdir -p release/src/parser/
 	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/parser/$*.cpp.d
+	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
+
+debug/src/parser_x3/%.cpp.o: src/parser_x3/%.cpp
+	@ mkdir -p debug/src/parser_x3/
+	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/parser_x3/$*.cpp.d
+	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
+
+release/src/parser_x3/%.cpp.o: src/parser_x3/%.cpp
+	@ mkdir -p release/src/parser_x3/
+	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/parser_x3/$*.cpp.d
 	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/asm/%.cpp.o: src/asm/%.cpp
@@ -145,6 +157,14 @@ debug/bin/time_parse: debug/src/parser/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/time_parse: release/src/parser/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
+	@ mkdir -p release/bin/
+	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
+
+debug/bin/x3_test: debug/src/parser_x3/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
+	@ mkdir -p debug/bin/
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
+
+release/bin/x3_test: release/src/parser_x3/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
 	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
