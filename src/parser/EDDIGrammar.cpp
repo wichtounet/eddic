@@ -13,6 +13,9 @@
 
 using namespace eddic;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
+
 parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         EddiGrammar::base_type(start, "EDDI Grammar"),
         value_grammar(lexer),
@@ -25,8 +28,8 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
     start %= qi::eps [ qi::_a = qi::_r1, qi::_b = qi::_r2 ] >> program;
 
     delete_ %=
-            local_begin
-        >>  lexer.delete_
+            (local_begin
+        >>  lexer.delete_)
         >  value;
 
     default_case %=
@@ -362,3 +365,5 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
                 |   template_struct
             );
 }
+
+#pragma clang diagnostic pop
