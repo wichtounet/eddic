@@ -10,7 +10,7 @@ RELEASE_TEST_EXE=release/bin/test
 CC=clang++
 LD=clang++
 
-WARNING_FLAGS=-Werror -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic
+WARNING_FLAGS=-Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic
 CXX_FLAGS=-use-gold -Iinclude -std=c++1y -stdlib=libc++ $(WARNING_FLAGS) -isystem $(BOOST_PREFIX)/include
 LD_FLAGS=$(CXX_FLAGS) -L $(BOOST_PREFIX)/lib -lboost_program_options
 LD_TEST_FLAGS=$(LD_FLAGS) -lboost_unit_test_framework

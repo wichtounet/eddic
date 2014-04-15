@@ -1,8 +1,8 @@
-#include "boost_cfg.hpp"
+#include <iostream>
 
 #include "parser_x3/SpiritParser.hpp"
 
-#include "GlobalContext.hpp"
+//#include "GlobalContext.hpp"
 
 using namespace eddic;
 
@@ -14,11 +14,11 @@ int main(int argc, char** argv){
 
     std::string file(argv[1]);
 
-    auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
+    //auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
     parser_x3::SpiritParser parser;
-    ast::SourceFile source;
+    //ast::SourceFile source;
 
-    if(parser.parse(file, source, context)){
+    if(parser.parse(file/*, source, context*/)){
         std::cout << "succeeded" << std::endl;
     } else {
         std::cout << "failed" << std::endl;
