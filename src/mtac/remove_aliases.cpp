@@ -81,24 +81,6 @@ std::vector<std::shared_ptr<Variable>> get_targets(std::shared_ptr<Variable> var
     return targets;
 }
 
-std::vector<std::shared_ptr<Variable>> get_sources(std::shared_ptr<Variable> variable, mtac::Function& function){
-    std::vector<std::shared_ptr<Variable>> sources;
-    
-    for(auto& block : function){
-        for(auto& quadruple : block->statements){
-            if(quadruple.op == mtac::Operator::ASSIGN || quadruple.op == mtac::Operator::FASSIGN || quadruple.op == mtac::Operator::PASSIGN){
-                if(auto* var_ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                    if(quadruple.result == variable){
-                        sources.push_back(*var_ptr); 
-                    }
-                }
-            }
-        }
-    }
-
-    return sources;
-}
-
 struct VariableReplace {
     std::shared_ptr<Variable> source;
     std::shared_ptr<Variable> target;

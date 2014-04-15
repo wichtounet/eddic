@@ -34,7 +34,7 @@ ltac::Instruction::Instruction(ltac::Operator op, ltac::Argument arg1, ltac::Arg
 }
 
 ltac::Instruction::Instruction(std::string label, ltac::Operator op, tac::Size size) : 
-        _uid(++uid_counter), op(op), label(std::move(label)), size(size) {
+        _uid(++uid_counter), op(op), size(size), label(std::move(label)){
     //Nothing to init
 }
 
