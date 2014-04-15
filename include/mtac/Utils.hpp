@@ -67,6 +67,7 @@ inline bool isVariable(T& variant){
 template<typename T>
 inline void assertIntOrVariable(T& variant){
     assert(isInt(variant) || isVariable(variant));
+    _unused(variant);
 }
 
 template<typename Visitor>

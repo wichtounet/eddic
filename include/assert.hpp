@@ -12,6 +12,8 @@
 
 #include <boost/assert.hpp>
 
+#define _unused(x) ((void)x)
+
 /*!
  * \def eddic_assert(condition, message)
  * \brief Verify that the condition is true. If not, fails and display the specified message. 
