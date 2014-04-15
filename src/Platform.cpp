@@ -51,12 +51,14 @@ struct X86Descriptor : public PlatformDescriptor {
 
     unsigned short int_param_register(unsigned int position) const {
         assert(position == 1);
+        _unused(position);
 
         return 2; //ecx
     }
 
     unsigned short float_param_register(unsigned int position) const {
         assert(position  == 1);
+        _unused(position);
 
         return 7; //xmm7
     }
@@ -129,6 +131,7 @@ struct X86_64Descriptor : public PlatformDescriptor {
 
     unsigned short float_param_register(unsigned int position) const {
         assert(position  == 1);
+        _unused(position);
 
         return 7;
     }
