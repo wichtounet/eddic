@@ -1,4 +1,4 @@
-import test
+import "test"
 
 function b()
 
