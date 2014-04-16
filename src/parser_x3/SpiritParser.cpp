@@ -26,19 +26,7 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct function_declaration;
-struct import;
-
 struct nil {};
-
-typedef x3::variant<
-        x3::forward_ast<import>,
-        x3::forward_ast<function_declaration>
-    > block;
-
-struct source_file {
-    std::vector<block> blocks;
-};
 
 struct function_declaration {
     std::string type;
@@ -47,6 +35,15 @@ struct function_declaration {
 
 struct import {
     std::string file;
+};
+
+typedef x3::variant<
+        function_declaration,
+        import
+    > block;
+
+struct source_file {
+    std::vector<block> blocks;
 };
 
 } //end of x3_ast namespace
@@ -80,17 +77,19 @@ namespace x3_grammar {
     x3::rule<import_id, x3_ast::import> const import("import");
 
     auto const import_def = 
-            x3::lit("import") 
+            x3::eps 
+        >>  x3::lit("import") 
         >>  '"' 
         >>  *x3::alpha
-        >>  '"';
+        >>  '"' ;
     
     auto const function_declaration_def = *x3::alpha >> *x3::alpha >> '(' >> ')';
     
     auto const source_file_def = 
-        *(
-                import
-            |   function_declaration
+        x3::eps >>
+         *(
+                function_declaration
+            |   import
          );
     
     auto const parser = x3::grammar(
