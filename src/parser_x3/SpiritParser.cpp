@@ -149,29 +149,29 @@ namespace x3_grammar {
             x3::attr(1)
         >>  "import"
         >>  '<' 
-        >>  *x3::alpha
-        >>  '>';
+        >   *x3::alpha
+        >   '>';
     
     auto const import_def = 
             x3::attr(1)
         >>  "import"
         >>  '"' 
-        >>  *x3::alpha
-        >>  '"';
+        >   *x3::alpha
+        >   '"';
     
     auto const function_declaration_def = 
             *x3::alpha 
         >>  *x3::alpha 
         >>  '(' 
-        >>  ')'
+        >   ')'
         >   '{' 
         >   '}';
     
     auto const source_file_def = 
          *(
-                function_declaration
-            |   standard_import
+                standard_import
             |   import
+            |   function_declaration
          );
     
     auto const parser = x3::grammar(
