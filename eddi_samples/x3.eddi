@@ -1,5 +1,5 @@
 import "test"
-import<list>
+import <list>
 
 function b()
 

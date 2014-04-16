@@ -124,6 +124,9 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
     attr.pos.column = pos.column;\
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
+
 namespace x3_grammar {
 
     //Rule IDs
@@ -146,15 +149,15 @@ namespace x3_grammar {
             x3::attr(1)
         >>  "import"
         >>  '<' 
-        >> *x3::alpha
-        >>  '>';
+        >   *x3::alpha
+        >   '>';
     
     auto const import_def = 
             x3::attr(1)
         >>  "import"
         >>  '"' 
-        >> *x3::alpha
-        >>  '"';
+        >   *x3::alpha
+        >   '"';
     
     auto const function_declaration_def = *x3::alpha >> *x3::alpha >> '(' >> ')';
     
@@ -173,6 +176,8 @@ namespace x3_grammar {
         import = import_def);
 
 } // end of grammar namespace
+
+#pragma clang diagnostic pop
 
 bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& , std::shared_ptr<GlobalContext> context*/){
     //timing_timer timer(context->timing(), "parsing_x3");
@@ -212,13 +217,25 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
 
             return true;
         } else {
-            //TODO
-            std::cout << std::string(it, end) << std::endl;
+            auto& pos = it.get_position();
+            std::cout <<
+                "parse error at file " << pos.file <<
+                " line " << pos.line << " column " << pos.column << std::endl <<
+                "'" << it.get_currentline() << "'" << std::endl <<
+                std::setw(pos.column) << " " << "^- here" << std::endl;
 
             return false;
         }
     } catch(const boost::spirit::x3::expectation_failure<pos_iterator_type>& e){
-        //TODO
+        auto& pos = e.first.get_position();
+        std::cout <<
+            "parse error at file " << pos.file <<
+            " line " << pos.line << " column " << pos.column << std::endl <<
+            "'" << e.first.get_currentline() << "'" << std::endl <<
+            std::setw(pos.column) << " " << "^- here" << std::endl;
+
+        //TODO The position seems really off
+
         return false;
     }
 }
