@@ -37,6 +37,12 @@ struct function_declaration {
     std::string name;
 };
 
+struct standard_import {
+    position pos;
+    int fake_;
+    std::string file;
+};
+
 struct import {
     position pos;
     int fake_;
@@ -45,6 +51,7 @@ struct import {
 
 typedef x3::variant<
         function_declaration,
+        standard_import,
         import
     > block;
 
@@ -71,6 +78,12 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, file)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::standard_import,
+    (int, fake_)
+    (std::string, file)
+)
+
 namespace x3_grammar {
 
     //Rule IDs
@@ -78,11 +91,20 @@ namespace x3_grammar {
     typedef x3::identity<struct source_file> source_file_id;
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct import> import_id;
+    typedef x3::identity<struct standard_import> standard_import_id;
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
+    x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
 
+    auto const standard_import_def = 
+            x3::attr(1)
+        >>  "import"
+        >>  '<' 
+        >> *x3::alpha
+        >>  '>';
+    
     auto const import_def = 
             x3::attr(1)
         >>  "import"
@@ -95,6 +117,7 @@ namespace x3_grammar {
     auto const source_file_def = 
          *(
                 function_declaration
+            |   standard_import
             |   import
          );
     
@@ -102,6 +125,7 @@ namespace x3_grammar {
         "eddi", 
         source_file = source_file_def,
         function_declaration = function_declaration_def, 
+        standard_import = standard_import_def,
         import = import_def);
 
 } // end of grammar namespace
