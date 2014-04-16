@@ -26,7 +26,11 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct nil {};
+struct position {
+    std::size_t file = 0;               /*!< The source file */
+    std::size_t line = 0;               /*!< The source line number */
+    std::size_t column = 0;             /*!< The source column number */
+};
 
 struct function_declaration {
     std::string type;
@@ -34,6 +38,8 @@ struct function_declaration {
 };
 
 struct import {
+    position pos;
+    int fake_;
     std::string file;
 };
 
@@ -61,6 +67,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::import,
+    (int, fake_)
     (std::string, file)
 )
 
@@ -77,16 +84,15 @@ namespace x3_grammar {
     x3::rule<import_id, x3_ast::import> const import("import");
 
     auto const import_def = 
-            x3::eps 
-        >>  x3::lit("import") 
+            x3::attr(1)
+        >>  "import"
         >>  '"' 
-        >>  *x3::alpha
-        >>  '"' ;
+        >> *x3::alpha
+        >>  '"';
     
     auto const function_declaration_def = *x3::alpha >> *x3::alpha >> '(' >> ')';
     
     auto const source_file_def = 
-        x3::eps >>
          *(
                 function_declaration
             |   import
@@ -128,6 +134,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     bool r = x3::phrase_parse(it, end, parser, space, result);
 
     if(r && it == end){
+        std::cout << "Blocks: " << result.blocks.size() << std::endl;
 
 
         return true;
@@ -135,8 +142,4 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
 
         return false;
     }
-
-    //TODO Real stuff here
-    
-    return true;
 }
