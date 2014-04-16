@@ -115,6 +115,15 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, file)
 )
 
+#define ANNOTATE(Type)\
+template <typename iterator_type, typename Attr, typename Context>\
+inline void on_success(Type, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){\
+    auto& pos = first.get_position();\
+    attr.pos.file = first.get_current_file();\
+    attr.pos.line = pos.line;\
+    attr.pos.column = pos.column;\
+}
+
 namespace x3_grammar {
 
     //Rule IDs
@@ -129,17 +138,9 @@ namespace x3_grammar {
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
 
-    typedef boost::mpl::vector<import_id, standard_import_id, function_declaration_id> annotated_ids;
-    typedef boost::mpl::vector<x3_ast::import, x3_ast::standard_import, x3_ast::function_declaration>::type annotated_asts;
-
-    template <typename iterator_type, typename Attr, typename Context>
-    inline void on_success(standard_import_id, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){
-        auto& pos = first.get_position();
-
-        attr.pos.file = first.get_current_file();
-        attr.pos.line = pos.line;
-        attr.pos.column = pos.column;
-    }
+    ANNOTATE(import_id);
+    ANNOTATE(standard_import_id);
+    ANNOTATE(function_declaration_id);
 
     auto const standard_import_def = 
             x3::attr(1)
