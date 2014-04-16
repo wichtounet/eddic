@@ -149,17 +149,23 @@ namespace x3_grammar {
             x3::attr(1)
         >>  "import"
         >>  '<' 
-        >   *x3::alpha
-        >   '>';
+        >>  *x3::alpha
+        >>  '>';
     
     auto const import_def = 
             x3::attr(1)
         >>  "import"
         >>  '"' 
-        >   *x3::alpha
-        >   '"';
+        >>  *x3::alpha
+        >>  '"';
     
-    auto const function_declaration_def = *x3::alpha >> *x3::alpha >> '(' >> ')';
+    auto const function_declaration_def = 
+            *x3::alpha 
+        >>  *x3::alpha 
+        >>  '(' 
+        >>  ')'
+        >   '{' 
+        >   '}';
     
     auto const source_file_def = 
          *(
@@ -229,10 +235,11 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     } catch(const boost::spirit::x3::expectation_failure<pos_iterator_type>& e){
         auto& pos = e.first.get_position();
         std::cout <<
-            "parse error at file " << pos.file <<
-            " line " << pos.line << " column " << pos.column << std::endl <<
-            "'" << e.first.get_currentline() << "'" << std::endl <<
-            std::setw(pos.column) << " " << "^- here" << std::endl;
+                "parse error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl
+            <<  "expected: " << e.what_ << std::endl
+            <<  "got: \"" << std::string(e.first, e.last) << '"' << std::endl
+            <<  "'" << e.first.get_currentline() << "'" << std::endl
+            <<  std::setw(pos.column) << " " << "^- here" << std::endl;
 
         //TODO The position seems really off
 
