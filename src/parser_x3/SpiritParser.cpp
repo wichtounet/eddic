@@ -62,9 +62,43 @@ struct position {
     std::size_t column = 0;             /*!< The source column number */
 };
 
+//*****************************************
+
+struct simple_type;
+struct array_type;
+struct pointer_type;
+struct template_type;
+
+typedef x3::variant<
+        simple_type, 
+        x3::forward_ast<array_type>, 
+        x3::forward_ast<template_type>, 
+        x3::forward_ast<pointer_type>
+    > type;
+
+struct simple_type {
+    bool const_;
+    std::string base_type;
+};
+
+struct array_type {
+    type base_type;
+};
+
+struct pointer_type {
+    type base_type;
+};
+
+struct template_type {
+    std::string base_type;
+    std::vector<type> template_types;
+};
+
+//*****************************************
+
 struct function_declaration {
     position pos;
-    std::string type;
+    type return_type;
     std::string name;
 };
 
@@ -97,9 +131,36 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::block>, blocks)
 )
 
+    //***************
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::simple_type, 
+    (bool, const_)
+    (std::string, base_type)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::array_type, 
+    (x3_ast::type, base_type)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::pointer_type, 
+    (x3_ast::type, base_type)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::template_type, 
+    (std::string, base_type)
+    (std::vector<x3_ast::type>, template_types)
+)
+
+//***************
+
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_declaration,
-    (std::string, type)
+    (x3_ast::type, return_type)
+    //(std::string, return_type)
     (std::string, name)
 )
 
@@ -128,15 +189,27 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
 namespace x3_grammar {
-
-    //Rule IDs
-
+    
     typedef x3::identity<struct source_file> source_file_id;
+
+    typedef x3::identity<struct type> type_id;
+    typedef x3::identity<struct simple_type> simple_type_id;
+    typedef x3::identity<struct array_type> array_type_id;
+    typedef x3::identity<struct pointer_type> pointer_type_id;
+    typedef x3::identity<struct template_type> template_type_id;
+
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
+
+    x3::rule<type_id, x3_ast::type> const type("type");
+    x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
+    x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
+    x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
+    x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
+
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
@@ -144,6 +217,13 @@ namespace x3_grammar {
     ANNOTATE(import_id);
     ANNOTATE(standard_import_id);
     ANNOTATE(function_declaration_id);
+    
+    auto const source_file_def = 
+         *(
+                standard_import
+            |   import
+            |   function_declaration
+         );
 
     auto const standard_import_def = 
             x3::attr(1)
@@ -160,23 +240,64 @@ namespace x3_grammar {
         >   '"';
     
     auto const function_declaration_def = 
-            *x3::alpha 
+            type 
+//*x3::alpha
         >>  *x3::alpha 
         >>  '(' 
         >   ')'
         >   '{' 
         >   '}';
+
+    //*********************************************
+   
+    auto const_ = (
+            (x3::lit("const") > x3::attr(true))
+        |   x3::attr(false)
+    );
+
+    auto type_def =
+            array_type
+        |   pointer_type
+        |   template_type
+        |   simple_type;
+
+    auto simple_type_def = 
+            const_
+        >>  *x3::alpha;
+
+    auto template_type_def =
+            *x3::alpha
+        >>  '<'
+        >>  type % ','
+        >>  '>';
     
-    auto const source_file_def = 
-         *(
-                standard_import
-            |   import
-            |   function_declaration
-         );
+    auto array_type_def =
+            (
+                    template_type
+                |   simple_type
+            )
+        >>  '[' 
+        >>  ']';
+
+    auto pointer_type_def =
+           (
+                    template_type
+                |   simple_type
+            )
+        >>  '*';
+
+    //*********************************************
     
     auto const parser = x3::grammar(
         "eddi", 
         source_file = source_file_def,
+
+        type = type_def,
+        array_type = array_type_def,
+        pointer_type = pointer_type_def,
+        template_type = template_type_def,
+        simple_type = simple_type_def,
+
         function_declaration = function_declaration_def, 
         standard_import = standard_import_def,
         import = import_def);
