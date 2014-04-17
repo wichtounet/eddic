@@ -307,7 +307,11 @@ namespace x3_grammar {
 
     //********************************************
 
-    auto const skipper = x3::ascii::space;
+    auto const skipper = 
+            x3::ascii::space
+        |   ("/*" >> *(x3::char_ - "*/") >> "*/")
+        |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
+
 
 } // end of grammar namespace
 

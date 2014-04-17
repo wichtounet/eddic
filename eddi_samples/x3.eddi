@@ -3,4 +3,10 @@ import <list>
 
 function b(){}
 
+/* 
+ * asdf  
+ */
+
+//test a(){}
+
 test a(){}
