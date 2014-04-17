@@ -14,6 +14,8 @@
 
 //#include "boost_cfg.hpp"
 
+//#define BOOST_SPIRIT_X3_DEBUG
+
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/count.hpp>
 
@@ -301,6 +303,7 @@ namespace x3_grammar {
         function_declaration = function_declaration_def, 
         standard_import = standard_import_def,
         import = import_def);
+
 
 } // end of grammar namespace
 
