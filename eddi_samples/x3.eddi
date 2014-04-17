@@ -1,7 +1,7 @@
 import "test"
 import <list>
 
-function b(){}
+function b(int c){}
 
 /* 
  * asdf  
@@ -9,4 +9,4 @@ function b(){}
 
 //test a(){}
 
-test a(){}
+test a(int b, list<int> c, int[] c, vector<int<asdf>*>){}

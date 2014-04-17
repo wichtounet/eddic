@@ -98,10 +98,16 @@ struct template_type {
 
 //*****************************************
 
+struct function_parameter {
+    type  parameter_type;
+    std::string parameter_name;
+};
+
 struct function_declaration {
     position pos;
     type return_type;
     std::string name;
+    std::vector<function_parameter> parameters;
 };
 
 struct standard_import {
@@ -133,7 +139,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::block>, blocks)
 )
 
-    //***************
+//***************
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::simple_type, 
@@ -162,8 +168,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_declaration,
     (x3_ast::type, return_type)
-    //(std::string, return_type)
     (std::string, name)
+    (std::vector<x3_ast::function_parameter>, parameters)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::function_parameter, 
+    (x3_ast::type, parameter_type)
+    (std::string, parameter_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -201,6 +213,7 @@ namespace x3_grammar {
     typedef x3::identity<struct template_type> template_type_id;
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
+    typedef x3::identity<struct function_parameter> function_parameter_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
 
@@ -213,6 +226,7 @@ namespace x3_grammar {
     x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
+    x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
 
@@ -243,12 +257,16 @@ namespace x3_grammar {
     
     auto const function_declaration_def = 
             type 
-//*x3::alpha
         >>  *x3::alpha 
         >>  '(' 
+        >>  (function_parameter % ',')
         >   ')'
         >   '{' 
         >   '}';
+
+    auto const function_parameter_def =
+            type
+        >>  *x3::alpha;
 
     //*********************************************
    
@@ -301,9 +319,9 @@ namespace x3_grammar {
         simple_type = simple_type_def,
 
         function_declaration = function_declaration_def, 
+        function_parameter = function_parameter_def, 
         standard_import = standard_import_def,
         import = import_def);
-
 
     //********************************************
 
