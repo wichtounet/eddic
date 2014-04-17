@@ -259,7 +259,7 @@ namespace x3_grammar {
             type 
         >>  *x3::alpha 
         >>  '(' 
-        >>  (function_parameter % ',')
+        >>  function_parameter % ','
         >   ')'
         >   '{' 
         >   '}';
