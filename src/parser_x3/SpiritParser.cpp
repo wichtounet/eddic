@@ -305,6 +305,10 @@ namespace x3_grammar {
         import = import_def);
 
 
+    //********************************************
+
+    auto const skipper = x3::ascii::space;
+
 } // end of grammar namespace
 
 #pragma clang diagnostic pop
@@ -330,7 +334,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     auto& parser = x3_grammar::parser;
 
     x3_ast::source_file result;
-    boost::spirit::x3::ascii::space_type space;
+//    boost::spirit::x3::ascii::space_type space;
 
     typedef std::string::iterator base_iterator_type;
     //typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
@@ -340,7 +344,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     pos_iterator_type end;
 
     try {
-        bool r = x3::phrase_parse(it, end, parser, space, result);
+        bool r = x3::phrase_parse(it, end, parser, x3_grammar::skipper, result);
 
         if(r && it == end){
             std::cout << "Blocks: " << result.blocks.size() << std::endl;
