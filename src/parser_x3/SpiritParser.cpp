@@ -14,7 +14,7 @@
 
 //#include "boost_cfg.hpp"
 
-//#define BOOST_SPIRIT_X3_DEBUG
+#define BOOST_SPIRIT_X3_DEBUG
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/count.hpp>
@@ -203,6 +203,7 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
 namespace x3_grammar {
+    typedef x3::identity<struct identifier> identifier_id;
     
     typedef x3::identity<struct source_file> source_file_id;
 
@@ -216,6 +217,8 @@ namespace x3_grammar {
     typedef x3::identity<struct function_parameter> function_parameter_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
+
+    x3::rule<identifier_id, std::string> const identifier("identifier");
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
 
@@ -233,6 +236,21 @@ namespace x3_grammar {
     ANNOTATE(import_id);
     ANNOTATE(standard_import_id);
     ANNOTATE(function_declaration_id);
+
+    /* Utilities */
+   
+    auto const_ = 
+            (x3::lit("const") > x3::attr(true))
+        |   x3::attr(false);
+
+    auto const identifier_def = 
+                +x3::alpha;
+                /*(x3::char_('_') >> *(x3::alnum | x3::char_('_')))
+            |   (x3::alpha >> *(x3::alnum | x3::char_('_')))
+
+            ;*/
+
+    /* Base */ 
     
     auto const source_file_def = 
          *(
@@ -257,7 +275,7 @@ namespace x3_grammar {
     
     auto const function_declaration_def = 
             type 
-        >>  *x3::alpha 
+        >>  identifier
         >>  '(' 
         >>  function_parameter % ','
         >   ')'
@@ -269,29 +287,24 @@ namespace x3_grammar {
         >>  *x3::alpha;
 
     //*********************************************
-   
-    auto const_ = (
-            (x3::lit("const") > x3::attr(true))
-        |   x3::attr(false)
-    );
 
-    auto type_def =
+    auto const type_def =
             array_type
         |   pointer_type
         |   template_type
         |   simple_type;
 
-    auto simple_type_def = 
+    auto const simple_type_def = 
             const_
-        >>  *x3::alpha;
+        >>  identifier;
 
-    auto template_type_def =
+    auto const template_type_def =
             *x3::alpha
         >>  '<'
         >>  type % ','
         >>  '>';
     
-    auto array_type_def =
+    auto const array_type_def =
             (
                     template_type
                 |   simple_type
@@ -299,7 +312,7 @@ namespace x3_grammar {
         >>  '[' 
         >>  ']';
 
-    auto pointer_type_def =
+    auto const pointer_type_def =
            (
                     template_type
                 |   simple_type
@@ -310,7 +323,10 @@ namespace x3_grammar {
     
     auto const parser = x3::grammar(
         "eddi", 
+
         source_file = source_file_def,
+
+        identifier = identifier_def,
 
         type = type_def,
         array_type = array_type_def,
@@ -356,7 +372,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     auto& parser = x3_grammar::parser;
 
     x3_ast::source_file result;
-//    boost::spirit::x3::ascii::space_type space;
+    boost::spirit::x3::ascii::space_type space;
 
     typedef std::string::iterator base_iterator_type;
     //typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
@@ -366,7 +382,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     pos_iterator_type end;
 
     try {
-        bool r = x3::phrase_parse(it, end, parser, x3_grammar::skipper, result);
+        bool r = x3::phrase_parse(it, end, parser, /*x3_grammar::skipper*/ space, result);
 
         if(r && it == end){
             std::cout << "Blocks: " << result.blocks.size() << std::endl;

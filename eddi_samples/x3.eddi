@@ -1,7 +1,9 @@
 import "test"
 import <list>
 
-function b(int c){}
+function ____a__243sdf(int c){}
+
+function test(int b){}
 
 /* 
  * asdf  
@@ -9,4 +11,4 @@ function b(int c){}
 
 //test a(){}
 
-test a(int b, list<int> c, int[] c, vector<int<asdf>*>){}
+test __2345234a(int b, list<int> c, int[] c, vector<int<asdf>*>){}
