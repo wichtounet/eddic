@@ -14,7 +14,7 @@
 
 //#include "boost_cfg.hpp"
 
-#define BOOST_SPIRIT_X3_DEBUG
+//#define BOOST_SPIRIT_X3_DEBUG
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/count.hpp>
@@ -152,6 +152,84 @@ typedef x3::variant<
 
 struct source_file {
     std::vector<block> blocks;
+};
+
+struct printer: public boost::static_visitor<>  {
+    std::size_t i = 0;
+
+    std::string indent(){
+        std::string v(i, ' ');
+        return v;
+    }
+
+    void operator()(const source_file& source_file){
+        std::cout << indent() << "source_file" << std::endl;
+
+        i += 2;
+        for(auto& block : source_file.blocks){
+            boost::apply_visitor(*this, block);
+        }
+        i -= 2;
+    }
+
+    void operator()(const standard_import& import){
+        std::cout << indent() << "standard_import: " << import.file << std::endl;
+    }
+    
+    void operator()(const import& import){
+        std::cout << indent() << "import: " << import.file << std::endl;
+    }
+    
+    void operator()(const function_declaration& function){
+        std::cout << indent() << "function_declaration: " << function.name << std::endl;
+        i += 2;
+        std::cout << indent() << "return_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, function.return_type);
+        i -= 2;
+        std::cout << indent() << "parameters: " << std::endl;
+        i += 2;
+        for(auto& parameter : function.parameters){
+            std::cout << indent() << "name: " << parameter.parameter_name << std::endl;
+            std::cout << indent() << "type: " << std::endl;
+            i += 2;
+            boost::apply_visitor(*this, parameter.parameter_type);
+            i -= 2;
+        }
+        i -= 2;
+        i -= 2;
+    }
+
+    void operator()(const simple_type& type){
+        std::cout << indent() << "simple_type: " << type.base_type << std::endl;
+    }
+    
+    void operator()(const array_type& type){
+        std::cout << indent() << "array_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, type.base_type);
+        i -= 2;
+    }
+    
+    void operator()(const template_type& type){
+        std::cout << indent() << "template_type: " << std::endl;
+        i += 2;
+        std::cout << indent() << "base_type: " << type.base_type << std::endl;
+        std::cout << indent() << "template_types: " << std::endl;
+        i += 2;
+        for(auto& t : type.template_types){
+            boost::apply_visitor(*this, t);
+        }
+        i -= 2;
+        i -= 2;
+    }
+    
+    void operator()(const pointer_type& type){
+        std::cout << indent() << "pointer_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, type.base_type);
+        i -= 2;
+    }
 };
 
 } //end of x3_ast namespace
@@ -342,7 +420,7 @@ namespace x3_grammar {
         >>  identifier;
 
     auto const template_type_def =
-            identifier
+            identifier 
         >>  '<'
         >>  type % ','
         >>  '>';
@@ -425,7 +503,6 @@ namespace x3_grammar {
         |   ("/*" >> *(x3::char_ - "*/") >> "*/")
         |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
 
-
 } // end of grammar namespace
 
 #pragma clang diagnostic pop
@@ -464,7 +541,8 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
         bool r = x3::phrase_parse(it, end, parser, x3_grammar::skipper, result);
 
         if(r && it == end){
-            std::cout << "Blocks: " << result.blocks.size() << std::endl;
+            x3_ast::printer printer;
+            printer(result);
 
             return true;
         } else {

@@ -18,11 +18,7 @@ int main(int argc, char** argv){
     parser_x3::SpiritParser parser;
     //ast::SourceFile source;
 
-    if(parser.parse(file/*, source, context*/)){
-        std::cout << "succeeded" << std::endl;
-    } else {
-        std::cout << "failed" << std::endl;
-    }
+    parser.parse(file/*, source, context*/);
 
     return 0;
 }
