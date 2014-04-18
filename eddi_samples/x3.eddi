@@ -3,7 +3,19 @@ import <list>
 
 void ____a__243sdf(int c){}
 
-int test(int b){}
+int test(int b){
+    foreach(z<a<b*>> c in b){
+        foreach(int i from 10 to 111){
+            //TODO
+        }
+    }
+
+    foreach(int i from 10 to 111){
+        foreach(int i from 10 to 111){
+            //TODO
+        }
+    }
+}
 
 /* 
  * asdf  

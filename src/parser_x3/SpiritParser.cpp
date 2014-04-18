@@ -110,6 +110,7 @@ struct foreach_in {
     type variable_type;
     std::string variable_name;
     std::string array_name;
+    std::vector<instruction> instructions;
 };
 
 struct foreach {
@@ -118,6 +119,7 @@ struct foreach {
     std::string variable_name;
     int from;
     int to;
+    std::vector<instruction> instructions;
 };
 
 //*****************************************
@@ -132,6 +134,7 @@ struct function_declaration {
     type return_type;
     std::string name;
     std::vector<function_parameter> parameters;
+    std::vector<instruction> instructions;
 };
 
 struct standard_import {
@@ -195,6 +198,49 @@ struct printer: public boost::static_visitor<>  {
             i += 2;
             boost::apply_visitor(*this, parameter.parameter_type);
             i -= 2;
+        }
+        i -= 2;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : function.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+
+    void operator()(const foreach& foreach){
+        std::cout << indent() << "foreach: " << std::endl;
+        i += 2;
+        std::cout << indent() << "variable_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, foreach.variable_type);
+        i -= 2;
+        std::cout << indent() << "variable_name: " << foreach.variable_name << std::endl;
+        std::cout << indent() << "from: " << foreach.from << std::endl;
+        std::cout << indent() << "to: " << foreach.to << std::endl;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : foreach.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+    
+    void operator()(const foreach_in& foreach){
+        std::cout << indent() << "foreach_in: " << std::endl;
+        i += 2;
+        std::cout << indent() << "variable_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, foreach.variable_type);
+        i -= 2;
+        std::cout << indent() << "variable_name: " << foreach.variable_name << std::endl;
+        std::cout << indent() << "array_name: " << foreach.array_name << std::endl;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : foreach.instructions){
+            boost::apply_visitor(*this, instruction);
         }
         i -= 2;
         i -= 2;
@@ -270,6 +316,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (std::string, array_name)
+    (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -278,6 +325,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, variable_name)
     (int, from)
     (int, to)
+    (std::vector<x3_ast::instruction>, instructions)
 )
 
 //***************
@@ -287,6 +335,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
+    (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -401,6 +450,7 @@ namespace x3_grammar {
         >>  function_parameter % ','
         >   ')'
         >   '{' 
+        >   *instruction
         >   '}';
 
     auto const function_parameter_def =
@@ -430,7 +480,7 @@ namespace x3_grammar {
                     template_type
                 |   simple_type
             )
-        >>  '[' 
+        >>  '['
         >>  ']';
 
     auto const pointer_type_def =
@@ -457,7 +507,7 @@ namespace x3_grammar {
         >>  x3::int_
         >>  ')'
         >>  '{'
-        //>>  *(instruction)
+        >>  *instruction
         >>  '}';
     
     auto const foreach_in_def =
@@ -469,7 +519,7 @@ namespace x3_grammar {
         >>  identifier
         >>  ')'
         >>  '{'
-        //>>  *(instruction)
+        >>  *(instruction)
         >>  '}';
 
     //*********************************************
