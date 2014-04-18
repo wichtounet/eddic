@@ -239,10 +239,8 @@ namespace x3_grammar {
         |   x3::attr(false);
 
     auto const identifier_def = 
-                //x3::lexeme[+x3::alpha];
                 x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
-
             ;
 
     /* Base */ 
@@ -277,7 +275,7 @@ namespace x3_grammar {
 
     auto const function_parameter_def =
             type
-        >>  *x3::alpha;
+        >>  identifier;
 
     //*********************************************
 
@@ -292,7 +290,7 @@ namespace x3_grammar {
         >>  identifier;
 
     auto const template_type_def =
-            *x3::alpha
+            identifier
         >>  '<'
         >>  type % ','
         >>  '>';
