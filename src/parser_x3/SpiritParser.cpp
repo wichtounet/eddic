@@ -97,6 +97,43 @@ struct template_type {
 
 //*****************************************
 
+struct integer_literal {
+    int value;
+};
+
+struct integer_suffix_literal {
+    int value;
+    std::string suffix;
+};
+
+struct float_literal {
+    double value;
+};
+
+struct string_literal {
+    std::string value;
+};
+
+struct char_literal {
+    char value;
+};
+
+struct variable_value {
+    position pos;
+    std::string variable_name;
+};
+
+typedef x3::variant<
+            integer_literal,
+            integer_suffix_literal,
+            float_literal,
+            string_literal,
+            char_literal,
+            variable_value
+        > value;
+
+//*****************************************
+
 struct foreach;
 struct foreach_in;
 
@@ -312,6 +349,39 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::integer_literal, 
+    (int, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::integer_suffix_literal, 
+    (int, value)
+    (std::string, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::float_literal, 
+    (float, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::string_literal, 
+    (std::string, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::char_literal, 
+    (char, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::variable_value, 
+    (std::string, variable_name)
+)
+
+//***************
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach_in, 
     (x3_ast::type, variable_type)
     (std::string, variable_name)
@@ -366,6 +436,7 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
+
 namespace x3_grammar {
     typedef x3::identity<struct identifier> identifier_id;
     
@@ -376,6 +447,14 @@ namespace x3_grammar {
     typedef x3::identity<struct array_type> array_type_id;
     typedef x3::identity<struct pointer_type> pointer_type_id;
     typedef x3::identity<struct template_type> template_type_id;
+    
+    typedef x3::identity<struct integer_literal> integer_literal_id;
+    typedef x3::identity<struct integer_suffix_literal> integer_suffix_literal_id;
+    typedef x3::identity<struct float_literal> float_literal_id;
+    typedef x3::identity<struct string_literal> string_literal_id;
+    typedef x3::identity<struct char_literal> char_literal_id;
+    typedef x3::identity<struct variable_value> variable_value_id;
+    typedef x3::identity<struct value> value_id;
     
     typedef x3::identity<struct instruction> instruction_id;
     typedef x3::identity<struct foreach> foreach_id;
@@ -396,6 +475,14 @@ namespace x3_grammar {
     x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
     x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
     
+    x3::rule<integer_literal_id, x3_ast::integer_literal> const integer_literal("integer_literal");
+    x3::rule<integer_suffix_literal_id, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
+    x3::rule<float_literal_id, x3_ast::float_literal> const float_literal("float_literal");
+    x3::rule<string_literal_id, x3_ast::string_literal> const string_literal("string_literal");
+    x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
+    x3::rule<variable_value_id, x3_ast::variable_value> const variable_value("variable_value");
+    x3::rule<value_id, x3_ast::value> const value("value");
+    
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
     x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
@@ -410,6 +497,7 @@ namespace x3_grammar {
     ANNOTATE(function_declaration_id);
     ANNOTATE(foreach_id);
     ANNOTATE(foreach_in_id);
+    ANNOTATE(variable_value_id);
 
     /* Utilities */
    
@@ -457,7 +545,7 @@ namespace x3_grammar {
             type
         >>  identifier;
 
-    //*********************************************
+    /* Types */ 
 
     auto const type_def =
             array_type
@@ -489,6 +577,41 @@ namespace x3_grammar {
                 |   simple_type
             )
         >>  '*';
+    
+    /* Values */ 
+
+    auto const integer_literal_def =
+        x3::int_;
+    
+    auto const integer_suffix_literal_def =
+        x3::lexeme[
+                x3::int_ 
+            >>  *x3::alpha
+        ];
+    
+    auto const float_literal_def =
+        x3::float_;
+    
+    auto const char_literal_def =
+            x3::lit('\'')
+        >>  x3::char_
+        >>  x3::lit('\'');
+    
+    auto const string_literal_def =
+            x3::lit('"') 
+        >>  x3::float_
+        >>  x3::lit('"');
+
+    auto const variable_value_def =
+        identifier;
+
+    auto const value_def =
+            integer_suffix_literal
+        |   integer_literal
+        |   variable_value
+        |   string_literal
+        |   char_literal
+        |   float_literal;
     
     //*********************************************
 
@@ -530,6 +653,14 @@ namespace x3_grammar {
         source_file = source_file_def,
 
         identifier = identifier_def,
+
+        integer_literal = integer_literal_def,
+        integer_suffix_literal = integer_suffix_literal_def,
+        float_literal = float_literal_def,
+        char_literal = char_literal_def,
+        string_literal = string_literal_def,
+        variable_value = variable_value_def,
+        value = value_def,
 
         type = type_def,
         array_type = array_type_def,
