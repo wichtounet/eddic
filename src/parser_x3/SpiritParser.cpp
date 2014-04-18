@@ -14,7 +14,7 @@
 
 //#include "boost_cfg.hpp"
 
-#define BOOST_SPIRIT_X3_DEBUG
+//#define BOOST_SPIRIT_X3_DEBUG
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/count.hpp>
@@ -54,7 +54,6 @@ public:
     extended_iterator(const extended_iterator& iter) = default;
     extended_iterator& operator=(const extended_iterator& iter) = default;
 };
-
 
 namespace x3_ast {
 
@@ -112,13 +111,11 @@ struct function_declaration {
 
 struct standard_import {
     position pos;
-    int fake_;
     std::string file;
 };
 
 struct import {
     position pos;
-    int fake_;
     std::string file;
 };
 
@@ -180,13 +177,11 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::import,
-    (int, fake_)
     (std::string, file)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::standard_import,
-    (int, fake_)
     (std::string, file)
 )
 
@@ -244,11 +239,11 @@ namespace x3_grammar {
         |   x3::attr(false);
 
     auto const identifier_def = 
-                +x3::alpha;
-                /*(x3::char_('_') >> *(x3::alnum | x3::char_('_')))
-            |   (x3::alpha >> *(x3::alnum | x3::char_('_')))
+                //x3::lexeme[+x3::alpha];
+                x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
+            |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
 
-            ;*/
+            ;
 
     /* Base */ 
     
@@ -260,15 +255,13 @@ namespace x3_grammar {
          );
 
     auto const standard_import_def = 
-            x3::attr(1)
-        >>  "import"
+            x3::lit("import")
         >>  '<' 
         >   *x3::alpha
         >   '>';
     
     auto const import_def = 
-            x3::attr(1)
-        >>  "import"
+            x3::lit("import")
         >>  '"' 
         >   *x3::alpha
         >   '"';
@@ -372,7 +365,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     auto& parser = x3_grammar::parser;
 
     x3_ast::source_file result;
-    boost::spirit::x3::ascii::space_type space;
+    //boost::spirit::x3::ascii::space_type space;
 
     typedef std::string::iterator base_iterator_type;
     //typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
@@ -382,7 +375,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     pos_iterator_type end;
 
     try {
-        bool r = x3::phrase_parse(it, end, parser, /*x3_grammar::skipper*/ space, result);
+        bool r = x3::phrase_parse(it, end, parser, x3_grammar::skipper, result);
 
         if(r && it == end){
             std::cout << "Blocks: " << result.blocks.size() << std::endl;
