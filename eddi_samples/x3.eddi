@@ -18,6 +18,10 @@ int test(int b){
 
    int a = 77;
    string b = "a 21341234l 0000324124 ___ !   sdf";
+   float b = 78.88;
+   char c = 'c';
+   int e = 77d;
+
 }
 
 /* 

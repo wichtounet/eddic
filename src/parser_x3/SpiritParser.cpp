@@ -300,6 +300,10 @@ struct printer: public boost::static_visitor<>  {
         boost::apply_visitor(*this, declaration.variable_type);
         i -= 2;
         std::cout << indent() << "variable_name: " << declaration.variable_name << std::endl;
+        std::cout << indent() << "value: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.value);
+        i -= 2;
         i -= 2;
     }
 
@@ -332,6 +336,30 @@ struct printer: public boost::static_visitor<>  {
         i += 2;
         boost::apply_visitor(*this, type.base_type);
         i -= 2;
+    }
+
+    void operator()(const integer_literal& integer){
+        std::cout << indent() << "integer_literal: " << integer.value << std::endl;
+    }
+    
+    void operator()(const integer_suffix_literal& integer){
+        std::cout << indent() << "integer_suffix_literal: " << integer.value << integer.suffix << std::endl;
+    }
+
+    void operator()(const float_literal& integer){
+        std::cout << indent() << "float_literal: " << integer.value << std::endl;
+    }
+    
+    void operator()(const string_literal& integer){
+        std::cout << indent() << "string_literal: " << integer.value << std::endl;
+    }
+    
+    void operator()(const char_literal& integer){
+        std::cout << indent() << "char_literal: " << integer.value << std::endl;
+    }
+    
+    void operator()(const variable_value& integer){
+        std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
     }
 };
 
@@ -534,6 +562,8 @@ namespace x3_grammar {
             (x3::lit("const") > x3::attr(true))
         |   x3::attr(false);
 
+    x3::real_parser<double, x3::strict_real_policies<double>> strict_double;
+
     auto const identifier_def = 
                 x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
@@ -615,11 +645,11 @@ namespace x3_grammar {
     auto const integer_suffix_literal_def =
         x3::lexeme[
                 x3::int_ 
-            >>  *x3::alpha
+            >>  +x3::alpha
         ];
-    
+
     auto const float_literal_def =
-        x3::float_;
+        strict_double;
     
     auto const char_literal_def =
             x3::lit('\'')
@@ -635,12 +665,12 @@ namespace x3_grammar {
         identifier;
 
     auto const value_def =
-            integer_suffix_literal
+            variable_value
+        |   integer_suffix_literal
+        |   float_literal
         |   integer_literal
-        |   variable_value
         |   string_literal
-        |   char_literal
-        |   float_literal;
+        |   char_literal;
     
     /* Instructions */
 
