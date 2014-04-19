@@ -6,7 +6,13 @@ void ____a__243sdf(int c){}
 int test(int b){
     foreach(z<a<b*>> c in b){
         foreach(int i from 10 to 111){
-            //TODO
+            int a = 77;
+            
+            foreach(int i from 10 to 111){
+                foreach(int i from 10 to 111){
+                    //TODO
+                }
+            }
         }
     }
 
@@ -40,3 +46,8 @@ duoble zz[999];
 //test a(){}
 
 test __2345234a(int b, list<int> c, int[] c, vector<int<asdf>*> d){}
+
+template<type a, type b, type c>
+void test (a a, b b, c c){
+   int a = 77;
+}

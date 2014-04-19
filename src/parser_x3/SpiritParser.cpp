@@ -201,6 +201,16 @@ struct function_declaration {
     std::vector<instruction> instructions;
 };
 
+struct template_function_declaration {
+    position pos;
+    int fake_;
+    std::vector<std::string> template_types;
+    type return_type;
+    std::string name;
+    std::vector<function_parameter> parameters;
+    std::vector<instruction> instructions;
+};
+
 struct global_variable_declaration {
     position pos;
     type variable_type;
@@ -226,11 +236,12 @@ struct import {
 };
 
 typedef x3::variant<
-        function_declaration,
         standard_import,
         import,
-        global_variable_declaration,
-        global_array_declaration
+        function_declaration,
+        template_function_declaration,
+        global_array_declaration,
+        global_variable_declaration
     > block;
 
 struct source_file {
@@ -267,6 +278,34 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "function_declaration: " << function.name << std::endl;
         i += 2;
         std::cout << indent() << "return_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, function.return_type);
+        i -= 2;
+        std::cout << indent() << "parameters: " << std::endl;
+        i += 2;
+        for(auto& parameter : function.parameters){
+            std::cout << indent() << "name: " << parameter.parameter_name << std::endl;
+            std::cout << indent() << "type: " << std::endl;
+            i += 2;
+            boost::apply_visitor(*this, parameter.parameter_type);
+            i -= 2;
+        }
+        i -= 2;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : function.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+    
+    void operator()(const template_function_declaration& function){
+        std::cout << indent() << "template_function_declaration: " << function.name << std::endl;
+        i += 2;
+        std::cout << indent() << "template_types: ";
+        for(auto& v : function.template_types) std::cout << v << ", ";
+        std::cout << std::endl << indent() << "return_type: " << std::endl;
         i += 2;
         boost::apply_visitor(*this, function.return_type);
         i -= 2;
@@ -578,6 +617,16 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::template_function_declaration,
+    (int, fake_)
+    (std::vector<std::string>, template_types)
+    (x3_ast::type, return_type)
+    (std::string, name)
+    (std::vector<x3_ast::function_parameter>, parameters)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_parameter, 
     (x3_ast::type, parameter_type)
     (std::string, parameter_name)
@@ -647,6 +696,7 @@ namespace x3_grammar {
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct function_parameter> function_parameter_id;
+    typedef x3::identity<struct template_function_declaration> template_function_declaration_id;
     typedef x3::identity<struct global_variable_declaration> global_variable_declaration_id;
     typedef x3::identity<struct global_array_declaration> global_array_declaration_id;
     typedef x3::identity<struct import> import_id;
@@ -679,6 +729,7 @@ namespace x3_grammar {
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
+    x3::rule<template_function_declaration_id, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
     x3::rule<global_variable_declaration_id, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
     x3::rule<global_array_declaration_id, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
@@ -687,6 +738,7 @@ namespace x3_grammar {
     ANNOTATE(import_id);
     ANNOTATE(standard_import_id);
     ANNOTATE(function_declaration_id);
+    ANNOTATE(template_function_declaration_id);
     ANNOTATE(foreach_id);
     ANNOTATE(foreach_in_id);
     ANNOTATE(variable_value_id);
@@ -716,6 +768,7 @@ namespace x3_grammar {
                 standard_import
             |   import
             |   function_declaration
+            |   template_function_declaration
             |   (global_array_declaration > ';')
             |   (global_variable_declaration > ';')
          );
@@ -734,6 +787,21 @@ namespace x3_grammar {
     
     auto const function_declaration_def = 
             type 
+        >>  identifier
+        >>  '(' 
+        >>  function_parameter % ','
+        >   ')'
+        >   '{' 
+        >   *instruction
+        >   '}';
+
+    auto const template_function_declaration_def = 
+            x3::lit("template")
+        >>  x3::attr(1)
+        >>  '<'
+        >>  (x3::lit("type") >> identifier) % ','
+        >>  '>'
+        >>  type 
         >>  identifier
         >>  '(' 
         >>  function_parameter % ','
@@ -887,8 +955,6 @@ namespace x3_grammar {
 
         source_file = source_file_def,
 
-        identifier = identifier_def,
-
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
         float_literal = float_literal_def,
@@ -912,10 +978,13 @@ namespace x3_grammar {
 
         function_declaration = function_declaration_def, 
         function_parameter = function_parameter_def, 
+        template_function_declaration = template_function_declaration_def, 
         global_variable_declaration = global_variable_declaration_def,
         global_array_declaration = global_array_declaration_def,
         standard_import = standard_import_def,
-        import = import_def);
+        import = import_def,
+
+        identifier = identifier_def);
 
     //********************************************
 
