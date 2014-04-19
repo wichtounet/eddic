@@ -15,6 +15,9 @@ int test(int b){
             //TODO
         }
     }
+
+   int a = 77;
+   string b = "a 21341234l 0000324124 ___ !   sdf";
 }
 
 /* 

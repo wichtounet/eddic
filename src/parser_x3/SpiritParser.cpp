@@ -58,7 +58,7 @@ public:
 namespace x3_ast {
 
 struct position {
-    std::size_t file = 0;               /*!< The source file */
+    std::string file;               /*!< The source file */
     std::size_t line = 0;               /*!< The source line number */
     std::size_t column = 0;             /*!< The source column number */
 };
@@ -136,10 +136,12 @@ typedef x3::variant<
 
 struct foreach;
 struct foreach_in;
+struct variable_declaration;
 
 typedef x3::variant<
         x3::forward_ast<foreach>,
-        x3::forward_ast<foreach_in>
+        x3::forward_ast<foreach_in>,
+        variable_declaration
     > instruction;
 
 struct foreach_in {
@@ -157,6 +159,13 @@ struct foreach {
     int from;
     int to;
     std::vector<instruction> instructions;
+};
+
+struct variable_declaration {
+    position pos;
+    type variable_type;
+    std::string variable_name;
+    value value;
 };
 
 //*****************************************
@@ -282,6 +291,17 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
+    
+    void operator()(const variable_declaration& declaration){
+        std::cout << indent() << "variable_declaration: " << std::endl;
+        i += 2;
+        std::cout << indent() << "variable_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.variable_type);
+        i -= 2;
+        std::cout << indent() << "variable_name: " << declaration.variable_name << std::endl;
+        i -= 2;
+    }
 
     void operator()(const simple_type& type){
         std::cout << indent() << "simple_type: " << type.base_type << std::endl;
@@ -356,12 +376,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::integer_suffix_literal, 
     (int, value)
-    (std::string, value)
+    (std::string, suffix)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::float_literal, 
-    (float, value)
+    (double, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -398,6 +418,13 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::instruction>, instructions)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::variable_declaration, 
+    (x3_ast::type, variable_type)
+    (std::string, variable_name)
+    (x3_ast::value, value)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -428,14 +455,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 template <typename iterator_type, typename Attr, typename Context>\
 inline void on_success(Type, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){\
     auto& pos = first.get_position();\
-    attr.pos.file = first.get_current_file();\
+    attr.pos.file = pos.file;\
     attr.pos.line = pos.line;\
     attr.pos.column = pos.column;\
 }
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
-
 
 namespace x3_grammar {
     typedef x3::identity<struct identifier> identifier_id;
@@ -459,6 +485,7 @@ namespace x3_grammar {
     typedef x3::identity<struct instruction> instruction_id;
     typedef x3::identity<struct foreach> foreach_id;
     typedef x3::identity<struct foreach_in> foreach_in_id;
+    typedef x3::identity<struct variable_declaration> variable_declaration_id;
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct function_parameter> function_parameter_id;
@@ -486,6 +513,7 @@ namespace x3_grammar {
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
     x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
+    x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
@@ -498,6 +526,7 @@ namespace x3_grammar {
     ANNOTATE(foreach_id);
     ANNOTATE(foreach_in_id);
     ANNOTATE(variable_value_id);
+    ANNOTATE(variable_declaration_id);
 
     /* Utilities */
    
@@ -599,7 +628,7 @@ namespace x3_grammar {
     
     auto const string_literal_def =
             x3::lit('"') 
-        >>  x3::float_
+        >>  x3::no_skip[*(x3::char_ - '"')] 
         >>  x3::lit('"');
 
     auto const variable_value_def =
@@ -613,11 +642,12 @@ namespace x3_grammar {
         |   char_literal
         |   float_literal;
     
-    //*********************************************
+    /* Instructions */
 
     auto const instruction_def =
             foreach
-        |   foreach_in;
+        |   foreach_in
+        |   (variable_declaration > ';');
 
     auto const foreach_def =
             x3::lit("foreach")
@@ -644,6 +674,11 @@ namespace x3_grammar {
         >>  '{'
         >>  *(instruction)
         >>  '}';
+    
+    auto variable_declaration_def =
+            type
+        >>  identifier
+        >>  '=' >> value;
 
     //*********************************************
     
@@ -671,6 +706,7 @@ namespace x3_grammar {
         instruction = instruction_def,
         foreach = foreach_def,
         foreach_in = foreach_in_def,
+        variable_declaration = variable_declaration_def,
 
         function_declaration = function_declaration_def, 
         function_parameter = function_parameter_def, 
@@ -712,10 +748,10 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     //boost::spirit::x3::ascii::space_type space;
 
     typedef std::string::iterator base_iterator_type;
-    //typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-    typedef extended_iterator<base_iterator_type> pos_iterator_type;
+    typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
+    //typedef extended_iterator<base_iterator_type> pos_iterator_type;
 
-    pos_iterator_type it(file_contents.begin(), file_contents.end(), file, 1);
+    pos_iterator_type it(file_contents.begin(), file_contents.end(), file);
     pos_iterator_type end;
 
     try {
