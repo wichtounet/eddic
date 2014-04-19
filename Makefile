@@ -15,7 +15,7 @@ CXX_FLAGS=-ftemplate-depth-2048 -use-gold -Iinclude -std=c++1y -stdlib=libc++ $(
 LD_FLAGS=$(CXX_FLAGS) -L $(BOOST_PREFIX)/lib -lboost_program_options
 LD_TEST_FLAGS=$(LD_FLAGS) -lboost_unit_test_framework
 
-DEBUG_FLAGS=-g
+DEBUG_FLAGS=
 RELEASE_FLAGS=-g -DLOGGING_DISABLE -DNDEBUG -O3 -flto -march=native -fvectorize -fslp-vectorize-aggressive -fomit-frame-pointer
 RELEASE_2_FLAGS=$(RELEASE_FLAGS) -fno-exceptions -fno-rtti
 

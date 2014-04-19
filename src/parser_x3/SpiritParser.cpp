@@ -137,11 +137,13 @@ typedef x3::variant<
 struct foreach;
 struct foreach_in;
 struct variable_declaration;
+struct struct_declaration;
 
 typedef x3::variant<
         x3::forward_ast<foreach>,
         x3::forward_ast<foreach_in>,
-        variable_declaration
+        variable_declaration,
+        struct_declaration
     > instruction;
 
 struct foreach_in {
@@ -165,7 +167,14 @@ struct variable_declaration {
     position pos;
     type variable_type;
     std::string variable_name;
-    value value;
+    boost::optional<value> value;
+};
+
+struct struct_declaration {
+    position pos;
+    type variable_type;
+    std::string variable_name;
+    std::vector<value> values;
 };
 
 //*****************************************
@@ -300,9 +309,28 @@ struct printer: public boost::static_visitor<>  {
         boost::apply_visitor(*this, declaration.variable_type);
         i -= 2;
         std::cout << indent() << "variable_name: " << declaration.variable_name << std::endl;
-        std::cout << indent() << "value: " << std::endl;
+        if(declaration.value){
+            std::cout << indent() << "value: " << std::endl;
+            i += 2;
+            boost::apply_visitor(*this, *declaration.value);
+            i -= 2;
+        }
+        i -= 2;
+    }
+    
+    void operator()(const struct_declaration& declaration){
+        std::cout << indent() << "struct_declaration: " << std::endl;
         i += 2;
-        boost::apply_visitor(*this, declaration.value);
+        std::cout << indent() << "variable_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.variable_type);
+        i -= 2;
+        std::cout << indent() << "variable_name: " << declaration.variable_name << std::endl;
+        std::cout << indent() << "values: " << std::endl;
+        i += 2;
+        for(auto& v : declaration.values){
+            boost::apply_visitor(*this, v);
+        }
         i -= 2;
         i -= 2;
     }
@@ -450,7 +478,14 @@ BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::variable_declaration, 
     (x3_ast::type, variable_type)
     (std::string, variable_name)
-    (x3_ast::value, value)
+    (boost::optional<x3_ast::value>, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::struct_declaration, 
+    (x3_ast::type, variable_type)
+    (std::string, variable_name)
+    (std::vector<x3_ast::value>, values)
 )
 
 //***************
@@ -514,6 +549,7 @@ namespace x3_grammar {
     typedef x3::identity<struct foreach> foreach_id;
     typedef x3::identity<struct foreach_in> foreach_in_id;
     typedef x3::identity<struct variable_declaration> variable_declaration_id;
+    typedef x3::identity<struct struct_declaration> struct_declaration_id;
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct function_parameter> function_parameter_id;
@@ -542,6 +578,7 @@ namespace x3_grammar {
     x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
     x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
     x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
+    x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
@@ -555,6 +592,7 @@ namespace x3_grammar {
     ANNOTATE(foreach_in_id);
     ANNOTATE(variable_value_id);
     ANNOTATE(variable_declaration_id);
+    ANNOTATE(struct_declaration_id);
 
     /* Utilities */
    
@@ -677,6 +715,7 @@ namespace x3_grammar {
     auto const instruction_def =
             foreach
         |   foreach_in
+        |   (struct_declaration > ';')
         |   (variable_declaration > ';');
 
     auto const foreach_def =
@@ -708,7 +747,14 @@ namespace x3_grammar {
     auto variable_declaration_def =
             type
         >>  identifier
-        >>  '=' >> value;
+        >>  -('=' >> value);
+    
+    auto struct_declaration_def =
+            type
+        >>  identifier
+        >>  '('
+        >>  (value % ',')
+        >>  ')';
 
     //*********************************************
     
@@ -737,6 +783,7 @@ namespace x3_grammar {
         foreach = foreach_def,
         foreach_in = foreach_in_def,
         variable_declaration = variable_declaration_def,
+        struct_declaration = struct_declaration_def,
 
         function_declaration = function_declaration_def, 
         function_parameter = function_parameter_def, 
