@@ -23,6 +23,9 @@ int test(int b){
    int e = 77d;
 
    structure zui(78.8, 66, 88d, "asdf", 'a');
+
+   int zeta[09];
+   int<z<i9>*> zeta[77.88];
 }
 
 /* 

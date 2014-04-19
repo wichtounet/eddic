@@ -138,12 +138,14 @@ struct foreach;
 struct foreach_in;
 struct variable_declaration;
 struct struct_declaration;
+struct array_declaration;
 
 typedef x3::variant<
         x3::forward_ast<foreach>,
         x3::forward_ast<foreach_in>,
         variable_declaration,
-        struct_declaration
+        struct_declaration,
+        array_declaration
     > instruction;
 
 struct foreach_in {
@@ -175,6 +177,13 @@ struct struct_declaration {
     type variable_type;
     std::string variable_name;
     std::vector<value> values;
+};
+
+struct array_declaration {
+    position pos;
+    type array_type;
+    std::string array_name;
+    value size;
 };
 
 //*****************************************
@@ -334,6 +343,21 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
+    
+    void operator()(const array_declaration& declaration){
+        std::cout << indent() << "array_declaration: " << std::endl;
+        i += 2;
+        std::cout << indent() << "array_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.array_type);
+        i -= 2;
+        std::cout << indent() << "array_name: " << declaration.array_name << std::endl;
+        std::cout << indent() << "size: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.size);
+        i -= 2;
+        i -= 2;
+    }
 
     void operator()(const simple_type& type){
         std::cout << indent() << "simple_type: " << type.base_type << std::endl;
@@ -488,6 +512,13 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::value>, values)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::array_declaration, 
+    (x3_ast::type, array_type)
+    (std::string, array_name)
+    (x3_ast::value, size)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -550,6 +581,7 @@ namespace x3_grammar {
     typedef x3::identity<struct foreach_in> foreach_in_id;
     typedef x3::identity<struct variable_declaration> variable_declaration_id;
     typedef x3::identity<struct struct_declaration> struct_declaration_id;
+    typedef x3::identity<struct array_declaration> array_declaration_id;
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct function_parameter> function_parameter_id;
@@ -579,6 +611,7 @@ namespace x3_grammar {
     x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
     x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
     x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
+    x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
@@ -593,6 +626,7 @@ namespace x3_grammar {
     ANNOTATE(variable_value_id);
     ANNOTATE(variable_declaration_id);
     ANNOTATE(struct_declaration_id);
+    ANNOTATE(array_declaration_id);
 
     /* Utilities */
    
@@ -716,6 +750,7 @@ namespace x3_grammar {
             foreach
         |   foreach_in
         |   (struct_declaration > ';')
+        |   (array_declaration > ';')
         |   (variable_declaration > ';');
 
     auto const foreach_def =
@@ -755,6 +790,13 @@ namespace x3_grammar {
         >>  '('
         >>  (value % ',')
         >>  ')';
+    
+    auto array_declaration_def =
+            type
+        >>  identifier
+        >>  '['
+        >>  value
+        >>  ']';
 
     //*********************************************
     
@@ -784,6 +826,7 @@ namespace x3_grammar {
         foreach_in = foreach_in_def,
         variable_declaration = variable_declaration_def,
         struct_declaration = struct_declaration_def,
+        array_declaration = array_declaration_def,
 
         function_declaration = function_declaration_def, 
         function_parameter = function_parameter_def, 
