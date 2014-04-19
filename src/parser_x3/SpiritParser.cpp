@@ -981,7 +981,6 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
         std::cout <<
                 "parse error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl
             <<  "expected: " << e.what_ << std::endl
-            <<  "got: \"" << std::string(e.first, e.last) << '"' << std::endl
             <<  "'" << e.first.get_currentline() << "'" << std::endl
             <<  std::setw(pos.column) << " " << "^- here" << std::endl;
 
