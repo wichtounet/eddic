@@ -28,6 +28,11 @@ int test(int b){
    int<z<i9>*> zeta[77.88];
 }
 
+int s = "asdf";
+double b = 77.7;
+double b = 77f;
+duoble zz[999];
+
 /* 
  * asdf  
  */

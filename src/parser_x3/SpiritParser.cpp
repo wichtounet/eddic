@@ -201,6 +201,20 @@ struct function_declaration {
     std::vector<instruction> instructions;
 };
 
+struct global_variable_declaration {
+    position pos;
+    type variable_type;
+    std::string variable_name;
+    boost::optional<value> value;
+};
+
+struct global_array_declaration {
+    position pos;
+    type array_type;
+    std::string array_name;
+    value size;
+};
+
 struct standard_import {
     position pos;
     std::string file;
@@ -214,7 +228,9 @@ struct import {
 typedef x3::variant<
         function_declaration,
         standard_import,
-        import
+        import,
+        global_variable_declaration,
+        global_array_declaration
     > block;
 
 struct source_file {
@@ -340,6 +356,38 @@ struct printer: public boost::static_visitor<>  {
         for(auto& v : declaration.values){
             boost::apply_visitor(*this, v);
         }
+        i -= 2;
+        i -= 2;
+    }
+    
+    void operator()(const global_variable_declaration& declaration){
+        std::cout << indent() << "global_variable_declaration: " << std::endl;
+        i += 2;
+        std::cout << indent() << "variable_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.variable_type);
+        i -= 2;
+        std::cout << indent() << "variable_name: " << declaration.variable_name << std::endl;
+        if(declaration.value){
+            std::cout << indent() << "value: " << std::endl;
+            i += 2;
+            boost::apply_visitor(*this, *declaration.value);
+            i -= 2;
+        }
+        i -= 2;
+    }
+    
+    void operator()(const global_array_declaration& declaration){
+        std::cout << indent() << "global_array_declaration: " << std::endl;
+        i += 2;
+        std::cout << indent() << "array_type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.array_type);
+        i -= 2;
+        std::cout << indent() << "array_name: " << declaration.array_name << std::endl;
+        std::cout << indent() << "size: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, declaration.size);
         i -= 2;
         i -= 2;
     }
@@ -536,6 +584,20 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::global_variable_declaration, 
+    (x3_ast::type, variable_type)
+    (std::string, variable_name)
+    (boost::optional<x3_ast::value>, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::global_array_declaration, 
+    (x3_ast::type, array_type)
+    (std::string, array_name)
+    (x3_ast::value, size)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::import,
     (std::string, file)
 )
@@ -585,6 +647,8 @@ namespace x3_grammar {
 
     typedef x3::identity<struct function_declaration> function_declaration_id;
     typedef x3::identity<struct function_parameter> function_parameter_id;
+    typedef x3::identity<struct global_variable_declaration> global_variable_declaration_id;
+    typedef x3::identity<struct global_array_declaration> global_array_declaration_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
 
@@ -615,6 +679,8 @@ namespace x3_grammar {
 
     x3::rule<function_declaration_id, x3_ast::function_declaration> const function_declaration("function_declaration");
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
+    x3::rule<global_variable_declaration_id, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
+    x3::rule<global_array_declaration_id, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
 
@@ -627,6 +693,8 @@ namespace x3_grammar {
     ANNOTATE(variable_declaration_id);
     ANNOTATE(struct_declaration_id);
     ANNOTATE(array_declaration_id);
+    ANNOTATE(global_variable_declaration_id);
+    ANNOTATE(global_array_declaration_id);
 
     /* Utilities */
    
@@ -648,6 +716,8 @@ namespace x3_grammar {
                 standard_import
             |   import
             |   function_declaration
+            |   (global_array_declaration > ';')
+            |   (global_variable_declaration > ';')
          );
 
     auto const standard_import_def = 
@@ -671,6 +741,18 @@ namespace x3_grammar {
         >   '{' 
         >   *instruction
         >   '}';
+
+    auto const global_variable_declaration_def =
+            type
+        >>  identifier
+        >>  -('=' >> value);
+    
+    auto const global_array_declaration_def =
+            type
+        >>  identifier
+        >>  '['
+        >>  value
+        >>  ']';
 
     auto const function_parameter_def =
             type
@@ -830,6 +912,8 @@ namespace x3_grammar {
 
         function_declaration = function_declaration_def, 
         function_parameter = function_parameter_def, 
+        global_variable_declaration = global_variable_declaration_def,
+        global_array_declaration = global_array_declaration_def,
         standard_import = standard_import_def,
         import = import_def);
 
