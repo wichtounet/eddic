@@ -667,8 +667,6 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
 namespace x3_grammar {
-    typedef x3::identity<struct identifier> identifier_id;
-    
     typedef x3::identity<struct source_file> source_file_id;
 
     typedef x3::identity<struct type> type_id;
@@ -699,8 +697,6 @@ namespace x3_grammar {
     typedef x3::identity<struct global_array_declaration> global_array_declaration_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
-
-    x3::rule<identifier_id, std::string> const identifier("identifier");
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
 
@@ -754,7 +750,7 @@ namespace x3_grammar {
 
     x3::real_parser<double, x3::strict_real_policies<double>> strict_double;
 
-    auto const identifier_def = 
+    auto const identifier = 
                 x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
             ;
@@ -979,9 +975,8 @@ namespace x3_grammar {
         global_variable_declaration = global_variable_declaration_def,
         global_array_declaration = global_array_declaration_def,
         standard_import = standard_import_def,
-        import = import_def,
-
-        identifier = identifier_def);
+        import = import_def
+        );
 
     //********************************************
 
