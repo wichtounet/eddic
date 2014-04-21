@@ -669,7 +669,6 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 namespace x3_grammar {
     typedef x3::identity<struct source_file> source_file_id;
 
-    typedef x3::identity<struct type> type_id;
     typedef x3::identity<struct simple_type> simple_type_id;
     typedef x3::identity<struct array_type> array_type_id;
     typedef x3::identity<struct pointer_type> pointer_type_id;
@@ -700,7 +699,6 @@ namespace x3_grammar {
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
 
-    x3::rule<type_id, x3_ast::type> const type("type");
     x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
     x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
     x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
@@ -755,73 +753,9 @@ namespace x3_grammar {
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
             ;
 
-    /* Base */ 
-    
-    auto const source_file_def = 
-         *(
-                standard_import
-            |   import
-            |   function_declaration
-            |   template_function_declaration
-            |   (global_array_declaration > ';')
-            |   (global_variable_declaration > ';')
-         );
-
-    auto const standard_import_def = 
-            x3::lit("import")
-        >>  '<' 
-        >   *x3::alpha
-        >   '>';
-    
-    auto const import_def = 
-            x3::lit("import")
-        >>  '"' 
-        >   *x3::alpha
-        >   '"';
-    
-    auto const function_declaration_def = 
-            type 
-        >>  identifier
-        >>  '(' 
-        >>  function_parameter % ','
-        >   ')'
-        >   '{' 
-        >   *instruction
-        >   '}';
-
-    auto const template_function_declaration_def = 
-            x3::lit("template")
-        >>  '<'
-        >>  (x3::lit("type") >> identifier) % ','
-        >>  '>'
-        >>  type 
-        >>  identifier
-        >>  '(' 
-        >>  function_parameter % ','
-        >   ')'
-        >   '{' 
-        >   *instruction
-        >   '}';
-
-    auto const global_variable_declaration_def =
-            type
-        >>  identifier
-        >>  -('=' >> value);
-    
-    auto const global_array_declaration_def =
-            type
-        >>  identifier
-        >>  '['
-        >>  value
-        >>  ']';
-
-    auto const function_parameter_def =
-            type
-        >>  identifier;
-
     /* Types */ 
 
-    auto const type_def =
+    auto const type =
             array_type
         |   pointer_type
         |   template_type
@@ -941,7 +875,71 @@ namespace x3_grammar {
         >>  value
         >>  ']';
 
-    //*********************************************
+    /* Base */ 
+    
+    auto const source_file_def = 
+         *(
+                standard_import
+            |   import
+            |   function_declaration
+            |   template_function_declaration
+            |   (global_array_declaration > ';')
+            |   (global_variable_declaration > ';')
+         );
+
+    auto const standard_import_def = 
+            x3::lit("import")
+        >>  '<' 
+        >   *x3::alpha
+        >   '>';
+    
+    auto const import_def = 
+            x3::lit("import")
+        >>  '"' 
+        >   *x3::alpha
+        >   '"';
+    
+    auto const function_declaration_def = 
+            type 
+        >>  identifier
+        >>  '(' 
+        >>  function_parameter % ','
+        >   ')'
+        >   '{' 
+        >   *instruction
+        >   '}';
+
+    auto const template_function_declaration_def = 
+            x3::lit("template")
+        >>  '<'
+        >>  (x3::lit("type") >> identifier) % ','
+        >>  '>'
+        >>  type 
+        >>  identifier
+        >>  '(' 
+        >>  function_parameter % ','
+        >   ')'
+        >   '{' 
+        >   *instruction
+        >   '}';
+
+    auto const global_variable_declaration_def =
+            type
+        >>  identifier
+        >>  -('=' >> value);
+    
+    auto const global_array_declaration_def =
+            type
+        >>  identifier
+        >>  '['
+        >>  value
+        >>  ']';
+
+    auto const function_parameter_def =
+            type
+        >>  identifier;
+
+    /* Grammar */
     
     auto const parser = x3::grammar(
         "eddi", 
@@ -956,7 +954,6 @@ namespace x3_grammar {
         variable_value = variable_value_def,
         value = value_def,
 
-        type = type_def,
         array_type = array_type_def,
         pointer_type = pointer_type_def,
         template_type = template_type_def,
