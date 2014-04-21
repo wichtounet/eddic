@@ -841,7 +841,7 @@ namespace x3_grammar {
         >>  x3::int_
         >>  ')'
         >>  '{'
-        >>  *instruction_def
+        >>  *instruction
         >>  '}';
     
     auto const foreach_in_def =
@@ -853,7 +853,7 @@ namespace x3_grammar {
         >>  identifier
         >>  ')'
         >>  '{'
-        >>  *instruction_def
+        >>  *instruction
         >>  '}';
     
     auto variable_declaration_def =
@@ -906,7 +906,7 @@ namespace x3_grammar {
         >>  function_parameter % ','
         >   ')'
         >   '{' 
-        >   *instruction_def
+        >   *instruction
         >   '}';
 
     auto const template_function_declaration_def = 
@@ -920,7 +920,7 @@ namespace x3_grammar {
         >>  function_parameter % ','
         >   ')'
         >   '{' 
-        >   *instruction_def
+        >   *instruction
         >   '}';
 
     auto const global_variable_declaration_def =
