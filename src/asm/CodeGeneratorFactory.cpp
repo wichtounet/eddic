@@ -11,12 +11,12 @@
 
 using namespace eddic;
 
-std::shared_ptr<as::CodeGenerator> eddic::as::CodeGeneratorFactory::get(Platform platform, AssemblyFileWriter& writer, mtac::Program& program, std::shared_ptr<GlobalContext> context){
+std::unique_ptr<as::CodeGenerator> eddic::as::CodeGeneratorFactory::get(Platform platform, AssemblyFileWriter& writer, mtac::Program& program, std::shared_ptr<GlobalContext> context){
     switch(platform){
         case Platform::INTEL_X86:
-            return std::make_shared<as::IntelX86CodeGenerator>(writer, program, context);
+            return std::make_unique<as::IntelX86CodeGenerator>(writer, program, context);
         case Platform::INTEL_X86_64:
-            return std::make_shared<as::IntelX86_64CodeGenerator>(writer, program, context);
+            return std::make_unique<as::IntelX86_64CodeGenerator>(writer, program, context);
     }
 
     return nullptr;
