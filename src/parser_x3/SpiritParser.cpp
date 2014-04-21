@@ -141,8 +141,8 @@ struct struct_declaration;
 struct array_declaration;
 
 typedef x3::variant<
-        x3::forward_ast<foreach>,
-        x3::forward_ast<foreach_in>,
+        foreach,
+        foreach_in,
         variable_declaration,
         struct_declaration,
         array_declaration
