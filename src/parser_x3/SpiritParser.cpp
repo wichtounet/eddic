@@ -203,7 +203,6 @@ struct function_declaration {
 
 struct template_function_declaration {
     position pos;
-    int fake_;
     std::vector<std::string> template_types;
     type return_type;
     std::string name;
@@ -613,17 +612,16 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
-    (std::vector<x3_ast::instruction>, instructions)
+    //(std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_function_declaration,
-    (int, fake_)
     (std::vector<std::string>, template_types)
     (x3_ast::type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
-    (std::vector<x3_ast::instruction>, instructions)
+    //(std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -797,7 +795,6 @@ namespace x3_grammar {
 
     auto const template_function_declaration_def = 
             x3::lit("template")
-        >>  x3::attr(1)
         >>  '<'
         >>  (x3::lit("type") >> identifier) % ','
         >>  '>'
@@ -926,7 +923,7 @@ namespace x3_grammar {
         >>  identifier
         >>  ')'
         >>  '{'
-        >>  *(instruction)
+        >>  *instruction
         >>  '}';
     
     auto variable_declaration_def =
