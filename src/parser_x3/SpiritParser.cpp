@@ -742,7 +742,7 @@ namespace x3_grammar {
 
     /* Utilities */
    
-    auto const_ = 
+    auto const const_ = 
             (x3::lit("const") > x3::attr(true))
         |   x3::attr(false);
 
@@ -856,19 +856,19 @@ namespace x3_grammar {
         >>  *instruction
         >>  '}';
     
-    auto variable_declaration_def =
+    auto const variable_declaration_def =
             type
         >>  identifier
         >>  -('=' >> value);
     
-    auto struct_declaration_def =
+    auto const struct_declaration_def =
             type
         >>  identifier
         >>  '('
         >>  (value % ',')
         >>  ')';
     
-    auto array_declaration_def =
+    auto const array_declaration_def =
             type
         >>  identifier
         >>  '['
