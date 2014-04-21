@@ -612,7 +612,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
-    //(std::vector<x3_ast::instruction>, instructions)
+    (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -621,7 +621,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
-    //(std::vector<x3_ast::instruction>, instructions)
+    (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
