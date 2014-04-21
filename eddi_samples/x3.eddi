@@ -48,6 +48,6 @@ duoble zz[999];
 test __2345234a(int b, list<int> c, int[] c, vector<int<asdf>*> d){}
 
 template<type a, type b, type c>
-void test (a a, b b, c c){
+void test (a a, b b, c c, int  [  ] asdf){
    int a = 77;
 }
