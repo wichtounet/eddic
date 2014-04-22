@@ -78,6 +78,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
 
     assign_op.add
         ("=",  ast::Operator::ASSIGN)
+        ("<=>",  ast::Operator::SWAP)
         ("+=", ast::Operator::ADD)
         ("-=", ast::Operator::SUB)
         ("/=", ast::Operator::DIV)

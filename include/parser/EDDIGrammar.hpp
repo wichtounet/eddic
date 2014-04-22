@@ -50,7 +50,6 @@ struct EddiGrammar : qi::grammar<lexer::StaticIterator,
     /* Instructions */
     Rule<ast::Instruction>         instruction;
     Rule<ast::Instruction>         repeatable_instruction;
-    Rule<ast::Swap>                swap;
     Rule<ast::VariableDeclaration> declaration;
     Rule<ast::StructDeclaration>   struct_declaration;
     Rule<ast::ArrayDeclaration>    arrayDeclaration;

@@ -536,23 +536,6 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             check_value(delete_.Content->value);
         }
     
-        void operator()(ast::Swap& swap){
-            if (swap.Content->lhs == swap.Content->rhs) {
-                throw SemanticalException("Cannot swap a variable with itself", swap.Content->position);
-            }
-
-            if (!swap.Content->context->exists(swap.Content->lhs) || !swap.Content->context->exists(swap.Content->rhs)) {
-                throw SemanticalException("Variable has not been declared in the swap", swap.Content->position);
-            }
-
-            swap.Content->lhs_var = swap.Content->context->getVariable(swap.Content->lhs);
-            swap.Content->rhs_var = swap.Content->context->getVariable(swap.Content->rhs);
-
-            //Reference both variables
-            swap.Content->lhs_var->add_reference();
-            swap.Content->rhs_var->add_reference();
-        }
-
         bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
             if(context->exists(name)){
                 auto var = context->getVariable(name);

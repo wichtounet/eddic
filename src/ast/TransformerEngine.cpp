@@ -203,7 +203,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
 struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
     result_type operator()(ast::Assignment& compound) const {
-        if(compound.Content->op == ast::Operator::ASSIGN){
+        if(compound.Content->op == ast::Operator::ASSIGN || compound.Content->op == ast::Operator::SWAP){
             return {};
         }
 
@@ -553,7 +553,6 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
-    AUTO_IGNORE_SWAP()
 
     void operator()(ast::If& if_){
         if_.Content->condition = visit(transformer, if_.Content->condition);
@@ -689,7 +688,6 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_MEMBER_DECLARATION()
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_IGNORE_TEMPLATE_STRUCT()
-    AUTO_IGNORE_SWAP()
     AUTO_IGNORE_DELETE()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()

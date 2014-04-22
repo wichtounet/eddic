@@ -11,7 +11,6 @@
 #include "variant.hpp"
 
 #include "ast/Deferred.hpp"
-#include "ast/Swap.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Expression.hpp"
 #include "ast/Return.hpp"
@@ -52,7 +51,6 @@ typedef Deferred<ASTDelete> Delete;
 typedef boost::variant<
             FunctionCall, 
             Expression,
-            Swap, 
             VariableDeclaration,
             StructDeclaration,
             ArrayDeclaration,

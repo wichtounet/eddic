@@ -1496,34 +1496,6 @@ class FunctionCompiler : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::Swap& swap){
-            auto lhs_var = swap.Content->lhs_var;
-            auto rhs_var = swap.Content->rhs_var;
-            
-            auto t1 = swap.Content->context->new_temporary(INT);
-
-            if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
-                function.emplace_back(t1, rhs_var, mtac::Operator::ASSIGN);
-                function.emplace_back(rhs_var, lhs_var, mtac::Operator::ASSIGN);
-                function.emplace_back(lhs_var, t1, mtac::Operator::ASSIGN);
-                
-                if(lhs_var->type() == STRING){
-                    auto t2 = swap.Content->context->new_temporary(INT);
-
-                    //t1 = 4(b)
-                    function.emplace_back(t1, rhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
-                    //t2 = 4(a)
-                    function.emplace_back(t2, lhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
-                    //4(b) = t2
-                    function.emplace_back(rhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t2);
-                    //4(a) = t1
-                    function.emplace_back(lhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t1);
-                }
-            } else {
-                eddic_unreachable("Unhandled variable type");
-            }
-        }
-
         void operator()(ast::DoWhile& while_){
             std::string startLabel = newLabel();
 
@@ -1572,9 +1544,47 @@ class FunctionCompiler : public boost::static_visitor<> {
         }
        
         void operator()(ast::Assignment& assignment){
-            eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+            if(assignment.Content->op == ast::Operator::SWAP){
+                std::shared_ptr<Variable> lhs_var;
+                std::shared_ptr<Variable> rhs_var;
+                
+                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+                    lhs_var = ptr->Content->var;
+                }
+                
+                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->value)){
+                    rhs_var = ptr->Content->var;
+                }
 
-            assign(function, assignment.Content->left_value, assignment.Content->value);
+                eddic_assert(lhs_var && rhs_var, "Invalid swap");
+
+                auto t1 = assignment.Content->context->new_temporary(INT);
+
+                if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
+                    function.emplace_back(t1, rhs_var, mtac::Operator::ASSIGN);
+                    function.emplace_back(rhs_var, lhs_var, mtac::Operator::ASSIGN);
+                    function.emplace_back(lhs_var, t1, mtac::Operator::ASSIGN);
+
+                    if(lhs_var->type() == STRING){
+                        auto t2 = assignment.Content->context->new_temporary(INT);
+
+                        //t1 = 4(b)
+                        function.emplace_back(t1, rhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
+                        //t2 = 4(a)
+                        function.emplace_back(t2, lhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
+                        //4(b) = t2
+                        function.emplace_back(rhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t2);
+                        //4(a) = t1
+                        function.emplace_back(lhs_var, static_cast<int>(INT->size(function.context->global()->target_platform())), mtac::Operator::DOT_ASSIGN, t1);
+                    }
+                } else {
+                    eddic_unreachable("Unhandled variable type");
+                }
+            } else {
+                eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+
+                assign(function, assignment.Content->left_value, assignment.Content->value);
+            }
         }
 
         //For statements that are also values, it is enough to transform them to arguments

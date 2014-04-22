@@ -188,12 +188,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         >>  lexer.right_bracket
         >>  lexer.stop;
 
-    swap %=
-            local_begin
-        >>  lexer.identifier
-        >>  lexer.swap
-        >>  lexer.identifier;
-
     instruction %=
             switch_
         |   (value_grammar.assignment(qi::_a, qi::_b) > lexer.stop)
@@ -210,13 +204,11 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         |   foreach_
         |   foreachin_
         |   return_
-        |   (swap > lexer.stop)
         |   (delete_ > lexer.stop)
         ;
 
     repeatable_instruction =
             value_grammar.assignment(qi::_a, qi::_b)
-        |   swap
         |   value_grammar.postfix_expression(qi::_a, qi::_b)
         |   value_grammar.prefix_operation(qi::_a, qi::_b)
         |   value_grammar.function_call(qi::_a, qi::_b);

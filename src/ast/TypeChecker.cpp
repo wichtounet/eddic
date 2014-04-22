@@ -211,12 +211,6 @@ class CheckerVisitor : public boost::static_visitor<> {
                 }
             }
         }
-        
-        void operator()(ast::Swap& swap){
-            if (swap.Content->lhs_var->type() != swap.Content->rhs_var->type()) {
-                throw SemanticalException("Swap of variables of incompatible type", swap.Content->position);
-            }
-        }
 
         void operator()(ast::Cast& cast){
             auto dst_type = visit_non_variant(ast::GetTypeVisitor(), cast);

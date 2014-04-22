@@ -256,10 +256,6 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub(while_.Content->instructions, "Instructions:");
     }
 
-    void operator()(ast::Swap&) const {
-        std::cout << indent() << "Swap" << std::endl; 
-    }
-
     void operator()(ast::If& if_) const {
         std::cout << indent() << "If" << std::endl; 
 
