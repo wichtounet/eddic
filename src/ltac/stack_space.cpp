@@ -122,10 +122,10 @@ void ltac::alloc_stack_space(mtac::Program& program){
 
                     while(struct_type){
                         for(auto& member : struct_type->members){
-                            if(member->type->is_array() && !member->type->is_dynamic_array()){
+                            if(member.type->is_array() && !member.type->is_dynamic_array()){
                                 bb->emplace_back_low(ltac::Operator::MOV, 
-                                        ltac::Address(ltac::BP, position + offset + function.context->global()->member_offset(struct_type, member->name)),
-                                        static_cast<int>(member->type->elements()));
+                                        ltac::Address(ltac::BP, position + offset + function.context->global()->member_offset(struct_type, member.name)),
+                                        static_cast<int>(member.type->elements()));
                             }
                         }
 

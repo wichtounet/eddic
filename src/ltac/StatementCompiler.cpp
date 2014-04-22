@@ -40,7 +40,7 @@ ltac::Address stack_address(ltac::AddressRegister offsetReg, int offset){
 
 } //end of anonymous namespace
 
-ltac::StatementCompiler::StatementCompiler(std::shared_ptr<FloatPool> float_pool) : manager(float_pool), float_pool(float_pool) {}
+ltac::StatementCompiler::StatementCompiler(FloatPool& float_pool) : manager(float_pool), float_pool(float_pool) {}
 
 void ltac::StatementCompiler::end_bb(){
     if(ended){
@@ -178,10 +178,10 @@ void ltac::StatementCompiler::pass_in_float_register(mtac::Argument& argument, i
     auto reg = manager.get_bound_pseudo_float_reg(descriptor->float_param_register(position));
 
     if(auto* ptr = boost::get<int>(&argument)){
-        auto label = float_pool->label(static_cast<double>(*ptr));
+        auto label = float_pool.label(static_cast<double>(*ptr));
         bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
+        auto label = float_pool.label(*ptr);
         bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
         bb->emplace_back_low(ltac::Operator::FMOV, reg, to_arg(argument));
@@ -285,7 +285,7 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, mtac::Quadruple& qua
     else if(auto* ptr = boost::get<double>(&*quadruple.arg1)){
         auto cmp_reg = manager.get_free_pseudo_float_reg();
 
-        auto label = float_pool->label(*ptr);
+        auto label = float_pool.label(*ptr);
         bb->emplace_back_low(ltac::Operator::FMOV, cmp_reg, ltac::Address(label));
 
         if(floats){
@@ -298,7 +298,7 @@ void ltac::StatementCompiler::set_if_cc(ltac::Operator set, mtac::Quadruple& qua
     else if(auto* ptr = boost::get<double>(&*quadruple.arg2)){
         auto cmp_reg = manager.get_free_pseudo_float_reg();
 
-        auto label = float_pool->label(*ptr);
+        auto label = float_pool.label(*ptr);
         bb->emplace_back_low(ltac::Operator::FMOV, cmp_reg, ltac::Address(label));
 
         if(floats){
@@ -503,10 +503,10 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
     } else if(auto* ptr = boost::get<int>(&*param.arg1)){
         if(*ptr == 0){
             if(param.param() && param.param()->type() == FLOAT){
-                auto label = float_pool->label(0.0);
+                auto label = float_pool.label(0.0);
                 push(ltac::Address(label));
             } else if(!param.std_param().empty() && param.function().parameter(param.std_param()).type() == FLOAT){
-                auto label = float_pool->label(0.0);
+                auto label = float_pool.label(0.0);
                 push(ltac::Address(label));
             } else {
                 push(to_arg(*param.arg1));
@@ -515,7 +515,7 @@ void ltac::StatementCompiler::compile_PARAM(mtac::Quadruple& param){
             push(to_arg(*param.arg1));
         }
     } else if(auto* ptr = boost::get<double>(&*param.arg1)){
-        auto label = float_pool->label(*ptr);
+        auto label = float_pool.label(*ptr);
         push(ltac::Address(label));
     } else {
         push(to_arg(*param.arg1));

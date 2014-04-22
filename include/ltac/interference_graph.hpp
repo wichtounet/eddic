@@ -47,7 +47,7 @@ class interference_graph {
     private:
         std::size_t m_size = 0;
 
-        std::shared_ptr<bit_matrix> matrix;
+        std::unique_ptr<bit_matrix> matrix;
         
         //For each pseudo reg
         std::vector<std::vector<reg>> adjacency_vectors;
@@ -94,7 +94,7 @@ void ltac::interference_graph<Pseudo>::build_graph(){
     degrees.resize(size());
     spill_costs.resize(size());
 
-    matrix = std::make_shared<ltac::bit_matrix>(size());
+    matrix = std::make_unique<ltac::bit_matrix>(size());
 }
 
 template<typename Pseudo>

@@ -91,7 +91,7 @@ class ConstantPropagationProblem {
         ProblemDomain top_element();
         ProblemDomain default_element();
 
-        mtac::EscapedVariables pointer_escaped;
+        mtac::escaped_variables_ptr pointer_escaped;
 };
 
 bool operator==(const mtac::Domain<ConstantPropagationValues>& lhs, const mtac::Domain<ConstantPropagationValues>& rhs);

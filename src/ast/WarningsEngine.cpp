@@ -177,8 +177,8 @@ struct Inspector : public boost::static_visitor<> {
                         warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
                     } else {
                         for(auto& member : struct_->members){
-                            if(member->get_references() == 0){
-                                warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member->name);
+                            if(member.get_references() == 0){
+                                warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member.name);
                             }
                         }
                     }

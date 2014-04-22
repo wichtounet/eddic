@@ -22,7 +22,7 @@ using namespace eddic;
 
 as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : CodeGenerator(w, program), context(context) {}
 
-void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::generate(StringPool& pool, FloatPool& float_pool){
     resetNumbering();
 
     writeRuntimeSupport(); 
@@ -36,7 +36,7 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::sha
     addGlobalVariables(pool, float_pool);
 }
 
-void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
+void as::IntelCodeGenerator::addGlobalVariables(StringPool& pool, FloatPool& float_pool){
     defineDataSection();
      
     for(auto& it : context->getVariables()){
@@ -64,7 +64,7 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool
                 //If that's not the case, there is a problem with the pool 
                 assert(value.first.size() > 0);
     
-                declareStringVariable(it.second->position().name(), pool->label(value.first), value.second);            
+                declareStringVariable(it.second->position().name(), pool.label(value.first), value.second);            
             } else if(type == CHAR){
                 declareCharVariable(it.second->position().name(), boost::get<char>(it.second->val()));
             } else if(type == BOOL){
@@ -75,11 +75,11 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool
         }
     }
     
-    for (auto it : pool->getPool()){
+    for (auto it : pool.getPool()){
         declareString(it.second, it.first);
     }
     
-    for (auto it : float_pool->get_pool()){
+    for (auto it : float_pool.get_pool()){
         declareFloat(it.second, it.first);
     }
 }

@@ -44,7 +44,7 @@ class OffsetConstantPropagationProblem {
         STATIC_CONSTANT(bool, Low, false);
 
         std::unordered_set<Offset, mtac::OffsetHash> escaped;
-        mtac::EscapedVariables pointer_escaped;
+        mtac::escaped_variables_ptr pointer_escaped;
 
         void set_pool(std::shared_ptr<StringPool> string_pool);
         void set_platform(Platform platform);

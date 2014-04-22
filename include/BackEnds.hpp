@@ -28,7 +28,7 @@ enum class Output : unsigned int {
  * \param output The output type. 
  * \return The appropriate back end. 
  */
-std::shared_ptr<BackEnd> get_back_end(Output output);
+std::unique_ptr<BackEnd> get_back_end(Output output);
 
 }
 

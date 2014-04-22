@@ -29,7 +29,7 @@ bool mtac::local_cse::operator()(mtac::Function& function){
         while(it != block->statements.end()){
             auto& quadruple = *it;
                 
-            if(mtac::is_expression(quadruple.op) && mtac::is_interesting(quadruple) && mtac::is_valid(quadruple, escaped)){
+            if(mtac::is_expression(quadruple.op) && mtac::is_interesting(quadruple) && mtac::is_valid(quadruple, *escaped)){
                 bool found = false;
 
                 for(auto& exp : expressions){

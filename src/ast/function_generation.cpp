@@ -79,7 +79,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
 
         bool possible = true;
         for(auto& member : struct_type->members){
-            if(member->type->is_array()){
+            if(member.type->is_array()){
                 possible = false;
                 break;
             }
@@ -114,7 +114,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indica
             c.Content->parameters.push_back(parameter);
 
             for(auto& member : struct_type->members){
-                auto& name = member->name;
+                auto& name = member.name;
 
                 ast::Assignment assignment;
                 assignment.Content->context = function_context;

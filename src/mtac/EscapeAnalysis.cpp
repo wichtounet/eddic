@@ -13,8 +13,8 @@
 
 using namespace eddic;
 
-mtac::EscapedVariables mtac::escape_analysis(mtac::Function& function){
-    mtac::EscapedVariables pointer_escaped = std::make_shared<mtac::EscapedVariables::element_type>();
+mtac::escaped_variables_ptr mtac::escape_analysis(mtac::Function& function){
+    auto pointer_escaped = std::make_unique<mtac::escaped_variables_ptr::element_type>();
 
     for(auto& block : function){
         for(auto& quadruple : block->statements){
@@ -42,5 +42,5 @@ mtac::EscapedVariables mtac::escape_analysis(mtac::Function& function){
         }
     }
 
-    return pointer_escaped;
+    return std::move(pointer_escaped);
 }

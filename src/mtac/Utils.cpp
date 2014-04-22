@@ -93,7 +93,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
 
     do {
         if(struct_type->member_exists(member)){
-            member_type = (*struct_type)[member]->type;
+            member_type = (*struct_type)[member].type;
             break;
         }
 

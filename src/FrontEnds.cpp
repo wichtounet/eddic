@@ -12,10 +12,10 @@
 
 using namespace eddic;
 
-std::shared_ptr<FrontEnd> eddic::get_front_end(const std::string& file){
+std::unique_ptr<FrontEnd> eddic::get_front_end(const std::string& file){
     //Handle .eddi files with the EDDI FrontEnd
     if(has_extension(file, "eddi")){
-        return std::make_shared<EDDIFrontEnd>();
+        return std::make_unique<EDDIFrontEnd>();
     }
 
     //This kind of file is not handled

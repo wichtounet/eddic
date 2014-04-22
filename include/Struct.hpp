@@ -26,6 +26,12 @@ struct Member {
 
     Member(const std::string& n, std::shared_ptr<const Type> t);
 
+    Member(const Member& rhs) = default;
+    Member& operator=(const Member& rhs) = default;
+
+    Member(Member&& rhs) = default;
+    Member& operator=(Member&& rhs) = default;
+
     /*!
      * Increment the reference counter of the member. 
      */
@@ -47,10 +53,16 @@ struct Member {
  */
 struct Struct {
     std::string name;
-    std::vector<std::shared_ptr<Member>> members;
+    std::vector<Member> members;
     std::shared_ptr<const Type> parent_type;
    
     Struct(const std::string& n);
+
+    Struct(const Struct& rhs) = default;
+    Struct& operator=(const Struct& rhs) = default;
+
+    Struct(Struct&& rhs) = default;
+    Struct& operator=(Struct&& rhs) = default;
 
     /*!
      * Indicates if the specified member exists in this structure. 
@@ -64,7 +76,7 @@ struct Struct {
      * \param name The name of the member to search for. 
      * \return A pointer to the member with the given name. 
      */
-    std::shared_ptr<Member> operator[](const std::string& name);
+    Member& operator[](const std::string& name);
 
     /*!
      * Increment the reference counter of the structure. 

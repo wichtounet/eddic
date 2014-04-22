@@ -31,7 +31,7 @@ void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator)
         if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
             auto& member = *ptr;
 
-            auto type = (*struct_type)[member.Content->name]->type;
+            auto type = (*struct_type)[member.Content->name].type;
 
             if(type->is_custom_type()){
                 if(!context->struct_exists(type)){
@@ -41,7 +41,7 @@ void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator)
         } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
             auto& member = *ptr;
 
-            auto type = (*struct_type)[member.Content->arrayName]->type;
+            auto type = (*struct_type)[member.Content->arrayName].type;
 
             if(type->is_custom_type()){
                 if(!context->struct_exists(type)){

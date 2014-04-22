@@ -118,7 +118,7 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
 
         do {
             if(struct_type->member_exists(member)){
-                return (*struct_type)[member]->type;
+                return (*struct_type)[member].type;
             }
 
             struct_type = global_context->get_struct(struct_type->parent_type);
