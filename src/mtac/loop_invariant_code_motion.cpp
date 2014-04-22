@@ -117,11 +117,7 @@ bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
     for(auto& bb : loop){
         for(auto& statement : bb->statements){
             if(is_invariant(statement, usage)){
-                std::cout << "Found invariant " << statement << std::endl;
-
                 if(is_valid_invariant(bb, statement, loop)){
-                    std::cout << "Found valid invariant " << statement << std::endl;
-
                     //Create the preheader if necessary
                     if(!pre_header){
                         pre_header = loop.find_safe_preheader(function, true);
