@@ -39,7 +39,7 @@ class RegisterManager {
         std::unordered_set<std::shared_ptr<Variable>> written;
         std::unordered_set<std::shared_ptr<Variable>> local;
 
-        mtac::EscapedVariables pointer_escaped;
+        mtac::escaped_variables_ptr pointer_escaped;
 
         mtac::basic_block_p bb;
 

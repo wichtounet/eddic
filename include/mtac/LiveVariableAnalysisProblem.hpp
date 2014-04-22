@@ -36,7 +36,7 @@ struct LiveVariableAnalysisProblem {
     STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Backward_Block);
     STATIC_CONSTANT(bool, Low, false);
 
-    mtac::EscapedVariables pointer_escaped;
+    mtac::escaped_variables_ptr pointer_escaped;
     
     ProblemDomain Boundary(mtac::Function& function);
     ProblemDomain Init(mtac::Function& function);

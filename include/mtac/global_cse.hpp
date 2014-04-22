@@ -38,7 +38,7 @@ class global_cse {
         STATIC_CONSTANT(DataFlowType, Type, DataFlowType::Fast_Forward_Block);
         STATIC_CONSTANT(bool, Low, false);
         
-        mtac::EscapedVariables pointer_escaped;
+        mtac::escaped_variables_ptr pointer_escaped;
 
         ProblemDomain Init(mtac::Function& function);
         ProblemDomain Boundary(mtac::Function& function);

@@ -19,9 +19,9 @@ class Variable;
 
 namespace mtac {
 
-typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> EscapedVariables;
+typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> escaped_variables_ptr;
 
-EscapedVariables escape_analysis(mtac::Function& function);
+escaped_variables_ptr escape_analysis(mtac::Function& function);
 
 } //end of eddic
 

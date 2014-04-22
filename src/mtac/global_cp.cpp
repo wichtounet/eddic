@@ -47,10 +47,10 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 struct ConstantOptimizer {
     mtac::Domain<mtac::ConstantPropagationValues>& results;
-    mtac::EscapedVariables& pointer_escaped;
+    mtac::escaped_variables_ptr& pointer_escaped;
     bool changes = false;
 
-    ConstantOptimizer(mtac::Domain<mtac::ConstantPropagationValues>& results, mtac::EscapedVariables& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
+    ConstantOptimizer(mtac::Domain<mtac::ConstantPropagationValues>& results, mtac::escaped_variables_ptr& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
 
     bool optimize_arg(mtac::Argument& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
