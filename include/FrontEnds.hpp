@@ -15,7 +15,7 @@ namespace eddic {
 
 class FrontEnd;
 
-std::shared_ptr<FrontEnd> get_front_end(const std::string& file);
+std::unique_ptr<FrontEnd> get_front_end(const std::string& file);
 
 }
 

@@ -68,17 +68,27 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
     int code = 0; 
 
     std::unique_ptr<mtac::Program> program;
-    std::shared_ptr<FrontEnd> front_end;
 
     try {
-        std::tie(program, front_end) = compile_mtac(file, platform, configuration);
+        //Make sure that the file exists 
+        if(!file_exists(file)){
+            throw SemanticalException("The file \"" + file + "\" does not exists");
+        }
+
+        auto front_end = get_front_end(file);
+
+        if(!front_end){
+            throw SemanticalException("The file \"" + file + "\" cannot be compiled using eddic");
+        }
+
+        program = compile_mtac(file, platform, configuration, *front_end);
 
         //If program is null, it means that the user didn't wanted it
         if(program){
             mtac::collect_warnings(*program, configuration);
 
             if(!configuration->option_defined("mtac-only")){
-                compile_ltac(*program, platform, configuration, front_end);
+                compile_ltac(*program, platform, configuration, *front_end);
             }
         }
     } catch (const SemanticalException& e) {
@@ -108,21 +118,10 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
     return code;
 }
 
-std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration){
-    //Make sure that the file exists 
-    if(!file_exists(file)){
-        throw SemanticalException("The file \"" + file + "\" does not exists");
-    }
+std::unique_ptr<mtac::Program> Compiler::compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration, FrontEnd& front_end){
+    front_end.set_configuration(configuration);
 
-    auto front_end = get_front_end(file);
-
-    if(!front_end){
-        throw SemanticalException("The file \"" + file + "\" cannot be compiled using eddic");
-    }
-    
-    front_end->set_configuration(configuration);
-
-    auto program = front_end->compile(file, platform);
+    auto program = front_end.compile(file, platform);
 
     //If program is null, it means that the user didn't wanted it
     if(program){
@@ -142,7 +141,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
         //Optimize MTAC
         mtac::Optimizer optimizer;
-        optimizer.optimize(*program, front_end->get_string_pool(), platform, configuration);
+        optimizer.optimize(*program, front_end.get_string_pool(), platform, configuration);
 
         //Allocate parameters into registers
         if(configuration->option_defined("fparameter-allocation")){
@@ -155,16 +154,16 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
         }
     }
 
-    return {std::move(program), front_end};
+    return std::move(program);
 }
     
-void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<FrontEnd> front_end){
+void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, FrontEnd& front_end){
     //Compute the definitive reachable flag for functions
     program.call_graph.compute_reachable();
 
     auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 
-    back_end->set_string_pool(front_end->get_string_pool());
+    back_end->set_string_pool(front_end.get_string_pool());
     back_end->set_configuration(configuration);
 
     back_end->generate(program, platform);
