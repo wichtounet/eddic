@@ -201,7 +201,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                     for(auto& member : struct_type->members){
                         std::shared_ptr<const Type> member_type;
                         unsigned int offset = 0;
-                        boost::tie(offset, member_type) = mtac::compute_member(function.context->global(), base_var->type(), member->name);
+                        boost::tie(offset, member_type) = mtac::compute_member(function.context->global(), base_var->type(), member.name);
 
                         auto new_args = get_member(function, offset, member_type, base_var);
                         std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));
@@ -266,7 +266,7 @@ arguments struct_to_arguments(mtac::Function& function, std::shared_ptr<const Ty
     for(auto& member : struct_type->members){
         std::shared_ptr<const Type> member_type;
         unsigned int member_offset = 0;
-        boost::tie(member_offset, member_type) = mtac::compute_member(function.context->global(), type, member->name);
+        boost::tie(member_offset, member_type) = mtac::compute_member(function.context->global(), type, member.name);
 
         auto new_args = get_member<>(function, member_offset + offset, member_type, base_var);
         std::copy(new_args.begin(), new_args.end(), std::back_inserter(result));

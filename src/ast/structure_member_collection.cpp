@@ -42,7 +42,7 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
             names.push_back(member.Content->name);
 
             auto member_type = visit(ast::TypeTransformer(context), member.Content->type);
-            signature->members.push_back(std::make_shared<Member>(member.Content->name, member_type));
+            signature->members.emplace_back(member.Content->name, member_type);
         } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
             auto& member = *ptr;
 
@@ -61,7 +61,7 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
             }
 
             if(auto* ptr = boost::get<ast::Integer>(&member.Content->size)){
-                signature->members.push_back(std::make_shared<Member>(name, new_array_type(data_member_type, ptr->value)));
+                signature->members.emplace_back(name, new_array_type(data_member_type, ptr->value));
             } else {
                 throw SemanticalException("Only arrays of fixed size are supported", member.Content->position);
             }
@@ -69,10 +69,10 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool
     }
 
     std::sort(signature->members.begin(), signature->members.end(), 
-            [](const std::shared_ptr<Member>& lhs, const std::shared_ptr<Member>& rhs){
-                if(lhs->type == CHAR || lhs->type == BOOL){
+            [](const Member& lhs, const Member& rhs){
+                if(lhs.type == CHAR || lhs.type == BOOL){
                     return false;
-                } else if(rhs->type == CHAR || rhs->type == BOOL){
+                } else if(rhs.type == CHAR || rhs.type == BOOL){
                     return true;
                 } else {
                     return false;

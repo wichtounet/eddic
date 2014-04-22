@@ -67,9 +67,9 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::Function& f
 
             while(struct_type){
                 for(auto& member : struct_type->members){
-                    if(member->type->is_array() && !member->type->is_dynamic_array()){
-                        mtac::Offset offset(variable, function.context->global()->member_offset(struct_type, member->name));
-                        out[offset] = static_cast<int>(member->type->elements());
+                    if(member.type->is_array() && !member.type->is_dynamic_array()){
+                        mtac::Offset offset(variable, function.context->global()->member_offset(struct_type, member.name));
+                        out[offset] = static_cast<int>(member.type->elements());
                     }
                 }
 

@@ -478,7 +478,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     }
 
                     //Add a reference to the member
-                    (*struct_type)[member]->add_reference();
+                    (*struct_type)[member].add_reference();
                 }
 
                 if(op.get<0>() == ast::Operator::CALL){

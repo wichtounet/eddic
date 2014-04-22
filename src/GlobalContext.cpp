@@ -122,11 +122,11 @@ int GlobalContext::member_offset(std::shared_ptr<const Struct> struct_, const st
     int offset = 0;
 
     for(auto& m : struct_->members){
-        if(m->name == member){
+        if(m.name == member){
             return offset;
         }
 
-        offset += m->type->size(platform);
+        offset += m.type->size(platform);
     }
 
     eddic_unreachable("The member is not part of the struct");
@@ -134,26 +134,23 @@ int GlobalContext::member_offset(std::shared_ptr<const Struct> struct_, const st
 
 std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<const Struct> struct_, int offset) const {
     int current_offset = 0;
-    std::shared_ptr<Member> member = nullptr;
 
     for(auto& m : struct_->members){
-        member = m;
-
         if(offset <= current_offset){
-            return member->type;
+            return m.type;
         }
         
-        current_offset += m->type->size(platform);
+        current_offset += m.type->size(platform);
     }
 
-    return member->type;
+    return struct_->members.back().type;
 }
 
 int GlobalContext::self_size_of_struct(std::shared_ptr<const Struct> struct_) const {
     int struct_size = 0;
 
     for(auto& m : struct_->members){
-        struct_size += m->type->size(platform);
+        struct_size += m.type->size(platform);
     }
     
     return struct_size;
@@ -176,7 +173,7 @@ bool GlobalContext::is_recursively_nested(std::shared_ptr<const Struct> struct_,
     }
 
     for(auto& m : struct_->members){
-        auto type = m->type;
+        auto type = m.type;
 
         if(type->is_structure()){
             if(is_recursively_nested(get_struct(type), left - 1)){
