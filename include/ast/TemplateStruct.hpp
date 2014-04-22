@@ -22,6 +22,9 @@ namespace eddic {
 namespace ast {
 
 struct ASTTemplateStruct {
+    bool standard = false;
+    std::string header = "";
+
     Position position;
     std::vector<std::string> template_types;
     std::string name;

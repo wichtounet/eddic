@@ -879,6 +879,8 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     declaration.Content->name = struct_declaration.Content->name;
                     declaration.Content->position = struct_declaration.Content->position;
                     declaration.Content->template_types = template_types; 
+                    declaration.Content->header = struct_declaration.Content->header;
+                    declaration.Content->standard = struct_declaration.Content->standard;
 
                     declaration.Content->blocks = copy(struct_declaration.Content->blocks);
 
