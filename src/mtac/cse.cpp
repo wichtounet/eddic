@@ -93,9 +93,9 @@ std::ostream& mtac::operator<<(std::ostream& stream, const expression& expressio
 mtac::Operator mtac::assign_op(mtac::Operator op){
     if(op == mtac::Operator::DOT){
         return mtac::Operator::ASSIGN;
-    } else if(op <= mtac::Operator::ADD && op <= mtac::Operator::MOD){
+    } else if(op >= mtac::Operator::ADD && op <= mtac::Operator::MOD){
         return mtac::Operator::ASSIGN;
-    } else if(op <= mtac::Operator::FADD && op <= mtac::Operator::FDIV){
+    } else if(op >= mtac::Operator::FADD && op <= mtac::Operator::FDIV){
         return mtac::Operator::FASSIGN;
     }
 

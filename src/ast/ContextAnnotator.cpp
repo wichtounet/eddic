@@ -181,10 +181,6 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             visit(*this, assignment.Content->value);
         }
         
-        void operator()(ast::Swap& swap){
-            swap.Content->context = currentContext;
-        }
-        
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
         }

@@ -253,19 +253,6 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         return copy;
     }
     
-    ast::Instruction operator()(const ast::Swap& source) const {
-        ast::Swap copy;
-        
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->lhs = source.Content->lhs;
-        copy.Content->rhs = source.Content->rhs;
-        copy.Content->lhs_var = source.Content->lhs_var;
-        copy.Content->rhs_var = source.Content->rhs_var;
-
-        return copy;
-    }
-    
     ast::Instruction operator()(const ast::VariableDeclaration& source) const {
         ast::VariableDeclaration copy;
 
@@ -524,8 +511,6 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_PREFIX()
     AUTO_RECURSE_SWITCH()
     
-    AUTO_IGNORE_SWAP()
-
     bool has_to_be_replaced(const std::string& type){
         return replacements.find(type) != replacements.end();
     }

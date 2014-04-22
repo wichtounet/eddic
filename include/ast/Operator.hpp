@@ -21,6 +21,8 @@ namespace ast {
 enum class Operator : unsigned int {
     ASSIGN,
 
+    SWAP,
+
     ADD,
     SUB,
     DIV,

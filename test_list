@@ -3,6 +3,8 @@ bb_iterators
 bb_new_bb
 bb_remove_bb
 bb_at
+toString
+toNumber
 ApplicationsSuite/applications_hangman
 SamplesSuite/samples_arrays
 SamplesSuite/samples_asm
@@ -83,6 +85,7 @@ SpecificSuite/prints
 SpecificSuite/structures
 SpecificSuite/struct_member_pointers
 SpecificSuite/struct_array
+SpecificSuite/swap
 SpecificSuite/switch_
 SpecificSuite/switch_string
 SpecificSuite/nested
@@ -118,5 +121,3 @@ OptimizationSuite/loop_unswitching
 OptimizationSuite/global_cse
 OptimizationSuite/local_cse
 OptimizationSuite/cmov_opt
-toString
-toNumber

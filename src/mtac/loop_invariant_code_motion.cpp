@@ -116,7 +116,11 @@ bool loop_invariant_code_motion(mtac::loop& loop, mtac::Function& function){
     for(auto& bb : loop){
         for(auto& statement : bb->statements){
             if(is_invariant(statement, usage)){
+                LOG<Trace>("ICM") << "Found invariant " << statement << log::endl;
+
                 if(is_valid_invariant(bb, statement, loop)){
+                    LOG<Trace>("ICM") << "Found valid invariant " << statement << log::endl;
+
                     //Create the preheader if necessary
                     if(!pre_header){
                         pre_header = loop.find_safe_preheader(function, true);

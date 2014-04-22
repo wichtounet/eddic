@@ -1,0 +1,16 @@
+include<print>
+
+void main(){
+    int a = 9;
+    int b = 11;
+    a <=> b;
+    print(a);
+    print('|');
+    print(b);
+    print('|');
+    a <=> b;
+    print(a);
+    print('|');
+    print(b);
+    print('|');
+}

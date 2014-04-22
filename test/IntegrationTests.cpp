@@ -478,6 +478,10 @@ BOOST_AUTO_TEST_CASE( struct_array ){
     assert_output("struct_arrays.eddi", "99|111|999|1111|99|111|999|1111|");
 }
 
+BOOST_AUTO_TEST_CASE( swap ){
+    assert_output("swap.eddi", "11|9|9|11|");
+}
+
 BOOST_AUTO_TEST_CASE( switch_ ){
     assert_output("switch.eddi", "5|5|3|6|default|4|");
 }
