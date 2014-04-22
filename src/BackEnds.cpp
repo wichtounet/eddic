@@ -11,10 +11,10 @@
 
 using namespace eddic;
 
-std::shared_ptr<BackEnd> eddic::get_back_end(Output output){
+std::unique_ptr<BackEnd> eddic::get_back_end(Output output){
     switch(output){
         case Output::NATIVE_EXECUTABLE:
-            return std::make_shared<NativeBackEnd>();
+            return std::make_unique<NativeBackEnd>();
         default:
             return nullptr;
     }
