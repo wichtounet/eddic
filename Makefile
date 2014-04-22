@@ -177,7 +177,7 @@ clean:
 
 # Custom targets
 
-update_test_list: bin/boosttest--eddic_boost_test
+update_test_list: $(RELEASE_TEST_EXE)
 	./$(RELEASE_TEST_EXE) --log_level=test_suite --log_sink=stdout > tests.tmp.log
 	bash tools/generate_tests.sh
 
