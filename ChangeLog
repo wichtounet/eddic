@@ -1,5 +1,7 @@
 eddic 1.2.4 - in development
 * Replaced CMake by plain old makefiles
+* Fix Loop Invariant Code Motion bugs
+* Improve memory usage
 
 eddic 1.2.3 - 2013.03.08
 
