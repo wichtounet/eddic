@@ -5,9 +5,9 @@ rm -f test_list
 
 while read line
 do
-    if [[ $line == "Entering test suite"* ]]
+    if [[ $line == *"Entering test suite"* ]]
     then
-        test_suite=`echo $line | cut -b 22- | sed 's/.$//'`
+        test_suite=`echo $line | cut -d':' -f2 | cut -b 23- | sed 's/.$//'`
 
         if [[ $test_suite == "eddic_test_suite" ]]
         then
@@ -15,14 +15,14 @@ do
         fi
     fi
     
-    if [[ $line == "Leaving test suite"* ]]
+    if [[ $line == *"Leaving test suite"* ]]
     then
         test_suite=""
     fi
     
-    if [[ $line == "Entering test case"* ]]
+    if [[ $line == *"Entering test case"* ]]
     then
-        test_case=`echo $line | cut -b 21- | sed 's/.$//'`
+        test_case=`echo $line | cut -d':' -f2 | cut -b 22- | sed 's/.$//'`
 
         if [[ $test_suite == "" ]]
         then
