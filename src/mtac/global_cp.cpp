@@ -47,14 +47,14 @@ struct ConstantCollector : public boost::static_visitor<> {
 
 struct ConstantOptimizer {
     mtac::Domain<mtac::ConstantPropagationValues>& results;
-    mtac::escaped_variables_ptr& pointer_escaped;
+    const mtac::escaped_variables& pointer_escaped;
     bool changes = false;
 
-    ConstantOptimizer(mtac::Domain<mtac::ConstantPropagationValues>& results, mtac::escaped_variables_ptr& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
+    ConstantOptimizer(mtac::Domain<mtac::ConstantPropagationValues>& results, const mtac::escaped_variables& pointer_escaped) : results(results), pointer_escaped(pointer_escaped) {}
 
     bool optimize_arg(mtac::Argument& arg){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&arg)){
-            if(results.count(*ptr) && !pointer_escaped->count(*ptr)){
+            if(results.count(*ptr) && !pointer_escaped.count(*ptr)){
                 if(results[*ptr].constant()){
                     arg = results[*ptr].value();
                     return true;
@@ -85,7 +85,7 @@ struct ConstantOptimizer {
         //If the constant is a string, we can use it in the dot operator
         if(quadruple.op == mtac::Operator::DOT){
             if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-                if((*ptr)->type() != STRING && results.count(*ptr) && !pointer_escaped->count(*ptr)){
+                if((*ptr)->type() != STRING && results.count(*ptr) && !pointer_escaped.count(*ptr)){
                     if(results[*ptr].constant()){
                         auto arg = results[*ptr].value();
 
@@ -357,7 +357,7 @@ bool mtac::ConstantPropagationProblem::optimize(mtac::Function& function, std::s
         }
 
         for(auto& statement : block->statements){
-            ConstantOptimizer optimizer(in, pointer_escaped);
+            ConstantOptimizer optimizer(in, *pointer_escaped);
             optimized |= optimizer.optimize(statement);
 
             transfer(block, statement, in);

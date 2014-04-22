@@ -44,7 +44,7 @@ void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
 ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
     this->function = &function;
     
-    pointer_escaped = mtac::escape_analysis(function);
+    auto pointer_escaped = mtac::escape_analysis(function);
 
     typename ProblemDomain::Values values;
     
@@ -52,7 +52,7 @@ ProblemDomain mtac::global_cse::Boundary(mtac::Function& function){
 
     for(auto& block : function){
         for(auto& q : block->statements){
-            if(mtac::is_expression(q.op) && mtac::is_valid(q, pointer_escaped) && mtac::is_interesting(q)){
+            if(mtac::is_expression(q.op) && mtac::is_valid(q, *pointer_escaped) && mtac::is_interesting(q)){
                 Eval[block].insert({0, *q.arg1, *q.arg2, q.op, nullptr, q.result->type()});
             }
 

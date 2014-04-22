@@ -19,7 +19,8 @@ class Variable;
 
 namespace mtac {
 
-typedef std::shared_ptr<std::unordered_set<std::shared_ptr<Variable>>> escaped_variables_ptr;
+typedef std::unordered_set<std::shared_ptr<Variable>> escaped_variables;
+typedef std::unique_ptr<std::unordered_set<std::shared_ptr<Variable>>> escaped_variables_ptr;
 
 escaped_variables_ptr escape_analysis(mtac::Function& function);
 

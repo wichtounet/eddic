@@ -36,7 +36,7 @@ bool mtac::is_interesting(mtac::Quadruple& quadruple){
     return false;
 }
 
-bool mtac::is_valid(mtac::Quadruple& quadruple, mtac::escaped_variables_ptr& escaped){
+bool mtac::is_valid(mtac::Quadruple& quadruple, const mtac::escaped_variables& escaped){
     if(quadruple.op == mtac::Operator::DOT){
         if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
             if((*ptr)->type()->is_pointer()){
@@ -46,13 +46,13 @@ bool mtac::is_valid(mtac::Quadruple& quadruple, mtac::escaped_variables_ptr& esc
     }
     
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg1)){
-        if(escaped->find(*ptr) != escaped->end()){
+        if(escaped.find(*ptr) != escaped.end()){
             return false;
         }
     }
     
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&*quadruple.arg2)){
-        if(escaped->find(*ptr) != escaped->end()){
+        if(escaped.find(*ptr) != escaped.end()){
             return false;
         }
     }
