@@ -234,9 +234,39 @@ struct import {
     std::string file;
 };
 
+struct member_declaration {
+    position pos;
+    type type;
+    std::string name;
+};
+
+typedef x3::variant<
+        member_declaration,
+        array_declaration,
+        function_declaration,
+        template_function_declaration
+    > struct_block;
+
+struct struct_ {
+    position pos;
+    std::string name;
+    boost::optional<type> parent_type;
+    std::vector<struct_block> blocks;
+};
+
+struct template_struct {
+    std::vector<std::string> template_types;
+    position pos;
+    std::string name;
+    boost::optional<type> parent_type;
+    std::vector<struct_block> blocks;
+};
+
 typedef x3::variant<
         standard_import,
         import,
+        struct_,
+        template_struct,
         function_declaration,
         template_function_declaration,
         global_array_declaration,
@@ -271,6 +301,14 @@ struct printer: public boost::static_visitor<>  {
     
     void operator()(const import& import){
         std::cout << indent() << "import: " << import.file << std::endl;
+    }
+    
+    void operator()(const struct_&){
+        //TODO
+    }
+    
+    void operator()(const template_struct&){
+        //TODO
     }
     
     void operator()(const function_declaration& function){
@@ -654,6 +692,27 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, file)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::member_declaration,
+    (x3_ast::type, type)
+    (std::string, name)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::struct_,
+    (std::string, name)
+    (boost::optional<x3_ast::type>, parent_type)
+    (std::vector<x3_ast::struct_block>, blocks)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::template_struct,
+    (std::vector<std::string>, template_types)
+    (std::string, name)
+    (boost::optional<x3_ast::type>, parent_type)
+    (std::vector<x3_ast::struct_block>, blocks)
+)
+
 #define ANNOTATE(Type)\
 template <typename iterator_type, typename Attr, typename Context>\
 inline void on_success(Type, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){\
@@ -696,6 +755,9 @@ namespace x3_grammar {
     typedef x3::identity<struct global_array_declaration> global_array_declaration_id;
     typedef x3::identity<struct import> import_id;
     typedef x3::identity<struct standard_import> standard_import_id;
+    typedef x3::identity<struct member_declaration> member_declaration_id;
+    typedef x3::identity<struct struct_> struct_id;
+    typedef x3::identity<struct template_struct> template_struct_id;
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
 
@@ -726,6 +788,9 @@ namespace x3_grammar {
     x3::rule<global_array_declaration_id, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_id, x3_ast::import> const import("import");
+    x3::rule<member_declaration_id, x3_ast::member_declaration> const member_declaration("member_declaration");
+    x3::rule<struct_id, x3_ast::struct_> const struct_("struct");
+    x3::rule<template_struct_id, x3_ast::template_struct> const template_struct("template_struct");
 
     ANNOTATE(import_id);
     ANNOTATE(standard_import_id);
@@ -739,6 +804,9 @@ namespace x3_grammar {
     ANNOTATE(array_declaration_id);
     ANNOTATE(global_variable_declaration_id);
     ANNOTATE(global_array_declaration_id);
+    ANNOTATE(member_declaration_id);
+    ANNOTATE(struct_id);
+    ANNOTATE(template_struct_id);
 
     /* Utilities */
    
@@ -881,6 +949,8 @@ namespace x3_grammar {
          *(
                 standard_import
             |   import
+            |   struct_
+            |   template_struct
             |   function_declaration
             |   template_function_declaration
             |   (global_array_declaration > ';')
@@ -939,6 +1009,47 @@ namespace x3_grammar {
             type
         >>  identifier;
 
+    auto const member_declaration_def =
+            type
+        >>  identifier
+        >>  ';';
+
+    auto struct_def =
+            x3::lit("struct")
+        >>  identifier
+        >>  -(
+                    "extends" 
+                >>  type
+             )
+        >>  '{'
+        >>  *(
+                    member_declaration
+                |   (array_declaration >> ';')
+                |   function_declaration
+                |   template_function_declaration
+             )
+        >>  '}';
+    
+    auto template_struct_def =
+            x3::lit("template")
+        >>  '<'
+        >>  (x3::lit("type") >> identifier) % ','
+        >>  '>'
+        >>  x3::lit("struct")
+        >>  identifier
+        >>  -(
+                    "extends" 
+                >>  type
+             )
+        >>  '{'
+        >>  *(
+                    member_declaration
+                |   (array_declaration >> ';')
+                |   function_declaration
+                |   template_function_declaration
+             )
+        >>  '}';
+
     /* Grammar */
     
     auto const parser = x3::grammar(
@@ -972,7 +1083,10 @@ namespace x3_grammar {
         global_variable_declaration = global_variable_declaration_def,
         global_array_declaration = global_array_declaration_def,
         standard_import = standard_import_def,
-        import = import_def
+        import = import_def,
+        member_declaration = member_declaration_def,
+        struct_ = struct_def,
+        template_struct = template_struct_def
         );
 
     //********************************************

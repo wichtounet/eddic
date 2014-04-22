@@ -3,6 +3,35 @@ import <list>
 
 void ____a__243sdf(int c){}
 
+struct asdf {
+    int b;
+    c a[99];
+
+    void test(){
+        int a = 77;
+    }
+    
+    template<type B, type D>
+    void test(){
+        int a = 77;
+    }
+}
+
+template<type A>
+struct asdf {
+    int b;
+    c a[99];
+
+    void test(){
+        int a = 77;
+    }
+    
+    template<type B, type D>
+    void test(){
+        int a = 77;
+    }
+}
+
 int test(int b){
     foreach(z<a<b*>> c in b){
         foreach(int i from 10 to 111){
