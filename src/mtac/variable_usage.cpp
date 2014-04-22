@@ -66,6 +66,11 @@ mtac::Usage compute_write_usage(Container& loop){
                 ++(usage.written[quadruple.result]);
                 ++(usage.written[quadruple.secondary]);
             } 
+
+            if(quadruple.op == mtac::Operator::CALL){
+                ++(usage.written[quadruple.result]);
+                ++(usage.written[quadruple.secondary]);
+            }
         }
     }
 
