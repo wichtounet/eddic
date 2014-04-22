@@ -169,8 +169,8 @@ bool mtac::remove_aliases::operator()(mtac::Function& function){
 
                 if(targets.size() == 1){
                     if(pointer_escaped->find(var) == pointer_escaped->end()){
-                        if(is_not_direct_alias(var, targets[0], function) && targets[0]->type() != STRING){
-                            VariableReplace replacer(var, targets[0]);
+                        if(is_not_direct_alias(var, targets.front(), function) && is_written_once(targets.front(), function) && targets.front()->type() != STRING){
+                            VariableReplace replacer(var, targets.front());
                             replacer.reverse = true;
 
                             for(auto& block : function){
