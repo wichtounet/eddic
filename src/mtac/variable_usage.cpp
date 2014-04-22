@@ -48,8 +48,8 @@ mtac::Usage compute_read_usage(Container& loop){
                 ++usage.read[quadruple.result];
             }
 
-            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
-            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
+            if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
+            if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage](std::shared_ptr<Variable>& var){++usage.read[var];});
         }
     }
 
@@ -112,8 +112,8 @@ mtac::VariableUsage mtac::compute_variable_usage_with_depth(mtac::Function& func
     for(auto& block : function){
         for(auto& quadruple : block->statements){
             usage[quadruple.result] += pow(depth_factor, block->depth);
-            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage, depth_factor, &block](std::shared_ptr<Variable>& var){ usage[var] += pow(depth_factor, block->depth); });
-            mtac::if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage, depth_factor, &block](std::shared_ptr<Variable>& var){ usage[var] += pow(depth_factor, block->depth); });
+            if_init<std::shared_ptr<Variable>>(quadruple.arg1, [&usage, depth_factor, &block](std::shared_ptr<Variable>& var){ usage[var] += pow(depth_factor, block->depth); });
+            if_init<std::shared_ptr<Variable>>(quadruple.arg2, [&usage, depth_factor, &block](std::shared_ptr<Variable>& var){ usage[var] += pow(depth_factor, block->depth); });
         }
     }
 
