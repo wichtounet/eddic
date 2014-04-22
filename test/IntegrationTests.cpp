@@ -18,6 +18,7 @@
 #include "Utils.hpp"
 #include "Platform.hpp"
 #include "GlobalContext.hpp"
+#include "EDDIFrontEnd.hpp"
 
 #include "mtac/Program.hpp"
 
@@ -625,9 +626,10 @@ eddic::statistics& compute_stats_mtac(const std::string& file){
     auto configuration = parse_options("test/cases/" + file, "test/cases/" + file + ".out", {"--64", "--O3"});
 
     eddic::Compiler compiler;
-    auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
+    eddic::EDDIFrontEnd front_end;
+    auto program = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration, front_end);
 
-    auto global_context = pair.first->context;
+    auto global_context = program->context;
     return global_context->stats();
 }
 
@@ -635,13 +637,13 @@ eddic::statistics& compute_stats_ltac(const std::string& file){
     auto configuration = parse_options("test/cases/" + file, "test/cases/" + file + ".out", {"--64", "--O3"});
 
     eddic::Compiler compiler;
-    auto pair = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration);
-    compiler.compile_ltac(*pair.first, eddic::Platform::INTEL_X86_64, configuration, pair.second);
+    eddic::EDDIFrontEnd front_end;
+    auto program = compiler.compile_mtac("test/cases/" + file, eddic::Platform::INTEL_X86_64, configuration, front_end);
+    compiler.compile_ltac(*program, eddic::Platform::INTEL_X86_64, configuration, front_end);
 
     remove("test/cases/" + file + ".out");
 
-    auto global_context = pair.first->context;
-    return global_context->stats();
+    return program->context->stats();
 }
 
 BOOST_AUTO_TEST_CASE( parameter_propagation ){
