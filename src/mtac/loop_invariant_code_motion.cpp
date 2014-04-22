@@ -55,7 +55,6 @@ bool is_arithmetic_expression(mtac::Operator op){
     return op >= mtac::Operator::ADD && op <= mtac::Operator::FDIV;
 }
 
-
 /*!
  * \brief Test if an invariant is valid or not.
  * An invariant defining v is valid if:
