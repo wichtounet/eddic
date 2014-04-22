@@ -43,7 +43,7 @@ class RegisterManager {
 
         mtac::basic_block_p bb;
 
-        RegisterManager(std::shared_ptr<FloatPool> float_pool);
+        RegisterManager(FloatPool& float_pool);
 
         /*!
          * Deleted copy constructor
@@ -88,7 +88,7 @@ class RegisterManager {
         void remove_from_pseudo_float_reg(std::shared_ptr<Variable> variable);
     
     private: 
-        std::shared_ptr<FloatPool> float_pool;
+        FloatPool& float_pool;
 
         //The pseudo registers
         as::PseudoRegisters<ltac::PseudoRegister> pseudo_registers;

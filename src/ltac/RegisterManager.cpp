@@ -41,7 +41,7 @@ Reg get_pseudo_reg(as::PseudoRegisters<Reg>& registers, std::shared_ptr<Variable
 
 } //end of anonymous namespace
     
-ltac::RegisterManager::RegisterManager(std::shared_ptr<FloatPool> float_pool) : float_pool(float_pool){
+ltac::RegisterManager::RegisterManager(FloatPool& float_pool) : float_pool(float_pool){
         //Nothing else to init
 }
 
@@ -72,10 +72,10 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoFloatRegis
             } 
         }
     } else if(auto* ptr = boost::get<double>(&argument)){
-        auto label = float_pool->label(*ptr);
+        auto label = float_pool.label(*ptr);
         bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     } else {
-        auto label = float_pool->label(static_cast<double>(boost::get<int>(argument)));
+        auto label = float_pool.label(static_cast<double>(boost::get<int>(argument)));
         bb->emplace_back_low(ltac::Operator::FMOV, reg, ltac::Address(label));
     }
 }

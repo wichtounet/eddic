@@ -38,7 +38,7 @@ class CodeGenerator {
          * \param pool The string pool to use. 
          * \param float_pool The float pool to use. 
          */
-        virtual void generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool) = 0;
+        virtual void generate(StringPool& pool, FloatPool& float_pool) = 0;
 
     protected:
         AssemblyFileWriter& writer;

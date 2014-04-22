@@ -29,7 +29,7 @@ class StatementCompiler {
         Platform platform;
         std::shared_ptr<Configuration> configuration;
 
-        StatementCompiler(std::shared_ptr<FloatPool> float_pool);
+        StatementCompiler(FloatPool& float_pool);
 
         /*!
          * Deleted copy constructor
@@ -58,7 +58,7 @@ class StatementCompiler {
         mtac::basic_block_p bb;
 
     private:
-        std::shared_ptr<FloatPool> float_pool;
+        FloatPool& float_pool;
 
         bool first_param = true;
 

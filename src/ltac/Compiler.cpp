@@ -27,7 +27,7 @@ using namespace eddic;
 
 ltac::Compiler::Compiler(Platform platform, std::shared_ptr<Configuration> configuration) : platform(platform), configuration(configuration) {}
 
-void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::Program& source, FloatPool& float_pool){
     timing_timer timer(source.context->timing(), "ltac_compilation");
 
     for(auto& function : source.functions){
@@ -35,7 +35,7 @@ void ltac::Compiler::compile(mtac::Program& source, std::shared_ptr<FloatPool> f
     }
 }
 
-void ltac::Compiler::compile(mtac::Function& function, std::shared_ptr<FloatPool> float_pool){
+void ltac::Compiler::compile(mtac::Function& function, FloatPool& float_pool){
     log::emit<Trace>("Compiler") << "Compile LTAC for function " << function.get_name() << log::endl;
     
     //Compute the block usage (in order to know if we have to output the label)
