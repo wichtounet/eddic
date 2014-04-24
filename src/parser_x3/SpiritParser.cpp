@@ -864,7 +864,7 @@ namespace x3_grammar {
             type
         >>  identifier
         >>  '('
-        >>  (value % ',')
+        >>  -(value % ',')
         >>  ')';
     
     auto const array_declaration_def =
