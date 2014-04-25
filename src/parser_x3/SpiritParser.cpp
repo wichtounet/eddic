@@ -29,6 +29,10 @@
 
 namespace x3 = boost::spirit::x3;
 
+typedef std::string::iterator base_iterator_type;
+typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
+//typedef extended_iterator<base_iterator_type> pos_iterator_type;
+
 using namespace eddic;
 
 template<typename ForwardIteratorT>
@@ -665,6 +669,7 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 namespace x3_grammar {
     typedef x3::identity<struct source_file> source_file_id;
 
+    typedef x3::identity<struct type> type_id;
     typedef x3::identity<struct simple_type> simple_type_id;
     typedef x3::identity<struct array_type> array_type_id;
     typedef x3::identity<struct pointer_type> pointer_type_id;
@@ -696,6 +701,7 @@ namespace x3_grammar {
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
 
+    x3::rule<type_id, x3_ast::type> const type("type");
     x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
     x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
     x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
@@ -740,6 +746,11 @@ namespace x3_grammar {
     ANNOTATE(template_struct_id);
 
     /* Utilities */
+
+    auto const skipper = 
+            x3::ascii::space
+        |   ("/*" >> *(x3::char_ - "*/") >> "*/")
+        |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
    
     auto const const_ = 
             (x3::lit("const") > x3::attr(true))
@@ -754,7 +765,7 @@ namespace x3_grammar {
 
     /* Types */ 
 
-    auto const type =
+    auto const type_def =
             array_type
         |   pointer_type
         |   template_type
@@ -784,6 +795,21 @@ namespace x3_grammar {
                 |   simple_type
             )
         >>  '*';
+
+    using type_parser_type = x3::any_parser<pos_iterator_type, x3_ast::type>;
+
+    type_parser_type type_grammar_create(){
+        return x3::skip(skipper)[x3::grammar(
+            "eddi::type",
+            type = type_def,
+            simple_type = simple_type_def,
+            template_type = template_type_def,
+            array_type = array_type_def,
+            pointer_type = pointer_type_def
+            )];
+    }
+
+    auto const type_grammar = type_grammar_create();
     
     /* Values */ 
 
@@ -832,7 +858,7 @@ namespace x3_grammar {
     auto const foreach_def =
             x3::lit("foreach")
         >>  '('
-        >>  type
+        >>  type_grammar
         >>  identifier
         >>  "from"
         >>  x3::int_
@@ -846,7 +872,7 @@ namespace x3_grammar {
     auto const foreach_in_def =
             x3::lit("foreach")
         >>  '('
-        >>  type
+        >>  type_grammar
         >>  identifier
         >>  "in"
         >>  identifier
@@ -856,19 +882,19 @@ namespace x3_grammar {
         >>  '}';
     
     auto const variable_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  -('=' >> value);
     
     auto const struct_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  '('
         >>  -(value % ',')
         >>  ')';
     
     auto const array_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  '['
         >>  value
@@ -905,7 +931,7 @@ namespace x3_grammar {
                 >>  (x3::lit("type") >> identifier) % ','
                 >>  '>'
             )
-        >>  type 
+        >>  type_grammar 
         >>  identifier
         >>  '(' 
         >>  -(function_parameter % ',')
@@ -915,23 +941,23 @@ namespace x3_grammar {
         >   '}';
 
     auto const global_variable_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  -('=' >> value);
     
     auto const global_array_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  '['
         >>  value
         >>  ']';
 
     auto const function_parameter_def =
-            type
+            type_grammar
         >>  identifier;
 
     auto const member_declaration_def =
-            type
+            type_grammar
         >>  identifier
         >>  ';';
 
@@ -946,7 +972,7 @@ namespace x3_grammar {
         >>  identifier
         >>  -(
                     "extends" 
-                >>  type
+                >>  type_grammar
              )
         >>  '{'
         >>  *(
@@ -971,11 +997,6 @@ namespace x3_grammar {
         variable_value = variable_value_def,
         value = value_def,
 
-        array_type = array_type_def,
-        pointer_type = pointer_type_def,
-        template_type = template_type_def,
-        simple_type = simple_type_def,
-
         instruction = instruction_def,
         foreach = foreach_def,
         foreach_in = foreach_in_def,
@@ -992,13 +1013,6 @@ namespace x3_grammar {
         member_declaration = member_declaration_def,
         template_struct = template_struct_def
         );
-
-    //********************************************
-
-    auto const skipper = 
-            x3::ascii::space
-        |   ("/*" >> *(x3::char_ - "*/") >> "*/")
-        |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
 
 } // end of grammar namespace
 
@@ -1023,19 +1037,16 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     in.read(&file_contents[0], size);
 
     auto& parser = x3_grammar::parser;
+    auto& skipper = x3_grammar::skipper;
 
     x3_ast::source_file result;
     //boost::spirit::x3::ascii::space_type space;
-
-    typedef std::string::iterator base_iterator_type;
-    typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-    //typedef extended_iterator<base_iterator_type> pos_iterator_type;
 
     pos_iterator_type it(file_contents.begin(), file_contents.end(), file);
     pos_iterator_type end;
 
     try {
-        bool r = x3::phrase_parse(it, end, parser, x3_grammar::skipper, result);
+        bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
         if(r && it == end){
             x3_ast::printer printer;
