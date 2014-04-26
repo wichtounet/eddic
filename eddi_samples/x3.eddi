@@ -24,11 +24,25 @@ struct asdf {
 
     void test(){
         int a = 77;
+
+        while(a){
+            int a = 99;
+        }
     }
     
     template<type B, type D>
     void test(){
         int a = 77;
+
+        do {
+            while(a){
+                int a = 99;
+            }
+        
+            int a = 99;
+        } while(a);
+
+        int a = 99;
     }
 }
 

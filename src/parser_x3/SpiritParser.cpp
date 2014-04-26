@@ -139,6 +139,8 @@ typedef x3::variant<
 //*****************************************
 
 struct foreach;
+struct while_;
+struct do_while;
 struct foreach_in;
 struct variable_declaration;
 struct struct_declaration;
@@ -147,10 +149,24 @@ struct array_declaration;
 typedef x3::variant<
         foreach,
         foreach_in,
+        while_,
+        do_while,
         variable_declaration,
         struct_declaration,
         array_declaration
     > instruction;
+
+struct while_ {
+    position pos;
+    value condition;
+    std::vector<instruction> instructions;
+};
+
+struct do_while {
+    position pos;
+    value condition;
+    std::vector<instruction> instructions;
+};
 
 struct foreach_in {
     position pos;
@@ -352,6 +368,38 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "instructions: " << std::endl;
         i += 2;
         for(auto& instruction : foreach.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+
+    void operator()(const while_& loop){
+        std::cout << indent() << "while: " << std::endl;
+        i += 2;
+        std::cout << indent() << "condition: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, loop.condition);
+        i -= 2;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : loop.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+
+    void operator()(const do_while& loop){
+        std::cout << indent() << "do while: " << std::endl;
+        i += 2;
+        std::cout << indent() << "condition: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, loop.condition);
+        i -= 2;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : loop.instructions){
             boost::apply_visitor(*this, instruction);
         }
         i -= 2;
@@ -579,6 +627,18 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::while_, 
+    (x3_ast::value, condition)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::do_while, 
+    (std::vector<x3_ast::instruction>, instructions)
+    (x3_ast::value, condition)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::variable_declaration, 
     (x3_ast::type, variable_type)
     (std::string, variable_name)
@@ -686,6 +746,8 @@ namespace x3_grammar {
     typedef x3::identity<struct instruction> instruction_id;
     typedef x3::identity<struct foreach> foreach_id;
     typedef x3::identity<struct foreach_in> foreach_in_id;
+    typedef x3::identity<struct while_> while_id;
+    typedef x3::identity<struct do_while> do_while_id;
     typedef x3::identity<struct variable_declaration> variable_declaration_id;
     typedef x3::identity<struct struct_declaration> struct_declaration_id;
     typedef x3::identity<struct array_declaration> array_declaration_id;
@@ -718,6 +780,8 @@ namespace x3_grammar {
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
     x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
+    x3::rule<while_id, x3_ast::while_> const while_("while");
+    x3::rule<do_while_id, x3_ast::do_while> const do_while("do_while");
     x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
     x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
     x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
@@ -736,6 +800,8 @@ namespace x3_grammar {
     ANNOTATE(template_function_declaration_id);
     ANNOTATE(foreach_id);
     ANNOTATE(foreach_in_id);
+    ANNOTATE(while_id);
+    ANNOTATE(do_while_id);
     ANNOTATE(variable_value_id);
     ANNOTATE(variable_declaration_id);
     ANNOTATE(struct_declaration_id);
@@ -851,6 +917,8 @@ namespace x3_grammar {
     auto const instruction_def =
             foreach
         |   foreach_in
+        |   while_
+        |   do_while
         |   (struct_declaration > ';')
         |   (array_declaration > ';')
         |   (variable_declaration > ';');
@@ -880,6 +948,26 @@ namespace x3_grammar {
         >>  '{'
         >>  *instruction
         >>  '}';
+    
+    auto const while_def =
+            x3::lit("while")
+        >>  '('
+        >>  value
+        >>  ')'
+        >>  '{'
+        >>  *instruction
+        >>  '}';
+    
+    auto const do_while_def =
+            x3::lit("do")
+        >>  '{'
+        >>  *instruction
+        >>  '}'
+        >>  "while"
+        >>  '('
+        >>  value
+        >>  ')'
+        >>  ';';
     
     auto const variable_declaration_def =
             type_grammar
@@ -1000,6 +1088,8 @@ namespace x3_grammar {
         instruction = instruction_def,
         foreach = foreach_def,
         foreach_in = foreach_in_def,
+        while_ = while_def,
+        do_while = do_while_def,
         variable_declaration = variable_declaration_def,
         struct_declaration = struct_declaration_def,
         array_declaration = array_declaration_def,
