@@ -911,6 +911,23 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal;
+
+    using value_parser_type = x3::any_parser<pos_iterator_type, x3_ast::value>;
+
+    value_parser_type value_grammar_create(){
+        return x3::skip(skipper)[x3::grammar(
+            "eddi::value",
+            value = value_def,
+            integer_literal = integer_literal_def,
+            integer_suffix_literal = integer_suffix_literal_def,
+            float_literal = float_literal_def,
+            char_literal = char_literal_def,
+            string_literal = string_literal_def,
+            variable_value = variable_value_def
+            )];
+    }
+
+    auto const value_grammar = value_grammar_create();
     
     /* Instructions */
 
@@ -952,7 +969,7 @@ namespace x3_grammar {
     auto const while_def =
             x3::lit("while")
         >>  '('
-        >>  value
+        >>  value_grammar
         >>  ')'
         >>  '{'
         >>  *instruction
@@ -965,27 +982,27 @@ namespace x3_grammar {
         >>  '}'
         >>  "while"
         >>  '('
-        >>  value
+        >>  value_grammar
         >>  ')'
         >>  ';';
     
     auto const variable_declaration_def =
             type_grammar
         >>  identifier
-        >>  -('=' >> value);
+        >>  -('=' >> value_grammar);
     
     auto const struct_declaration_def =
             type_grammar
         >>  identifier
         >>  '('
-        >>  -(value % ',')
+        >>  -(value_grammar % ',')
         >>  ')';
     
     auto const array_declaration_def =
             type_grammar
         >>  identifier
         >>  '['
-        >>  value
+        >>  value_grammar
         >>  ']';
 
     /* Base */ 
@@ -1031,13 +1048,13 @@ namespace x3_grammar {
     auto const global_variable_declaration_def =
             type_grammar
         >>  identifier
-        >>  -('=' >> value);
+        >>  -('=' >> value_grammar);
     
     auto const global_array_declaration_def =
             type_grammar
         >>  identifier
         >>  '['
-        >>  value
+        >>  value_grammar
         >>  ']';
 
     auto const function_parameter_def =
@@ -1076,14 +1093,6 @@ namespace x3_grammar {
         "eddi", 
 
         source_file = source_file_def,
-
-        integer_literal = integer_literal_def,
-        integer_suffix_literal = integer_suffix_literal_def,
-        float_literal = float_literal_def,
-        char_literal = char_literal_def,
-        string_literal = string_literal_def,
-        variable_value = variable_value_def,
-        value = value_def,
 
         instruction = instruction_def,
         foreach = foreach_def,
