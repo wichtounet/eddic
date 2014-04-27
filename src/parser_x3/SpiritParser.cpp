@@ -1004,6 +1004,24 @@ namespace x3_grammar {
         >>  '['
         >>  value_grammar
         >>  ']';
+    
+    using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
+
+    instruction_parser_type instruction_grammar_create(){
+        return x3::skip(skipper)[x3::grammar(
+            "eddi::instruction",
+            instruction = instruction_def,
+            foreach = foreach_def,
+            foreach_in = foreach_in_def,
+            while_ = while_def,
+            do_while = do_while_def,
+            variable_declaration = variable_declaration_def,
+            struct_declaration = struct_declaration_def,
+            array_declaration = array_declaration_def
+            )];
+    }
+
+    auto const instruction_grammar = instruction_grammar_create();
 
     /* Base */ 
     
@@ -1042,7 +1060,7 @@ namespace x3_grammar {
         >>  -(function_parameter % ',')
         >   ')'
         >   '{' 
-        >   *instruction
+        >   *instruction_grammar
         >   '}';
 
     auto const global_variable_declaration_def =
@@ -1094,15 +1112,6 @@ namespace x3_grammar {
 
         source_file = source_file_def,
 
-        instruction = instruction_def,
-        foreach = foreach_def,
-        foreach_in = foreach_in_def,
-        while_ = while_def,
-        do_while = do_while_def,
-        variable_declaration = variable_declaration_def,
-        struct_declaration = struct_declaration_def,
-        array_declaration = array_declaration_def,
-
         function_parameter = function_parameter_def, 
         template_function_declaration = template_function_declaration_def, 
         global_variable_declaration = global_variable_declaration_def,
@@ -1110,6 +1119,7 @@ namespace x3_grammar {
         standard_import = standard_import_def,
         import = import_def,
         member_declaration = member_declaration_def,
+        array_declaration = array_declaration_def,
         template_struct = template_struct_def
         );
 
