@@ -145,12 +145,14 @@ struct foreach_in;
 struct variable_declaration;
 struct struct_declaration;
 struct array_declaration;
+struct return_;
 
 typedef x3::variant<
         foreach,
         foreach_in,
         while_,
         do_while,
+        return_,
         variable_declaration,
         struct_declaration,
         array_declaration
@@ -204,6 +206,12 @@ struct array_declaration {
     type array_type;
     std::string array_name;
     value size;
+};
+
+struct return_ {
+    position pos;
+    int fake_;
+    value return_value;
 };
 
 //*****************************************
@@ -402,6 +410,16 @@ struct printer: public boost::static_visitor<>  {
         for(auto& instruction : loop.instructions){
             boost::apply_visitor(*this, instruction);
         }
+        i -= 2;
+        i -= 2;
+    }
+    
+    void operator()(const return_& return_){
+        std::cout << indent() << "return: " << std::endl;
+        i += 2;
+        std::cout << indent() << "value: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, return_.return_value);
         i -= 2;
         i -= 2;
     }
@@ -659,6 +677,12 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::value, size)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::return_, 
+    (int, fake_)
+    (x3_ast::value, return_value)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -751,6 +775,7 @@ namespace x3_grammar {
     typedef x3::identity<struct variable_declaration> variable_declaration_id;
     typedef x3::identity<struct struct_declaration> struct_declaration_id;
     typedef x3::identity<struct array_declaration> array_declaration_id;
+    typedef x3::identity<struct return_> return_id;
 
     typedef x3::identity<struct function_parameter> function_parameter_id;
     typedef x3::identity<struct template_function_declaration> template_function_declaration_id;
@@ -785,6 +810,7 @@ namespace x3_grammar {
     x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
     x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
     x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
+    x3::rule<return_id, x3_ast::return_> const return_("return");
 
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_id, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
@@ -806,6 +832,7 @@ namespace x3_grammar {
     ANNOTATE(variable_declaration_id);
     ANNOTATE(struct_declaration_id);
     ANNOTATE(array_declaration_id);
+    ANNOTATE(return_id);
     ANNOTATE(global_variable_declaration_id);
     ANNOTATE(global_array_declaration_id);
     ANNOTATE(member_declaration_id);
@@ -936,6 +963,7 @@ namespace x3_grammar {
         |   foreach_in
         |   while_
         |   do_while
+        |   (return_ > ';')
         |   (struct_declaration > ';')
         |   (array_declaration > ';')
         |   (variable_declaration > ';');
@@ -1004,6 +1032,11 @@ namespace x3_grammar {
         >>  '['
         >>  value_grammar
         >>  ']';
+
+    auto const return_def =
+            x3::lit("return")
+        >>  x3::attr(1)
+        >>  value_grammar;
     
     using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
 
@@ -1017,7 +1050,8 @@ namespace x3_grammar {
             do_while = do_while_def,
             variable_declaration = variable_declaration_def,
             struct_declaration = struct_declaration_def,
-            array_declaration = array_declaration_def
+            array_declaration = array_declaration_def,
+            return_ = return_def
             )];
     }
 
