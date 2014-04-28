@@ -193,7 +193,7 @@ struct variable_declaration {
     position pos;
     type variable_type;
     std::string variable_name;
-    boost::optional<value> value;
+    boost::optional<x3_ast::value> value;
 };
 
 struct struct_declaration {
@@ -242,7 +242,7 @@ struct global_variable_declaration {
     position pos;
     type variable_type;
     std::string variable_name;
-    boost::optional<value> value;
+    boost::optional<x3_ast::value> value;
 };
 
 struct global_array_declaration {
