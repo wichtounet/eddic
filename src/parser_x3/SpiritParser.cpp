@@ -147,10 +147,12 @@ struct struct_declaration;
 struct array_declaration;
 struct return_;
 struct delete_;
+struct if_;
 
 typedef x3::variant<
         foreach,
         foreach_in,
+        if_,
         while_,
         do_while,
         return_,
@@ -220,6 +222,23 @@ struct delete_ {
     position pos;
     int fake_;
     value value;
+};
+
+struct else_if {
+    value condition;
+    std::vector<instruction> instructions;
+};
+
+struct else_ {
+    int fake_;
+    std::vector<instruction> instructions;
+};
+
+struct if_ {
+    value condition;
+    std::vector<instruction> instructions;
+    std::vector<else_if> else_ifs;
+    boost::optional<x3_ast::else_> else_;
 };
 
 //*****************************************
@@ -416,6 +435,22 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "instructions: " << std::endl;
         i += 2;
         for(auto& instruction : loop.instructions){
+            boost::apply_visitor(*this, instruction);
+        }
+        i -= 2;
+        i -= 2;
+    }
+
+    void operator()(const if_& if_){
+        std::cout << indent() << "if: " << std::endl;
+        i += 2;
+        std::cout << indent() << "condition: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, if_.condition);
+        i -= 2;
+        std::cout << indent() << "instructions: " << std::endl;
+        i += 2;
+        for(auto& instruction : if_.instructions){
             boost::apply_visitor(*this, instruction);
         }
         i -= 2;
@@ -707,6 +742,26 @@ BOOST_FUSION_ADAPT_STRUCT(
     (x3_ast::value, value)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::else_if, 
+    (x3_ast::value, condition)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::else_, 
+    (int, fake_)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::if_, 
+    (x3_ast::value, condition)
+    (std::vector<x3_ast::instruction>, instructions)
+    (std::vector<x3_ast::else_if>, else_ifs)
+    (boost::optional<x3_ast::else_>, else_)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -801,6 +856,9 @@ namespace x3_grammar {
     typedef x3::identity<struct array_declaration> array_declaration_id;
     typedef x3::identity<struct return_> return_id;
     typedef x3::identity<struct delete_> delete_id;
+    typedef x3::identity<struct if_> if_id;
+    typedef x3::identity<struct else_if> else_if_id;
+    typedef x3::identity<struct else_> else_id;
 
     typedef x3::identity<struct function_parameter> function_parameter_id;
     typedef x3::identity<struct template_function_declaration> template_function_declaration_id;
@@ -837,6 +895,9 @@ namespace x3_grammar {
     x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
     x3::rule<return_id, x3_ast::return_> const return_("return");
     x3::rule<delete_id, x3_ast::delete_> const delete_("delete");
+    x3::rule<if_id, x3_ast::if_> const if_("if");
+    x3::rule<else_if_id, x3_ast::else_if> const else_if("else_if");
+    x3::rule<else_id, x3_ast::else_> const else_("else");
 
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_id, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
@@ -988,6 +1049,7 @@ namespace x3_grammar {
     auto const instruction_def =
             foreach
         |   foreach_in
+        |   if_
         |   while_
         |   do_while
         |   (return_ > ';')
@@ -1070,6 +1132,34 @@ namespace x3_grammar {
             x3::lit("delete")
         >>  x3::attr(1)
         >>  value_grammar;
+
+    auto const if_def =
+            x3::lit("if")
+        >>  '('
+        >>  value_grammar
+        >>  ')'
+        >>  '{'
+        >>  *instruction
+        >>  '}'
+        >>  *else_if
+        >>  -else_;
+
+    auto const else_if_def =
+            x3::lit("else")
+        >>  x3::lit("if")
+        >>  '('
+        >>  value_grammar
+        >>  ')'
+        >>  '{'
+        >>  *instruction
+        >>  '}';
+    
+    auto const else_def =
+            x3::lit("else")
+        >>  x3::attr(1)
+        >>  '{'
+        >>  *instruction
+        >>  '}';
     
     using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
 
@@ -1085,7 +1175,10 @@ namespace x3_grammar {
             struct_declaration = struct_declaration_def,
             array_declaration = array_declaration_def,
             return_ = return_def,
-            delete_ = delete_def
+            delete_ = delete_def,
+            if_ = if_def,
+            else_if = else_if_def,
+            else_ = else_def
             )];
     }
 
