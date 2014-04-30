@@ -979,18 +979,15 @@ namespace x3_grammar {
 
     using type_parser_type = x3::any_parser<pos_iterator_type, x3_ast::type>;
 
-    type_parser_type type_grammar_create(){
-        return x3::skip(skipper)[x3::grammar(
+    type_parser_type const type_grammar = 
+        x3::skip(skipper)[x3::grammar(
             "eddi::type",
             type = type_def,
             simple_type = simple_type_def,
             template_type = template_type_def,
             array_type = array_type_def,
             pointer_type = pointer_type_def
-            )];
-    }
-
-    auto const type_grammar = type_grammar_create();
+        )];
     
     /* Values */ 
 
@@ -1029,8 +1026,8 @@ namespace x3_grammar {
 
     using value_parser_type = x3::any_parser<pos_iterator_type, x3_ast::value>;
 
-    value_parser_type value_grammar_create(){
-        return x3::skip(skipper)[x3::grammar(
+    value_parser_type const value_grammar = 
+        x3::skip(skipper)[x3::grammar(
             "eddi::value",
             value = value_def,
             integer_literal = integer_literal_def,
@@ -1039,17 +1036,14 @@ namespace x3_grammar {
             char_literal = char_literal_def,
             string_literal = string_literal_def,
             variable_value = variable_value_def
-            )];
-    }
-
-    auto const value_grammar = value_grammar_create();
+        )];
     
     /* Instructions */
 
     auto const instruction_def =
             foreach
         |   foreach_in
-        |   if_
+        //|   if_
         |   while_
         |   do_while
         |   (return_ > ';')
@@ -1163,8 +1157,8 @@ namespace x3_grammar {
     
     using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
 
-    instruction_parser_type instruction_grammar_create(){
-        return x3::skip(skipper)[x3::grammar(
+    instruction_parser_type const instruction_grammar =
+        x3::skip(skipper)[x3::grammar(
             "eddi::instruction",
             instruction = instruction_def,
             foreach = foreach_def,
@@ -1179,10 +1173,7 @@ namespace x3_grammar {
             if_ = if_def,
             else_if = else_if_def,
             else_ = else_def
-            )];
-    }
-
-    auto const instruction_grammar = instruction_grammar_create();
+        )];
 
     /* Base */ 
     
