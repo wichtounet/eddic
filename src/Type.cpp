@@ -179,7 +179,7 @@ unsigned int ArrayType::elements() const {
 }
 
 bool ArrayType::has_elements() const {
-    return m_elements;
+    return static_cast<bool>(m_elements);
 }
 
 std::shared_ptr<const Type> ArrayType::data_type() const {

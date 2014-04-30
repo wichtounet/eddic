@@ -54,7 +54,7 @@ class ConstantPropagationLattice {
         }
 
         bool constant() const {
-            return m_value;
+            return static_cast<bool>(m_value);
         }
 
         bool nac() const {
