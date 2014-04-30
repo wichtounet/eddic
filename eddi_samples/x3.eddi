@@ -1,0 +1,96 @@
+import "test"
+import <list>
+
+void ____a__243sdf(int c){}
+
+struct asdf {
+    int b;
+    c a[99];
+
+    void test(){
+        int a = 77;
+    }
+    
+    template<type B, type D>
+    void test(){
+        int a = 77;
+    }
+}
+
+template<type A>
+struct asdf {
+    int b;
+    c a[99];
+
+    void test(){
+        int a = 77;
+
+        while(a){
+            int a = 99;
+        }
+    }
+    
+    template<type B, type D>
+    void test(){
+        int a = 77;
+
+        do {
+            while(a){
+                int a = 99;
+            }
+        
+            int a = 99;
+        } while(a);
+
+        int a = 99;
+    }
+}
+
+int test(int b){
+    foreach(z<a<b*>> c in b){
+        foreach(int i from 10 to 111){
+            int a = 77;
+            
+            foreach(int i from 10 to 111){
+                foreach(int i from 10 to 111){
+                    //TODO
+                }
+            }
+        }
+    }
+
+    foreach(int i from 10 to 111){
+        foreach(int i from 10 to 111){
+            //TODO
+        }
+    }
+
+   int a = 77;
+   string b = "a 21341234l 0000324124 ___ !   sdf";
+   float b = 78.88;
+   char c = 'c';
+   int e = 77d;
+
+   structure zui(78.8, 66, 88d, "asdf", 'a');
+
+   int zeta[09];
+   int<z<i9>*> zeta[77.88];
+}
+
+int s = "asdf";
+double b = 77.7;
+double b = 77f;
+duoble zz[999];
+
+/* 
+ * asdf  
+ */
+
+//test a(){}
+
+test __2345234a(int b, list<int> c, int[] c, vector<int<asdf>*> d){}
+
+template<type a, type b, type c>
+void test (a a, b b, c c, int  [  ] asdf){
+   int a = 77;
+}
