@@ -20,10 +20,7 @@ x3::rule<variable_value_id, x3_ast::variable_value> const variable_value("variab
 x3::rule<value_id, x3_ast::value> const value("value");
     
 ANNOTATE(variable_value_id);
-   
-} //end of anonymous namespace
-
-x3_grammar::value_parser_type x3_grammar::value_grammar_create(){
+    
     #include "parser_x3/skipper_inc.hpp"
     #include "parser_x3/identifier_inc.hpp"
 
@@ -62,6 +59,10 @@ x3_grammar::value_parser_type x3_grammar::value_grammar_create(){
         |   string_literal
         |   char_literal;
         
+   
+} //end of anonymous namespace
+
+x3_grammar::value_parser_type x3_grammar::value_grammar_create(){
     return x3::skip(skipper)[x3::grammar(
         "eddi::value",
         value = value_def,

@@ -27,6 +27,7 @@
 #include "parser_x3/iterator.hpp"
 #include "parser_x3/type_grammar.hpp"
 #include "parser_x3/value_grammar.hpp"
+#include "parser_x3/instruction_grammar.hpp"
 
 namespace x3 = boost::spirit::x3;
 
@@ -61,21 +62,6 @@ public:
 
 namespace x3_grammar {
     typedef x3::identity<struct source_file> source_file_id;
-    
-    typedef x3::identity<struct instruction> instruction_id;
-    typedef x3::identity<struct foreach> foreach_id;
-    typedef x3::identity<struct foreach_in> foreach_in_id;
-    typedef x3::identity<struct while_> while_id;
-    typedef x3::identity<struct do_while> do_while_id;
-    typedef x3::identity<struct variable_declaration> variable_declaration_id;
-    typedef x3::identity<struct struct_declaration> struct_declaration_id;
-    typedef x3::identity<struct array_declaration> array_declaration_id;
-    typedef x3::identity<struct return_> return_id;
-    typedef x3::identity<struct delete_> delete_id;
-    typedef x3::identity<struct if_> if_id;
-    typedef x3::identity<struct else_if> else_if_id;
-    typedef x3::identity<struct else_> else_id;
-
     typedef x3::identity<struct function_parameter> function_parameter_id;
     typedef x3::identity<struct template_function_declaration> template_function_declaration_id;
     typedef x3::identity<struct global_variable_declaration> global_variable_declaration_id;
@@ -86,21 +72,6 @@ namespace x3_grammar {
     typedef x3::identity<struct template_struct> template_struct_id;
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
-    
-    x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
-    x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
-    x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
-    x3::rule<while_id, x3_ast::while_> const while_("while");
-    x3::rule<do_while_id, x3_ast::do_while> const do_while("do_while");
-    x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
-    x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
-    x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
-    x3::rule<return_id, x3_ast::return_> const return_("return");
-    x3::rule<delete_id, x3_ast::delete_> const delete_("delete");
-    x3::rule<if_id, x3_ast::if_> const if_("if");
-    x3::rule<else_if_id, x3_ast::else_if> const else_if("else_if");
-    x3::rule<else_id, x3_ast::else_> const else_("else");
-
     x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_id, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
     x3::rule<global_variable_declaration_id, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
@@ -113,166 +84,13 @@ namespace x3_grammar {
     ANNOTATE(import_id);
     ANNOTATE(standard_import_id);
     ANNOTATE(template_function_declaration_id);
-    ANNOTATE(foreach_id);
-    ANNOTATE(foreach_in_id);
-    ANNOTATE(while_id);
-    ANNOTATE(do_while_id);
-    ANNOTATE(variable_declaration_id);
-    ANNOTATE(struct_declaration_id);
-    ANNOTATE(array_declaration_id);
-    ANNOTATE(return_id);
-    ANNOTATE(delete_id);
     ANNOTATE(global_variable_declaration_id);
     ANNOTATE(global_array_declaration_id);
     ANNOTATE(member_declaration_id);
     ANNOTATE(template_struct_id);
 
-    /* Utilities */
-
     #include "parser_x3/skipper_inc.hpp"
     #include "parser_x3/identifier_inc.hpp"
-    
-    /* Instructions */
-
-    auto const instruction_def =
-            foreach
-        |   foreach_in
-        //|   if_
-        |   while_
-        |   do_while
-        |   (return_ > ';')
-        |   (delete_ > ';')
-        |   (struct_declaration > ';')
-        |   (array_declaration > ';')
-        |   (variable_declaration > ';');
-
-    auto const foreach_def =
-            x3::lit("foreach")
-        >>  '('
-        >>  type_grammar
-        >>  identifier
-        >>  "from"
-        >>  x3::int_
-        >>  "to"
-        >>  x3::int_
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
-    
-    auto const foreach_in_def =
-            x3::lit("foreach")
-        >>  '('
-        >>  type_grammar
-        >>  identifier
-        >>  "in"
-        >>  identifier
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
-    
-    auto const while_def =
-            x3::lit("while")
-        >>  '('
-        >>  value_grammar
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
-    
-    auto const do_while_def =
-            x3::lit("do")
-        >>  '{'
-        >>  *instruction
-        >>  '}'
-        >>  "while"
-        >>  '('
-        >>  value_grammar
-        >>  ')'
-        >>  ';';
-    
-    auto const variable_declaration_def =
-            type_grammar
-        >>  identifier
-        >>  -('=' >> value_grammar);
-    
-    auto const struct_declaration_def =
-            type_grammar
-        >>  identifier
-        >>  '('
-        >>  -(value_grammar % ',')
-        >>  ')';
-    
-    auto const array_declaration_def =
-            type_grammar
-        >>  identifier
-        >>  '['
-        >>  value_grammar
-        >>  ']';
-
-    auto const return_def =
-            x3::lit("return")
-        >>  x3::attr(1)
-        >>  value_grammar;
-
-    auto const delete_def =
-            x3::lit("delete")
-        >>  x3::attr(1)
-        >>  value_grammar;
-
-    auto const if_def =
-            x3::lit("if")
-        >>  '('
-        >>  value_grammar
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}'
-        >>  *else_if
-        >>  -else_;
-
-    auto const else_if_def =
-            x3::lit("else")
-        >>  x3::lit("if")
-        >>  '('
-        >>  value_grammar
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
-    
-    auto const else_def =
-            x3::lit("else")
-        >>  x3::attr(1)
-        >>  '{'
-        >>  *instruction
-        >>  '}';
-    
-    using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
-
-    instruction_parser_type instruction_grammar_create(){
-        return x3::skip(skipper)[x3::grammar(
-            "eddi::instruction",
-            instruction = instruction_def,
-            foreach = foreach_def,
-            foreach_in = foreach_in_def,
-            while_ = while_def,
-            do_while = do_while_def,
-            variable_declaration = variable_declaration_def,
-            struct_declaration = struct_declaration_def,
-            array_declaration = array_declaration_def,
-            return_ = return_def,
-            delete_ = delete_def,
-            if_ = if_def,
-            else_if = else_if_def,
-            else_ = else_def
-            )];
-    }
-
-    auto const instruction_grammar = instruction_grammar_create();
-
-    /* Base */ 
     
     auto const source_file_def = 
          *(
@@ -349,7 +167,7 @@ namespace x3_grammar {
         >>  '{'
         >>  *(
                     member_declaration
-                |   (array_declaration >> ';')
+                //|   (array_declaration >> ';')
                 |   template_function_declaration
              )
         >>  '}';
@@ -358,9 +176,7 @@ namespace x3_grammar {
     
     auto const parser = x3::grammar(
         "eddi", 
-
         source_file = source_file_def,
-
         function_parameter = function_parameter_def, 
         template_function_declaration = template_function_declaration_def, 
         global_variable_declaration = global_variable_declaration_def,
@@ -368,7 +184,7 @@ namespace x3_grammar {
         standard_import = standard_import_def,
         import = import_def,
         member_declaration = member_declaration_def,
-        array_declaration = array_declaration_def,
+        //array_declaration = array_declaration_def,
         template_struct = template_struct_def
         );
 
@@ -396,6 +212,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
 
     auto& parser = x3_grammar::parser;
     auto& skipper = x3_grammar::skipper;
+    //x3::ascii::space_type skipper
 
     x3_ast::source_file result;
     //boost::spirit::x3::ascii::space_type space;

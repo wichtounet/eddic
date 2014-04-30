@@ -1,6 +1,4 @@
 #include "parser_x3/type_grammar.hpp"
-//#include "parser_x3/skipper.hpp"
-
 
 namespace {
 
@@ -15,10 +13,7 @@ x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
 x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
 x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
 x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
-   
-} //end of anonymous namespace
 
-x3_grammar::type_parser_type x3_grammar::type_grammar_create(){
     #include "parser_x3/skipper_inc.hpp"
     #include "parser_x3/identifier_inc.hpp"
 
@@ -56,6 +51,10 @@ x3_grammar::type_parser_type x3_grammar::type_grammar_create(){
                 |   simple_type
             )
         >>  '*';
+   
+} //end of anonymous namespace
+
+x3_grammar::type_parser_type x3_grammar::type_grammar_create(){
 
     return x3::skip(skipper)[x3::grammar(
         "eddi::type",
