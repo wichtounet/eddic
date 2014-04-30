@@ -15,6 +15,7 @@
 //#include "boost_cfg.hpp"
 
 //#define BOOST_SPIRIT_X3_DEBUG
+#define BOOST_SPIRIT_X3_NO_RTTI
 
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/count.hpp>
@@ -1041,9 +1042,9 @@ namespace x3_grammar {
     /* Instructions */
 
     auto const instruction_def =
-            foreach
+            if_
+        |   foreach
         |   foreach_in
-        //|   if_
         |   while_
         |   do_while
         |   (return_ > ';')

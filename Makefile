@@ -94,13 +94,13 @@ release/src/parser/%.cpp.o: src/parser/%.cpp
 
 debug/src/parser_x3/%.cpp.o: src/parser_x3/%.cpp
 	@ mkdir -p debug/src/parser_x3/
-	@ $(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/parser_x3/$*.cpp.d
-	$(CC) $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
+	@ $(CC) -fno-rtti $(CXX_FLAGS) $(DEBUG_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > debug/src/parser_x3/$*.cpp.d
+	$(CC) -fno-rtti $(CXX_FLAGS) $(DEBUG_FLAGS) -o $@ -c $<
 
 release/src/parser_x3/%.cpp.o: src/parser_x3/%.cpp
 	@ mkdir -p release/src/parser_x3/
-	@ $(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/parser_x3/$*.cpp.d
-	$(CC) $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
+	@ $(CC) -fno-rtti $(CXX_FLAGS) $(RELEASE_FLAGS) -MM -MT $@ $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > release/src/parser_x3/$*.cpp.d
+	$(CC) -fno-rtti $(CXX_FLAGS) $(RELEASE_FLAGS) -o $@ -c $<
 
 debug/src/asm/%.cpp.o: src/asm/%.cpp
 	@ mkdir -p debug/src/asm/
