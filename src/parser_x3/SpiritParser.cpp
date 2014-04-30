@@ -17,8 +17,6 @@
 //#define BOOST_SPIRIT_X3_DEBUG
 
 #include <boost/spirit/home/x3.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/spirit/include/classic_position_iterator.hpp>
 
 //#include "GlobalContext.hpp"
 
@@ -26,12 +24,10 @@
 #include "parser_x3/ast.hpp"
 #include "parser_x3/printer.hpp"
 #include "parser_x3/utils.hpp"
+#include "parser_x3/iterator.hpp"
+#include "parser_x3/type_grammar.hpp"
 
 namespace x3 = boost::spirit::x3;
-
-typedef std::string::iterator base_iterator_type;
-typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-//typedef extended_iterator<base_iterator_type> pos_iterator_type;
 
 using namespace eddic;
 
@@ -64,12 +60,6 @@ public:
 
 namespace x3_grammar {
     typedef x3::identity<struct source_file> source_file_id;
-
-    typedef x3::identity<struct type> type_id;
-    typedef x3::identity<struct simple_type> simple_type_id;
-    typedef x3::identity<struct array_type> array_type_id;
-    typedef x3::identity<struct pointer_type> pointer_type_id;
-    typedef x3::identity<struct template_type> template_type_id;
     
     typedef x3::identity<struct integer_literal> integer_literal_id;
     typedef x3::identity<struct integer_suffix_literal> integer_suffix_literal_id;
@@ -103,12 +93,6 @@ namespace x3_grammar {
     typedef x3::identity<struct template_struct> template_struct_id;
 
     x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
-
-    x3::rule<type_id, x3_ast::type> const type("type");
-    x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
-    x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
-    x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
-    x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
     
     x3::rule<integer_literal_id, x3_ast::integer_literal> const integer_literal("integer_literal");
     x3::rule<integer_suffix_literal_id, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
@@ -161,69 +145,10 @@ namespace x3_grammar {
 
     /* Utilities */
 
-    auto const skipper = 
-            x3::ascii::space
-        |   ("/*" >> *(x3::char_ - "*/") >> "*/")
-        |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
-   
-    auto const const_ = 
-            (x3::lit("const") > x3::attr(true))
-        |   x3::attr(false);
+    #include "parser_x3/skipper_inc.hpp"
+    #include "parser_x3/identifier_inc.hpp"
 
     x3::real_parser<double, x3::strict_real_policies<double>> strict_double;
-
-    auto const identifier = 
-                x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
-            |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
-            ;
-
-    /* Types */ 
-
-    auto const type_def =
-            array_type
-        |   pointer_type
-        |   template_type
-        |   simple_type;
-
-    auto const simple_type_def = 
-            const_
-        >>  identifier;
-
-    auto const template_type_def =
-            identifier 
-        >>  '<'
-        >>  type % ','
-        >>  '>';
-    
-    auto const array_type_def =
-            (
-                    template_type
-                |   simple_type
-            )
-        >>  '['
-        >>  ']';
-
-    auto const pointer_type_def =
-           (
-                    template_type
-                |   simple_type
-            )
-        >>  '*';
-
-    using type_parser_type = x3::any_parser<pos_iterator_type, x3_ast::type>;
-
-    type_parser_type type_grammar_create(){
-        return x3::skip(skipper)[x3::grammar(
-            "eddi::type",
-            type = type_def,
-            simple_type = simple_type_def,
-            template_type = template_type_def,
-            array_type = array_type_def,
-            pointer_type = pointer_type_def
-            )];
-    }
-
-    auto const type_grammar = type_grammar_create();
     
     /* Values */ 
 
