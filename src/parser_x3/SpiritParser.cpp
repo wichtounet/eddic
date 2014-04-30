@@ -25,6 +25,7 @@
 #include "parser_x3/SpiritParser.hpp"
 #include "parser_x3/ast.hpp"
 #include "parser_x3/printer.hpp"
+#include "parser_x3/utils.hpp"
 
 namespace x3 = boost::spirit::x3;
 
@@ -57,15 +58,6 @@ public:
     extended_iterator(const extended_iterator& iter) = default;
     extended_iterator& operator=(const extended_iterator& iter) = default;
 };
-
-#define ANNOTATE(Type)\
-template <typename iterator_type, typename Attr, typename Context>\
-inline void on_success(Type, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){\
-    auto& pos = first.get_position();\
-    attr.pos.file = pos.file;\
-    attr.pos.line = pos.line;\
-    attr.pos.column = pos.column;\
-}
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
