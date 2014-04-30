@@ -11,3 +11,4 @@ tests.tmp.log
 release
 debug
 html
+massif.*
