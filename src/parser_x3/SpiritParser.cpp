@@ -1270,9 +1270,7 @@ namespace x3_grammar {
     
     auto const parser = x3::grammar(
         "eddi", 
-
         source_file = source_file_def,
-
         function_parameter = function_parameter_def, 
         template_function_declaration = template_function_declaration_def, 
         global_variable_declaration = global_variable_declaration_def,
