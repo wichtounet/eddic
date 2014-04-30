@@ -1049,7 +1049,7 @@ namespace x3_grammar {
     auto const instruction_def =
             foreach
         |   foreach_in
-        |   if_
+        //|   if_
         |   while_
         |   do_while
         |   (return_ > ';')
