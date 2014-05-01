@@ -8,6 +8,7 @@
 #ifndef SPIRIT_LEXER_POSITION_H
 #define SPIRIT_LEXER_POSITION_H
 
+#include "ast/Position.hpp"
 #include "lexer/SpiritLexer.hpp"
 
 namespace boost { namespace spirit

@@ -313,26 +313,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
              )
         >>  lexer.right_brace;
 
-    struct_ %=
-            local_begin
-        >>  lexer.struct_
-        >>  lexer.identifier
-        >>  -(
-                    lexer.extends
-                >>  type
-             )
-        >>  lexer.left_brace
-        >>  *(
-
-                    member_declaration
-                |   (arrayDeclaration >> lexer.stop)
-                |   constructor
-                |   destructor
-                |   function
-                |   template_function
-             )
-        >>  lexer.right_brace;
-
     auto standard_import = boost::spirit::qi::as<ast::StandardImport>()[(
             local_begin
         >>  lexer.include

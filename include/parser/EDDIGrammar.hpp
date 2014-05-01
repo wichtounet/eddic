@@ -72,7 +72,6 @@ struct EddiGrammar : qi::grammar<lexer::StaticIterator,
     Rule<ast::ElseIf> else_if_;
 
     /* Structures */
-    Rule<ast::Struct>            struct_;
     Rule<ast::struct_definition>    template_struct;
     Rule<ast::MemberDeclaration> member_declaration;
     Rule<ast::Constructor>       constructor;

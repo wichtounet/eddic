@@ -16,18 +16,6 @@ void operator()(ast::SourceFile& program){\
     visit_each(*this, program.Content->blocks);\
 }
 
-/* Structures */
-
-#define AUTO_RECURSE_TEMPLATE_STRUCT()\
-void operator()(ast::struct_definition& struct_){\
-    visit_each(*this, struct_.Content->blocks);\
-}
-
-#define AUTO_RECURSE_STRUCT()\
-void operator()(ast::Struct& struct_){\
-    visit_each(*this, struct_.Content->blocks);\
-}
-
 /* Functions */
 
 #define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
@@ -225,7 +213,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_PREFIX_OPERATION() void operator()(ast::PrefixOperation&){}
 #define AUTO_IGNORE_RETURN() void operator()(ast::Return&){}
 #define AUTO_IGNORE_STANDARD_IMPORT() void operator()(ast::StandardImport&){}
-#define AUTO_IGNORE_STRUCT() void operator()(ast::Struct&){}
 #define AUTO_IGNORE_SWITCH() void operator()(ast::Switch&){}
 #define AUTO_IGNORE_SWITCH_CASE() void operator()(ast::SwitchCase&){}
 #define AUTO_IGNORE_DEFAULT_CASE() void operator()(ast::DefaultCase&){}
@@ -259,7 +246,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
 #define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
-#define AUTO_RETURN_STRUCT(return_type) return_type operator()(ast::Struct& t){return t;}
 #define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
 #define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}

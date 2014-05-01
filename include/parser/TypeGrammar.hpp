@@ -14,7 +14,6 @@
 #include "lexer/SpiritLexer.hpp"
 
 #include "ast/VariableType.hpp"
-#include "ast/Struct.hpp"
 
 namespace qi = boost::spirit::qi;
 
