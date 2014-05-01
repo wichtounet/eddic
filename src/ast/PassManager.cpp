@@ -192,7 +192,9 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
     functions_instantiated.push_back(std::make_pair(context, function));
 }
 
-void ast::PassManager::struct_instantiated(ast::Struct& struct_){
+void ast::PassManager::struct_instantiated(ast::struct_definition& struct_){
+    eddic_assert(struct_.Content->is_template_instantation(), "Must be called with a template instantiation");
+
     LOG<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
 
     inc_depth();

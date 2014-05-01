@@ -23,23 +23,23 @@
 
 using namespace eddic;
 
-void ast::StructureCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+void ast::StructureCollectionPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(indicator){
         return;
     }
 
-    if(struct_.Content->template_types.empty()){
-        struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
-    } else {
+    if(struct_.Content->is_template_instantation()){
         std::vector<std::shared_ptr<const eddic::Type>> template_types;
 
         ast::TypeTransformer transformer(context);
 
-        for(auto& type : struct_.Content->template_types){
+        for(auto& type : struct_.Content->inst_template_types){
             template_types.push_back(visit(transformer, type));
         }
 
         struct_.Content->struct_type = new_template_type(context, struct_.Content->name, template_types);
+    } else {
+        struct_.Content->struct_type = new_type(context, struct_.Content->name, false);
     }
 
     //Annotate functions with the parent struct

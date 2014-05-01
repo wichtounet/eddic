@@ -26,21 +26,21 @@ using namespace eddic;
 namespace {
 
 template<typename T>
-void annotate(T& declaration, ast::Struct& current_struct){
+void annotate(T& declaration, ast::struct_definition& current_struct){
     declaration.Content->struct_type = current_struct.Content->struct_type;
 
     ast::PointerType paramType;
 
-    if(current_struct.Content->template_types.empty()){
-        ast::SimpleType struct_type;
+    if(current_struct.Content->is_template_instantation()){
+        ast::TemplateType struct_type;
         struct_type.type = current_struct.Content->name;
-        struct_type.const_ = false;
+        struct_type.template_types = current_struct.Content->inst_template_types;
 
         paramType.type = struct_type;
     } else {
-        ast::TemplateType struct_type;
+        ast::SimpleType struct_type;
         struct_type.type = current_struct.Content->name;
-        struct_type.template_types = current_struct.Content->template_types;
+        struct_type.const_ = false;
 
         paramType.type = struct_type;
     }
@@ -54,7 +54,7 @@ void annotate(T& declaration, ast::Struct& current_struct){
 
 } //end of anonymous namespace
         
-void ast::MemberFunctionCollectionPass::apply_struct(ast::Struct& struct_, bool){
+void ast::MemberFunctionCollectionPass::apply_struct(ast::struct_definition& struct_, bool){
     current_struct = struct_;
 }
     

@@ -23,7 +23,7 @@
 
 using namespace eddic;
 
-void ast::StructureMemberCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(indicator){
         return;
     }

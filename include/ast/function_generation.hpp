@@ -15,7 +15,7 @@ namespace eddic {
 namespace ast {
 
 struct FunctionGenerationPass : ContextAwarePass {
-    void apply_struct(ast::Struct& struct_, bool indicator) override;
+    void apply_struct(ast::struct_definition& struct_, bool indicator) override;
 };
 
 } //end of ast

@@ -280,18 +280,21 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
 
     template_struct %=
             local_begin
-        >>  lexer.template_
-        >>  qi::omit[lexer.less]
-        >>  +(
-                    lexer.type
-               >>   lexer.identifier
-               >>  *(
-                            lexer.comma
-                       >>   lexer.type
-                       >>   lexer.identifier
-                   )
+        >>  
+            -(
+                lexer.template_
+            >>  qi::omit[lexer.less]
+            >>  +(
+                        lexer.type
+                   >>   lexer.identifier
+                   >>  *(
+                                lexer.comma
+                           >>   lexer.type
+                           >>   lexer.identifier
+                       )
+                )
+            >>  qi::omit[lexer.greater]
             )
-        >>  qi::omit[lexer.greater]
         >>  lexer.struct_
         >>  lexer.identifier
         >>  -(
@@ -353,7 +356,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
                 |   globalArrayDeclaration
                 |   standard_import
                 |   import
-                |   struct_
+                //|   struct_
                 |   template_struct
             );
 }

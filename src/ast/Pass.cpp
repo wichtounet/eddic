@@ -55,7 +55,7 @@ void ast::Pass::apply_function(ast::FunctionDeclaration&){
     //Do nothing by default
 }
 
-void ast::Pass::apply_struct(ast::Struct&, bool){
+void ast::Pass::apply_struct(ast::struct_definition&, bool){
     //Do nothing by default
 }
 

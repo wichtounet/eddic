@@ -13,11 +13,11 @@
 
 #include "ast/function_generation.hpp"
 #include "ast/TypeTransformer.hpp"
-#include "ast/Struct.hpp"
+#include "ast/struct_definition.hpp"
 
 using namespace eddic;
 
-void ast::FunctionGenerationPass::apply_struct(ast::Struct& struct_, bool indicator){
+void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(indicator){
         return;
     }

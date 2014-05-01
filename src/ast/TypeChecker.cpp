@@ -35,7 +35,6 @@ class CheckerVisitor : public boost::static_visitor<> {
         CheckerVisitor(std::shared_ptr<GlobalContext> context) : context(context) {}
 
         AUTO_RECURSE_FUNCTION_DECLARATION()
-        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
         AUTO_RECURSE_FUNCTION_CALLS()
@@ -46,7 +45,6 @@ class CheckerVisitor : public boost::static_visitor<> {
             
         AUTO_IGNORE_MEMBER_DECLARATION()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
-        AUTO_IGNORE_TEMPLATE_STRUCT()
         AUTO_IGNORE_ARRAY_DECLARATION()
         AUTO_IGNORE_FALSE()
         AUTO_IGNORE_TRUE()
@@ -59,6 +57,12 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_STANDARD_IMPORT()
         AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
         AUTO_IGNORE_VARIABLE_VALUE()
+
+        void operator()(ast::struct_definition& struct_){
+            if(!struct_.Content->is_template_declaration()){
+                visit_each(*this, struct_.Content->blocks);
+            }
+        }
         
         void operator()(ast::GlobalVariableDeclaration& declaration){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);

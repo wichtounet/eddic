@@ -28,7 +28,7 @@ class Pass {
     public:
         virtual void apply_program(ast::SourceFile& program, bool indicator);
         virtual void apply_function(ast::FunctionDeclaration& function);
-        virtual void apply_struct(ast::Struct& struct_, bool indicator);
+        virtual void apply_struct(ast::struct_definition& struct_, bool indicator);
         virtual void apply_struct_function(ast::FunctionDeclaration& function);
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);

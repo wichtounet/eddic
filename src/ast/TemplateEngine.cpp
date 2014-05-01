@@ -502,7 +502,6 @@ struct Adaptor : public boost::static_visitor<> {
 
     Adaptor(const std::unordered_map<std::string, ast::Type>& replacements) : replacements(replacements) {}
 
-    AUTO_RECURSE_STRUCT()
     AUTO_RECURSE_DELETE()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_RETURN_VALUES()
@@ -510,6 +509,12 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_PREFIX()
     AUTO_RECURSE_SWITCH()
+
+    void operator()(ast::struct_definition& struct_){
+        if(!struct_.Content->is_template_declaration()){
+            visit_each(*this, struct_.Content->blocks);
+        }
+    }
     
     bool has_to_be_replaced(const std::string& type){
         return replacements.find(type) != replacements.end();
@@ -860,10 +865,10 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     LOG<Info>("Template") << "Instantiate class template " << name << log::endl;
 
                     //Instantiate the struct
-                    ast::Struct declaration;
+                    ast::struct_definition declaration;
                     declaration.Content->name = struct_declaration.Content->name;
                     declaration.Content->position = struct_declaration.Content->position;
-                    declaration.Content->template_types = template_types; 
+                    declaration.Content->inst_template_types = template_types; 
                     declaration.Content->header = struct_declaration.Content->header;
                     declaration.Content->standard = struct_declaration.Content->standard;
 

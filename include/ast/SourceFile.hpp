@@ -23,7 +23,6 @@
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
 #include "ast/Import.hpp"
-#include "ast/Struct.hpp"
 #include "ast/struct_definition.hpp"
 #include "ast/FunctionDeclaration.hpp"
 #include "ast/TemplateFunctionDeclaration.hpp"
@@ -47,8 +46,7 @@ typedef boost::variant<
             GlobalArrayDeclaration,
             StandardImport,
             Import,
-            struct_definition,
-            Struct
+            struct_definition
         > SourceFileBlock;
 
 /*!

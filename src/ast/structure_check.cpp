@@ -20,7 +20,7 @@
 
 using namespace eddic;
 
-void ast::StructureCheckPass::apply_struct(ast::Struct& struct_, bool indicator){
+void ast::StructureCheckPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(indicator){
         return;
     }
