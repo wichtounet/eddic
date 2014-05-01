@@ -535,12 +535,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
     AUTO_RECURSE_ELSE()
     AUTO_RECURSE_FUNCTION_DECLARATION()
-    AUTO_RECURSE_TEMPLATE_STRUCT()
     AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()
     AUTO_RECURSE_CONSTRUCTOR()
     AUTO_RECURSE_DESTRUCTOR()
     AUTO_RECURSE_FOREACH()
-    AUTO_RECURSE_STRUCT()
         
     AUTO_IGNORE_MEMBER_DECLARATION()
     AUTO_IGNORE_FALSE()
@@ -553,6 +551,10 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_INTEGER_SUFFIX()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
+        
+    void operator()(ast::struct_definition& struct_){
+        visit_each(*this, struct_.Content->blocks);
+    }
 
     void operator()(ast::If& if_){
         if_.Content->condition = visit(transformer, if_.Content->condition);
@@ -683,16 +685,20 @@ struct TransformerVisitor : public boost::static_visitor<> {
     ValueTransformer transformer;
 
     AUTO_RECURSE_PROGRAM()
-    AUTO_RECURSE_STRUCT()
     
     AUTO_IGNORE_MEMBER_DECLARATION()
     AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
-    AUTO_IGNORE_TEMPLATE_STRUCT()
     AUTO_IGNORE_DELETE()
     AUTO_IGNORE_IMPORT()
     AUTO_IGNORE_STANDARD_IMPORT()
     AUTO_IGNORE_GLOBAL_ARRAY_DECLARATION()
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
+    
+    void operator()(ast::struct_definition& struct_){
+        if(struct_.Content->is_template_declaration()){
+            visit_each(*this, struct_.Content->blocks);
+        }
+    }
 
     template<typename T>
     void transform(T& instructions){

@@ -1696,35 +1696,37 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
 
             visit_each(compiler, ptr->Content->instructions);
             compiler.issue_destructors(ptr->Content->context);
-        } else if(auto* struct_ptr = boost::get<ast::Struct>(&block)){
-            for(auto& struct_block : struct_ptr->Content->blocks){
-                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
-                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-                    auto& function = program.functions.back();
-            function.standard() = struct_ptr->Content->standard;
+        } else if(auto* struct_ptr = boost::get<ast::struct_definition>(&block)){
+            if(struct_ptr->Content->is_template_declaration()){
+                for(auto& struct_block : struct_ptr->Content->blocks){
+                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
+                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        auto& function = program.functions.back();
+                        function.standard() = struct_ptr->Content->standard;
 
-                    FunctionCompiler compiler(program, function);
+                        FunctionCompiler compiler(program, function);
 
-                    visit_each(compiler, ptr->Content->instructions);
-                    compiler.issue_destructors(ptr->Content->context);
-                } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
-                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-                    auto& function = program.functions.back();
-            function.standard() = struct_ptr->Content->standard;
+                        visit_each(compiler, ptr->Content->instructions);
+                        compiler.issue_destructors(ptr->Content->context);
+                    } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
+                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        auto& function = program.functions.back();
+                        function.standard() = struct_ptr->Content->standard;
 
-                    FunctionCompiler compiler(program, function);
+                        FunctionCompiler compiler(program, function);
 
-                    visit_each(compiler, ptr->Content->instructions);
-                    compiler.issue_destructors(ptr->Content->context);
-                } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
-                    program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
-                    auto& function = program.functions.back();
-            function.standard() = struct_ptr->Content->standard;
+                        visit_each(compiler, ptr->Content->instructions);
+                        compiler.issue_destructors(ptr->Content->context);
+                    } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
+                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        auto& function = program.functions.back();
+                        function.standard() = struct_ptr->Content->standard;
 
-                    FunctionCompiler compiler(program, function);
+                        FunctionCompiler compiler(program, function);
 
-                    visit_each(compiler, ptr->Content->instructions);
-                    compiler.issue_destructors(ptr->Content->context);
+                        visit_each(compiler, ptr->Content->instructions);
+                        compiler.issue_destructors(ptr->Content->context);
+                    }
                 }
             }
         }

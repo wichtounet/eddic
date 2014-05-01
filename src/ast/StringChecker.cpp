@@ -22,7 +22,6 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         StringCheckerVisitor(StringPool& p) : pool(p) {}
 
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_FUNCTION_DECLARATION() 
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
@@ -42,6 +41,12 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_NEW()
         AUTO_RECURSE_DELETE()
+        
+        void operator()(ast::struct_definition& struct_){
+            if(!struct_.Content->is_template_declaration()){
+                visit_each(*this, struct_.Content->blocks);
+            }
+        }
 
         void operator()(ast::Literal& literal){
             literal.label = pool.label(literal.value);

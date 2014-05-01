@@ -5,6 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "assert.hpp"
 #include "logging.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
@@ -38,7 +39,7 @@ using namespace eddic;
 
 namespace {
 
-void apply_pass(std::shared_ptr<ast::Pass> pass, ast::Struct& struct_){
+void apply_pass(std::shared_ptr<ast::Pass> pass, ast::struct_definition& struct_){
     pass->apply_struct(struct_, false);
 
     for(auto& block : struct_.Content->blocks){
@@ -67,8 +68,10 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
             try {
                 if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                     pass->apply_function(*ptr);
-                } else if(auto* ptr = boost::get<ast::Struct>(&block)){
-                    apply_pass(pass, *ptr);
+                } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
+                    if(!ptr->Content->is_template_declaration()){
+                        apply_pass(pass, *ptr);
+                    }
                 }
             } catch (const SemanticalException& e){
                 if(!configuration->option_defined("quiet")){
@@ -174,8 +177,8 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
                 pass->apply_function(function);
             } else {
                 for(auto& block : program.Content->blocks){
-                    if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                        if(struct_type->Content->struct_type->mangle() == context){
+                    if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
+                        if(!struct_type->Content->is_template_declaration() && struct_type->Content->struct_type->mangle() == context){
                             pass->apply_struct(*struct_type, true);
                             pass->apply_struct_function(function);
 
@@ -266,8 +269,8 @@ void ast::PassManager::run_passes(){
                     program.Content->blocks.push_back(function);
                 } else {
                     for(auto& block : program.Content->blocks){
-                        if(auto* struct_type = boost::get<ast::Struct>(&block)){
-                            if(struct_type->Content->struct_type->mangle() == context){
+                        if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
+                            if(struct_type->Content->is_template_declaration() && struct_type->Content->struct_type->mangle() == context){
                                 struct_type->Content->blocks.push_back(function);
                                 break;
                             }

@@ -111,9 +111,14 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
     
     void operator()(ast::struct_definition& declaration) const {
-        std::cout << indent() << "Template Struct";
-        print_template_list(declaration.Content->decl_template_types);
-        std::cout << declaration.Content->name << std::endl; 
+        std::cout << indent() << "Struct Definition";
+        if(declaration.Content->is_template_declaration()){
+            print_template_list(declaration.Content->decl_template_types);
+        }
+        std::cout << " " << declaration.Content->name << std::endl; 
+        level++;
+        print_each_sub(declaration.Content->blocks, "Blocks");
+        level--;
         std::cout << std::endl;
     }
     
@@ -154,22 +159,6 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Destructor& declaration) const {
         std::cout << indent() << "Destructor" << std::endl; 
         print_each_sub(declaration.Content->instructions, "Instructions:");
-    }
-
-    void operator()(ast::Struct& struct_) const {
-        std::cout << indent() << "Structure declaration: " << struct_.Content->name;
-
-        print_template_list(struct_.Content->template_types);
-
-        std::cout << std::endl;
-        
-        level++;
-        
-        print_each_sub(struct_.Content->blocks, "Blocks");
-        
-        level--;
-
-        std::cout << std::endl;
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {

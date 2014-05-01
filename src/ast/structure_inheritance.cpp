@@ -27,7 +27,11 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
         std::size_t structures = 0;
 
         for(auto& block : program.Content->blocks){
-            if(auto* ptr = boost::get<ast::Struct>(&block)){
+            if(auto* ptr = boost::get<ast::struct_definition>(&block)){
+                if(ptr->Content->is_template_declaration()){
+                    continue;
+                }
+
                 ++structures;
 
                 auto type = ptr->Content->struct_type;

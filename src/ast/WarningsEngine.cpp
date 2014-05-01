@@ -35,8 +35,13 @@ typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;
 struct Collector : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_STRUCT()
         AUTO_RECURSE_DESTRUCTOR()
+        
+        void operator()(ast::struct_definition& struct_){
+            if(!struct_.Content->is_template_declaration()){
+                visit_each(*this, struct_.Content->blocks);
+            }
+        }
 
         void operator()(ast::FunctionDeclaration& function){
             for(auto& param : function.Content->parameters){
@@ -138,8 +143,8 @@ struct Inspector : public boost::static_visitor<> {
 
         void check_header(const std::string& file, const ast::Position& position){
             for(auto& block : program.Content->blocks){
-                if(auto* ptr = boost::get<ast::Struct>(&block)){
-                    if(ptr->Content->header == file){
+                if(auto* ptr = boost::get<ast::struct_definition>(&block)){
+                    if(!ptr->Content->is_template_declaration() && ptr->Content->header == file){
                         auto struct_ = context->get_struct(ptr->Content->struct_type->mangle());
 
                         if(struct_->get_references() > 0){
@@ -164,7 +169,11 @@ struct Inspector : public boost::static_visitor<> {
             }
         }
         
-        void operator()(ast::Struct& declaration){
+        void operator()(ast::struct_definition& declaration){
+            if(declaration.Content->is_template_declaration()){
+                return;
+            }
+        
             standard = declaration.Content->standard;
             visit_each(*this, declaration.Content->blocks);
             standard = false;

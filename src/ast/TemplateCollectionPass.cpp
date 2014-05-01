@@ -22,7 +22,6 @@ struct Collector : public boost::static_visitor<> {
     Collector(ast::TemplateEngine& template_engine) : template_engine(template_engine) {}
 
     AUTO_RECURSE_PROGRAM()
-    AUTO_IGNORE_STRUCT()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
         template_engine.add_template_function(parent_struct, declaration.Content->functionName, declaration);
@@ -46,7 +45,7 @@ void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program, bool i
     }
 }
     
-void ast::TemplateCollectionPass::apply_struct(ast::Struct& struct_, bool indicator){
+void ast::TemplateCollectionPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(!indicator){
         Collector collector(*template_engine);
         collector.parent_struct = struct_.Content->struct_type->mangle();
