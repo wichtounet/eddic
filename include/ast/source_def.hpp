@@ -22,8 +22,8 @@ typedef Deferred<ASTSourceFile> SourceFile;
 struct ASTStruct;
 typedef Deferred<ASTStruct> Struct;
 
-struct ASTTemplateStruct;
-typedef Deferred<ASTTemplateStruct> TemplateStruct;
+struct ast_struct_definition;
+typedef Deferred<ast_struct_definition> TemplateStruct;
 
 //Functions
 

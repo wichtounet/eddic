@@ -21,7 +21,7 @@ namespace eddic {
 
 namespace ast {
 
-struct ASTTemplateStruct {
+struct ast_struct_definition {
     bool standard = false;
     std::string header = "";
 
@@ -34,7 +34,7 @@ struct ASTTemplateStruct {
     mutable long references = 0;
 };
 
-typedef Deferred<ASTTemplateStruct> TemplateStruct;
+typedef Deferred<ast_struct_definition> TemplateStruct;
 
 } //end of ast
 
