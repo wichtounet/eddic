@@ -898,7 +898,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
     }
 }
         
-void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration){
+void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::struct_definition& declaration){
     LOG<Trace>("Template") << "Collected class template " << struct_ << log::endl;
 
     class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration)); 

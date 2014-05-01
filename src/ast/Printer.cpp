@@ -110,7 +110,7 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "include <" << import.header << ">" << std::endl;
     }
     
-    void operator()(ast::TemplateStruct& declaration) const {
+    void operator()(ast::struct_definition& declaration) const {
         std::cout << indent() << "Template Struct";
         print_template_list(declaration.Content->template_types);
         std::cout << declaration.Content->name << std::endl; 

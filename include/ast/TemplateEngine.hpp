@@ -31,14 +31,14 @@ struct TemplateEngine {
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> LocalFunctionInstantiationMap;
         typedef std::unordered_map<std::string, LocalFunctionInstantiationMap> FunctionInstantiationMap;
 
-        typedef std::unordered_multimap<std::string, ast::TemplateStruct> ClassTemplateMap;
+        typedef std::unordered_multimap<std::string, ast::struct_definition> ClassTemplateMap;
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> ClassInstantiationMap;
 
         void check_function(ast::FunctionCall& function_call);
         void check_member_function(std::shared_ptr<const eddic::Type> left, ast::Operation& operation, ast::Position& position);
         void check_type(ast::Type& type, ast::Position& position);
 
-        void add_template_struct(const std::string& struct_, ast::TemplateStruct& declaration);
+        void add_template_struct(const std::string& struct_, ast::struct_definition& declaration);
         void add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration);
 
         FunctionTemplateMap function_templates;

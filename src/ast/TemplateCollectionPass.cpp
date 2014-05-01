@@ -28,7 +28,7 @@ struct Collector : public boost::static_visitor<> {
         template_engine.add_template_function(parent_struct, declaration.Content->functionName, declaration);
     }
     
-    void operator()(ast::TemplateStruct& template_struct){
+    void operator()(ast::struct_definition& template_struct){
         template_engine.add_template_struct(template_struct.Content->name, template_struct);
     }
 

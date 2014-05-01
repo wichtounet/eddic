@@ -73,7 +73,7 @@ struct EddiGrammar : qi::grammar<lexer::StaticIterator,
 
     /* Structures */
     Rule<ast::Struct>            struct_;
-    Rule<ast::TemplateStruct>    template_struct;
+    Rule<ast::struct_definition>    template_struct;
     Rule<ast::MemberDeclaration> member_declaration;
     Rule<ast::Constructor>       constructor;
     Rule<ast::Destructor>        destructor;

@@ -23,7 +23,7 @@ struct ASTStruct;
 typedef Deferred<ASTStruct> Struct;
 
 struct ast_struct_definition;
-typedef Deferred<ast_struct_definition> TemplateStruct;
+typedef Deferred<ast_struct_definition> struct_definition;
 
 //Functions
 

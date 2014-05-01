@@ -34,7 +34,7 @@ struct ast_struct_definition {
     mutable long references = 0;
 };
 
-typedef Deferred<ast_struct_definition> TemplateStruct;
+typedef Deferred<ast_struct_definition> struct_definition;
 
 } //end of ast
 
@@ -42,7 +42,7 @@ typedef Deferred<ast_struct_definition> TemplateStruct;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::TemplateStruct,
+    eddic::ast::struct_definition,
     (eddic::ast::Position, Content->position)
     (std::vector<std::string>, Content->template_types)
     (std::string, Content->name)
