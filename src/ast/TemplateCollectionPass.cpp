@@ -29,7 +29,9 @@ struct Collector : public boost::static_visitor<> {
     }
     
     void operator()(ast::struct_definition& template_struct){
-        template_engine.add_template_struct(template_struct.Content->name, template_struct);
+        if(template_struct.Content->is_template_declaration()){
+            template_engine.add_template_struct(template_struct.Content->name, template_struct);
+        }
     }
 
     AUTO_IGNORE_OTHERS()

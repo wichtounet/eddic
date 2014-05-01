@@ -26,12 +26,16 @@ struct ast_struct_definition {
     std::string header = "";
 
     Position position;
-    std::vector<std::string> template_types;
+    std::vector<std::string> decl_template_types;
     std::string name;
     boost::optional<Type> parent_type;
     std::vector<StructBlock> blocks;
 
     mutable long references = 0;
+
+    bool is_template_declaration(){
+        return !decl_template_types.empty();
+    }
 };
 
 typedef Deferred<ast_struct_definition> struct_definition;
@@ -44,7 +48,7 @@ typedef Deferred<ast_struct_definition> struct_definition;
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::struct_definition,
     (eddic::ast::Position, Content->position)
-    (std::vector<std::string>, Content->template_types)
+    (std::vector<std::string>, Content->decl_template_types)
     (std::string, Content->name)
     (boost::optional<eddic::ast::Type>, Content->parent_type)
     (std::vector<eddic::ast::StructBlock>, Content->blocks)

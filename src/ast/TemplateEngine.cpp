@@ -853,7 +853,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
         while(it != class_templates.end()){
             auto struct_declaration = it->second;
-            auto source_types = struct_declaration.Content->template_types;
+            auto source_types = struct_declaration.Content->decl_template_types;
 
             if(source_types.size() == template_types.size()){
                 if(!is_class_instantiated(name, template_types)){
