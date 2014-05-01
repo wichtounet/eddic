@@ -270,7 +270,7 @@ void ast::PassManager::run_passes(){
                 } else {
                     for(auto& block : program.Content->blocks){
                         if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
-                            if(struct_type->Content->is_template_declaration() && struct_type->Content->struct_type->mangle() == context){
+                            if(!struct_type->Content->is_template_declaration() && struct_type->Content->struct_type->mangle() == context){
                                 struct_type->Content->blocks.push_back(function);
                                 break;
                             }

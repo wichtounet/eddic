@@ -695,7 +695,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     AUTO_IGNORE_GLOBAL_VARIABLE_DECLARATION()
     
     void operator()(ast::struct_definition& struct_){
-        if(struct_.Content->is_template_declaration()){
+        if(!struct_.Content->is_template_declaration()){
             visit_each(*this, struct_.Content->blocks);
         }
     }
