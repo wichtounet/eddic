@@ -56,7 +56,10 @@ enum class Operator : unsigned int {
 };
 
 std::string toString(Operator op);
-std::ostream& operator<< (std::ostream& stream, Operator);
+
+inline std::ostream& operator<< (std::ostream& stream, Operator op){
+    return stream << toString(op);
+}
 
 } //end of ast
 
