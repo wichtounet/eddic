@@ -11,7 +11,7 @@ Building
 A compiler supporting the new C++ standard, C++11, is necessary to build the compiler. The compilation is known to be working on CLang 3.4. 
 It has not been tested on Windows. You need Boost 1.52.0 or superior installed on your computer to build this project. 
 
-You juste have to use CMake to build the compiler : 
+You juste have to use CMake to build the compiler::
 
     $ git clone git://github.com/wichtounet/eddic.git
     $ cd eddic
@@ -20,16 +20,16 @@ You juste have to use CMake to build the compiler :
 Usage
 -----
 
-You can compile an EDDI source file using the compiler easily. For example, with one of the provided sample : 
+You can compile an EDDI source file using the compiler easily. For example, with one of the provided sample:: 
 
     $ cd eddic
     $ ./bin/eddic samples/assembly.eddi
 
-That will create a "a.out" file in the current folder. You can then run this file as any other executable on your computer : 
+That will create a "a.out" file in the current folder. You can then run this file as any other executable on your computer::
 
     $ ./a.out
 
-For other options, refer to the help usage of the executable:
+For other options, refer to the help usage of the executable::
 
     $ ./bin/eddic --help
 
