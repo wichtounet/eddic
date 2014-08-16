@@ -17,9 +17,6 @@
 //#define BOOST_SPIRIT_X3_DEBUG
 #define BOOST_SPIRIT_X3_NO_RTTI
 
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/count.hpp>
-
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -934,7 +931,7 @@ namespace x3_grammar {
             x3::ascii::space
         |   ("/*" >> *(x3::char_ - "*/") >> "*/")
         |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
-   
+
     auto const const_ = 
             (x3::lit("const") > x3::attr(true))
         |   x3::attr(false);
@@ -1032,9 +1029,7 @@ namespace x3_grammar {
         variable_value = variable_value_def
     );
 
-    using value_parser_type = x3::any_parser<pos_iterator_type, x3_ast::value>;
-
-    value_parser_type const value_grammar = x3::skip(skipper)[value];
+    auto const value_grammar = x3::skip(skipper)[value];
 
     /* Instructions */
 
@@ -1169,9 +1164,7 @@ namespace x3_grammar {
         else_ = else_def
     );
 
-    using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
-
-    instruction_parser_type const instruction_grammar = x3::skip(skipper)[instruction];
+    auto const instruction_grammar = x3::skip(skipper)[instruction];
 
     /* Base */ 
     
