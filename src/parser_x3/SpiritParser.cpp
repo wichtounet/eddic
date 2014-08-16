@@ -21,6 +21,7 @@
 #include <boost/mpl/count.hpp>
 
 #include <boost/spirit/home/x3.hpp>
+#include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/classic_position_iterator.hpp>
 
@@ -978,18 +979,18 @@ namespace x3_grammar {
             )
         >>  '*';
 
+    BOOST_SPIRIT_DEFINE(
+        type = type_def,
+        simple_type = simple_type_def,
+        template_type = template_type_def,
+        array_type = array_type_def,
+        pointer_type = pointer_type_def
+    );
+
     using type_parser_type = x3::any_parser<pos_iterator_type, x3_ast::type>;
 
-    type_parser_type const type_grammar = 
-        x3::skip(skipper)[x3::grammar(
-            "eddi::type",
-            type = type_def,
-            simple_type = simple_type_def,
-            template_type = template_type_def,
-            array_type = array_type_def,
-            pointer_type = pointer_type_def
-        )];
-    
+    type_parser_type const type_grammar = x3::skip(skipper)[type];
+
     /* Values */ 
 
     auto const integer_literal_def =
@@ -1025,20 +1026,20 @@ namespace x3_grammar {
         |   string_literal
         |   char_literal;
 
+    BOOST_SPIRIT_DEFINE(
+        value = value_def,
+        integer_literal = integer_literal_def,
+        integer_suffix_literal = integer_suffix_literal_def,
+        float_literal = float_literal_def,
+        char_literal = char_literal_def,
+        string_literal = string_literal_def,
+        variable_value = variable_value_def
+    );
+
     using value_parser_type = x3::any_parser<pos_iterator_type, x3_ast::value>;
 
-    value_parser_type const value_grammar = 
-        x3::skip(skipper)[x3::grammar(
-            "eddi::value",
-            value = value_def,
-            integer_literal = integer_literal_def,
-            integer_suffix_literal = integer_suffix_literal_def,
-            float_literal = float_literal_def,
-            char_literal = char_literal_def,
-            string_literal = string_literal_def,
-            variable_value = variable_value_def
-        )];
-    
+    value_parser_type const value_grammar = x3::skip(skipper)[value];
+
     /* Instructions */
 
     auto const instruction_def =
@@ -1155,26 +1156,26 @@ namespace x3_grammar {
         >>  '{'
         >>  *instruction
         >>  '}';
-    
+
+    BOOST_SPIRIT_DEFINE(
+        instruction = instruction_def,
+        foreach = foreach_def,
+        foreach_in = foreach_in_def,
+        while_ = while_def,
+        do_while = do_while_def,
+        variable_declaration = variable_declaration_def,
+        struct_declaration = struct_declaration_def,
+        array_declaration = array_declaration_def,
+        return_ = return_def,
+        delete_ = delete_def,
+        if_ = if_def,
+        else_if = else_if_def,
+        else_ = else_def
+    );
+
     using instruction_parser_type = x3::any_parser<pos_iterator_type, x3_ast::instruction>;
 
-    instruction_parser_type const instruction_grammar =
-        x3::skip(skipper)[x3::grammar(
-            "eddi::instruction",
-            instruction = instruction_def,
-            foreach = foreach_def,
-            foreach_in = foreach_in_def,
-            while_ = while_def,
-            do_while = do_while_def,
-            variable_declaration = variable_declaration_def,
-            struct_declaration = struct_declaration_def,
-            array_declaration = array_declaration_def,
-            return_ = return_def,
-            delete_ = delete_def,
-            if_ = if_def,
-            else_if = else_if_def,
-            else_ = else_def
-        )];
+    instruction_parser_type const instruction_grammar = x3::skip(skipper)[instruction];
 
     /* Base */ 
     
@@ -1259,9 +1260,8 @@ namespace x3_grammar {
         >>  '}';
 
     /* Grammar */
-    
-    auto const parser = x3::grammar(
-        "eddi", 
+
+    BOOST_SPIRIT_DEFINE(
         source_file = source_file_def,
         function_parameter = function_parameter_def, 
         template_function_declaration = template_function_declaration_def, 
@@ -1270,9 +1270,11 @@ namespace x3_grammar {
         standard_import = standard_import_def,
         import = import_def,
         member_declaration = member_declaration_def,
-        array_declaration = array_declaration_def,
+        //array_declaration = array_declaration_def,
         template_struct = template_struct_def
-        );
+    );
+
+    const auto parser = source_file;
 
 } // end of grammar namespace
 
@@ -1324,11 +1326,11 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
             return false;
         }
     } catch(const boost::spirit::x3::expectation_failure<pos_iterator_type>& e){
-        auto& pos = e.first.get_position();
+        const auto& pos = e.where().get_position();
         std::cout <<
                 "parse error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl
-            <<  "expected: " << e.what_ << std::endl
-            <<  "'" << e.first.get_currentline() << "'" << std::endl
+            <<  "expected: " << e.which() << std::endl
+            <<  "'" << e.where().get_currentline() << "'" << std::endl
             <<  std::setw(pos.column) << " " << "^- here" << std::endl;
 
         //TODO The position seems really off
