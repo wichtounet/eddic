@@ -839,7 +839,7 @@ namespace x3_grammar {
     typedef x3::identity<struct array_type> array_type_id;
     typedef x3::identity<struct pointer_type> pointer_type_id;
     typedef x3::identity<struct template_type> template_type_id;
-    
+
     typedef x3::identity<struct integer_literal> integer_literal_id;
     typedef x3::identity<struct integer_suffix_literal> integer_suffix_literal_id;
     typedef x3::identity<struct float_literal> float_literal_id;
@@ -847,7 +847,7 @@ namespace x3_grammar {
     typedef x3::identity<struct char_literal> char_literal_id;
     typedef x3::identity<struct variable_value> variable_value_id;
     typedef x3::identity<struct value> value_id;
-    
+
     typedef x3::identity<struct instruction> instruction_id;
     typedef x3::identity<struct foreach> foreach_id;
     typedef x3::identity<struct foreach_in> foreach_in_id;
@@ -987,10 +987,6 @@ namespace x3_grammar {
         pointer_type = pointer_type_def
     );
 
-    using type_parser_type = x3::any_parser<pos_iterator_type, x3_ast::type>;
-
-    type_parser_type const type_grammar = x3::skip(skipper)[type];
-
     /* Values */ 
 
     auto const integer_literal_def =
@@ -1057,7 +1053,7 @@ namespace x3_grammar {
     auto const foreach_def =
             x3::lit("foreach")
         >>  '('
-        >>  type_grammar
+        >>  type
         >>  identifier
         >>  "from"
         >>  x3::int_
@@ -1071,7 +1067,7 @@ namespace x3_grammar {
     auto const foreach_in_def =
             x3::lit("foreach")
         >>  '('
-        >>  type_grammar
+        >>  type
         >>  identifier
         >>  "in"
         >>  identifier
@@ -1101,19 +1097,19 @@ namespace x3_grammar {
         >>  ';';
     
     auto const variable_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  -('=' >> value_grammar);
     
     auto const struct_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  '('
         >>  -(value_grammar % ',')
         >>  ')';
     
     auto const array_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  '['
         >>  value_grammar
@@ -1208,7 +1204,7 @@ namespace x3_grammar {
                 >>  (x3::lit("type") >> identifier) % ','
                 >>  '>'
             )
-        >>  type_grammar 
+        >>  type
         >>  identifier
         >>  '(' 
         >>  -(function_parameter % ',')
@@ -1218,23 +1214,23 @@ namespace x3_grammar {
         >   '}';
 
     auto const global_variable_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  -('=' >> value_grammar);
     
     auto const global_array_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  '['
         >>  value_grammar
         >>  ']';
 
     auto const function_parameter_def =
-            type_grammar
+            type
         >>  identifier;
 
     auto const member_declaration_def =
-            type_grammar
+            type
         >>  identifier
         >>  ';';
 
@@ -1249,7 +1245,7 @@ namespace x3_grammar {
         >>  identifier
         >>  -(
                     "extends" 
-                >>  type_grammar
+                >>  type
              )
         >>  '{'
         >>  *(
