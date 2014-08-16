@@ -1190,17 +1190,17 @@ namespace x3_grammar {
          );
 
     auto const standard_import_def = 
-            x3::lit("import")
+            x3::lit("include")
         >>  '<' 
         >   *x3::alpha
         >   '>';
-    
+
     auto const import_def = 
-            x3::lit("import")
+            x3::lit("include")
         >>  '"' 
         >   *x3::alpha
         >   '"';
-    
+
     auto const template_function_declaration_def = 
             -(
                     x3::lit("template")
