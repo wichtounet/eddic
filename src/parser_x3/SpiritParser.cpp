@@ -22,8 +22,10 @@
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
+#include <boost/spirit/home/support/iterators/line_pos_iterator.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/spirit/include/classic_position_iterator.hpp>
 
 //#include "GlobalContext.hpp"
 
@@ -31,45 +33,9 @@
 
 namespace x3 = boost::spirit::x3;
 
-typedef std::string::iterator base_iterator_type;
-typedef boost::spirit::classic::position_iterator2<base_iterator_type> pos_iterator_type;
-//typedef extended_iterator<base_iterator_type> pos_iterator_type;
-
 using namespace eddic;
 
-template<typename ForwardIteratorT>
-class extended_iterator : public boost::spirit::classic::position_iterator2<ForwardIteratorT> {
-    std::size_t current_file;
-
-public:
-    extended_iterator() : boost::spirit::classic::position_iterator2<ForwardIteratorT>() {
-        //Nothing
-    }
-
-    template <typename FileNameT>
-    extended_iterator(
-        const ForwardIteratorT& begin, const ForwardIteratorT& end,
-        FileNameT file, std::size_t current_file)
-            : boost::spirit::classic::position_iterator2<ForwardIteratorT>(begin, end, file), current_file(current_file)
-    {}
-
-    std::size_t get_current_file() const {
-        return current_file;
-    }
-
-    extended_iterator(const extended_iterator& iter) = default;
-    extended_iterator& operator=(const extended_iterator& iter) = default;
-};
-
 namespace x3_ast {
-
-struct position {
-    std::string file;               /*!< The source file */
-    std::size_t line = 0;               /*!< The source line number */
-    std::size_t column = 0;             /*!< The source column number */
-};
-
-//*****************************************
 
 struct simple_type;
 struct array_type;
@@ -124,8 +90,7 @@ struct char_literal {
     char value;
 };
 
-struct variable_value {
-    position pos;
+struct variable_value : x3::position_tagged {
     std::string variable_name;
 };
 
@@ -174,28 +139,24 @@ typedef x3::variant<
         array_declaration
     > instruction;
 
-struct while_ {
-    position pos;
+struct while_ : x3::position_tagged {
     value condition;
     std::vector<instruction> instructions;
 };
 
-struct do_while {
-    position pos;
+struct do_while : x3::position_tagged {
     value condition;
     std::vector<instruction> instructions;
 };
 
-struct foreach_in {
-    position pos;
+struct foreach_in : x3::position_tagged {
     type variable_type;
     std::string variable_name;
     std::string array_name;
     std::vector<instruction> instructions;
 };
 
-struct foreach {
-    position pos;
+struct foreach : x3::position_tagged {
     type variable_type;
     std::string variable_name;
     int from;
@@ -203,35 +164,30 @@ struct foreach {
     std::vector<instruction> instructions;
 };
 
-struct variable_declaration {
-    position pos;
+struct variable_declaration : x3::position_tagged {
     type variable_type;
     std::string variable_name;
     boost::optional<x3_ast::value> value;
 };
 
-struct struct_declaration {
-    position pos;
+struct struct_declaration : x3::position_tagged {
     type variable_type;
     std::string variable_name;
     std::vector<value> values;
 };
 
 struct array_declaration {
-    position pos;
     type array_type;
     std::string array_name;
     value size;
 };
 
-struct return_ {
-    position pos;
+struct return_ : x3::position_tagged {
     int fake_;
     value return_value;
 };
 
-struct delete_ {
-    position pos;
+struct delete_ : x3::position_tagged {
     int fake_;
     value value;
 };
@@ -260,8 +216,7 @@ struct function_parameter {
     std::string parameter_name;
 };
 
-struct template_function_declaration {
-    position pos;
+struct template_function_declaration : x3::position_tagged {
     std::vector<std::string> template_types;
     type return_type;
     std::string name;
@@ -269,32 +224,27 @@ struct template_function_declaration {
     std::vector<instruction> instructions;
 };
 
-struct global_variable_declaration {
-    position pos;
+struct global_variable_declaration : x3::position_tagged {
     type variable_type;
     std::string variable_name;
     boost::optional<x3_ast::value> value;
 };
 
-struct global_array_declaration {
-    position pos;
+struct global_array_declaration : x3::position_tagged {
     type array_type;
     std::string array_name;
     value size;
 };
 
-struct standard_import {
-    position pos;
+struct standard_import : x3::position_tagged {
     std::string file;
 };
 
-struct import {
-    position pos;
+struct import : x3::position_tagged {
     std::string file;
 };
 
-struct member_declaration {
-    position pos;
+struct member_declaration : x3::position_tagged {
     type type;
     std::string name;
 };
@@ -305,9 +255,8 @@ typedef x3::variant<
         template_function_declaration
     > struct_block;
 
-struct template_struct {
+struct template_struct : x3::position_tagged {
     std::vector<std::string> template_types;
-    position pos;
     std::string name;
     boost::optional<type> parent_type;
     std::vector<struct_block> blocks;
@@ -326,8 +275,12 @@ struct source_file {
     std::vector<block> blocks;
 };
 
+template<typename EHT>
 struct printer: public boost::static_visitor<>  {
     std::size_t i = 0;
+    const EHT& error_handler;
+
+    printer(const EHT& error_handler) : error_handler(error_handler) {}
 
     std::string indent(){
         std::string v(i, ' ');
@@ -504,6 +457,7 @@ struct printer: public boost::static_visitor<>  {
             i -= 2;
         }
         i -= 2;
+        error_handler(declaration, "Variable declaration (handler)");
     }
     
     void operator()(const struct_declaration& declaration){
@@ -847,19 +801,47 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::struct_block>, blocks)
 )
 
-#define ANNOTATE(Type)\
-template <typename iterator_type, typename Attr, typename Context>\
-inline void on_success(Type, const iterator_type& first, const iterator_type&, Attr& attr, Context const&){\
-    auto& pos = first.get_position();\
-    attr.pos.file = pos.file;\
-    attr.pos.line = pos.line;\
-    attr.pos.column = pos.column;\
-}
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
+/* Error handling */
+
 namespace x3_grammar {
+    template <typename Iterator>
+    using error_handler = x3::error_handler<Iterator>;
+
+    // tag used to get our error handler from the context
+    struct error_handler_tag;
+
+    struct error_handler_base {
+        template <typename Iterator, typename Exception, typename Context>
+        x3::error_handler_result on_error(Iterator& first, Iterator const& last, Exception const& x, Context const& context){
+            std::string message = "Error! Expecting: " + x.which() + " here:";
+            auto& error_handler = x3::get<error_handler_tag>(context).get();
+            error_handler(x.where(), message);
+            return x3::error_handler_result::fail;
+        }
+    };
+
+    struct annotation_base {
+        template <typename T, typename Iterator, typename Context>
+        inline void on_success(Iterator const& first, Iterator const& last, T& ast, Context const& context){
+            auto& error_handler = x3::get<error_handler_tag>(context).get();
+            error_handler.tag(ast, first, last);
+        }
+    }; 
+
+    typedef std::string::iterator base_iterator_type;
+    typedef boost::spirit::line_pos_iterator<base_iterator_type> iterator_type;
+    typedef x3::phrase_parse_context<x3::ascii::space_type>::type phrase_context_type;
+    typedef error_handler<iterator_type> error_handler_type;
+
+    typedef x3::with_context<
+        error_handler_tag
+        , std::reference_wrapper<error_handler_type> const
+        , phrase_context_type>::type
+        context_type;
+
     x3::symbols<char, ast::Operator> multiplicative_op;
     x3::symbols<char, ast::Operator> additive_op;
     x3::symbols<char, ast::Operator> relational_op;
@@ -935,7 +917,7 @@ namespace x3_grammar {
             ;
     }
 
-    typedef x3::identity<struct source_file> source_file_id;
+    struct source_file_class;
 
     typedef x3::identity<struct type> type_id;
     typedef x3::identity<struct simple_type> simple_type_id;
@@ -948,90 +930,96 @@ namespace x3_grammar {
     typedef x3::identity<struct float_literal> float_literal_id;
     typedef x3::identity<struct string_literal> string_literal_id;
     typedef x3::identity<struct char_literal> char_literal_id;
-    typedef x3::identity<struct variable_value> variable_value_id;
     typedef x3::identity<struct new_array> new_array_id;
     typedef x3::identity<struct value> value_id;
+    struct variable_value_class;
 
     typedef x3::identity<struct instruction> instruction_id;
-    typedef x3::identity<struct foreach> foreach_id;
-    typedef x3::identity<struct foreach_in> foreach_in_id;
-    typedef x3::identity<struct while_> while_id;
-    typedef x3::identity<struct do_while> do_while_id;
-    typedef x3::identity<struct variable_declaration> variable_declaration_id;
-    typedef x3::identity<struct struct_declaration> struct_declaration_id;
-    typedef x3::identity<struct array_declaration> array_declaration_id;
-    typedef x3::identity<struct return_> return_id;
-    typedef x3::identity<struct delete_> delete_id;
-    typedef x3::identity<struct if_> if_id;
+    struct foreach_class;
+    struct foreach_in_class;
+    struct while_class;
+    struct do_while_class;
+    struct struct_declaration_class;
+    struct array_declaration_class;
+    struct return_class;
+    struct delete_class;
+    struct if_class;
     typedef x3::identity<struct else_if> else_if_id;
     typedef x3::identity<struct else_> else_id;
 
-    typedef x3::identity<struct function_parameter> function_parameter_id;
-    typedef x3::identity<struct template_function_declaration> template_function_declaration_id;
-    typedef x3::identity<struct global_variable_declaration> global_variable_declaration_id;
-    typedef x3::identity<struct global_array_declaration> global_array_declaration_id;
-    typedef x3::identity<struct import> import_id;
-    typedef x3::identity<struct standard_import> standard_import_id;
-    typedef x3::identity<struct member_declaration> member_declaration_id;
-    typedef x3::identity<struct template_struct> template_struct_id;
+    struct variable_declaration_class;
 
-    x3::rule<source_file_id, x3_ast::source_file> const source_file("source_file");
+    struct function_parameter_class;
+    struct template_function_declaration_class;
+    struct global_variable_declaration_class;
+    struct global_array_declaration_class;
+    struct import_class;
+    struct standard_import_class;
+    struct member_declaration_class;
+    struct template_struct_class;
+
+    x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
 
     x3::rule<type_id, x3_ast::type> const type("type");
     x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
     x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
     x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
     x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
-    
+
     x3::rule<integer_literal_id, x3_ast::integer_literal> const integer_literal("integer_literal");
     x3::rule<integer_suffix_literal_id, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
     x3::rule<float_literal_id, x3_ast::float_literal> const float_literal("float_literal");
     x3::rule<string_literal_id, x3_ast::string_literal> const string_literal("string_literal");
     x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
-    x3::rule<variable_value_id, x3_ast::variable_value> const variable_value("variable_value");
     x3::rule<new_array_id, x3_ast::new_array> const new_array("new_array");
     x3::rule<value_id, x3_ast::value> const value("value");
-    
+    x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
+
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
-    x3::rule<foreach_id, x3_ast::foreach> const foreach("foreach");
-    x3::rule<foreach_in_id, x3_ast::foreach_in> const foreach_in("foreach_in");
-    x3::rule<while_id, x3_ast::while_> const while_("while");
-    x3::rule<do_while_id, x3_ast::do_while> const do_while("do_while");
-    x3::rule<variable_declaration_id, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
-    x3::rule<struct_declaration_id, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
-    x3::rule<array_declaration_id, x3_ast::array_declaration> const array_declaration("array_declaration");
-    x3::rule<return_id, x3_ast::return_> const return_("return");
-    x3::rule<delete_id, x3_ast::delete_> const delete_("delete");
-    x3::rule<if_id, x3_ast::if_> const if_("if");
+    x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
+    x3::rule<foreach_in_class, x3_ast::foreach_in> const foreach_in("foreach_in");
+    x3::rule<while_class, x3_ast::while_> const while_("while");
+    x3::rule<do_while_class, x3_ast::do_while> const do_while("do_while");
+    x3::rule<variable_declaration_class, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
+    x3::rule<struct_declaration_class, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
+    x3::rule<array_declaration_class, x3_ast::array_declaration> const array_declaration("array_declaration");
+    x3::rule<return_class, x3_ast::return_> const return_("return");
+    x3::rule<delete_class, x3_ast::delete_> const delete_("delete");
+    x3::rule<if_class, x3_ast::if_> const if_("if");
     x3::rule<else_if_id, x3_ast::else_if> const else_if("else_if");
     x3::rule<else_id, x3_ast::else_> const else_("else");
 
-    x3::rule<function_parameter_id, x3_ast::function_parameter> const function_parameter("function_parameter");
-    x3::rule<template_function_declaration_id, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
-    x3::rule<global_variable_declaration_id, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
-    x3::rule<global_array_declaration_id, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
-    x3::rule<standard_import_id, x3_ast::standard_import> const standard_import("standard_import");
-    x3::rule<import_id, x3_ast::import> const import("import");
-    x3::rule<member_declaration_id, x3_ast::member_declaration> const member_declaration("member_declaration");
-    x3::rule<template_struct_id, x3_ast::template_struct> const template_struct("template_struct");
+    x3::rule<function_parameter_class, x3_ast::function_parameter> const function_parameter("function_parameter");
+    x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
+    x3::rule<global_variable_declaration_class, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
+    x3::rule<global_array_declaration_class, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
+    x3::rule<standard_import_class, x3_ast::standard_import> const standard_import("standard_import");
+    x3::rule<import_class, x3_ast::import> const import("import");
+    x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
+    x3::rule<template_struct_class, x3_ast::template_struct> const template_struct("template_struct");
+    
+    struct source_file_class : error_handler_base {};
+    struct variable_value_class : annotation_base {};
 
-    ANNOTATE(import_id);
-    ANNOTATE(standard_import_id);
-    ANNOTATE(template_function_declaration_id);
-    ANNOTATE(foreach_id);
-    ANNOTATE(foreach_in_id);
-    ANNOTATE(while_id);
-    ANNOTATE(do_while_id);
-    ANNOTATE(variable_value_id);
-    ANNOTATE(variable_declaration_id);
-    ANNOTATE(struct_declaration_id);
-    ANNOTATE(array_declaration_id);
-    ANNOTATE(return_id);
-    ANNOTATE(delete_id);
-    ANNOTATE(global_variable_declaration_id);
-    ANNOTATE(global_array_declaration_id);
-    ANNOTATE(member_declaration_id);
-    ANNOTATE(template_struct_id);
+    struct foreach_class : annotation_base {};
+    struct foreach_in_class : annotation_base {};
+    struct while_class : annotation_base {};
+    struct do_while_class : annotation_base {};
+    struct struct_declaration_class : annotation_base {};
+    struct array_declaration_class : annotation_base {};
+    struct return_class : annotation_base {};
+    struct delete_class : annotation_base {};
+    struct if_class : annotation_base {};
+    struct variable_declaration_class : annotation_base {};
+
+    struct function_parameter_class : annotation_base {};
+    struct template_function_declaration_class : annotation_base {};
+    struct global_variable_declaration_class : annotation_base {};
+    struct global_array_declaration_class : annotation_base {};
+    struct import_class : annotation_base {};
+    struct standard_import_class : annotation_base {};
+    struct member_declaration_class : annotation_base {};
+    struct template_struct_class : annotation_base {};
 
     /* Utilities */
 
@@ -1408,43 +1396,26 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     file_contents.resize(size);
     in.read(&file_contents[0], size);
 
-    auto& parser = x3_grammar::parser;
-    auto& skipper = x3_grammar::skipper;
+    //auto& parser = x3_grammar::parser;
 
     x3_ast::source_file result;
-    //boost::spirit::x3::ascii::space_type space;
 
-    pos_iterator_type it(file_contents.begin(), file_contents.end(), file);
-    pos_iterator_type end;
+    x3_grammar::iterator_type it(file_contents.begin());
+    x3_grammar::iterator_type end(file_contents.end());
 
-    try {
+    x3_grammar::error_handler_type error_handler(it, end, std::cerr, file);
+
+    auto const parser = x3::with<x3_grammar::error_handler_tag>(std::ref(error_handler))[x3_grammar::parser];
+    auto& skipper = x3_grammar::skipper;
+
         bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
         if(r && it == end){
-            x3_ast::printer printer;
+            x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
             printer(result);
 
             return true;
         } else {
-            auto& pos = it.get_position();
-            std::cout <<
-                "parse error at file " << pos.file <<
-                " line " << pos.line << " column " << pos.column << std::endl <<
-                "'" << it.get_currentline() << "'" << std::endl <<
-                std::setw(pos.column) << " " << "^- here" << std::endl;
-
             return false;
         }
-    } catch(const boost::spirit::x3::expectation_failure<pos_iterator_type>& e){
-        const auto& pos = e.where().get_position();
-        std::cout <<
-                "parse error at file " << pos.file << " line " << pos.line << " column " << pos.column << std::endl
-            <<  "expected: " << e.which() << std::endl
-            <<  "'" << e.where().get_currentline() << "'" << std::endl
-            <<  std::setw(pos.column) << " " << "^- here" << std::endl;
-
-        //TODO The position seems really off
-
-        return false;
-    }
 }

@@ -162,11 +162,11 @@ release/bin/time_parse: release/src/parser/main.cpp.o $(RELEASE_O_FILES_NON_EXEC
 
 debug/bin/x3_test: debug/src/parser_x3/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
+	$(LD) $(LD_FLAGS) -lboost_system $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/x3_test: release/src/parser_x3/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
+	$(LD) $(LD_FLAGS)  -lboost_system $(RELEASE_FLAGS) -o $@ $+
 
 debug/bin/generate_lexer: debug/src/lexer/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
