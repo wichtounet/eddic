@@ -1,5 +1,5 @@
-import "test"
-import <list>
+include "test"
+include <list>
 
 void ____a__243sdf(int c){}
 
@@ -8,7 +8,9 @@ struct asdf {
     c a[99];
 
     void test(){
+        /* Inner comment */
         int a = 77;
+        int b = new c[77 /* Inner most */];
     }
     
     template<type B, type D>

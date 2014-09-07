@@ -17,6 +17,9 @@
 //#define BOOST_SPIRIT_X3_DEBUG
 #define BOOST_SPIRIT_X3_NO_RTTI
 
+#include "ast/Operator.hpp"
+#include "ast/BuiltinOperator.hpp"
+
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -126,14 +129,24 @@ struct variable_value {
     std::string variable_name;
 };
 
+struct new_array;
+
 typedef x3::variant<
             integer_literal,
             integer_suffix_literal,
             float_literal,
             string_literal,
             char_literal,
-            variable_value
+            variable_value,
+            boost::recursive_wrapper<new_array>
         > value;
+
+//TODO Check if x3 has better option than recursive_wrapper
+
+struct new_array {
+    type type;
+    value size;
+};
 
 //*****************************************
 
@@ -587,6 +600,18 @@ struct printer: public boost::static_visitor<>  {
         boost::apply_visitor(*this, type.base_type);
         i -= 2;
     }
+    
+    void operator()(const new_array& value){
+        std::cout << indent() << "new_array: " << std::endl;
+        std::cout << indent() << "type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, value.type);
+        i += 2;
+        std::cout << indent() << "value_size: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, value.size);
+        i += 2;
+    }
 
     void operator()(const integer_literal& integer){
         std::cout << indent() << "integer_literal: " << integer.value << std::endl;
@@ -675,6 +700,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::variable_value, 
     (std::string, variable_name)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::new_array, 
+    (x3_ast::type, type)
+    (x3_ast::value, size)
 )
 
 //***************
@@ -829,6 +860,81 @@ inline void on_success(Type, const iterator_type& first, const iterator_type&, A
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
 
 namespace x3_grammar {
+    x3::symbols<char, ast::Operator> multiplicative_op;
+    x3::symbols<char, ast::Operator> additive_op;
+    x3::symbols<char, ast::Operator> relational_op;
+    x3::symbols<char, ast::Operator> logical_and_op;
+    x3::symbols<char, ast::Operator> logical_or_op;
+    x3::symbols<char, ast::Operator> postfix_op;
+    x3::symbols<char, ast::Operator> prefix_op;
+    x3::symbols<char, ast::Operator> assign_op;
+    x3::symbols<char, ast::Operator> unary_op;
+    x3::symbols<char, ast::BuiltinType> builtin_op;
+
+    /* Match operators into symbols */
+
+    void add_keywords(){
+        unary_op.add
+            ("+", ast::Operator::ADD)
+            ("-", ast::Operator::SUB)
+            ("!", ast::Operator::NOT)
+            ("*", ast::Operator::STAR)
+            ("&", ast::Operator::ADDRESS)
+            ;
+
+        additive_op.add
+            ("+", ast::Operator::ADD)
+            ("-", ast::Operator::SUB)
+            ;
+
+        multiplicative_op.add
+            ("/", ast::Operator::DIV)
+            ("*", ast::Operator::MUL)
+            ("%", ast::Operator::MOD)
+            ;
+
+        relational_op.add
+            (">=", ast::Operator::GREATER_EQUALS)
+            (">", ast::Operator::GREATER)
+            ("<=", ast::Operator::LESS_EQUALS)
+            ("<", ast::Operator::LESS)
+            ("!=", ast::Operator::NOT_EQUALS)
+            ("==", ast::Operator::EQUALS)
+            ;
+
+        logical_and_op.add
+            ("&&", ast::Operator::AND)
+            ;
+
+        logical_or_op.add
+            ("||", ast::Operator::OR)
+            ;
+
+        postfix_op.add
+            ("++", ast::Operator::INC)
+            ("--", ast::Operator::DEC)
+            ;
+
+        prefix_op.add
+            ("++", ast::Operator::INC)
+            ("--", ast::Operator::DEC)
+            ;
+
+        builtin_op.add
+            ("size", ast::BuiltinType::SIZE)
+            ("length", ast::BuiltinType::LENGTH)
+            ;
+
+        assign_op.add
+            ("=",  ast::Operator::ASSIGN)
+            ("+=", ast::Operator::ADD)
+            ("-=", ast::Operator::SUB)
+            ("/=", ast::Operator::DIV)
+            ("*=", ast::Operator::MUL)
+            ("%=", ast::Operator::MOD)
+            ;
+    }
+
     typedef x3::identity<struct source_file> source_file_id;
 
     typedef x3::identity<struct type> type_id;
@@ -843,6 +949,7 @@ namespace x3_grammar {
     typedef x3::identity<struct string_literal> string_literal_id;
     typedef x3::identity<struct char_literal> char_literal_id;
     typedef x3::identity<struct variable_value> variable_value_id;
+    typedef x3::identity<struct new_array> new_array_id;
     typedef x3::identity<struct value> value_id;
 
     typedef x3::identity<struct instruction> instruction_id;
@@ -882,6 +989,7 @@ namespace x3_grammar {
     x3::rule<string_literal_id, x3_ast::string_literal> const string_literal("string_literal");
     x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<variable_value_id, x3_ast::variable_value> const variable_value("variable_value");
+    x3::rule<new_array_id, x3_ast::new_array> const new_array("new_array");
     x3::rule<value_id, x3_ast::value> const value("value");
     
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
@@ -927,18 +1035,18 @@ namespace x3_grammar {
 
     /* Utilities */
 
-    auto const skipper = 
+    auto const skipper =
             x3::ascii::space
         |   ("/*" >> *(x3::char_ - "*/") >> "*/")
         |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
 
-    auto const const_ = 
+    auto const const_ =
             (x3::lit("const") > x3::attr(true))
         |   x3::attr(false);
 
     x3::real_parser<double, x3::strict_real_policies<double>> strict_double;
 
-    auto const identifier = 
+    auto const identifier =
                 x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
             ;
@@ -960,7 +1068,7 @@ namespace x3_grammar {
         >>  '<'
         >>  type % ','
         >>  '>';
-    
+
     auto const array_type_def =
             (
                     template_type
@@ -983,6 +1091,8 @@ namespace x3_grammar {
         array_type = array_type_def,
         pointer_type = pointer_type_def
     );
+
+    //TODO Perhaps need to skip here
 
     /* Values */ 
 
@@ -1010,9 +1120,17 @@ namespace x3_grammar {
 
     auto const variable_value_def =
         identifier;
+    
+    auto const new_array_def =
+            x3::lit("new")
+        >>  type
+        >>  '['
+        >>  value
+        >>  ']';
 
     auto const value_def =
-            variable_value
+            new_array
+        |   variable_value
         |   integer_suffix_literal
         |   float_literal
         |   integer_literal
@@ -1026,7 +1144,8 @@ namespace x3_grammar {
         float_literal = float_literal_def,
         char_literal = char_literal_def,
         string_literal = string_literal_def,
-        variable_value = variable_value_def
+        variable_value = variable_value_def,
+        new_array = new_array_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
@@ -1281,6 +1400,8 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     in.seekg(0, std::istream::beg);
 
     //int current_file = context->new_file(file);
+
+    x3_grammar::add_keywords();
 
     //std::string& file_contents = context->get_file_content(current_file);
     std::string file_contents;
