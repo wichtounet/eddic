@@ -94,8 +94,13 @@ struct variable_value : x3::position_tagged {
     std::string variable_name;
 };
 
+struct true_ { };
+struct false_ { };
+struct null { };
+
 struct new_array;
 struct new_;
+struct builtin_operator;
 
 typedef x3::variant<
             integer_literal,
@@ -104,11 +109,20 @@ typedef x3::variant<
             string_literal,
             char_literal,
             variable_value,
+            true_,
+            false_,
+            null,
             boost::recursive_wrapper<new_array>,
-            boost::recursive_wrapper<new_>
+            boost::recursive_wrapper<new_>,
+            builtin_operator
         > value;
 
 //TODO Check if x3 has better option than recursive_wrapper
+
+struct builtin_operator {
+    ast::BuiltinType type;
+    std::vector<value> values;
+};
 
 struct new_array : x3::position_tagged {
     type type;
@@ -611,6 +625,29 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const variable_value& integer){
         std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
     }
+    
+    void operator()(const false_&){
+        std::cout << indent() << "false: " << std::endl;
+    }
+    
+    void operator()(const true_&){
+        std::cout << indent() << "true: " << std::endl;
+    }
+    
+    void operator()(const null&){
+        std::cout << indent() << "null: " << std::endl;
+    }
+    
+    void operator()(const builtin_operator& value){
+        std::cout << indent() << "builtin_operator: " << std::endl;
+        std::cout << indent() << "op: " << static_cast<unsigned int>(value.type) << std::endl;
+        std::cout << indent() << "values: " << std::endl;
+        i += 2;
+        for(auto& v : value.values){
+            boost::apply_visitor(*this, v);
+        }
+        i += 2;
+    }
 };
 
 } //end of x3_ast namespace
@@ -686,6 +723,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_, 
     (x3_ast::type, type)
+    (std::vector<x3_ast::value>, values)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::builtin_operator, 
+    (ast::BuiltinType, type)
     (std::vector<x3_ast::value>, values)
 )
 
@@ -961,6 +1004,10 @@ namespace x3_grammar {
     struct variable_value_class;
     struct new_array_class;
     struct new_class;
+    struct false_class;
+    struct true_class;
+    struct null_class;
+    struct builtin_operator_class;
 
     typedef x3::identity<struct instruction> instruction_id;
     struct foreach_class;
@@ -1001,8 +1048,12 @@ namespace x3_grammar {
     x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
-    x3::rule<value_id, x3_ast::value> const value("value");
+    x3::rule<false_class, x3_ast::false_> const false_("false");
+    x3::rule<true_class, x3_ast::true_> const true_("true");
+    x3::rule<null_class, x3_ast::null> const null("null");
+    x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
+    x3::rule<value_id, x3_ast::value> const value("value");
 
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
@@ -1042,6 +1093,10 @@ namespace x3_grammar {
     struct variable_declaration_class : annotation_base {};
     struct new_array_class : annotation_base {};
     struct new_class : annotation_base {};
+    struct false_class {};
+    struct true_class {};
+    struct null_class {};
+    struct builtin_operator_class : annotation_base {};
 
     struct function_parameter_class : annotation_base {};
     struct template_function_declaration_class : annotation_base {};
@@ -1154,18 +1209,34 @@ namespace x3_grammar {
         >>  -(value % ',')
         >>  ')';
 
-    auto const value_def =
+    auto const true_def = x3::eps >> x3::lit("true");
+    auto const false_def = x3::eps >> x3::lit("false");
+    auto const null_def = x3::eps >> x3::lit("null");
+
+    auto const builtin_operator_def =
+            builtin_op
+        >>  '('
+        >>  value % ','
+        >>  ')';
+
+    auto const primary_value_def =
             new_array
         |   new_
+        |   true_
+        |   false_
+        |   null
+        |   builtin_operator
         |   variable_value
         |   integer_suffix_literal
         |   float_literal
         |   integer_literal
         |   string_literal
-        |   char_literal;
+        |   char_literal
+        ;
+        //|   '(' >> value >> ')';
 
     BOOST_SPIRIT_DEFINE(
-        value = value_def,
+        value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
         float_literal = float_literal_def,
@@ -1173,7 +1244,11 @@ namespace x3_grammar {
         string_literal = string_literal_def,
         variable_value = variable_value_def,
         new_array = new_array_def,
-        new_ = new_def
+        new_ = new_def,
+        true_ = true_def,
+        false_ = false_def,
+        null = null_def,
+        builtin_operator = builtin_operator_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
