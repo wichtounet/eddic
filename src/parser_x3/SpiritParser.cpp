@@ -95,6 +95,7 @@ struct variable_value : x3::position_tagged {
 };
 
 struct new_array;
+struct new_;
 
 typedef x3::variant<
             integer_literal,
@@ -103,14 +104,20 @@ typedef x3::variant<
             string_literal,
             char_literal,
             variable_value,
-            boost::recursive_wrapper<new_array>
+            boost::recursive_wrapper<new_array>,
+            boost::recursive_wrapper<new_>
         > value;
 
 //TODO Check if x3 has better option than recursive_wrapper
 
-struct new_array {
+struct new_array : x3::position_tagged {
     type type;
     value size;
+};
+
+struct new_ : x3::position_tagged {
+    type type;
+    std::vector<value> values;
 };
 
 //*****************************************
@@ -566,6 +573,20 @@ struct printer: public boost::static_visitor<>  {
         boost::apply_visitor(*this, value.size);
         i += 2;
     }
+    
+    void operator()(const new_& value){
+        std::cout << indent() << "new_: " << std::endl;
+        std::cout << indent() << "type: " << std::endl;
+        i += 2;
+        boost::apply_visitor(*this, value.type);
+        i += 2;
+        std::cout << indent() << "values: " << std::endl;
+        i += 2;
+        for(auto& v : value.values){
+            boost::apply_visitor(*this, v);
+        }
+        i += 2;
+    }
 
     void operator()(const integer_literal& integer){
         std::cout << indent() << "integer_literal: " << integer.value << std::endl;
@@ -660,6 +681,12 @@ BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_array, 
     (x3_ast::type, type)
     (x3_ast::value, size)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::new_, 
+    (x3_ast::type, type)
+    (std::vector<x3_ast::value>, values)
 )
 
 //***************
@@ -930,9 +957,10 @@ namespace x3_grammar {
     typedef x3::identity<struct float_literal> float_literal_id;
     typedef x3::identity<struct string_literal> string_literal_id;
     typedef x3::identity<struct char_literal> char_literal_id;
-    typedef x3::identity<struct new_array> new_array_id;
     typedef x3::identity<struct value> value_id;
     struct variable_value_class;
+    struct new_array_class;
+    struct new_class;
 
     typedef x3::identity<struct instruction> instruction_id;
     struct foreach_class;
@@ -971,7 +999,8 @@ namespace x3_grammar {
     x3::rule<float_literal_id, x3_ast::float_literal> const float_literal("float_literal");
     x3::rule<string_literal_id, x3_ast::string_literal> const string_literal("string_literal");
     x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
-    x3::rule<new_array_id, x3_ast::new_array> const new_array("new_array");
+    x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
+    x3::rule<new_class, x3_ast::new_> const new_("new_");
     x3::rule<value_id, x3_ast::value> const value("value");
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
 
@@ -1011,6 +1040,8 @@ namespace x3_grammar {
     struct delete_class : annotation_base {};
     struct if_class : annotation_base {};
     struct variable_declaration_class : annotation_base {};
+    struct new_array_class : annotation_base {};
+    struct new_class : annotation_base {};
 
     struct function_parameter_class : annotation_base {};
     struct template_function_declaration_class : annotation_base {};
@@ -1115,9 +1146,17 @@ namespace x3_grammar {
         >>  '['
         >>  value
         >>  ']';
+    
+    auto const new_def =
+            x3::lit("new")
+        >>  type
+        >>  '('
+        >>  -(value % ',')
+        >>  ')';
 
     auto const value_def =
             new_array
+        |   new_
         |   variable_value
         |   integer_suffix_literal
         |   float_literal
@@ -1133,7 +1172,8 @@ namespace x3_grammar {
         char_literal = char_literal_def,
         string_literal = string_literal_def,
         variable_value = variable_value_def,
-        new_array = new_array_def
+        new_array = new_array_def,
+        new_ = new_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
