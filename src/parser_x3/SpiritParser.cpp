@@ -101,6 +101,7 @@ struct null { };
 struct new_array;
 struct new_;
 struct builtin_operator;
+struct function_call;
 
 typedef x3::variant<
             integer_literal,
@@ -114,10 +115,17 @@ typedef x3::variant<
             null,
             boost::recursive_wrapper<new_array>,
             boost::recursive_wrapper<new_>,
-            builtin_operator
+            builtin_operator,
+            function_call
         > value;
 
 //TODO Check if x3 has better option than recursive_wrapper
+
+struct function_call : x3::position_tagged {
+    std::string function_name;
+    std::vector<type> template_types;
+    std::vector<value> values;
+};
 
 struct builtin_operator {
     ast::BuiltinType type;
@@ -157,7 +165,8 @@ typedef x3::variant<
         delete_,
         variable_declaration,
         struct_declaration,
-        array_declaration
+        array_declaration,
+        function_call
     > instruction;
 
 struct while_ : x3::position_tagged {
@@ -648,6 +657,23 @@ struct printer: public boost::static_visitor<>  {
         }
         i += 2;
     }
+    
+    void operator()(const function_call& value){
+        std::cout << indent() << "function_call: " << std::endl;
+        std::cout << indent() << "function_name: " << value.function_name << std::endl;
+        std::cout << indent() << "template_types: " << std::endl;
+        i += 2;
+        for(auto& v : value.template_types){
+            boost::apply_visitor(*this, v);
+        }
+        i += 2;
+        std::cout << indent() << "values: " << std::endl;
+        i += 2;
+        for(auto& v : value.values){
+            boost::apply_visitor(*this, v);
+        }
+        i += 2;
+    }
 };
 
 } //end of x3_ast namespace
@@ -729,6 +755,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::builtin_operator, 
     (ast::BuiltinType, type)
+    (std::vector<x3_ast::value>, values)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::function_call, 
+    (std::string, function_name)
+    (std::vector<x3_ast::type>, template_types)
     (std::vector<x3_ast::value>, values)
 )
 
@@ -1008,6 +1041,7 @@ namespace x3_grammar {
     struct true_class;
     struct null_class;
     struct builtin_operator_class;
+    struct function_call_class;
 
     typedef x3::identity<struct instruction> instruction_id;
     struct foreach_class;
@@ -1051,8 +1085,9 @@ namespace x3_grammar {
     x3::rule<false_class, x3_ast::false_> const false_("false");
     x3::rule<true_class, x3_ast::true_> const true_("true");
     x3::rule<null_class, x3_ast::null> const null("null");
-    x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
+    x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
+    x3::rule<function_call_class, x3_ast::function_call> const function_call("function_call");
     x3::rule<value_id, x3_ast::value> const value("value");
 
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
@@ -1097,6 +1132,7 @@ namespace x3_grammar {
     struct true_class {};
     struct null_class {};
     struct builtin_operator_class : annotation_base {};
+    struct function_call_class : annotation_base {};
 
     struct function_parameter_class : annotation_base {};
     struct template_function_declaration_class : annotation_base {};
@@ -1218,6 +1254,17 @@ namespace x3_grammar {
         >>  '('
         >>  value % ','
         >>  ')';
+    
+    auto const function_call_def =
+            identifier
+        >>  -(
+                    '<'
+                >>  type % ','
+                >>  '>'
+            )
+        >>  '('
+        >>  -(value % ',')
+        >>  ')';
 
     auto const primary_value_def =
             new_array
@@ -1226,6 +1273,7 @@ namespace x3_grammar {
         |   false_
         |   null
         |   builtin_operator
+        |   function_call
         |   variable_value
         |   integer_suffix_literal
         |   float_literal
@@ -1248,7 +1296,8 @@ namespace x3_grammar {
         true_ = true_def,
         false_ = false_def,
         null = null_def,
-        builtin_operator = builtin_operator_def
+        builtin_operator = builtin_operator_def,
+        function_call = function_call_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
@@ -1263,6 +1312,7 @@ namespace x3_grammar {
         |   do_while
         |   (return_ > ';')
         |   (delete_ > ';')
+        |   (function_call > ';')
         |   (struct_declaration > ';')
         |   (array_declaration > ';')
         |   (variable_declaration > ';');
