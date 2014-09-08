@@ -167,7 +167,7 @@ typedef x3::variant<
 
 struct operation {
     ast::Operator op;
-    value value;
+    operation_value value;
 };
 
 //typedef boost::tuple<ast::Operator, operation_value> operation;
@@ -1485,7 +1485,6 @@ namespace x3_grammar {
             primary_value
         >>  +(
                 bracket_operation
-                | postfix_op
                          //'['
                      //>>  x3::attr(ast::Operator::BRACKET)
                      //>>  value
@@ -1566,8 +1565,10 @@ namespace x3_grammar {
             assignment
         |   conditional_expression;
 
+    auto const value_def = postfix_expression;
+
     BOOST_SPIRIT_DEFINE(
-        value = postfix_expression_def,
+        value = value_def,
         primary_value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
