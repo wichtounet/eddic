@@ -1567,7 +1567,7 @@ namespace x3_grammar {
         |   conditional_expression;
 
     BOOST_SPIRIT_DEFINE(
-        value = unary_expression_def,
+        value = postfix_expression_def,
         primary_value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
