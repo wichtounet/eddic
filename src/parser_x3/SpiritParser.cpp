@@ -25,6 +25,8 @@
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 #include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
 #include <boost/spirit/home/support/iterators/line_pos_iterator.hpp>
+
+#include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
 //#include "GlobalContext.hpp"
@@ -103,6 +105,12 @@ struct new_;
 struct builtin_operator;
 struct function_call;
 
+struct expression;
+struct prefix_operation;
+struct cast;
+struct ternary;
+struct assignment;
+
 typedef x3::variant<
             integer_literal,
             integer_suffix_literal,
@@ -113,13 +121,16 @@ typedef x3::variant<
             true_,
             false_,
             null,
-            boost::recursive_wrapper<new_array>,
-            boost::recursive_wrapper<new_>,
+            x3::forward_ast<new_array>,
+            x3::forward_ast<new_>,
             builtin_operator,
-            function_call
+            function_call,
+            x3::forward_ast<prefix_operation>,
+            x3::forward_ast<cast>,
+            x3::forward_ast<ternary>,
+            x3::forward_ast<expression>,
+            x3::forward_ast<assignment>
         > value;
-
-//TODO Check if x3 has better option than recursive_wrapper
 
 struct function_call : x3::position_tagged {
     std::string function_name;
@@ -140,6 +151,53 @@ struct new_array : x3::position_tagged {
 struct new_ : x3::position_tagged {
     type type;
     std::vector<value> values;
+};
+
+struct call_operation_value {
+    std::string function_name;
+    std::vector<type> template_types;
+    std::vector<value> values;
+};
+
+typedef x3::variant<
+        std::string,
+        value,
+        call_operation_value
+    >  operation_value;
+
+struct operation {
+    ast::Operator op;
+    value value;
+};
+
+//typedef boost::tuple<ast::Operator, operation_value> operation;
+typedef std::vector<operation> operations;
+
+struct expression : x3::position_tagged {
+    value first;
+    std::vector<operation> operations;
+};
+
+struct prefix_operation : x3::position_tagged {
+    value left_value;
+    ast::Operator op;
+};
+
+struct cast : x3::position_tagged {
+    type type;
+    value value;
+};
+
+struct ternary : x3::position_tagged {
+    value condition;
+    value true_value;
+    value false_value;
+};
+
+struct assignment : x3::position_tagged {
+    value left_value;
+    value value;
+    ast::Operator op = ast::Operator::ASSIGN; //If not specified, it is not a compound operator
 };
 
 //*****************************************
@@ -611,6 +669,26 @@ struct printer: public boost::static_visitor<>  {
         i += 2;
     }
 
+    void operator()(const expression& value){
+        //TODO
+    }
+
+    void operator()(const cast& value){
+        //TODO
+    }
+    
+    void operator()(const prefix_operation& value){
+        //TODO
+    }
+    
+    void operator()(const ternary& value){
+        //TODO
+    }
+
+    void operator()(const assignment& value){
+        //TODO
+    }
+
     void operator()(const integer_literal& integer){
         std::cout << indent() << "integer_literal: " << integer.value << std::endl;
     }
@@ -765,6 +843,51 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::value>, values)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::expression, 
+    (x3_ast::value, first)
+    (std::vector<x3_ast::operation>, operations)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::operation, 
+    (ast::Operator, op)
+    (x3_ast::operation_value, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::call_operation_value, 
+    (std::string, function_name)
+    (std::vector<x3_ast::type>, template_types)
+    (std::vector<x3_ast::value>, values)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::prefix_operation, 
+    (x3_ast::value, left_value)
+    (ast::Operator, op)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::cast, 
+    (x3_ast::type, type)
+    (x3_ast::value, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::ternary, 
+    (x3_ast::value, condition)
+    (x3_ast::value, true_value)
+    (x3_ast::value, false_value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::assignment, 
+    (x3_ast::value, left_value)
+    (ast::Operator, op)
+    (x3_ast::value, value)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -906,6 +1029,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 
 /* Error handling */
 
@@ -1033,7 +1157,8 @@ namespace x3_grammar {
     typedef x3::identity<struct float_literal> float_literal_id;
     typedef x3::identity<struct string_literal> string_literal_id;
     typedef x3::identity<struct char_literal> char_literal_id;
-    typedef x3::identity<struct value> value_id;
+    struct value_class {};
+    struct primary_value_class {};
     struct variable_value_class;
     struct new_array_class;
     struct new_class;
@@ -1042,6 +1167,24 @@ namespace x3_grammar {
     struct null_class;
     struct builtin_operator_class;
     struct function_call_class;
+    struct postfix_expression_class;
+    struct prefix_expression_class;
+    struct unary_expression_class;
+    struct unary_operation_class;
+    struct call_operation_value_class;
+    struct cast_class;
+    struct cast_expression_class;
+    struct conditional_expression_class;
+    struct additive_expression_class;
+    struct multiplicative_expression_class;
+    struct relational_expression_class;
+    struct logical_or_expression_class;
+    struct logical_and_expression_class;
+    struct ternary_class;
+    struct assignment_class;
+    struct assignment_expression_class;
+
+    struct bracket_operation_class;
 
     typedef x3::identity<struct instruction> instruction_id;
     struct foreach_class;
@@ -1088,7 +1231,26 @@ namespace x3_grammar {
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
     x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
     x3::rule<function_call_class, x3_ast::function_call> const function_call("function_call");
-    x3::rule<value_id, x3_ast::value> const value("value");
+    x3::rule<postfix_expression_class, x3_ast::expression> const postfix_expression("postfix_expression");
+    x3::rule<prefix_expression_class, x3_ast::prefix_operation> const prefix_expression("prefix_expression");
+    x3::rule<unary_expression_class, x3_ast::value> const unary_expression("unary_expression");
+    x3::rule<unary_operation_class, x3_ast::prefix_operation> const unary_operation("unary_operation");
+    x3::rule<additive_expression_class, x3_ast::expression> const additive_expression("additive_expression");
+    x3::rule<multiplicative_expression_class, x3_ast::expression> const multiplicative_expression("multiplicative_expression");
+    x3::rule<relational_expression_class, x3_ast::expression> const relational_expression("relational_expression");
+    x3::rule<logical_or_expression_class, x3_ast::expression> const logical_or_expression("logical_or_expression");
+    x3::rule<logical_and_expression_class, x3_ast::expression> const logical_and_expression("logical_and_expression");
+    x3::rule<call_operation_value_class, x3_ast::call_operation_value> const call_operation_value("call_operation_value");
+    x3::rule<cast_class, x3_ast::cast> const cast("cast");
+    x3::rule<assignment_class, x3_ast::assignment> const assignment("assignment");
+    x3::rule<assignment_expression_class, x3_ast::value> const assignment_expression("assignment_expression");
+    x3::rule<ternary_class, x3_ast::ternary> const ternary("ternary");
+    x3::rule<cast_expression_class, x3_ast::value> const cast_expression("cast_expression");
+    x3::rule<conditional_expression_class, x3_ast::value> const conditional_expression("conditional_expression");
+    x3::rule<value_class, x3_ast::value> const value("value");
+    x3::rule<primary_value_class, x3_ast::value> const primary_value("primary_value");
+    
+    x3::rule<bracket_operation_class, x3_ast::operation> const bracket_operation("bracket_operation");
 
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
@@ -1112,7 +1274,7 @@ namespace x3_grammar {
     x3::rule<import_class, x3_ast::import> const import("import");
     x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
     x3::rule<template_struct_class, x3_ast::template_struct> const template_struct("template_struct");
-    
+
     struct source_file_class : error_handler_base {};
     struct variable_value_class : annotation_base {};
 
@@ -1133,6 +1295,24 @@ namespace x3_grammar {
     struct null_class {};
     struct builtin_operator_class : annotation_base {};
     struct function_call_class : annotation_base {};
+    struct postfix_expression_class : annotation_base {};
+    struct prefix_expression_class : annotation_base {};
+    struct unary_expression_class : annotation_base {};
+    struct unary_operation_class : annotation_base {};
+    struct cast_class : annotation_base {};
+    struct ternary_class : annotation_base {};
+    struct cast_expression_class : annotation_base {};
+    struct assignment_class : annotation_base {};
+    struct assignment_expression_class {};
+    struct call_operation_value_class {};
+    struct additive_expression_class : annotation_base {};
+    struct multiplicative_expression_class : annotation_base {};
+    struct relational_expression_class : annotation_base {};
+    struct logical_or_expression_class : annotation_base {};
+    struct logical_and_expression_class : annotation_base {};
+    struct conditional_expression_class {};
+
+    struct bracket_operation_class {};
 
     struct function_parameter_class : annotation_base {};
     struct template_function_declaration_class : annotation_base {};
@@ -1282,9 +1462,113 @@ namespace x3_grammar {
         |   char_literal
         ;
         //|   '(' >> value >> ')';
+    
+    auto const call_operation_value_def =
+            identifier
+        >>  -(
+                    '<'
+                >>  type % ','
+                >>  '>'
+            )
+        >>  '('
+        >>  -(value % ',')
+        >>  ')';
+
+    auto const bracket_operation_def = 
+             '['
+         >>  x3::attr(ast::Operator::BRACKET)
+         >>  value
+         >>  ']'
+         ;
+
+    auto const postfix_expression_def =
+            primary_value
+        >>  +(
+                bracket_operation
+                | postfix_op
+                         //'['
+                     //>>  x3::attr(ast::Operator::BRACKET)
+                     //>>  value
+                     //>>  ']'
+                //|
+                         //'.'
+                     //>>  x3::attr(ast::Operator::CALL)
+                     //>>  call_operation_value
+                //|
+                         //'.'
+                     //>>  x3::attr(ast::Operator::DOT)
+                     //>>  identifier
+                //|
+                         //postfix_op
+            );
+    
+    auto const prefix_expression_def =
+            prefix_op
+        >>  unary_expression;
+
+    auto const unary_operation_def =
+            unary_op
+        >>  cast_expression;
+    
+    auto const unary_expression_def =
+            postfix_expression
+        |   prefix_expression
+        |   unary_operation
+        |   primary_value;
+
+    auto const cast_def =
+            '('
+        >>  type
+        >>  ')'
+        >>  cast_expression;
+    
+    auto const cast_expression_def =
+            cast
+        |   unary_expression;
+
+    auto const multiplicative_expression_def =
+            cast_expression
+        >>  *(multiplicative_op >> cast_expression);
+
+    auto const additive_expression_def =
+            multiplicative_expression
+        >>  *(additive_op >> multiplicative_expression);
+
+    auto const relational_expression_def =
+            additive_expression
+        >>  *(relational_op >> additive_expression);
+    
+    auto const logical_and_expression_def =
+            relational_expression
+        >>  *(logical_and_op >> relational_expression);
+
+    auto const logical_or_expression_def =
+            logical_and_expression
+        >>  *(logical_or_op >> logical_and_expression);
+
+    auto const ternary_def =
+            logical_or_expression
+        >>  '?'
+        >>  conditional_expression
+        >>  ':'
+        >>  conditional_expression;
+
+    auto const conditional_expression_def =
+            ternary
+         |  logical_or_expression;
+
+    auto const assignment_def =
+            unary_expression
+        >>  assign_op
+        >>  assignment_expression;
+
+    auto assignment_expression_def =
+            assignment
+        |   conditional_expression;
 
     BOOST_SPIRIT_DEFINE(
-        value = primary_value_def,
+        value = unary_expression_def,
+        primary_value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
         float_literal = float_literal_def,
@@ -1297,7 +1581,25 @@ namespace x3_grammar {
         false_ = false_def,
         null = null_def,
         builtin_operator = builtin_operator_def,
-        function_call = function_call_def
+        function_call = function_call_def,
+        call_operation_value = call_operation_value_def,
+        postfix_expression = postfix_expression_def,
+        prefix_expression = prefix_expression_def,
+        unary_operation = unary_operation_def,
+        unary_expression = unary_expression_def,
+        cast = cast_def,
+        cast_expression = cast_expression_def,
+        multiplicative_expression = multiplicative_expression_def,
+        additive_expression = additive_expression_def,
+        relational_expression = relational_expression_def, 
+        logical_and_expression = logical_and_expression_def, 
+        logical_or_expression = logical_or_expression_def,
+        ternary = ternary_def,
+        conditional_expression = conditional_expression_def,
+        assignment = assignment_def,
+        assignment_expression = assignment_expression_def,
+
+        bracket_operation = bracket_operation_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
