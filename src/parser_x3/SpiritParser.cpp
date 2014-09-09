@@ -1194,11 +1194,6 @@ namespace x3_grammar {
     struct assignment_class;
     struct assignment_expression_class;
 
-    struct bracket_operation_class;
-    struct dot_operation_class;
-    struct call_operation_class;
-    struct postfix_operation_class;
-
     typedef x3::identity<struct instruction> instruction_id;
     struct foreach_class;
     struct foreach_in_class;
@@ -1263,11 +1258,6 @@ namespace x3_grammar {
     x3::rule<conditional_expression_class, x3_ast::value> const conditional_expression("conditional_expression");
     x3::rule<value_class, x3_ast::value> const value("value");
     x3::rule<primary_value_class, x3_ast::value> const primary_value("primary_value");
-    
-    x3::rule<bracket_operation_class, x3_ast::operation> const bracket_operation("bracket_operation");
-    x3::rule<dot_operation_class, x3_ast::operation> const dot_operation("dot_operation");
-    x3::rule<call_operation_class, x3_ast::operation> const call_operation("call_operation");
-    x3::rule<postfix_operation_class, x3_ast::operation> const postfix_operation("postfix_operation");
 
     x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
     x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
@@ -1329,11 +1319,6 @@ namespace x3_grammar {
     struct logical_or_expression_class : annotation_base {};
     struct logical_and_expression_class : annotation_base {};
     struct conditional_expression_class {};
-
-    struct bracket_operation_class {};
-    struct dot_operation_class {};
-    struct call_operation_class {};
-    struct postfix_operation_class {};
 
     struct function_parameter_class : annotation_base {};
     struct template_function_declaration_class : annotation_base {};
@@ -1495,56 +1480,26 @@ namespace x3_grammar {
         >>  -(value % ',')
         >>  ')';
 
-    auto const bracket_operation_def = 
-             '['
-         >>  x3::attr(ast::Operator::BRACKET)
-         >>  value
-         >>  ']'
-         ;
-
-    auto const call_operation_def = 
-             '.'
-         >>  x3::attr(ast::Operator::CALL)
-         >>  call_operation_value
-         ;
-
     auto const identifier_pack_def = identifier;
-
-    auto const dot_operation_def = 
-             '.'
-         >>  x3::attr(ast::Operator::DOT)
-         >>  identifier_pack
-         ;
-
-    auto const postfix_operation_def = 
-             postfix_op
-         >>  x3::attr(x3_ast::identifier_pack())
-         ;
 
     auto const postfix_expression_def =
             primary_value
         >>  +(
-                    bracket_operation
-                |   call_operation
-                |   dot_operation
-                |   postfix_operation
-                //|   postfix_operation
-
-                //|   postfix_operation
-                         //'['
-                     //>>  x3::attr(ast::Operator::BRACKET)
-                     //>>  value
-                     //>>  ']'
-                //|
-                         //'.'
-                     //>>  x3::attr(ast::Operator::CALL)
-                     //>>  call_operation_value
-                //|
-                         //'.'
-                     //>>  x3::attr(ast::Operator::DOT)
-                     //>>  identifier
-                //|
-                         //postfix_op
+                         '['
+                     >>  x3::attr(ast::Operator::BRACKET)
+                     >>  value
+                     >>  ']'
+                |
+                         '.'
+                     >>  x3::attr(ast::Operator::CALL)
+                     >>  call_operation_value
+                |
+                         '.'
+                     >>  x3::attr(ast::Operator::DOT)
+                     >>  identifier_pack
+                |
+                         postfix_op
+                     >>  x3::attr(x3_ast::identifier_pack())
             );
     
     auto const prefix_expression_def =
@@ -1646,10 +1601,6 @@ namespace x3_grammar {
         assignment = assignment_def,
         assignment_expression = assignment_expression_def,
 
-        bracket_operation = bracket_operation_def,
-        postfix_operation = postfix_operation_def,
-        call_operation = call_operation_def,
-        dot_operation = dot_operation_def,
         identifier_pack = identifier_pack_def
     );
 
