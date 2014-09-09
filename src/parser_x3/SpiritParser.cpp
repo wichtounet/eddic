@@ -1528,23 +1528,23 @@ namespace x3_grammar {
 
     auto const multiplicative_expression_def =
             cast_expression
-        >>  *(multiplicative_op >> cast_expression);
+        >>  *(multiplicative_op > cast_expression);
 
     auto const additive_expression_def =
             multiplicative_expression
-        >>  *(additive_op >> multiplicative_expression);
+        >>  *(additive_op > multiplicative_expression);
 
     auto const relational_expression_def =
             additive_expression
-        >>  *(relational_op >> additive_expression);
+        >>  *(relational_op > additive_expression);
     
     auto const logical_and_expression_def =
             relational_expression
-        >>  *(logical_and_op >> relational_expression);
+        >>  *(logical_and_op > relational_expression);
 
     auto const logical_or_expression_def =
             logical_and_expression
-        >>  *(logical_or_op >> logical_and_expression);
+        >>  *(logical_or_op > logical_and_expression);
 
     auto const ternary_def =
             logical_or_expression
@@ -1566,7 +1566,7 @@ namespace x3_grammar {
             assignment
         |   conditional_expression;
 
-    auto const value_def = postfix_expression;
+    auto const value_def = additive_expression;
 
     BOOST_SPIRIT_DEFINE(
         value = value_def,
