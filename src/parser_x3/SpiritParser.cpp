@@ -159,9 +159,13 @@ struct call_operation_value {
     std::vector<value> values;
 };
 
+struct identifier_pack {
+    std::string identifier;
+};
+
 typedef x3::variant<
         value,
-        std::string,
+        identifier_pack,
         call_operation_value
     >  operation_value;
 
@@ -856,6 +860,11 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::identifier_pack, 
+    (std::string, identifier)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::call_operation_value, 
     (std::string, function_name)
     (std::vector<x3_ast::type>, template_types)
@@ -1172,6 +1181,7 @@ namespace x3_grammar {
     struct unary_expression_class;
     struct unary_operation_class;
     struct call_operation_value_class;
+    struct identifier_pack_class;
     struct cast_class;
     struct cast_expression_class;
     struct conditional_expression_class;
@@ -1244,6 +1254,7 @@ namespace x3_grammar {
     x3::rule<logical_or_expression_class, x3_ast::expression> const logical_or_expression("logical_or_expression");
     x3::rule<logical_and_expression_class, x3_ast::expression> const logical_and_expression("logical_and_expression");
     x3::rule<call_operation_value_class, x3_ast::call_operation_value> const call_operation_value("call_operation_value");
+    x3::rule<identifier_pack_class, x3_ast::identifier_pack> const identifier_pack("identifier_pack");
     x3::rule<cast_class, x3_ast::cast> const cast("cast");
     x3::rule<assignment_class, x3_ast::assignment> const assignment("assignment");
     x3::rule<assignment_expression_class, x3_ast::value> const assignment_expression("assignment_expression");
@@ -1311,6 +1322,7 @@ namespace x3_grammar {
     struct assignment_class : annotation_base {};
     struct assignment_expression_class {};
     struct call_operation_value_class {};
+    struct identifier_pack_class {};
     struct additive_expression_class : annotation_base {};
     struct multiplicative_expression_class : annotation_base {};
     struct relational_expression_class : annotation_base {};
@@ -1496,15 +1508,17 @@ namespace x3_grammar {
          >>  call_operation_value
          ;
 
+    auto const identifier_pack_def = identifier;
+
     auto const dot_operation_def = 
              '.'
          >>  x3::attr(ast::Operator::DOT)
-         >>  identifier
+         >>  identifier_pack
          ;
 
     auto const postfix_operation_def = 
              postfix_op
-         >>  x3::attr(x3_ast::false_())
+         >>  x3::attr(x3_ast::identifier_pack())
          ;
 
     auto const postfix_expression_def =
@@ -1512,6 +1526,8 @@ namespace x3_grammar {
         >>  +(
                     bracket_operation
                 |   call_operation
+                |   dot_operation
+                |   postfix_operation
                 //|   postfix_operation
 
                 //|   postfix_operation
@@ -1633,7 +1649,8 @@ namespace x3_grammar {
         bracket_operation = bracket_operation_def,
         postfix_operation = postfix_operation_def,
         call_operation = call_operation_def,
-        dot_operation = dot_operation_def
+        dot_operation = dot_operation_def,
+        identifier_pack = identifier_pack_def
     );
 
     auto const value_grammar = x3::skip(skipper)[value];
