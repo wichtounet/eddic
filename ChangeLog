@@ -2,6 +2,10 @@ eddic 1.2.4 - in development
 * Replaced CMake by plain old makefiles
 * Fix Loop Invariant Code Motion bugs
 * Improve memory usage
+* Better AST and grammar
+* Faster optimizations
+* Better C++11/C++14 code
+* MIT license
 
 eddic 1.2.3 - 2013.03.08
 
