@@ -873,8 +873,8 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::prefix_operation, 
-    (x3_ast::value, left_value)
     (ast::Operator, op)
+    (x3_ast::value, left_value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
