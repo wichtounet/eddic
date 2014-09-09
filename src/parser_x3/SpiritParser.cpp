@@ -174,9 +174,6 @@ struct operation {
     operation_value value;
 };
 
-//typedef boost::tuple<ast::Operator, operation_value> operation;
-typedef std::vector<operation> operations;
-
 struct expression : x3::position_tagged {
     value first;
     std::vector<operation> operations;
@@ -1590,9 +1587,9 @@ namespace x3_grammar {
         unary_operation = unary_operation_def,
         unary_expression = unary_expression_def,
         cast = cast_def,
-        cast_expression = cast_expression_def,
-        multiplicative_expression = multiplicative_expression_def,
         additive_expression = additive_expression_def,
+        multiplicative_expression = multiplicative_expression_def,
+        cast_expression = cast_expression_def,
         relational_expression = relational_expression_def, 
         logical_and_expression = logical_and_expression_def, 
         logical_or_expression = logical_or_expression_def,
