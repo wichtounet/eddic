@@ -1460,8 +1460,8 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal
+        //TODO|   '(' >> value >> ')'
         ;
-        //|   '(' >> value >> ')';
     
     auto const postfix_expression_def =
             primary_value
