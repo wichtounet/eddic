@@ -1518,10 +1518,8 @@ namespace x3_grammar {
             assignment
         |   conditional_expression;
 
-    auto const value_def = additive_expression;
-
     BOOST_SPIRIT_DEFINE(
-        value = value_def,
+        value = additive_expression,
         primary_value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
