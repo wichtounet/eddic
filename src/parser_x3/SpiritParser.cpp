@@ -1587,9 +1587,9 @@ namespace x3_grammar {
     auto const instruction_def =
             (assignment > ';')
         |   if_
-        |   for_
         |   foreach
         |   foreach_in
+        |   for_
         |   while_
         |   do_while
         |   (return_ > ';')
