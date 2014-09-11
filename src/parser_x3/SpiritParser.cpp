@@ -189,56 +189,12 @@ struct assignment : x3::position_tagged {
 
 //*****************************************
 
+struct for_;
 struct foreach;
 struct while_;
 struct do_while;
 struct foreach_in;
-struct variable_declaration;
-struct struct_declaration;
-struct array_declaration;
-struct return_;
-struct delete_;
 struct if_;
-
-typedef x3::variant<
-        foreach,
-        foreach_in,
-        if_,
-        while_,
-        do_while,
-        return_,
-        delete_,
-        variable_declaration,
-        struct_declaration,
-        array_declaration,
-        function_call, 
-        assignment
-    > instruction;
-
-struct while_ : x3::position_tagged {
-    value condition;
-    std::vector<instruction> instructions;
-};
-
-struct do_while : x3::position_tagged {
-    value condition;
-    std::vector<instruction> instructions;
-};
-
-struct foreach_in : x3::position_tagged {
-    type variable_type;
-    std::string variable_name;
-    std::string array_name;
-    std::vector<instruction> instructions;
-};
-
-struct foreach : x3::position_tagged {
-    type variable_type;
-    std::string variable_name;
-    int from;
-    int to;
-    std::vector<instruction> instructions;
-};
 
 struct variable_declaration : x3::position_tagged {
     type variable_type;
@@ -258,14 +214,64 @@ struct array_declaration {
     value size;
 };
 
+struct delete_ : x3::position_tagged {
+    int fake_;
+    value value;
+};
+
 struct return_ : x3::position_tagged {
     int fake_;
     value return_value;
 };
 
-struct delete_ : x3::position_tagged {
-    int fake_;
-    value value;
+typedef x3::variant<
+        expression,
+        prefix_operation,
+        return_,
+        delete_,
+        variable_declaration,
+        x3::forward_ast<foreach>,
+        x3::forward_ast<foreach_in>,
+        x3::forward_ast<for_>,
+        x3::forward_ast<if_>,
+        x3::forward_ast<while_>,
+        x3::forward_ast<do_while>,
+        struct_declaration,
+        array_declaration,
+        function_call, 
+        assignment
+    > instruction;
+
+struct while_ : x3::position_tagged {
+    value condition;
+    std::vector<instruction> instructions;
+};
+
+struct do_while : x3::position_tagged {
+    value condition;
+    std::vector<instruction> instructions;
+};
+
+struct for_ : x3::position_tagged {
+    boost::optional<instruction> start;
+    boost::optional<value> condition;
+    boost::optional<instruction> repeat;
+    std::vector<instruction> instructions;
+};
+
+struct foreach_in : x3::position_tagged {
+    type variable_type;
+    std::string variable_name;
+    std::string array_name;
+    std::vector<instruction> instructions;
+};
+
+struct foreach : x3::position_tagged {
+    type variable_type;
+    std::string variable_name;
+    int from;
+    int to;
+    std::vector<instruction> instructions;
 };
 
 struct else_if {
@@ -411,6 +417,10 @@ struct printer: public boost::static_visitor<>  {
         }
         i -= 2;
         i -= 2;
+    }
+    
+    void operator()(const for_& for_){
+        //TODO
     }
 
     void operator()(const foreach& foreach){
@@ -872,6 +882,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::for_, 
+    (boost::optional<x3_ast::instruction>, start)
+    (boost::optional<x3_ast::value>, condition)
+    (boost::optional<x3_ast::instruction>, repeat)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach_in, 
     (x3_ast::type, variable_type)
     (std::string, variable_name)
@@ -1164,7 +1182,10 @@ namespace x3_grammar {
     struct assignment_class;
     struct assignment_expression_class;
 
-    typedef x3::identity<struct instruction> instruction_id;
+    struct instruction_class;
+    struct start_instruction_class;
+    struct repeatable_instruction_class;
+    struct for_class;
     struct foreach_class;
     struct foreach_in_class;
     struct while_class;
@@ -1227,7 +1248,10 @@ namespace x3_grammar {
     x3::rule<value_class, x3_ast::value> const value("value");
     x3::rule<primary_value_class, x3_ast::value> const primary_value("primary_value");
 
-    x3::rule<instruction_id, x3_ast::instruction> const instruction("instruction");
+    x3::rule<instruction_class, x3_ast::instruction> const instruction("instruction");
+    x3::rule<start_instruction_class, x3_ast::instruction> const start_instruction("start_instruction");
+    x3::rule<repeatable_instruction_class, x3_ast::instruction> const repeatable_instruction("repeatable_instruction");
+    x3::rule<for_class, x3_ast::for_> const for_("for");
     x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
     x3::rule<foreach_in_class, x3_ast::foreach_in> const foreach_in("foreach_in");
     x3::rule<while_class, x3_ast::while_> const while_("while");
@@ -1253,6 +1277,10 @@ namespace x3_grammar {
     struct source_file_class : error_handler_base {};
     struct variable_value_class : annotation_base {};
 
+    struct instruction_class {};
+    struct start_instruction_class {};
+    struct repeatable_instruction_class {};
+    struct for_class : annotation_base {};
     struct foreach_class : annotation_base {};
     struct foreach_in_class : annotation_base {};
     struct while_class : annotation_base {};
@@ -1559,6 +1587,7 @@ namespace x3_grammar {
     auto const instruction_def =
             (assignment > ';')
         |   if_
+        |   for_
         |   foreach
         |   foreach_in
         |   while_
@@ -1569,6 +1598,28 @@ namespace x3_grammar {
         |   (struct_declaration > ';')
         |   (array_declaration > ';')
         |   (variable_declaration > ';');
+
+    auto start_instruction_def = variable_declaration;
+
+    auto repeatable_instruction_def =
+            assignment
+        //|   swap
+        |   postfix_expression
+        |   prefix_expression //TODO CHECk that
+        |   function_call;
+    
+    auto const for_def =
+            x3::lit("for")
+        >   '('
+        >   -start_instruction
+        >   ';'
+        >   -value
+        >   ';'
+        >   -repeatable_instruction
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
 
     auto const foreach_def =
             x3::lit("foreach")
@@ -1675,6 +1726,9 @@ namespace x3_grammar {
 
     BOOST_SPIRIT_DEFINE(
         instruction = instruction_def,
+        start_instruction = start_instruction_def,
+        repeatable_instruction = repeatable_instruction_def,
+        for_ = for_def,
         foreach = foreach_def,
         foreach_in = foreach_in_def,
         while_ = while_def,
