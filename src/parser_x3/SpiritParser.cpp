@@ -211,7 +211,8 @@ typedef x3::variant<
         variable_declaration,
         struct_declaration,
         array_declaration,
-        function_call
+        function_call, 
+        assignment
     > instruction;
 
 struct while_ : x3::position_tagged {
@@ -1519,7 +1520,7 @@ namespace x3_grammar {
         |   conditional_expression;
 
     BOOST_SPIRIT_DEFINE(
-        value = additive_expression,
+        value = assignment_expression,
         primary_value = primary_value_def,
         integer_literal = integer_literal_def,
         integer_suffix_literal = integer_suffix_literal_def,
@@ -1556,7 +1557,8 @@ namespace x3_grammar {
     /* Instructions */
 
     auto const instruction_def =
-            if_
+            (assignment > ';')
+        |   if_
         |   foreach
         |   foreach_in
         |   while_
