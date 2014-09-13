@@ -104,8 +104,10 @@ struct variable_value : x3::position_tagged {
     std::string variable_name;
 };
 
-struct true_ { };
-struct false_ { };
+struct boolean {
+	bool value;
+};
+
 struct null { };
 
 struct new_array;
@@ -126,8 +128,7 @@ typedef x3::variant<
             string_literal,
             char_literal,
             variable_value,
-            true_,
-            false_,
+            boolean,
             null,
             x3::forward_ast<new_array>,
             x3::forward_ast<new_>,
@@ -761,14 +762,6 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
     }
     
-    void operator()(const false_&){
-        std::cout << indent() << "false: " << std::endl;
-    }
-    
-    void operator()(const true_&){
-        std::cout << indent() << "true: " << std::endl;
-    }
-    
     void operator()(const null&){
         std::cout << indent() << "null: " << std::endl;
     }
@@ -858,6 +851,11 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::string_literal, 
     (std::string, value)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::boolean, 
+    (bool, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1257,8 +1255,7 @@ namespace x3_grammar {
     struct variable_value_class;
     struct new_array_class;
     struct new_class;
-    struct false_class;
-    struct true_class;
+    struct boolean_class;
     struct null_class;
     struct builtin_operator_class;
     struct function_call_class;
@@ -1326,8 +1323,7 @@ namespace x3_grammar {
     x3::rule<char_literal_class, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
-    x3::rule<false_class, x3_ast::false_> const false_("false");
-    x3::rule<true_class, x3_ast::true_> const true_("true");
+    x3::rule<boolean_class, x3_ast::boolean> const boolean("boolean");
     x3::rule<null_class, x3_ast::null> const null("null");
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
     x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
@@ -1405,8 +1401,6 @@ namespace x3_grammar {
     struct variable_declaration_class : annotation_base {};
     struct new_array_class : annotation_base {};
     struct new_class : annotation_base {};
-    struct false_class {};
-    struct true_class {};
     struct null_class {};
     struct builtin_operator_class : annotation_base {};
     struct function_call_class : annotation_base {};
@@ -1537,8 +1531,8 @@ namespace x3_grammar {
         >   -(value % ',')
         >   ')';
 
-    auto const true_def = x3::eps >> x3::lit("true");
-    auto const false_def = x3::eps >> x3::lit("false");
+	auto const boolean_def = x3::bool_;
+
     auto const null_def = x3::eps >> x3::lit("null");
 
     auto const builtin_operator_def =
@@ -1561,8 +1555,7 @@ namespace x3_grammar {
     auto const primary_value_def =
             new_array
         |   new_
-        |   true_
-        |   false_
+        |   boolean
         |   null
         |   builtin_operator
         |   function_call
@@ -1672,8 +1665,7 @@ namespace x3_grammar {
         variable_value = variable_value_def,
         new_array = new_array_def,
         new_ = new_def,
-        true_ = true_def,
-        false_ = false_def,
+        boolean = boolean_def,
         null = null_def,
         builtin_operator = builtin_operator_def,
         function_call = function_call_def,
