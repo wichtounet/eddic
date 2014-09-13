@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "parser_x3/SpiritParser.hpp"
 
@@ -6,19 +7,18 @@
 
 using namespace eddic;
 
-int main(int argc, char** argv){
-    if(argc == 1){
-        std::cout << "Not enough args" << std::endl;
-        return 1;
+int main(int argc, char** args){
+    const std::vector<std::string> argv(args+1, args+argc);
+
+    for (int i=0; i<100; i++){
+        for (auto& file : argv){
+            //auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
+            parser_x3::SpiritParser parser;
+            //ast::SourceFile source;
+
+            parser.parse(file/*, source, context*/);
+        }
     }
-
-    std::string file(argv[1]);
-
-    //auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
-    parser_x3::SpiritParser parser;
-    //ast::SourceFile source;
-
-    parser.parse(file/*, source, context*/);
 
     return 0;
 }

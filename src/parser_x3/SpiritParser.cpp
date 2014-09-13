@@ -1992,8 +1992,8 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
         bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
         if(r && it == end){
-            x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
-            printer(result);
+            //x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
+            //printer(result);
 
             return true;
         } else {

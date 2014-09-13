@@ -12,7 +12,7 @@ LD=clang++
 
 WARNING_FLAGS=-Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic
 CXX_FLAGS=-ftemplate-depth-2048 -use-gold -Iinclude -std=c++1y -stdlib=libc++ $(WARNING_FLAGS) -isystem $(BOOST_PREFIX)/include
-LD_FLAGS=$(CXX_FLAGS) -L $(BOOST_PREFIX)/lib -lboost_program_options
+LD_FLAGS=$(CXX_FLAGS) -L $(BOOST_PREFIX)/lib -lboost_program_options -lboost_system 
 LD_TEST_FLAGS=$(LD_FLAGS) -lboost_unit_test_framework
 
 DEBUG_FLAGS=-g
@@ -162,11 +162,11 @@ release/bin/time_parse: release/src/parser/main.cpp.o $(RELEASE_O_FILES_NON_EXEC
 
 debug/bin/x3_test: debug/src/parser_x3/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_FLAGS) -lboost_system $(DEBUG_FLAGS) -o $@ $+
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/x3_test: release/src/parser_x3/main.cpp.o $(RELEASE_O_FILES_NON_EXEC)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS)  -lboost_system $(RELEASE_FLAGS) -o $@ $+
+	$(LD) $(LD_FLAGS)  $(RELEASE_FLAGS) -o $@ $+
 
 debug/bin/generate_lexer: debug/src/lexer/main.cpp.o $(DEBUG_O_FILES_NON_EXEC)
 	@ mkdir -p debug/bin/
