@@ -1738,10 +1738,10 @@ namespace x3_grammar {
         >>  x3::int_
         >>  "to"
         >>  x3::int_
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
     
     auto const foreach_in_def =
             x3::lit("foreach")
@@ -1750,35 +1750,37 @@ namespace x3_grammar {
         >>  identifier
         >>  "in"
         >>  identifier
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
     
     auto const while_def =
             x3::lit("while")
-        >>  '('
-        >>  value
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
+        >   '('
+        >   value
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}'
+		;
     
     auto const do_while_def =
             x3::lit("do")
-        >>  '{'
-        >>  *instruction
-        >>  '}'
-        >>  "while"
-        >>  '('
-        >>  value
-        >>  ')'
-        >>  ';';
-    
+        >  '{'
+        >  *instruction
+        >  '}'
+        >  "while"
+        >  '('
+        >  value
+        >  ')'
+        >  ';'
+		;
+
     auto const variable_declaration_def =
             type
         >>  identifier
-        >>  -('=' >> value);
+        >>  -('=' > value);
     
     auto const struct_declaration_def =
             type
