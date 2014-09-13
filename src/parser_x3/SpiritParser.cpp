@@ -1530,9 +1530,12 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal
+        |   '(' >> ternary >> ')'
+        |   '(' >> logical_or_expression >> ')'
+        |   '(' >> assignment >> ')'
         //TODO|   '(' >> value >> ')'
         ;
-    
+
     auto const postfix_expression_def =
             primary_value
         >>  +(
