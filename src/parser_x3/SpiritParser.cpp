@@ -1623,7 +1623,7 @@ namespace x3_grammar {
 
     auto repeatable_instruction_def =
             assignment
-        //|   swap
+        |   swap
         |   postfix_expression
         |   prefix_expression //TODO CHECk that
         |   function_call;
