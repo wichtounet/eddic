@@ -1582,7 +1582,7 @@ namespace x3_grammar {
 
     auto const multiplicative_expression_def =
             cast_expression
-        >>  *(multiplicative_op > cast_expression);
+        >>  *(multiplicative_op >> cast_expression); //TODO Not sure why > cannot be used here
 
     auto const additive_expression_def =
             multiplicative_expression
