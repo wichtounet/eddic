@@ -1569,7 +1569,6 @@ namespace x3_grammar {
         |   '(' >> ternary >> ')'
         |   '(' >> logical_or_expression >> ')'
         |   '(' >> assignment >> ')'
-        //TODO|   '(' >> value >> ')'
         ;
 
     auto const postfix_expression_def =
