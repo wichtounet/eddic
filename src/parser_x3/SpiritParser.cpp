@@ -1605,6 +1605,8 @@ namespace x3_grammar {
 
     auto const instruction_def =
             (assignment > ';')
+        |   (postfix_expression > ';')
+        |   (prefix_expression > ';')
         |   if_
         |   foreach
         |   foreach_in
