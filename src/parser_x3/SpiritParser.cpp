@@ -195,6 +195,7 @@ struct while_;
 struct do_while;
 struct foreach_in;
 struct if_;
+struct switch_;
 
 struct variable_declaration : x3::position_tagged {
     type variable_type;
@@ -241,12 +242,29 @@ typedef x3::variant<
         x3::forward_ast<if_>,
         x3::forward_ast<while_>,
         x3::forward_ast<do_while>,
+        x3::forward_ast<switch_>,
         struct_declaration,
         array_declaration,
         function_call, 
         assignment, 
         swap
     > instruction;
+
+struct default_case : x3::position_tagged {
+    int fake_;
+    std::vector<instruction> instructions;
+};
+
+struct switch_case : x3::position_tagged {
+    value value;
+    std::vector<instruction> instructions;
+};
+
+struct switch_ : x3::position_tagged {
+    value value;
+    std::vector<switch_case> cases;
+    boost::optional<default_case> default_case;
+};
 
 struct while_ : x3::position_tagged {
     value condition;
@@ -513,7 +531,12 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
+    void operator()(const switch_& switch_){
+        std::cout << indent() << "switch: " << std::endl;
+        //TODO
+    }
+
     void operator()(const return_& return_){
         std::cout << indent() << "return: " << std::endl;
         i += 2;
@@ -523,7 +546,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const delete_& delete_){
         std::cout << indent() << "delete: " << std::endl;
         i += 2;
@@ -987,6 +1010,25 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::string, rhs)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::default_case, 
+    (int, fake_)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::switch_,
+    (x3_ast::value, value)
+    (std::vector<x3_ast::switch_case>, cases)
+    (boost::optional<x3_ast::default_case>, default_case)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::switch_case, 
+    (x3_ast::value, value)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1214,6 +1256,9 @@ namespace x3_grammar {
     struct if_class;
     typedef x3::identity<struct else_if> else_if_id;
     typedef x3::identity<struct else_> else_id;
+    struct switch_class;
+    struct default_case_class;
+    struct switch_case_class;
 
     struct variable_declaration_class;
 
@@ -1282,6 +1327,9 @@ namespace x3_grammar {
     x3::rule<if_class, x3_ast::if_> const if_("if");
     x3::rule<else_if_id, x3_ast::else_if> const else_if("else_if");
     x3::rule<else_id, x3_ast::else_> const else_("else");
+    x3::rule<switch_class, x3_ast::switch_> const switch_("switch");
+    x3::rule<switch_case_class, x3_ast::switch_case> const switch_case("switch_case");
+    x3::rule<default_case_class, x3_ast::default_case> const default_case("default_case");
 
     x3::rule<function_parameter_class, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
@@ -1309,6 +1357,9 @@ namespace x3_grammar {
     struct delete_class : annotation_base {};
     struct swap_class : annotation_base {};
     struct if_class : annotation_base {};
+    struct switch_class : annotation_base {};
+    struct switch_case_class : annotation_base {};
+    struct default_case_class : annotation_base {};
     struct variable_declaration_class : annotation_base {};
     struct new_array_class : annotation_base {};
     struct new_class : annotation_base {};
@@ -1607,6 +1658,7 @@ namespace x3_grammar {
             (assignment > ';')
         |   (postfix_expression > ';')
         |   (prefix_expression > ';')
+        |   switch_
         |   if_
         |   foreach
         |   foreach_in
@@ -1751,6 +1803,29 @@ namespace x3_grammar {
         >>  "<=>"
         >>  identifier;
 
+    auto const default_case_def =
+            x3::lit("default")
+        >>  x3::attr(1)
+        >>  ':'
+        >>  *instruction;
+
+    auto const switch_case_def =
+            x3::lit("case")
+        >   value
+        >   ':'
+        >   *instruction;
+
+    auto const switch_def =
+           x3::lit("switch")
+        >  '('
+        >  value
+        >  ')'
+        >  '{'
+        >  *switch_case
+        >  -default_case
+        >  '}'
+            ;
+
     BOOST_SPIRIT_DEFINE(
         instruction = instruction_def,
         start_instruction = start_instruction_def,
@@ -1768,7 +1843,10 @@ namespace x3_grammar {
         if_ = if_def,
         else_if = else_if_def,
         else_ = else_def,
-        swap = swap_def
+        swap = swap_def,
+        switch_ = switch_def,
+        switch_case = switch_case_def,
+        default_case = default_case_def
     );
 
     auto const instruction_grammar = x3::skip(skipper)[instruction];
