@@ -1488,8 +1488,6 @@ namespace x3_grammar {
         pointer_type = pointer_type_def
     );
 
-    //TODO Perhaps need to skip here
-
     /* Values */ 
 
     auto const integer_literal_def =
