@@ -5,6 +5,14 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/**
+ * Some hacks are necessary to make the grammar works
+ *
+ * 1. Some structures have a fake_ field. This field is only here to make single-element structures works :(
+ * 2. start_instruction rule is only here to make type deduction works :(
+ * 3. The ugly end of primary_value rule (the 3 parts with ()) is only here to overcome limitations in type deduction
+ */
+
 #include <iomanip>
 #include <istream>
 #include <sstream>
@@ -216,13 +224,13 @@ struct array_declaration {
 };
 
 struct delete_ : x3::position_tagged {
-    int fake_;
     value value;
+	x3::unused_type fake_;
 };
 
 struct return_ : x3::position_tagged {
-    int fake_;
     value return_value;
+	x3::unused_type fake_;
 };
 
 struct swap : x3::position_tagged {
@@ -251,8 +259,8 @@ typedef x3::variant<
     > instruction;
 
 struct default_case : x3::position_tagged {
-    int fake_;
     std::vector<instruction> instructions;
+	x3::unused_type fake_;
 };
 
 struct switch_case : x3::position_tagged {
@@ -304,8 +312,8 @@ struct else_if {
 };
 
 struct else_ {
-    int fake_;
     std::vector<instruction> instructions;
+	x3::unused_type fake_;
 };
 
 struct if_ {
@@ -361,9 +369,9 @@ struct constructor : x3::position_tagged {
 };
 
 struct destructor { 
-    int fake_;
     std::vector<function_parameter> parameters;
     std::vector<instruction> instructions;
+	x3::unused_type fake_;
 };
 
 typedef x3::variant<
@@ -987,14 +995,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::return_, 
-    (int, fake_)
     (x3_ast::value, return_value)
+    (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::delete_, 
-    (int, fake_)
     (x3_ast::value, value)
+    (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1005,8 +1013,8 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::else_, 
-    (int, fake_)
     (std::vector<x3_ast::instruction>, instructions)
+    (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1025,8 +1033,8 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::default_case, 
-    (int, fake_)
     (std::vector<x3_ast::instruction>, instructions)
+    (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1091,8 +1099,8 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::destructor, 
-    (int, fake_)
     (std::vector<x3_ast::instruction>, instructions)
+    (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1798,13 +1806,13 @@ namespace x3_grammar {
 
     auto const return_def =
             x3::lit("return")
-        >   x3::attr(42)
-        >   value;
+        >   value
+        >   x3::attr(42);
 
     auto const delete_def =
             x3::lit("delete")
-        >   x3::attr(42)
-        >   value;
+        >   value
+        >   x3::attr(42);
 
     auto const if_def =
             x3::lit("if")
@@ -1829,10 +1837,10 @@ namespace x3_grammar {
     
     auto const else_def =
             x3::lit("else")
-        >   x3::attr(1)
         >   '{'
         >   *instruction
-        >   '}';
+        >   '}'
+        >   x3::attr(42);
 
     auto const swap_def =
             identifier
@@ -1841,9 +1849,9 @@ namespace x3_grammar {
 
     auto const default_case_def =
             x3::lit("default")
-        >   x3::attr(1)
         >   ':'
-        >   *instruction;
+        >   *instruction
+        >   x3::attr(42);
 
     auto const switch_case_def =
             x3::lit("case")
@@ -1958,12 +1966,12 @@ namespace x3_grammar {
     auto const destructor_def =
             '~'
         >   x3::lit("this")
-        >   x3::attr(1)
         >   '('
         >   ')'
         >   '{'
         >   *instruction
-        >   '}';
+        >   '}'
+        >   x3::attr(1);
 
     auto template_struct_def =
             -(  
