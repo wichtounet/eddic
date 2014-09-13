@@ -1564,9 +1564,9 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal
-        |   '(' >> ternary >> ')'
-        |   '(' >> logical_or_expression >> ')'
-        |   '(' >> assignment >> ')'
+        |   '(' >> assignment > ')'
+        |   '(' >> ternary > ')'
+        |   '(' >> logical_or_expression > ')'
         ;
 
     auto const postfix_expression_def =
@@ -1763,7 +1763,7 @@ namespace x3_grammar {
         >   '{'
         >   *instruction
         >   '}'
-		;
+        ;
     
     auto const do_while_def =
             x3::lit("do")
@@ -1775,7 +1775,7 @@ namespace x3_grammar {
         >  value
         >  ')'
         >  ';'
-		;
+        ;
 
     auto const variable_declaration_def =
             type
@@ -1798,13 +1798,13 @@ namespace x3_grammar {
 
     auto const return_def =
             x3::lit("return")
-        >>  x3::attr(1)
-        >>  value;
+        >   x3::attr(42)
+        >   value;
 
     auto const delete_def =
             x3::lit("delete")
-        >>  x3::attr(1)
-        >>  value;
+        >   x3::attr(42)
+        >   value;
 
     auto const if_def =
             x3::lit("if")
@@ -1820,30 +1820,30 @@ namespace x3_grammar {
     auto const else_if_def =
             x3::lit("else")
         >>  x3::lit("if")
-        >>  '('
-        >>  value
-        >>  ')'
-        >>  '{'
-        >>  *instruction
-        >>  '}';
+        >   '('
+        >   value
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
     
     auto const else_def =
             x3::lit("else")
-        >>  x3::attr(1)
-        >>  '{'
-        >>  *instruction
-        >>  '}';
+        >   x3::attr(1)
+        >   '{'
+        >   *instruction
+        >   '}';
 
     auto const swap_def =
             identifier
         >>  "<=>"
-        >>  identifier;
+        >   identifier;
 
     auto const default_case_def =
             x3::lit("default")
-        >>  x3::attr(1)
-        >>  ':'
-        >>  *instruction;
+        >   x3::attr(1)
+        >   ':'
+        >   *instruction;
 
     auto const switch_case_def =
             x3::lit("case")
@@ -1976,12 +1976,12 @@ namespace x3_grammar {
         >>  identifier
         >>  -(
                     "extends" 
-                >>  type
+                >   type
              )
         >>  '{'
         >>  *(
                     member_declaration
-                |   (array_declaration >> ';')
+                |   (array_declaration > ';')
                 |   constructor
                 |   destructor
                 |   template_function_declaration
