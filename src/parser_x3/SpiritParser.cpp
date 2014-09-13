@@ -355,10 +355,23 @@ struct member_declaration : x3::position_tagged {
     std::string name;
 };
 
+struct constructor : x3::position_tagged { 
+    std::vector<function_parameter> parameters;
+    std::vector<instruction> instructions;
+};
+
+struct destructor { 
+    int fake_;
+    std::vector<function_parameter> parameters;
+    std::vector<instruction> instructions;
+};
+
 typedef x3::variant<
         member_declaration,
         array_declaration,
-        template_function_declaration
+        template_function_declaration,
+        constructor, 
+        destructor
     > struct_block;
 
 struct template_struct : x3::position_tagged {
@@ -1077,6 +1090,18 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::destructor, 
+    (int, fake_)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+    x3_ast::constructor, 
+    (std::vector<x3_ast::function_parameter>, parameters)
+    (std::vector<x3_ast::instruction>, instructions)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_struct,
     (std::vector<std::string>, template_types)
     (std::string, name)
@@ -1269,6 +1294,8 @@ namespace x3_grammar {
     struct import_class;
     struct standard_import_class;
     struct member_declaration_class;
+    struct constructor_class;
+    struct destructor_class;
     struct template_struct_class;
 
     x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
@@ -1338,6 +1365,8 @@ namespace x3_grammar {
     x3::rule<standard_import_class, x3_ast::standard_import> const standard_import("standard_import");
     x3::rule<import_class, x3_ast::import> const import("import");
     x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
+    x3::rule<constructor_class, x3_ast::constructor> const constructor("constructor");
+    x3::rule<destructor_class, x3_ast::destructor> const destructor("destructor");
     x3::rule<template_struct_class, x3_ast::template_struct> const template_struct("template_struct");
 
     struct source_file_class : error_handler_base {};
@@ -1391,6 +1420,8 @@ namespace x3_grammar {
     struct import_class : annotation_base {};
     struct standard_import_class : annotation_base {};
     struct member_declaration_class : annotation_base {};
+    struct cosntructor_class : annotation_base {};
+    struct destructor_class : annotation_base {};
     struct template_struct_class : annotation_base {};
 
     /* Utilities */
@@ -1914,6 +1945,25 @@ namespace x3_grammar {
             type
         >>  identifier
         >>  ';';
+    
+    auto const constructor_def =
+            x3::lit("this")
+        >   '('
+        >   -(function_parameter % ',')
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
+
+    auto const destructor_def =
+            '~'
+        >   x3::lit("this")
+        >   x3::attr(1)
+        >   '('
+        >   ')'
+        >   '{'
+        >   *instruction
+        >   '}';
 
     auto template_struct_def =
             -(  
@@ -1932,6 +1982,8 @@ namespace x3_grammar {
         >>  *(
                     member_declaration
                 |   (array_declaration >> ';')
+                |   constructor
+                |   destructor
                 |   template_function_declaration
              )
         >>  '}';
@@ -1947,7 +1999,8 @@ namespace x3_grammar {
         standard_import = standard_import_def,
         import = import_def,
         member_declaration = member_declaration_def,
-        //array_declaration = array_declaration_def,
+        constructor = constructor_def,
+        destructor = destructor_def,
         template_struct = template_struct_def
     );
 
