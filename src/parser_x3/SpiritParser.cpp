@@ -1165,6 +1165,11 @@ namespace x3_grammar {
     /* Match operators into symbols */
 
     void add_keywords(){
+        static bool once = false; 
+        if(once){
+            return;
+        }
+        once = true;
         unary_op.add
             ("+", ast::Operator::ADD)
             ("-", ast::Operator::SUB)
