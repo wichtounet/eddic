@@ -1503,27 +1503,27 @@ namespace x3_grammar {
 
     auto const float_literal_def =
         strict_double;
-    
+
     auto const char_literal_def =
             x3::lit('\'')
         >>  x3::char_
-        >>  '\'';
-    
+        >   '\'';
+
     auto const string_literal_def =
             x3::lit('"') 
         >>  x3::no_skip[*(x3::char_ - '"')] 
-        >>  '"';
+        >   '"';
 
     auto const variable_value_def =
         identifier;
-    
+
     auto const new_array_def =
             x3::lit("new")
         >>  type
         >>  '['
         >   value
         >   ']';
-    
+
     auto const new_def =
             x3::lit("new")
         >>  type
