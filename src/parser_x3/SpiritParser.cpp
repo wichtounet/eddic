@@ -1505,12 +1505,12 @@ namespace x3_grammar {
     auto const char_literal_def =
             x3::lit('\'')
         >>  x3::char_
-        >>  x3::lit('\'');
+        >>  '\'';
     
     auto const string_literal_def =
             x3::lit('"') 
         >>  x3::no_skip[*(x3::char_ - '"')] 
-        >>  x3::lit('"');
+        >>  '"';
 
     auto const variable_value_def =
         identifier;
@@ -1586,9 +1586,9 @@ namespace x3_grammar {
                      >>  variable_value
                 |
                          postfix_op
-                     >>  x3::attr(x3_ast::variable_value())
+                     >   x3::attr(x3_ast::variable_value())
             );
-    
+
     auto const prefix_expression_def =
             prefix_op
         >>  unary_expression;
@@ -1596,7 +1596,7 @@ namespace x3_grammar {
     auto const unary_operation_def =
             unary_op
         >>  cast_expression;
-    
+
     auto const unary_expression_def =
             postfix_expression
         |   prefix_expression
@@ -1608,7 +1608,7 @@ namespace x3_grammar {
         >>  type
         >>  ')'
         >>  cast_expression;
-    
+
     auto const cast_expression_def =
             cast
         |   unary_expression;
