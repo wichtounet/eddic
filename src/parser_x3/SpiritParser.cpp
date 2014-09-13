@@ -1233,17 +1233,17 @@ namespace x3_grammar {
 
     struct source_file_class;
 
-    typedef x3::identity<struct type> type_id;
-    typedef x3::identity<struct simple_type> simple_type_id;
-    typedef x3::identity<struct array_type> array_type_id;
-    typedef x3::identity<struct pointer_type> pointer_type_id;
-    typedef x3::identity<struct template_type> template_type_id;
+    struct type_class {};
+    struct simple_type_class {};
+    struct array_type_class {};
+    struct pointer_type_class {};
+    struct template_type_class {};
 
-    typedef x3::identity<struct integer_literal> integer_literal_id;
-    typedef x3::identity<struct integer_suffix_literal> integer_suffix_literal_id;
-    typedef x3::identity<struct float_literal> float_literal_id;
-    typedef x3::identity<struct string_literal> string_literal_id;
-    typedef x3::identity<struct char_literal> char_literal_id;
+    struct integer_literal_class;
+    struct integer_suffix_literal_class;
+    struct float_literal_class;
+    struct string_literal_class;
+    struct char_literal_class;
     struct value_class {};
     struct primary_value_class {};
     struct variable_value_class;
@@ -1284,8 +1284,8 @@ namespace x3_grammar {
     struct delete_class;
     struct swap_class;
     struct if_class;
-    typedef x3::identity<struct else_if> else_if_id;
-    typedef x3::identity<struct else_> else_id;
+    struct else_if_class {};
+    struct else_class {};
     struct switch_class;
     struct default_case_class;
     struct switch_case_class;
@@ -1305,17 +1305,17 @@ namespace x3_grammar {
 
     x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
 
-    x3::rule<type_id, x3_ast::type> const type("type");
-    x3::rule<simple_type_id, x3_ast::simple_type> const simple_type("simple_type");
-    x3::rule<array_type_id, x3_ast::array_type> const array_type("array_type");
-    x3::rule<pointer_type_id, x3_ast::pointer_type> const pointer_type("pointer_type");
-    x3::rule<template_type_id, x3_ast::template_type> const template_type("template_type");
+    x3::rule<type_class, x3_ast::type> const type("type");
+    x3::rule<simple_type_class, x3_ast::simple_type> const simple_type("simple_type");
+    x3::rule<array_type_class, x3_ast::array_type> const array_type("array_type");
+    x3::rule<pointer_type_class, x3_ast::pointer_type> const pointer_type("pointer_type");
+    x3::rule<template_type_class, x3_ast::template_type> const template_type("template_type");
 
-    x3::rule<integer_literal_id, x3_ast::integer_literal> const integer_literal("integer_literal");
-    x3::rule<integer_suffix_literal_id, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
-    x3::rule<float_literal_id, x3_ast::float_literal> const float_literal("float_literal");
-    x3::rule<string_literal_id, x3_ast::string_literal> const string_literal("string_literal");
-    x3::rule<char_literal_id, x3_ast::char_literal> const char_literal("char_literal");
+    x3::rule<integer_literal_class, x3_ast::integer_literal> const integer_literal("integer_literal");
+    x3::rule<integer_suffix_literal_class, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
+    x3::rule<float_literal_class, x3_ast::float_literal> const float_literal("float_literal");
+    x3::rule<string_literal_class, x3_ast::string_literal> const string_literal("string_literal");
+    x3::rule<char_literal_class, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
     x3::rule<false_class, x3_ast::false_> const false_("false");
@@ -1357,8 +1357,8 @@ namespace x3_grammar {
     x3::rule<delete_class, x3_ast::delete_> const delete_("delete");
     x3::rule<swap_class, x3_ast::swap> const swap("swap");
     x3::rule<if_class, x3_ast::if_> const if_("if");
-    x3::rule<else_if_id, x3_ast::else_if> const else_if("else_if");
-    x3::rule<else_id, x3_ast::else_> const else_("else");
+    x3::rule<else_if_class, x3_ast::else_if> const else_if("else_if");
+    x3::rule<else_class, x3_ast::else_> const else_("else");
     x3::rule<switch_class, x3_ast::switch_> const switch_("switch");
     x3::rule<switch_case_class, x3_ast::switch_case> const switch_case("switch_case");
     x3::rule<default_case_class, x3_ast::default_case> const default_case("default_case");
@@ -1433,8 +1433,8 @@ namespace x3_grammar {
 
     auto const skipper =
             x3::ascii::space
-        |   ("/*" >> *(x3::char_ - "*/") >> "*/")
-        |   ("//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi));
+        |   "/*" >> *(x3::char_ - "*/") >> "*/"
+        |   "//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi);
 
     auto const const_ =
             (x3::lit("const") > x3::attr(true))
@@ -1521,15 +1521,15 @@ namespace x3_grammar {
             x3::lit("new")
         >>  type
         >>  '['
-        >>  value
-        >>  ']';
+        >   value
+        >   ']';
     
     auto const new_def =
             x3::lit("new")
         >>  type
         >>  '('
-        >>  -(value % ',')
-        >>  ')';
+        >   -(value % ',')
+        >   ')';
 
     auto const true_def = x3::eps >> x3::lit("true");
     auto const false_def = x3::eps >> x3::lit("false");
@@ -1639,9 +1639,9 @@ namespace x3_grammar {
     auto const ternary_def =
             logical_or_expression
         >>  '?'
-        >>  conditional_expression
-        >>  ':'
-        >>  conditional_expression;
+        >   conditional_expression
+        >   ':'
+        >   conditional_expression;
 
     auto const conditional_expression_def =
             ternary
