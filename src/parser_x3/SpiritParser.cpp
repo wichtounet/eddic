@@ -1434,7 +1434,7 @@ namespace x3_grammar {
     auto const skipper =
             x3::ascii::space
         |   "/*" >> *(x3::char_ - "*/") >> "*/"
-        |   "//" >> *(x3::char_ - (x3::eol | x3::eoi)) >> (x3::eol | x3::eoi);
+        |   "//" >> *(x3::char_ - x3::eol);
 
     auto const const_ =
             (x3::lit("const") > x3::attr(true))
@@ -1689,8 +1689,6 @@ namespace x3_grammar {
         assignment_expression = assignment_expression_def
     );
 
-    auto const value_grammar = x3::skip(skipper)[value];
-
     /* Instructions */
 
     auto const instruction_def =
@@ -1763,7 +1761,7 @@ namespace x3_grammar {
     auto const while_def =
             x3::lit("while")
         >>  '('
-        >>  value_grammar
+        >>  value
         >>  ')'
         >>  '{'
         >>  *instruction
@@ -1776,43 +1774,43 @@ namespace x3_grammar {
         >>  '}'
         >>  "while"
         >>  '('
-        >>  value_grammar
+        >>  value
         >>  ')'
         >>  ';';
     
     auto const variable_declaration_def =
             type
         >>  identifier
-        >>  -('=' >> value_grammar);
+        >>  -('=' >> value);
     
     auto const struct_declaration_def =
             type
         >>  identifier
         >>  '('
-        >>  -(value_grammar % ',')
+        >>  -(value % ',')
         >>  ')';
     
     auto const array_declaration_def =
             type
         >>  identifier
         >>  '['
-        >>  value_grammar
+        >>  value
         >>  ']';
 
     auto const return_def =
             x3::lit("return")
         >>  x3::attr(1)
-        >>  value_grammar;
+        >>  value;
 
     auto const delete_def =
             x3::lit("delete")
         >>  x3::attr(1)
-        >>  value_grammar;
+        >>  value;
 
     auto const if_def =
             x3::lit("if")
         >>  '('
-        >>  value_grammar
+        >>  value
         >>  ')'
         >>  '{'
         >>  *instruction
@@ -1824,7 +1822,7 @@ namespace x3_grammar {
             x3::lit("else")
         >>  x3::lit("if")
         >>  '('
-        >>  value_grammar
+        >>  value
         >>  ')'
         >>  '{'
         >>  *instruction
@@ -1888,10 +1886,8 @@ namespace x3_grammar {
         default_case = default_case_def
     );
 
-    auto const instruction_grammar = x3::skip(skipper)[instruction];
-
     /* Base */ 
-    
+
     auto const source_file_def = 
          *(
                 standard_import
@@ -1927,19 +1923,19 @@ namespace x3_grammar {
         >>  -(function_parameter % ',')
         >   ')'
         >   '{' 
-        >   *instruction_grammar
+        >   *instruction
         >   '}';
 
     auto const global_variable_declaration_def =
             type
         >>  identifier
-        >>  -('=' >> value_grammar);
+        >>  -('=' >> value);
     
     auto const global_array_declaration_def =
             type
         >>  identifier
         >>  '['
-        >>  value_grammar
+        >>  value
         >>  ']';
 
     auto const function_parameter_def =
