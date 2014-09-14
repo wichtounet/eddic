@@ -32,7 +32,7 @@ boost::optional<eddic::ast::Position> SemanticalException::position() const {
 
 void eddic::output_exception(const SemanticalException& e, std::shared_ptr<GlobalContext> context){
     if(e.position()){
-        auto& position = *e.position();
+        const auto& position = *e.position();
 
         int current_line = 0;
         std::istringstream f(context->get_file_content(position.file));

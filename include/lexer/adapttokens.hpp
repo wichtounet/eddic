@@ -57,7 +57,7 @@ struct adapttokens_directive : unary_parser<adapttokens_directive<Subject>> {
             tokenfirst = first->value().begin();
             tokenlast = first->value().end();
 
-            attr = *subject.ref.get().find(convert(tokenfirst, tokenlast));
+            //TODO attr = *subject.ref.get().find(convert(tokenfirst, tokenlast));
             ++first;
 
             return true;
