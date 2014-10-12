@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "ltac/Address.hpp"
 
@@ -105,5 +105,5 @@ std::ostream& ltac::operator<<(std::ostream& out, const ltac::Address& address){
         return out << "[" << *address.displacement << "]";
     }
 
-    eddic_unreachable("Invalid address type");
+    cpp_unreachable("Invalid address type");
 }

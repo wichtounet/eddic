@@ -7,6 +7,8 @@
 
 #include <list>
 
+#include "cpp_utils/assert.hpp"
+
 #include "PerfsTimer.hpp"
 #include "logging.hpp"
 #include "FunctionContext.hpp"
@@ -718,7 +720,7 @@ void select(ltac::interference_graph<Pseudo>& graph, mtac::Function& function, P
             }
         }
 
-        eddic_assert(allocation.count(reg), "The register must have been allocated a color");
+        cpp_assert(allocation.count(reg), "The register must have been allocated a color");
     }
 
     for(auto& alloc : allocation){

@@ -5,8 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "variant.hpp"
-#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 #include "iterators.hpp"
@@ -518,7 +519,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
             return {if_};
         } else {
-            eddic_unreachable("Unhandled switch value type");
+            cpp_unreachable("Unhandled switch value type");
         }
     }
 

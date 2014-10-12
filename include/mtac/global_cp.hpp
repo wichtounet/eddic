@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "variant.hpp"
-#include "assert.hpp"
 
 #include "mtac/pass_traits.hpp"
 #include "mtac/DataFlowProblem.hpp"

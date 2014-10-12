@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "GlobalContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
@@ -43,7 +45,7 @@ std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable
 }
 
 std::shared_ptr<Variable> GlobalContext::generate_variable(const std::string&, std::shared_ptr<const Type>){
-    eddic_unreachable("Cannot generate global variable");
+    cpp_unreachable("Cannot generate global variable");
 }
 
 std::shared_ptr<Variable> GlobalContext::addVariable(const std::string& variable, std::shared_ptr<const Type> type, ast::Value& value){
@@ -65,7 +67,7 @@ Function& GlobalContext::add_function(std::shared_ptr<const Type> ret, const std
 }
 
 Function& GlobalContext::getFunction(const std::string& function){
-    eddic_assert(exists(function), ("The function \"" + function + "\" does not exists").c_str());
+    cpp_assert(exists(function), ("The function \"" + function + "\" does not exists").c_str());
 
     return m_functions.at(function);
 }
@@ -87,7 +89,7 @@ bool GlobalContext::struct_exists(std::shared_ptr<const Type> type) const {
         type = type->data_type();
     }
 
-    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    cpp_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
     
     auto struct_name = type->mangle();
     return struct_exists(struct_name);
@@ -112,7 +114,7 @@ std::shared_ptr<Struct> GlobalContext::get_struct(std::shared_ptr<const Type> ty
         type = type->data_type();
     }
 
-    eddic_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
+    cpp_assert(type->is_custom_type() || type->is_template_type(), "This type has no corresponding struct");
     
     auto struct_name = type->mangle();
     return get_struct(struct_name);
@@ -129,7 +131,7 @@ int GlobalContext::member_offset(std::shared_ptr<const Struct> struct_, const st
         offset += m.type->size(platform);
     }
 
-    eddic_unreachable("The member is not part of the struct");
+    cpp_unreachable("The member is not part of the struct");
 }
 
 std::shared_ptr<const Type> GlobalContext::member_type(std::shared_ptr<const Struct> struct_, int offset) const {

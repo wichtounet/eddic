@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "Variable.hpp"
 #include "iterators.hpp"
 #include "FunctionContext.hpp"
@@ -24,7 +26,7 @@ mtac::Argument variant_cast(Offset source){
     } else if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&source)){
         return *ptr;
     } else {
-        eddic_unreachable("Invalid source type");
+        cpp_unreachable("Invalid source type");
     }
 }
 

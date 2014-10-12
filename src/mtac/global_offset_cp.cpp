@@ -5,7 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
@@ -34,11 +33,11 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::Function& f
 
     ProblemDomain::Values values;
     ProblemDomain out(values);
-    
+
     for(auto& variable : function.context->stored_variables()){
         if(variable->type()->is_array() && variable->type()->has_elements()){
             auto array_size = variable->type()->elements()* variable->type()->data_type()->size(platform) + INT->size(platform);
-                    
+
             mtac::Offset offset(variable, 0);
             out[offset] = static_cast<int>(variable->type()->elements());
 
@@ -61,7 +60,7 @@ ProblemDomain mtac::OffsetConstantPropagationProblem::Boundary(mtac::Function& f
                 mtac::Offset offset(variable, i);
                 out[offset] = 0;
             }
-            
+
             //Except the length of arrays that are set
             auto struct_type = function.context->global()->get_struct(variable->type()->mangle());
 

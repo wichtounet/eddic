@@ -5,9 +5,10 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
 #include "variant.hpp"
-#include "assert.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
@@ -549,7 +550,7 @@ struct Adaptor : public boost::static_visitor<> {
 
             return *ptr;
         } else {
-            eddic_unreachable("Unhandled type");
+            cpp_unreachable("Unhandled type");
         }
     }
     

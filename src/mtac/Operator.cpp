@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "mtac/Operator.hpp"
 
@@ -24,7 +24,7 @@ mtac::Operator mtac::toOperator(ast::Operator op){
         case ast::Operator::MOD:
             return mtac::Operator::MOD;
         default:
-            eddic_unreachable("Not an int operator"); 
+            cpp_unreachable("Not an int operator"); 
     }
 }
 
@@ -39,7 +39,7 @@ mtac::Operator mtac::toFloatOperator(ast::Operator op){
         case ast::Operator::MUL:
             return mtac::Operator::FMUL;
         default:
-            eddic_unreachable("Not a float operator"); 
+            cpp_unreachable("Not a float operator"); 
     }
 }
 
@@ -58,7 +58,7 @@ mtac::Operator mtac::toRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return mtac::Operator::GREATER_EQUALS;
         default:
-            eddic_unreachable("Not a relational operator"); 
+            cpp_unreachable("Not a relational operator"); 
     }
 }
 
@@ -77,6 +77,6 @@ mtac::Operator mtac::toFloatRelationalOperator(ast::Operator op){
         case ast::Operator::GREATER_EQUALS:
             return mtac::Operator::FGE;
         default:
-            eddic_unreachable("Not a float relational operator"); 
+            cpp_unreachable("Not a float relational operator"); 
     }
 }

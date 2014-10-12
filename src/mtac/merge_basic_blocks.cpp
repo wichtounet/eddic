@@ -7,9 +7,10 @@
 
 #include <unordered_set>
 
+#include "cpp_utils/likely.hpp"
+
 #include "FunctionContext.hpp"
 #include "Function.hpp"
-#include "likely.hpp"
 
 #include "mtac/merge_basic_blocks.hpp"
 #include "mtac/Function.hpp"
@@ -42,7 +43,7 @@ bool mtac::merge_basic_blocks::operator()(mtac::Function& function){
                 
         auto next = block->next;
 
-        if(unlikely(block->size_no_nop() == 0)){
+        if(cpp_unlikely(block->size_no_nop() == 0)){
             if(usage.find(block) == usage.end()){
                 it.erase();
                 optimized = true;

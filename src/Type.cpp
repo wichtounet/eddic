@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "mangling.hpp"
 #include "Type.hpp"
 #include "Platform.hpp"
@@ -68,31 +69,31 @@ bool Type::is_template_type() const {
 }
 
 unsigned int Type::size(Platform) const {
-    eddic_unreachable("Not specialized type");
+    cpp_unreachable("Not specialized type");
 }
 
 unsigned int Type::elements() const {
-    eddic_unreachable("Not an array type");
+    cpp_unreachable("Not an array type");
 }
 
 bool Type::has_elements() const {
-    eddic_unreachable("Not an array type");
+    cpp_unreachable("Not an array type");
 }
 
 std::string Type::type() const {
-    eddic_unreachable("Not a custom type");
+    cpp_unreachable("Not a custom type");
 }
 
 std::shared_ptr<const Type> Type::data_type() const {
-    eddic_unreachable("No data type");
+    cpp_unreachable("No data type");
 }
-        
+
 std::vector<std::shared_ptr<const Type>> Type::template_types() const {
-    eddic_unreachable("No template types");
+    cpp_unreachable("No template types");
 }
 
 BaseType Type::base() const {
-    eddic_unreachable("Not a standard type");
+    cpp_unreachable("Not a standard type");
 }
 
 std::string Type::mangle() const {
@@ -270,7 +271,7 @@ std::shared_ptr<const Type> eddic::new_type(std::shared_ptr<GlobalContext> conte
             }
         }
     } else {
-        assert(!const_);
+        cpp_assert(!const_, "Only standard type can be const");
         return std::make_shared<CustomType>(context, type);
     }
 }

@@ -7,7 +7,8 @@
 
 #include <set>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "FunctionContext.hpp"
 #include "Type.hpp"
 #include "Options.hpp"
@@ -92,7 +93,7 @@ void ltac::RegisterManager::copy(mtac::Argument argument, ltac::PseudoRegister r
         } else {
             auto position = variable->position();
 
-            eddic_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
+            cpp_assert(position.isStack() || position.isGlobal() || position.isParameter(), (variable->name() + " is not in a register").c_str());
 
             if(position.isParameter() || position.isStack()){
                 if(variable->type() == CHAR || variable->type() == BOOL){

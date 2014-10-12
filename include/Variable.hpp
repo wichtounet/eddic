@@ -15,7 +15,6 @@
 
 #include "variant.hpp"
 #include "Position.hpp"
-#include "assert.hpp"
 
 #include "ast/Position.hpp"
 
@@ -63,7 +62,7 @@ class Variable {
         Position position() const ;
 
         Val val() const ;
-        
+
         const ast::Position& source_position() const ;
         void set_source_position(const ast::Position& position);
 

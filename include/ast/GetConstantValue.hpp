@@ -11,7 +11,8 @@
 #include <string>
 #include <utility>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "variant.hpp"
 
 #include "ast/values_def.hpp"
@@ -40,7 +41,7 @@ struct GetConstantValue : public boost::static_visitor<Val> {
 
     template<typename T>
     Val operator()(const T&) const {
-        eddic_unreachable("Is not constant");
+        cpp_unreachable("Is not constant");
     }
 };
 

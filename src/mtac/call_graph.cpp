@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Function.hpp"
 #include "GlobalContext.hpp"
 
@@ -88,7 +89,7 @@ void compute_reachable(mtac::Reachable& reachable, mtac::call_graph_node_p node)
 }
 
 void mtac::call_graph::compute_reachable(){
-    eddic_assert(entry, "The call graph must be built before computing reachable");
+    cpp_assert(entry, "The call graph must be built before computing reachable");
 
     release_reachable();
 

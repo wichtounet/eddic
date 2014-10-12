@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Struct.hpp"
 
 using namespace eddic;
@@ -39,7 +40,7 @@ Member& Struct::operator[](const std::string& n){
         }
     }
 
-    eddic_unreachable("This member is not contained in the struct");
+    cpp_unreachable("This member is not contained in the struct");
 }
 
 void Struct::add_reference(){

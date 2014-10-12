@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "ast/Operator.hpp"
 
@@ -61,5 +61,5 @@ std::string eddic::ast::toString(Operator op){
             return "()";
     }
 
-    eddic_unreachable("This operator cannot be converted to string");
+    cpp_unreachable("This operator cannot be converted to string");
 }

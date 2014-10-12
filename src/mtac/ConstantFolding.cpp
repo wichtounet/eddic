@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
-
 #include "mtac/ConstantFolding.hpp"
 #include "mtac/OptimizerUtils.hpp"
 #include "mtac/Utils.hpp"

@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
 
 #ifdef LOGGING_DISABLE
@@ -26,7 +27,7 @@ void eddic::configure_logging(int level){
     } else if(level == 4){
         ::logging::detail::Logger<Level>::logging()._level.l = Level::user;
     } else {
-        eddic_unreachable("Invalid log level");
+        cpp_unreachable("Invalid log level");
     }
 }
 

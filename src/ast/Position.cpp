@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
-
 #include "ast/Position.hpp"
 
 using namespace eddic;

@@ -8,8 +8,9 @@
 #include <sstream>
 #include <cctype>
 
+#include "cpp_utils/assert.hpp"
+
 #include "mangling.hpp"
-#include "assert.hpp"
 #include "Utils.hpp"
 #include "VisitorUtils.hpp"
 #include "Type.hpp"
@@ -44,17 +45,17 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
             return "V";
         }
     } 
-    
+
     if(type->is_custom_type()){
         std::ostringstream ss;
 
         ss << "U";
         ss << type->type().length();
         ss << type->type();
-        
+
         return ss.str();
     }
-    
+
     if(type->is_template_type()){
         std::ostringstream ss;
 
@@ -69,11 +70,11 @@ std::string eddic::mangle(std::shared_ptr<const Type> type){
         for(auto& sub_type : types){
             ss << sub_type->mangle();
         }
-        
+
         return ss.str();
     }
 
-    eddic_unreachable("Invalid type");
+    cpp_unreachable("Invalid type");
 }
 
 std::string eddic::mangle(const std::string& name, const std::vector<Parameter>& parameters, std::shared_ptr<const Type> struct_type){

@@ -16,7 +16,6 @@
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
 #include "iterators.hpp"
-#include "likely.hpp"
 #include "logging.hpp"
 #include "timing.hpp"
 #include "GlobalContext.hpp"

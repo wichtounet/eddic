@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "mtac/Function.hpp"
 
@@ -20,7 +20,7 @@ mtac::Quadruple& mtac::basic_block::find(std::size_t uid){
         }
     }
 
-    eddic_unreachable("The uid should exists");
+    cpp_unreachable("The uid should exists");
 }
 
 std::size_t mtac::basic_block::size() const {

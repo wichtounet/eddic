@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <functional>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Context.hpp"
 #include "GlobalContext.hpp"
 #include "Utils.hpp"
@@ -42,7 +43,7 @@ bool Context::exists(const std::string& variable) const {
 }
 
 std::shared_ptr<Variable> Context::new_temporary(std::shared_ptr<const Type>){
-    eddic_unreachable("Not implemented");
+    cpp_unreachable("Not implemented");
 }
 
 std::shared_ptr<Variable> Context::operator[](const std::string& variable) const {
@@ -50,7 +51,7 @@ std::shared_ptr<Variable> Context::operator[](const std::string& variable) const
 }
 
 std::shared_ptr<Variable> Context::getVariable(const std::string& variable) const {
-    eddic_assert(exists(variable), "The variable must exists");
+    cpp_assert(exists(variable), "The variable must exists");
 
     auto iter = variables.find(variable);
     auto end = variables.end();

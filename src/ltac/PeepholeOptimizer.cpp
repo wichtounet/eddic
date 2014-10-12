@@ -7,12 +7,12 @@
 
 #include <boost/optional.hpp>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
 #include "Utils.hpp"
 #include "PerfsTimer.hpp"
 #include "Options.hpp"
-#include "likely.hpp"
 #include "Platform.hpp"
 #include "Type.hpp"
 #include "FunctionContext.hpp"
@@ -401,7 +401,7 @@ bool basic_optimizations(mtac::Function& function, Platform platform){
             //Optimizations that looks at several statements at once
             optimized |= multiple_statement_optimizations(s1, s2);
 
-            if(unlikely(is_nop(s1))){
+            if(cpp_unlikely(is_nop(s1))){
                 it = statements.erase(it);
                 end = statements.end() - 1;
 
@@ -695,7 +695,7 @@ ltac::Operator get_cmov_op(ltac::Operator op){
         case ltac::Operator::AE:
             return ltac::Operator::CMOVAE;
         default:
-            eddic_unreachable("No cmov equivalent");
+            cpp_unreachable("No cmov equivalent");
     }
 }
 

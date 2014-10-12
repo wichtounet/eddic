@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "FunctionContext.hpp"
 #include "Variable.hpp"
 #include "Utils.hpp"
@@ -107,7 +109,7 @@ std::shared_ptr<Variable> FunctionContext::addParameter(const std::string& param
 }
 
 std::shared_ptr<Variable> FunctionContext::new_temporary(std::shared_ptr<const Type> type){
-    eddic_assert((type->is_standard_type() && type != STRING) || type->is_pointer() || type->is_dynamic_array(), "Invalid temporary");
+    cpp_assert((type->is_standard_type() && type != STRING) || type->is_pointer() || type->is_dynamic_array(), "Invalid temporary");
 
     Position position(PositionType::TEMPORARY);
 

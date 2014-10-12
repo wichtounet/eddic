@@ -5,7 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"

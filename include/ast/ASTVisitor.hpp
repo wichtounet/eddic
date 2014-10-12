@@ -8,7 +8,8 @@
 #ifndef AST_VISITOR_H
 #define AST_VISITOR_H
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "VisitorUtils.hpp"
 
 #define AUTO_RECURSE_PROGRAM()\
@@ -263,7 +264,7 @@ void operator()(ast::NewArray& new_){\
 
 /* Break macros  */
     
-#define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ eddic_unreachable("Type not supported in the visitor"); }
-#define AUTO_BREAK_OTHERS_CONST() template<typename T> result_type operator()(T&) const { eddic_unreachable("Type not supported in the visitor"); }
+#define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ cpp_unreachable("Type not supported in the visitor"); }
+#define AUTO_BREAK_OTHERS_CONST() template<typename T> result_type operator()(T&) const { cpp_unreachable("Type not supported in the visitor"); }
 
 #endif

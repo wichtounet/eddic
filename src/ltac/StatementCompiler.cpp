@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "FunctionContext.hpp"
 #include "Utils.hpp"
 #include "Type.hpp"
@@ -59,7 +60,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    eddic_unreachable("Invalid position");
+                    cpp_unreachable("Invalid position");
                 }
             } else {
                 auto reg = manager.get_pseudo_reg(var);
@@ -69,7 +70,7 @@ void ltac::StatementCompiler::end_bb(){
                 } else if(position.isGlobal()){
                     bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), reg);
                 } else {
-                    eddic_unreachable("Invalid position");
+                    cpp_unreachable("Invalid position");
                 }
             }
         }
@@ -693,7 +694,7 @@ void ltac::StatementCompiler::compile_ASSIGN(mtac::Quadruple& quadruple){
         } else if(position.isGlobal()){
             write_8_bit_to(reg, ltac::Address("V" + position.name()), quadruple.size);
         } else {
-            eddic_unreachable("Invalid position");
+            cpp_unreachable("Invalid position");
         }
 
         manager.remove_from_pseudo_reg(quadruple.result);
@@ -719,7 +720,7 @@ void ltac::StatementCompiler::compile_PASSIGN(mtac::Quadruple& quadruple){
                 } else if(position.isGlobal()){
                     bb->emplace_back_low(ltac::Operator::MOV, ltac::Address("V" + position.name()), value_reg);
                 } else {
-                    eddic_unreachable("Invalid position");
+                    cpp_unreachable("Invalid position");
                 }
 
                 manager.remove_from_pseudo_reg(quadruple.result);
@@ -744,7 +745,7 @@ void ltac::StatementCompiler::compile_FASSIGN(mtac::Quadruple& quadruple){
         } else if(position.isGlobal()){
             bb->emplace_back_low(ltac::Operator::FMOV, ltac::Address("V" + position.name()), reg);
         } else {
-            eddic_unreachable("Invalid position");
+            cpp_unreachable("Invalid position");
         }
 
         manager.remove_from_pseudo_float_reg(quadruple.result);
@@ -1294,7 +1295,7 @@ void ltac::StatementCompiler::compile_DOT_PASSIGN(mtac::Quadruple& quadruple){
     } else if(mtac::is<int>(*quadruple.arg2)){
         bb->emplace_back_low(ltac::Operator::MOV, address(quadruple.result, *quadruple.arg1), boost::get<int>(*quadruple.arg2));
     } else {
-        eddic_unreachable("Unsupported rhs type in DOT_PASSIGN");
+        cpp_unreachable("Unsupported rhs type in DOT_PASSIGN");
     }
 }
 

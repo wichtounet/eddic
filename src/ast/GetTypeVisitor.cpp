@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Context.hpp"
 #include "Variable.hpp"
 #include "VisitorUtils.hpp"
@@ -124,7 +125,7 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
             struct_type = global_context->get_struct(struct_type->parent_type);
         } while(struct_type);
 
-        eddic_unreachable("The member must exists");
+        cpp_unreachable("The member must exists");
     } else {
         //Other operators are not changing the type
         return left;

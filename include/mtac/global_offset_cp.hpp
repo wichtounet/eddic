@@ -17,7 +17,6 @@
 #define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
 
 #include "variant.hpp"
-#include "assert.hpp"
 #include "Platform.hpp"
 
 #include "mtac/pass_traits.hpp"

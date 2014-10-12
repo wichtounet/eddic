@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
 #include "GlobalContext.hpp"
@@ -102,7 +104,7 @@ std::pair<unsigned int, std::shared_ptr<const Type>> eddic::mtac::compute_member
         struct_type = context->get_struct(struct_type->parent_type);
     } while(struct_type);
 
-    eddic_assert(member_type, "The member must exist");
+    cpp_assert(member_type, "The member must exist");
 
     offset += context->member_offset(struct_type, member);
 

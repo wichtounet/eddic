@@ -7,6 +7,8 @@
 
 #include "Variable.hpp"
 
+#include "cpp_utils/assert.hpp"
+
 #include "mtac/conditional_propagation.hpp"
 #include "mtac/Function.hpp"
 #include "mtac/Quadruple.hpp"
@@ -60,7 +62,7 @@ mtac::Operator to_binary_operator(mtac::Operator op){
                 return mtac::Operator::IF_FL;
 
             default:
-                eddic_unreachable("Not a binary operator");
+                cpp_unreachable("Not a binary operator");
         }
     } else {
         switch(op){ 
@@ -93,7 +95,7 @@ mtac::Operator to_binary_operator(mtac::Operator op){
                 return mtac::Operator::IF_FALSE_FL;
 
             default:
-                eddic_unreachable("Not a binary operator");
+                cpp_unreachable("Not a binary operator");
         }
     }
 }

@@ -8,6 +8,8 @@
 #include <vector>
 #include <stack>
 
+#include "cpp_utils/assert.hpp"
+
 #include "VisitorUtils.hpp"
 #include "logging.hpp"
 #include "Variable.hpp"
@@ -329,8 +331,8 @@ void find_dependent_induction_variables(mtac::loop& loop, mtac::Function& functi
                 while(iv_it->uid() != quadruple.uid() && iv_it != bb->end()){++iv_it;}
                 while(source_it->uid() != source_uid && source_it != bb->end()){++source_it;}
 
-                eddic_assert(iv_it != bb->end(), "The iterator should be found");
-                eddic_assert(source_it != bb->end(), "The iterator should be found");
+                cpp_assert(iv_it != bb->end(), "The iterator should be found");
+                cpp_assert(source_it != bb->end(), "The iterator should be found");
 
                 //If the source is before the induction variable, the DIV refers to the next BIV
                 if(source_it < iv_it){

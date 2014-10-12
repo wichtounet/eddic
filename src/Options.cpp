@@ -14,7 +14,6 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include "assert.hpp"
 #include "Options.hpp"
 
 using namespace eddic;

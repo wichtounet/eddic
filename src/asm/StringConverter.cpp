@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "asm/StringConverter.hpp"
 
@@ -23,7 +23,7 @@ std::string as::StringConverter::register_to_string(eddic::ltac::AddressRegister
     } else if(auto* ptr = boost::get<ltac::Register>(&reg)){
         return (*this)(*ptr);
     } else {
-       eddic_unreachable("Invalid variant");
+       cpp_unreachable("Invalid variant");
     }
 }
 
@@ -68,5 +68,5 @@ std::string as::StringConverter::address_to_string(eddic::ltac::Address& address
         return "[" + std::to_string(*address.displacement) + "]";
     }
 
-    eddic_unreachable("Invalid address type");
+    cpp_unreachable("Invalid address type");
 }

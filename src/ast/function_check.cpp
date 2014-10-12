@@ -585,7 +585,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 return context->struct_exists(t->mangle());
             }
 
-            eddic_unreachable("Invalid type");
+            cpp_unreachable("Invalid type");
         }
 
         template<typename Function>
@@ -609,24 +609,24 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionCall&){
-            eddic_unreachable("Should be handled by check_value");
+            cpp_unreachable("Should be handled by check_value");
         }
 
         void operator()(ast::VariableValue&){
-            eddic_unreachable("Should be handled by check_value");
+            cpp_unreachable("Should be handled by check_value");
         }
 
         AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
-    
+
 void ast::FunctionCheckPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(!indicator && context->is_recursively_nested(context->get_struct(struct_.Content->struct_type))){
         throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
     }
 }
-    
+
 void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
     FunctionCheckerVisitor visitor(template_engine, declaration.Content->mangledName);
     visitor.context = context;

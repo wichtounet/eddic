@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
-
 #include "ast/False.hpp"
 
 using namespace eddic;

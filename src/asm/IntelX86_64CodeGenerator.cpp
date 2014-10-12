@@ -7,7 +7,8 @@
 
 #include <ostream>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "AssemblyFileWriter.hpp"
 #include "FunctionContext.hpp"
 #include "Labels.hpp"
@@ -75,11 +76,11 @@ struct X86_64StringConverter : public as::StringConverter, public boost::static_
     }
     
     std::string operator()(ltac::PseudoRegister&) const {
-        eddic_unreachable("All the pseudo registers should have been converted into a hard register");
+        cpp_unreachable("All the pseudo registers should have been converted into a hard register");
     }
 
     std::string operator()(ltac::PseudoFloatRegister&) const {
-        eddic_unreachable("All the pseudo registers should have been converted into a hard register");
+        cpp_unreachable("All the pseudo registers should have been converted into a hard register");
     }
 
     std::string operator()(double value) const {
@@ -105,19 +106,19 @@ using namespace x86_64;
 namespace {
 
 std::string get_register_8(ltac::Register& reg){
-    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    cpp_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
     auto sub_reg = registers_8[reg.reg];
-    eddic_assert(!sub_reg.empty(), "The register is not 8-bit allocatable");
+    cpp_assert(!sub_reg.empty(), "The register is not 8-bit allocatable");
     return sub_reg;
 }
 
 std::string get_register_16(ltac::Register& reg){
-    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    cpp_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
     return registers_16[reg.reg];
 }
 
 std::string get_register_32(ltac::Register& reg){
-    eddic_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
+    cpp_assert(reg.reg < 14, "SP and BP registers cannot be subclassed");
     return registers_32[reg.reg];
 }
 
@@ -381,7 +382,7 @@ void compile_statement(AssemblyFileWriter& writer, ltac::Instruction& instructio
             writer.stream() << "jnz " << "." << instruction.label << '\n';
             break;
         default:
-            eddic_unreachable(("The operator " + std::to_string(static_cast<int>(instruction.op)) + " is not supported").c_str());
+            cpp_unreachable(("The operator " + std::to_string(static_cast<int>(instruction.op)) + " is not supported").c_str());
     }
 }
 

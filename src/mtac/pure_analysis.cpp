@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "assert.hpp"
 #include "Function.hpp"
 #include "Variable.hpp"
 

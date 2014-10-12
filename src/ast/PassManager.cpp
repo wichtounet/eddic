@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
 #include "Options.hpp"
 #include "SemanticalException.hpp"
@@ -196,7 +197,7 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
 }
 
 void ast::PassManager::struct_instantiated(ast::struct_definition& struct_){
-    eddic_assert(struct_.Content->is_template_instantation(), "Must be called with a template instantiation");
+    cpp_assert(struct_.Content->is_template_instantation(), "Must be called with a template instantiation");
 
     LOG<Info>("Passes") << "Apply passes to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
 

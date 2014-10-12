@@ -16,7 +16,6 @@
 #include <ostream>
 #include <type_traits>
 
-#include "assert.hpp"
 #include "logging.hpp"
 
 #include "mtac/Program.hpp"

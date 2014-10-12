@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "ast/BuiltinOperator.hpp"
 
@@ -18,6 +18,6 @@ std::ostream& ast::operator<< (std::ostream& stream, ast::BuiltinType type){
         case ast::BuiltinType::LENGTH:
             return stream << "LENGTH";
         default:
-            eddic_unreachable("Unhandled builtin type");
+            cpp_unreachable("Unhandled builtin type");
     }
 }

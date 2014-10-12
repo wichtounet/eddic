@@ -7,7 +7,8 @@
 
 #include <algorithm>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Variable.hpp"
 #include "FunctionContext.hpp"
 #include "Type.hpp"
@@ -23,7 +24,7 @@ using namespace eddic;
 typedef mtac::global_cse::ProblemDomain ProblemDomain;
 
 void mtac::global_cse::meet(ProblemDomain& in, const ProblemDomain& out){
-    eddic_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
+    cpp_assert(!in.top() || !out.top(), "At least one lattice should not be a top element");
 
     if(in.top()){
         in = out;
@@ -150,7 +151,7 @@ void search_path(const mtac::expression& exp, std::shared_ptr<Variable>& tj, mta
         } while(it != end);
     }
 
-    eddic_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
+    cpp_assert(!block->predecessors.empty(), "There must be an equivalent expression on each backward path");
 
     for(auto& P : block->predecessors){
         search_path(exp, tj, op, P, visited);
@@ -181,7 +182,7 @@ bool mtac::global_cse::optimize(mtac::Function& function, std::shared_ptr<mtac::
                     ++it;
                 }
 
-                eddic_assert(it != i->end(), "The expression must be found because it is in Eval(i)");
+                cpp_assert(it != i->end(), "The expression must be found because it is in Eval(i)");
 
                 auto& quadruple = *it;
 

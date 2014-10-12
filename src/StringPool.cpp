@@ -7,7 +7,8 @@
 
 #include <sstream>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "StringPool.hpp"
 
 using namespace eddic;
@@ -39,7 +40,7 @@ std::string StringPool::value(const std::string& label) const {
     }
 
     //This method should not be called on not-existing label
-    eddic_unreachable("The label does not exists");
+    cpp_unreachable("The label does not exists");
 }
 
 std::unordered_map<std::string, std::string> StringPool::getPool() const {

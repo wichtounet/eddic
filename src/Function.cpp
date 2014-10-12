@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Function.hpp"
 #include "Type.hpp"
 
@@ -55,7 +56,7 @@ const Parameter& Function::parameter(const std::string& name) const {
         }
     }
 
-    eddic_unreachable(("There are no \"" + name + "\" parameter in the function").c_str());
+    cpp_unreachable(("There are no \"" + name + "\" parameter in the function").c_str());
 }
 
 std::vector<Parameter>& Function::parameters(){
@@ -82,7 +83,7 @@ unsigned int Function::parameter_position_by_type(const std::string& name) const
             }
         }
         
-        eddic_unreachable("This parameter does not exists in the given function");
+        cpp_unreachable("This parameter does not exists in the given function");
     } else if(mtac::is_single_float_register(type)){
         unsigned int position = 0;
         
@@ -96,7 +97,7 @@ unsigned int Function::parameter_position_by_type(const std::string& name) const
             }
         }
         
-        eddic_unreachable("This parameter does not exists in the given function");
+        cpp_unreachable("This parameter does not exists in the given function");
     } else {
         return 0;
     }

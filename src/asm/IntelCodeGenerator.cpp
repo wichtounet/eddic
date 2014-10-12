@@ -5,12 +5,13 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "asm/IntelCodeGenerator.hpp"
 
 #include "mtac/Program.hpp"
 
 #include "AssemblyFileWriter.hpp"
-#include "assert.hpp"
 #include "Labels.hpp"
 #include "GlobalContext.hpp"
 #include "StringPool.hpp"
@@ -70,7 +71,7 @@ void as::IntelCodeGenerator::addGlobalVariables(StringPool& pool, FloatPool& flo
             } else if(type == BOOL){
                 declareBoolVariable(it.second->position().name(), boost::get<bool>(it.second->val()));
             } else {
-                eddic_unreachable("Unhandled type");
+                cpp_unreachable("Unhandled type");
             }
         }
     }
@@ -88,7 +89,7 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
     std::string name = "functions/" + function + ".s";
     std::ifstream stream(name.c_str());
 
-    eddic_assert(stream, "One file in the functions folder does not exist");
+    cpp_assert(stream, "One file in the functions folder does not exist");
 
     std::string line;
     while (getline(stream, line))

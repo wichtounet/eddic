@@ -7,7 +7,8 @@
 
 #include <sstream>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "FloatPool.hpp"
 
 using namespace eddic;
@@ -35,7 +36,7 @@ double FloatPool::value(const std::string& label) const {
     }
 
     //This method should not be called on not-existing label
-    eddic_unreachable("The float label does not exists");
+    cpp_unreachable("The float label does not exists");
 }
 
 std::unordered_map<double, std::string> FloatPool::get_pool() const {

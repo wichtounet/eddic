@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "variant.hpp"
 #include "Variable.hpp"
 #include "Type.hpp"
@@ -43,7 +45,7 @@ Val ast::GetConstantValue::operator()(const ast::PrefixOperation& minus) const {
         return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->left_value));
     }
 
-    eddic_unreachable("Not constant");
+    cpp_unreachable("Not constant");
 }
 
 Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
@@ -57,5 +59,5 @@ Val ast::GetConstantValue::operator()(const ast::VariableValue& value) const {
         return boost::get<std::pair<std::string, int>>(val);
     }
 
-    eddic_unreachable("This variable is of a type that cannot be constant");
+    cpp_unreachable("This variable is of a type that cannot be constant");
 }

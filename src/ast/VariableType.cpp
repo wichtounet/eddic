@@ -7,7 +7,7 @@
 
 #include <sstream>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "ast/VariableType.hpp"
 
@@ -37,6 +37,6 @@ std::string ast::to_string(const ast::Type& type){
 
         return printed.str();
     } else {
-        eddic_unreachable("Unhandled type");
+        cpp_unreachable("Unhandled type");
     }
 }

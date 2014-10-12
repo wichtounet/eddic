@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Function.hpp"
 
 #include "mtac/Program.hpp"
@@ -23,7 +24,7 @@ mtac::Function& mtac::Program::mtac_function(const eddic::Function& function){
         }
     }
 
-    eddic_unreachable(("There are no function \"" + function.mangled_name() + "\"").c_str());
+    cpp_unreachable(("There are no function \"" + function.mangled_name() + "\"").c_str());
 }
 
 std::ostream& mtac::operator<<(std::ostream& stream, mtac::Program& program){

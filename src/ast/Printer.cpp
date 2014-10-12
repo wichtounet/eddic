@@ -7,8 +7,9 @@
 
 #include <iostream>
 
+#include "cpp_utils/assert.hpp"
+
 #include "variant.hpp"
-#include "assert.hpp"
 #include "VisitorUtils.hpp"
 #include "Variable.hpp"
 

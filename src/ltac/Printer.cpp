@@ -9,7 +9,8 @@
 #include <iomanip>
 #include <memory>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "variant.hpp"
 #include "Utils.hpp"
 
@@ -143,7 +144,7 @@ std::string to_string(ltac::Operator op){
         case ltac::Operator::NZ:
             return "nz";
         default:
-            eddic_unreachable("The instruction operator is not supported");
+            cpp_unreachable("The instruction operator is not supported");
     }
 }
 

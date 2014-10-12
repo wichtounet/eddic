@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Platform.hpp"
 
 using namespace eddic;
@@ -44,21 +45,21 @@ struct X86Descriptor : public PlatformDescriptor {
     }
     
     unsigned short int_variable_register(unsigned int /*position*/) const {
-        eddic_unreachable("No int variable register");
+        cpp_unreachable("No int variable register");
 
         return 0;
     }
 
     unsigned short int_param_register(unsigned int position) const {
-        assert(position == 1);
-        _unused(position);
+        cpp_assert(position  == 1, "Invalid position");
+        cpp_unused(position);
 
         return 2; //ecx
     }
 
     unsigned short float_param_register(unsigned int position) const {
-        assert(position  == 1);
-        _unused(position);
+        cpp_assert(position  == 1, "Invalid position");
+        cpp_unused(position);
 
         return 7; //xmm7
     }
@@ -118,20 +119,20 @@ struct X86_64Descriptor : public PlatformDescriptor {
     }
     
     unsigned short int_variable_register(unsigned int position) const {
-        assert(position == 1 || position == 2);
+        cpp_assert(position == 1 || position == 2, "Invalid position");
 
         return position == 1 ? 10 : 11; //r12 and r13
     }
 
     unsigned short int_param_register(unsigned int position) const {
-        assert(position == 1 || position == 2);
+        cpp_assert(position == 1 || position == 2, "Invalid position");
 
         return position == 1 ? 12 : 13; //r14 and r15
     }
 
     unsigned short float_param_register(unsigned int position) const {
-        assert(position  == 1);
-        _unused(position);
+        cpp_assert(position  == 1, "Invalid position");
+        cpp_unused(position);
 
         return 7;
     }
@@ -156,7 +157,7 @@ struct X86_64Descriptor : public PlatformDescriptor {
         return 3;
     }
 };
-    
+
 static const X86Descriptor x86Descriptor;
 static const X86_64Descriptor x86_64Descriptor;
 
@@ -168,5 +169,5 @@ const PlatformDescriptor* eddic::getPlatformDescriptor(Platform platform){
             return &x86_64Descriptor;
     }
 
-    eddic_unreachable("Unhandled platform");
+    cpp_unreachable("Unhandled platform");
 }

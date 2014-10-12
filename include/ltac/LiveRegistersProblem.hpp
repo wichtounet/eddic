@@ -16,8 +16,6 @@
 
 #define STATIC_CONSTANT(type,name,value) BOOST_STATIC_CONSTANT(type, name = value)
 
-#include "assert.hpp"
-
 #include "mtac/DataFlowProblem.hpp"
 
 //Necessary for hash

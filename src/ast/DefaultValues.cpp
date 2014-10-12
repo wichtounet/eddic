@@ -7,6 +7,8 @@
 
 #include "variant.hpp"
 
+#include "cpp_utils/assert.hpp"
+
 #include "ast/DefaultValues.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
@@ -51,7 +53,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     declaration.Content->value = false_;
                 } else {
-                    eddic_unreachable("Unhandled type");
+                    cpp_unreachable("Unhandled type");
                 }
             }
         }
