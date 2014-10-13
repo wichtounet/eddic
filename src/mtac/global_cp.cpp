@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Variable.hpp"
 #include "Type.hpp"
 #include "VisitorUtils.hpp"
@@ -212,7 +213,7 @@ int compute(mtac::Operator op, int lhs, int rhs){
         case mtac::Operator::MOD:
             return lhs % rhs;
         default:
-            eddic_unreachable("Invalid operator");
+            cpp_unreachable("Invalid operator");
     }
 }
 
@@ -227,7 +228,7 @@ double compute(mtac::Operator op, double lhs, double rhs){
         case mtac::Operator::FDIV:
             return lhs / rhs;
         default:
-            eddic_unreachable("Invalid operator");
+            cpp_unreachable("Invalid operator");
     }
 }
 

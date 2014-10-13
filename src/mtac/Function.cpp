@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
 #include "Function.hpp"
 
@@ -113,7 +114,7 @@ mtac::Quadruple& mtac::Function::find(std::size_t uid){
         }
     }
 
-    eddic_unreachable("The given uid does not exist");
+    cpp_unreachable("The given uid does not exist");
 }
 
 mtac::basic_block_iterator mtac::Function::at(std::shared_ptr<basic_block> bb){
@@ -178,8 +179,8 @@ mtac::basic_block_p mtac::Function::append_bb(){
 mtac::basic_block_iterator mtac::Function::insert_before(mtac::basic_block_iterator it, mtac::basic_block_p block){
     auto bb = *it;
 
-    eddic_assert(block, "Cannot add null block"); 
-    eddic_assert(it != begin(), "Cannot add before entry");
+    cpp_assert(block, "Cannot add null block"); 
+    cpp_assert(it != begin(), "Cannot add before entry");
 
     block->context = context;
     
@@ -198,8 +199,8 @@ mtac::basic_block_iterator mtac::Function::insert_after(mtac::basic_block_iterat
 }
 
 mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_p block){
-    eddic_assert(block, "Cannot remove null block"); 
-    eddic_assert(block != exit, "Cannot remove exit"); 
+    cpp_assert(block, "Cannot remove null block"); 
+    cpp_assert(block != exit, "Cannot remove exit"); 
 
     LOG<Debug>("CFG") << "Remove basic block B" << block->index << log::endl;
 
@@ -251,7 +252,7 @@ mtac::basic_block_iterator mtac::Function::remove(mtac::basic_block_iterator it)
 mtac::basic_block_iterator mtac::Function::merge_basic_blocks(basic_block_iterator it, std::shared_ptr<basic_block> block){
     auto source = *it; 
 
-    eddic_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
+    cpp_assert(source->next == block || source->prev == block, "Can only merge sibling blocks");
 
     LOG<Debug>("CFG") << "Merge " << source->index << " into " << block->index << log::endl;
 
@@ -399,7 +400,7 @@ std::size_t mtac::Function::position(const basic_block_p& bb) const {
         ++it;
     }
 
-    eddic_unreachable("This basic block is not part of the function");
+    cpp_unreachable("This basic block is not part of the function");
 }
 
 bool mtac::operator==(const mtac::Function& lhs, const mtac::Function& rhs){

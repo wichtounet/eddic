@@ -8,7 +8,8 @@
 #include <atomic>
 #include <iomanip>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
+
 #include "Function.hpp"
 #include "Utils.hpp"
 #include "Variable.hpp"
@@ -62,7 +63,7 @@ mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string pa
 
 mtac::Quadruple::Quadruple(mtac::Operator op, eddic::Function& function, std::shared_ptr<Variable> return1, std::shared_ptr<Variable> return2, tac::Size size) : 
         _uid(++uid_counter), result(return1), op(op), size(size), secondary(return2), m_function(&function) {
-    eddic_assert(m_function, "Function is mandatory for calls");
+    cpp_assert(m_function, "Function is mandatory for calls");
 }
 
 mtac::Quadruple::Quadruple(mtac::Operator op, mtac::Argument arg, std::string label, tac::Size size) : 
@@ -151,13 +152,13 @@ const std::string& mtac::Quadruple::std_param() const {
 }
 
 eddic::Function& mtac::Quadruple::function(){
-    eddic_assert(m_function, "function() can only be called on operations that support it");
+    cpp_assert(m_function, "function() can only be called on operations that support it");
 
     return *m_function;
 }
 
 const eddic::Function& mtac::Quadruple::function() const {
-    eddic_assert(m_function, "function() can only be called on operations that support it");
+    cpp_assert(m_function, "function() can only be called on operations that support it");
 
     return *m_function;
 }

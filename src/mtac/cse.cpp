@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "Variable.hpp"
 
 #include "mtac/cse.hpp"
@@ -69,7 +71,7 @@ bool mtac::is_expression(mtac::Operator op){
 }
 
 bool mtac::is_killing(mtac::Quadruple& quadruple, const mtac::expression& expression){
-    eddic_assert(quadruple.result, "is_killing should only be called on quadruple erasing the result, thus having a result");
+    cpp_assert(quadruple.result, "is_killing should only be called on quadruple erasing the result, thus having a result");
 
     if(auto* ptr = boost::get<std::shared_ptr<Variable>>(&expression.arg1)){
         if(quadruple.result == *ptr){
@@ -99,5 +101,5 @@ mtac::Operator mtac::assign_op(mtac::Operator op){
         return mtac::Operator::FASSIGN;
     }
 
-    eddic_unreachable("This is not an expression operator");
+    cpp_unreachable("This is not an expression operator");
 }

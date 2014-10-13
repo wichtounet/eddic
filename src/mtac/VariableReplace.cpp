@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 #include "mtac/VariableReplace.hpp"
 #include "mtac/Quadruple.hpp"
@@ -29,12 +29,12 @@ void mtac::VariableReplace::update_usage_optional(boost::optional<mtac::Argument
 
 void mtac::VariableReplace::replace(mtac::Quadruple& quadruple){
     if(clones.find(quadruple.result) != clones.end()){
-        eddic_assert(mtac::isVariable(clones[quadruple.result]), "The result cannot be replaced by other thing than a variable");
+        cpp_assert(mtac::isVariable(clones[quadruple.result]), "The result cannot be replaced by other thing than a variable");
         quadruple.result = boost::get<std::shared_ptr<Variable>>(clones[quadruple.result]);
     }
 
     if(quadruple.secondary && clones.find(quadruple.secondary) != clones.end()){
-        eddic_assert(mtac::isVariable(clones[quadruple.secondary]), "The return variable cannot be replaced by other thing than a variable");
+        cpp_assert(mtac::isVariable(clones[quadruple.secondary]), "The return variable cannot be replaced by other thing than a variable");
         quadruple.secondary = boost::get<std::shared_ptr<Variable>>(clones[quadruple.secondary]);
     }
 

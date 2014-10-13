@@ -5,8 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "cpp_utils/assert.hpp"
+
 #include "logging.hpp"
-#include "assert.hpp"
 
 #include "mtac/loop.hpp"
 #include "mtac/basic_block.hpp"
@@ -80,7 +81,7 @@ mtac::basic_block_p mtac::loop::find_entry() const {
         }
     }
 
-    eddic_unreachable("Every loop should have a single entry");
+    cpp_unreachable("Every loop should have a single entry");
 }
 
 mtac::basic_block_p mtac::loop::find_exit() const {
@@ -94,7 +95,7 @@ mtac::basic_block_p mtac::loop::find_exit() const {
         }
     }
 
-    eddic_unreachable("Every loop should have at least an exit");
+    cpp_unreachable("Every loop should have at least an exit");
 }
 
 mtac::basic_block_p mtac::loop::find_preheader() const {

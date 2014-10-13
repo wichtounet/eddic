@@ -11,8 +11,6 @@
 #include <unordered_set>
 #include <memory>
 
-#include "assert.hpp"
-
 #include "mtac/DataFlowProblem.hpp"
 #include "mtac/EscapeAnalysis.hpp"
 
