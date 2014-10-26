@@ -6,3 +6,7 @@
 	path = make-utils
 	url = https://github.com/wichtounet/make-utils.git
 	branch = master
+[submodule "cxxopts"]
+	path = cxxopts
+	url = https://github.com/jarro2783/cxxopts.git
+	branch = master
