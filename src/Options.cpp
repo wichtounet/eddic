@@ -176,7 +176,7 @@ void init_descriptions(){
         ;
 
     add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects", "warning-includes"});
-    
+
     //Special triggers for optimization levels
     add_trigger("__1", {"fpeephole-optimization"});
     add_trigger("__2", {"fglobal-optimization", "fomit-frame-pointer", "fparameter-allocation", "finline-functions"});
