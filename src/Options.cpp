@@ -41,11 +41,66 @@ po::options_description all("Usage : eddic [options] source.eddi");
 
 std::unordered_map<std::string, std::vector<std::string>> triggers;
 
-
-cxxopts::Options options("eddic", "  source.eddi");
-
 void add_trigger(const std::string& option, const std::vector<std::string>& childs){
    triggers[option] = childs; 
+}
+
+void init_options(cxxopts::Options& options){
+    options.add_options("General")
+        ("h,help", "Generate this help message")
+        ("S,assembly", "Generate only the assembly")
+        ("k,keep", "Keep the assembly file")
+        ("version", "Print the version of eddic")
+        ("o,output", "Set the name of the executable", cxxopts::value<std::string>()->default_value("a.out"))
+        ("g,debug", "Add debugging symbols")
+        ("template-depth", "Define the maximum template depth", cxxopts::value<std::string>()->default_value("100"))
+        ("32", "Force the compilation for 32 bits platform")
+        ("64", "Force the compilation for 64 bits platform")
+        ("warning-all", "Enable all the warning messages")
+        ("warning-unused", "Warn about unused variables, parameters and functions")
+        ("warning-cast", "Warn about useless casts")
+        ("warning-effects", "Warn about statements without effect")
+        ("warning-includes", "Warn about useless includes")
+        ;
+
+    options.add_options("Display")
+        ("ast", "Print the Abstract Syntax Tree representation of the source")
+        ("ast-raw", "Print the Abstract Syntax Tree representation of the source coming directly from the parser before any pass is run on the AST. ")
+        ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
+        ("mtac", "Print the medium-level Three Address Code representation of the source")
+        ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
+        ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
+        ("ltac-pre", "Print the low-level Three Address Code representation of the source before allocation of registers")
+        ("ltac-alloc", "Print the low-level Three Address Code representation of the source before optimization")
+        ("ltac", "Print the final low-level Three Address Code representation of the source")
+        ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
+        ;
+
+    options.add_options("Optimization")
+        ("O,Opt", "Define the optimization level", cxxopts::value<std::string>()->implicit_value("0")->default_value("2"))
+        ("O0", "Disable all optimizations")
+        ("O1", "Enable low-level optimizations")
+        ("O2", "Enable all optimizations improving the speed but do imply a space tradeoff.")
+        ("O3", "Enable all optimizations improving the speed but can increase the size of the program.")
+        ("fglobal-optimization", "Enable optimizer engine")
+        ("fparameter-allocation", "Enable parameter allocation in register")
+        ("fpeephole-optimization", "Enable peephole optimizer")
+        ("fomit-frame-pointer", "Omit frame pointer from functions")
+        ("finline-functions", "Enable inlining")
+        ("fno-inline-functions", "Disable inlining")
+        ("funroll-loops", "Enable Loop Unrolling")
+        ("fcomplete-peel-loops", "Enable Complete Loop Peeling")
+        ;
+
+    options.add_options("Backend")
+        ("log", "Define the logging", cxxopts::value<std::string>()->default_value("0"))
+        ("q,quiet", "Do not print anything")
+        ("v,verbose", "Make the compiler verbose")
+        ("single-threaded", "Disable the multi-threaded optimization")
+        ("time", "Activate the timing system")
+        ("stats", "Activate the statistics system")
+        ("input", "Input file", cxxopts::value<std::string>())
+        ;
 }
 
 void init_descriptions(){
@@ -119,62 +174,6 @@ void init_descriptions(){
     all.add(general).add(display).add(optimization).add(backend);
     visible.add(general).add(display).add(optimization);
 
-    options.add_options("General")
-        ("h,help", "Generate this help message")
-        ("S,assembly", "Generate only the assembly")
-        ("k,keep", "Keep the assembly file")
-        ("version", "Print the version of eddic")
-        ("o,output", "Set the name of the executable", cxxopts::value<std::string>()->default_value("a.out"))
-        ("g,debug", "Add debugging symbols")
-        ("template-depth", "Define the maximum template depth", cxxopts::value<std::string>()->default_value("100"))
-        ("32", "Force the compilation for 32 bits platform")
-        ("64", "Force the compilation for 64 bits platform")
-        ("warning-all", "Enable all the warning messages")
-        ("warning-unused", "Warn about unused variables, parameters and functions")
-        ("warning-cast", "Warn about useless casts")
-        ("warning-effects", "Warn about statements without effect")
-        ("warning-includes", "Warn about useless includes")
-        ;
-
-    options.add_options("Display")
-        ("ast", "Print the Abstract Syntax Tree representation of the source")
-        ("ast-raw", "Print the Abstract Syntax Tree representation of the source coming directly from the parser before any pass is run on the AST. ")
-        ("ast-only", "Only print the Abstract Syntax Tree representation of the source (do not continue compilation after printing)")
-        ("mtac", "Print the medium-level Three Address Code representation of the source")
-        ("mtac-opt", "Print the medium-level Three Address Code representation of the source before any optimization has been performed")
-        ("mtac-only", "Only print the medium-level Three Address Code representation of the source (do not continue compilation after printing)")
-        ("ltac-pre", "Print the low-level Three Address Code representation of the source before allocation of registers")
-        ("ltac-alloc", "Print the low-level Three Address Code representation of the source before optimization")
-        ("ltac", "Print the final low-level Three Address Code representation of the source")
-        ("ltac-only", "Only print the low-level Three Address Code representation of the source (do not continue compilation after printing)")
-        ;
-
-    options.add_options("Optimization")
-        ("O,Opt", "Define the optimization level", cxxopts::value<std::string>()->implicit_value("0")->default_value("2"))
-        ("O0", "Disable all optimizations")
-        ("O1", "Enable low-level optimizations")
-        ("O2", "Enable all optimizations improving the speed but do imply a space tradeoff.")
-        ("O3", "Enable all optimizations improving the speed but can increase the size of the program.")
-        ("fglobal-optimization", "Enable optimizer engine")
-        ("fparameter-allocation", "Enable parameter allocation in register")
-        ("fpeephole-optimization", "Enable peephole optimizer")
-        ("fomit-frame-pointer", "Omit frame pointer from functions")
-        ("finline-functions", "Enable inlining")
-        ("fno-inline-functions", "Disable inlining")
-        ("funroll-loops", "Enable Loop Unrolling")
-        ("fcomplete-peel-loops", "Enable Complete Loop Peeling")
-        ;
-
-    options.add_options("Backend")
-        ("log", "Define the logging", cxxopts::value<std::string>()->default_value("0"))
-        ("q,quiet", "Do not print anything")
-        ("v,verbose", "Make the compiler verbose")
-        ("single-threaded", "Disable the multi-threaded optimization")
-        ("time", "Activate the timing system")
-        ("stats", "Activate the statistics system")
-        ("input", "Input file", cxxopts::value<std::string>())
-        ;
-
     add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects", "warning-includes"});
 
     //Special triggers for optimization levels
@@ -205,16 +204,25 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
             }
         }
 
+        cxxopts::Options options("eddic", "  source.eddi");
+
+        init_options(options);
+
+        options.parse_positional("input");
+
+        auto& v = const_cast<char**&>(argv);
+        options.parse(argc, v);
+
         //Add the option of the input file
-        po::positional_options_description p;
-        p.add("input", -1);
+        //po::positional_options_description p;
+        //p.add("input", -1);
 
-        //Create a new set of options
-        po::variables_map options;
+        ////Create a new set of options
+        //po::variables_map options;
 
-        //Parse the command line options
-        po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
-        po::notify(options);
+        ////Parse the command line options
+        //po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
+        //po::notify(options);
 
         //Transfer the options in the eddic configuration
         for(auto& option : all.options()){
@@ -302,7 +310,9 @@ int Configuration::option_int_value(const std::string& option_name){
 }
 
 void eddic::print_help(){
-    std::cout << visible << std::endl;
+    cxxopts::Options options("eddic", "  source.eddi");
+
+    init_options(options);
 
     std::cout << options.help({"General", "Display", "Optimization"}) << std::endl;
 }
