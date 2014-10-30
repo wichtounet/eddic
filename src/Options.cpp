@@ -119,7 +119,6 @@ void init_descriptions(){
     all.add(general).add(display).add(optimization).add(backend);
     visible.add(general).add(display).add(optimization);
 
-    try {
     options.add_options("General")
         ("h,help", "Generate this help message")
         ("S,assembly", "Generate only the assembly")
@@ -136,7 +135,7 @@ void init_descriptions(){
         ("warning-effects", "Warn about statements without effect")
         ("warning-includes", "Warn about useless includes")
         ;
-    
+
     options.add_options("Display")
         ("ast", "Print the Abstract Syntax Tree representation of the source")
         ("ast-raw", "Print the Abstract Syntax Tree representation of the source coming directly from the parser before any pass is run on the AST. ")
@@ -175,14 +174,6 @@ void init_descriptions(){
         ("stats", "Activate the statistics system")
         ("input", "Input file", cxxopts::value<std::string>())
         ;
-
-} catch (const cxxopts::OptionException& e)
-{
-std::cout << "error parsing options: " << e.what() << std::endl;
-exit(1);
-}
-
-
 
     add_trigger("warning-all", {"warning-unused", "warning-cast", "warning-effects", "warning-includes"});
     
