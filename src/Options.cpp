@@ -125,9 +125,9 @@ void init_descriptions(){
         ("S,assembly", "Generate only the assembly")
         ("k,keep", "Keep the assembly file")
         ("version", "Print the version of eddic")
-        ("o,output", "Set the name of the executable", cxxopts::value<std::string>())
+        ("o,output", "Set the name of the executable", cxxopts::value<std::string>()->default_value("a.out"))
         ("g,debug", "Add debugging symbols")
-        ("template-depth", "Define the maximum template depth", cxxopts::value<std::string>())
+        ("template-depth", "Define the maximum template depth", cxxopts::value<std::string>()->default_value("100"))
         ("32", "Force the compilation for 32 bits platform")
         ("64", "Force the compilation for 64 bits platform")
         ("warning-all", "Enable all the warning messages")
@@ -151,7 +151,7 @@ void init_descriptions(){
         ;
 
     options.add_options("Optimization")
-        ("O,Opt", "Define the optimization level", cxxopts::value<std::string>())
+        ("O,Opt", "Define the optimization level", cxxopts::value<std::string>()->implicit_value("0")->default_value("2"))
         ("O0", "Disable all optimizations")
         ("O1", "Enable low-level optimizations")
         ("O2", "Enable all optimizations improving the speed but do imply a space tradeoff.")
@@ -165,9 +165,9 @@ void init_descriptions(){
         ("funroll-loops", "Enable Loop Unrolling")
         ("fcomplete-peel-loops", "Enable Complete Loop Peeling")
         ;
-    
+
     options.add_options("Backend")
-        ("log", "Define the logging", cxxopts::value<std::string>())
+        ("log", "Define the logging", cxxopts::value<std::string>()->default_value("0"))
         ("q,quiet", "Do not print anything")
         ("v,verbose", "Make the compiler verbose")
         ("single-threaded", "Disable the multi-threaded optimization")
