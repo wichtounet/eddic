@@ -10,6 +10,7 @@
 #include <vector>
 #include <atomic>
 
+#define CXXOPTS_NO_RTTI
 #include "cxxopts.hpp"
 
 #include "Options.hpp"
