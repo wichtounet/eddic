@@ -7,7 +7,7 @@ include make-utils/cpp-utils.mk
 
 BOOST_PREFIX=$(HOME)/build/modular-boost/
 CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src -std=c++1y -stdlib=libc++ -isystem $(BOOST_PREFIX)/include
-LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_program_options -lboost_system 
+LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_system 
 
 # Compile the sources files
 
