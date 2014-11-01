@@ -224,20 +224,43 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
         //po::store(po::command_line_parser(argc, argv).options(all).extra_parser(numeric_parser).positional(p).run(), options);
         //po::notify(options);
 
-        //Transfer the options in the eddic configuration
-        for(auto& option : all.options()){
-            ConfigValue value;
+        for(auto& group : options.groups()){
+            for(auto& option : options.group_help(group).options){
+                auto name = option.l.empty() ? option.s : option.l;
 
-            if(options.count(option->long_name())){
-                value.defined = true;
-                value.value = options[option->long_name()].as<std::string>();
-            } else {
-                value.defined = false;
-                value.value = std::string("false");
+                ConfigValue value;
+
+                if(options.count(name)){
+                    value.defined = true;
+
+                    if(option.has_arg){
+                        value.value = options[name].as<std::string>();
+                    } else {
+                        value.value = "true";
+                    }
+                } else {
+                    value.defined = false;
+                    value.value = "false";
+                }
+
+                configuration->values[name] = value;
             }
-
-            configuration->values[option->long_name()] = value;
         }
+
+        //Transfer the options in the eddic configuration
+        //for(auto& option : all.options()){
+            //ConfigValue value;
+
+            //if(options.count(option->long_name())){
+                //value.defined = true;
+                //value.value = options[option->long_name()].as<std::string>();
+            //} else {
+                //value.defined = false;
+                //value.value = std::string("false");
+            //}
+
+            //configuration->values[option->long_name()] = value;
+        //}
 
         if(options.count("O0") + options.count("O1") + options.count("O2") > 1){
             std::cout << "Invalid command line options : only one optimization level should be set" << std::endl;
@@ -272,11 +295,11 @@ std::shared_ptr<Configuration> eddic::parseOptions(int argc, const char* argv[])
         if(configuration->option_int_value("Opt") >= 1){
             trigger_childs(configuration, triggers["__1"]);
         } 
-        
+
         if(configuration->option_int_value("Opt") >= 2){
             trigger_childs(configuration, triggers["__2"]);
         }
-        
+
         if(configuration->option_int_value("Opt") >= 3){
             trigger_childs(configuration, triggers["__3"]);
         }
