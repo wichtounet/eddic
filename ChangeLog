@@ -1,4 +1,5 @@
 eddic 1.2.4 - in development
+* Migrated from Boost Program Options to cxxopts
 * Replaced CMake by plain old makefiles
 * Fix Loop Invariant Code Motion bugs
 * Improve memory usage
