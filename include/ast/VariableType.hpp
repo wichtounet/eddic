@@ -26,8 +26,6 @@ struct PointerType;
  */
 typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
 
-bool operator!=(const Type& a, const Type& b);
-
 std::string to_string(const ast::Type& type);
 
 } //end of ast

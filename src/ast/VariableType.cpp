@@ -13,10 +13,6 @@
 
 using namespace eddic;
 
-bool ast::operator!=(const ast::Type& a, const ast::Type& b){
-    return !(a == b);
-}
-    
 std::string ast::to_string(const ast::Type& type){
     if(auto* ptr = boost::get<ast::SimpleType>(&type)){
         return ptr->type;
