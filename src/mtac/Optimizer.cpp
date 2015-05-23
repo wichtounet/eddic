@@ -13,6 +13,8 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/for_each.hpp>
 
+#include "cpp_utils/tmp.hpp"
+
 #include "Options.hpp"
 #include "PerfsTimer.hpp"
 #include "iterators.hpp"
@@ -345,13 +347,13 @@ struct pass_runner {
     }
 
     template<typename Pass>
-    inline typename std::enable_if<boost::type_traits::ice_or<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type
+    inline typename std::enable_if<cpp::or_u<mtac::pass_traits<Pass>::type == mtac::pass_type::IPA, mtac::pass_traits<Pass>::type == mtac::pass_type::IPA_SUB>::value, void>::type
     debug_local(bool local){
         LOG<Debug>("Optimizer") << mtac::pass_traits<Pass>::name() << " returned " << local << log::endl;
     }
 
     template<typename Pass>
-    inline typename std::enable_if<boost::type_traits::ice_and<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type
+    inline typename std::enable_if<cpp::and_u<mtac::pass_traits<Pass>::type != mtac::pass_type::IPA, mtac::pass_traits<Pass>::type != mtac::pass_type::IPA_SUB>::value, void>::type
     debug_local(bool local){
         if(log::enabled<Debug>()){
             if(local){
