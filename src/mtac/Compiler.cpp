@@ -837,7 +837,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             if(nc_type == INT || nc_type == BOOL){
                 return {boost::get<int>(val)};
             } else if(nc_type == CHAR){
-                return {boost::get<char>(val)};        
+                //TODO Fix the problem with char variables
+                return {boost::relaxed_get<char>(val)};
             } else if(nc_type == FLOAT){
                 return {boost::get<double>(val)};        
             } else if(nc_type == STRING){
