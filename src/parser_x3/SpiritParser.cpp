@@ -1157,16 +1157,16 @@ namespace x3_grammar {
         , phrase_context_type>::type
         context_type;
 
-    x3::symbols<char, ast::Operator> multiplicative_op;
-    x3::symbols<char, ast::Operator> additive_op;
-    x3::symbols<char, ast::Operator> relational_op;
-    x3::symbols<char, ast::Operator> logical_and_op;
-    x3::symbols<char, ast::Operator> logical_or_op;
-    x3::symbols<char, ast::Operator> postfix_op;
-    x3::symbols<char, ast::Operator> prefix_op;
-    x3::symbols<char, ast::Operator> assign_op;
-    x3::symbols<char, ast::Operator> unary_op;
-    x3::symbols<char, ast::BuiltinType> builtin_op;
+    x3::symbols<ast::Operator> multiplicative_op;
+    x3::symbols<ast::Operator> additive_op;
+    x3::symbols<ast::Operator> relational_op;
+    x3::symbols<ast::Operator> logical_and_op;
+    x3::symbols<ast::Operator> logical_or_op;
+    x3::symbols<ast::Operator> postfix_op;
+    x3::symbols<ast::Operator> prefix_op;
+    x3::symbols<ast::Operator> assign_op;
+    x3::symbols<ast::Operator> unary_op;
+    x3::symbols<ast::BuiltinType> builtin_op;
 
     /* Match operators into symbols */
 
@@ -1250,8 +1250,8 @@ namespace x3_grammar {
     struct float_literal_class;
     struct string_literal_class;
     struct char_literal_class;
-    struct value_class {};
-    struct primary_value_class {};
+    struct value_class;
+    struct primary_value_class;
     struct variable_value_class;
     struct new_array_class;
     struct new_class;
@@ -1444,10 +1444,16 @@ namespace x3_grammar {
 
     x3::real_parser<double, x3::strict_real_policies<double>> strict_double;
 
-    auto const identifier =
+    auto const identifier_def =
                 x3::lexeme[(x3::char_('_') >> *(x3::alnum | x3::char_('_')))]
             |   x3::lexeme[(x3::alpha >> *(x3::alnum | x3::char_('_')))]
             ;
+
+    class identifier_class;
+    x3::rule<identifier_class, std::string> const identifier("identifier");
+
+    BOOST_SPIRIT_DEFINE(identifier);
+
 
     /* Types */ 
 
@@ -1483,11 +1489,11 @@ namespace x3_grammar {
         >>  '*';
 
     BOOST_SPIRIT_DEFINE(
-        type = type_def,
-        simple_type = simple_type_def,
-        template_type = template_type_def,
-        array_type = array_type_def,
-        pointer_type = pointer_type_def
+        type,
+        simple_type,
+        template_type,
+        array_type,
+        pointer_type
     );
 
     /* Values */ 
@@ -1524,7 +1530,7 @@ namespace x3_grammar {
         >   value
         >   ']';
 
-    auto const new_def =
+    auto const new__def =
             x3::lit("new")
         >>  type
         >>  '('
@@ -1654,36 +1660,39 @@ namespace x3_grammar {
             assignment
         |   conditional_expression;
 
+    //TODO Perhaps using a reference could save some time
+    auto value_def = assignment_expression;
+
     BOOST_SPIRIT_DEFINE(
-        value = assignment_expression,
-        primary_value = primary_value_def,
-        integer_literal = integer_literal_def,
-        integer_suffix_literal = integer_suffix_literal_def,
-        float_literal = float_literal_def,
-        char_literal = char_literal_def,
-        string_literal = string_literal_def,
-        variable_value = variable_value_def,
-        new_array = new_array_def,
-        new_ = new_def,
-        boolean = boolean_def,
-        null = null_def,
-        builtin_operator = builtin_operator_def,
-        function_call = function_call_def,
-        postfix_expression = postfix_expression_def,
-        prefix_expression = prefix_expression_def,
-        unary_operation = unary_operation_def,
-        unary_expression = unary_expression_def,
-        cast = cast_def,
-        additive_expression = additive_expression_def,
-        multiplicative_expression = multiplicative_expression_def,
-        cast_expression = cast_expression_def,
-        relational_expression = relational_expression_def, 
-        logical_and_expression = logical_and_expression_def, 
-        logical_or_expression = logical_or_expression_def,
-        ternary = ternary_def,
-        conditional_expression = conditional_expression_def,
-        assignment = assignment_def,
-        assignment_expression = assignment_expression_def
+        value,
+        primary_value,
+        integer_literal,
+        integer_suffix_literal,
+        float_literal,
+        char_literal,
+        string_literal,
+        variable_value,
+        new_array,
+        new_,
+        boolean,
+        null,
+        builtin_operator,
+        function_call,
+        postfix_expression,
+        prefix_expression,
+        unary_operation,
+        unary_expression,
+        cast,
+        additive_expression,
+        multiplicative_expression,
+        cast_expression,
+        relational_expression, 
+        logical_and_expression, 
+        logical_or_expression,
+        ternary,
+        conditional_expression,
+        assignment,
+        assignment_expression
     );
 
     /* Instructions */
@@ -1716,7 +1725,7 @@ namespace x3_grammar {
         |   prefix_expression //TODO CHECk that
         |   function_call;
     
-    auto const for_def =
+    auto const for__def =
             x3::lit("for")
         >   '('
         >   -start_instruction
@@ -1755,7 +1764,7 @@ namespace x3_grammar {
         >   *instruction
         >   '}';
     
-    auto const while_def =
+    auto const while__def =
             x3::lit("while")
         >   '('
         >   value
@@ -1796,17 +1805,17 @@ namespace x3_grammar {
         >>  value
         >>  ']';
 
-    auto const return_def =
+    auto const return__def =
             x3::lit("return")
         >   value
         >   x3::attr(42);
 
-    auto const delete_def =
+    auto const delete__def =
             x3::lit("delete")
         >   value
         >   x3::attr(42);
 
-    auto const if_def =
+    auto const if__def =
             x3::lit("if")
         >>  '('
         >>  value
@@ -1827,7 +1836,7 @@ namespace x3_grammar {
         >   *instruction
         >   '}';
     
-    auto const else_def =
+    auto const else__def =
             x3::lit("else")
         >   '{'
         >   *instruction
@@ -1851,7 +1860,7 @@ namespace x3_grammar {
         >   ':'
         >   *instruction;
 
-    auto const switch_def =
+    auto const switch__def =
            x3::lit("switch")
         >  '('
         >  value
@@ -1863,26 +1872,26 @@ namespace x3_grammar {
             ;
 
     BOOST_SPIRIT_DEFINE(
-        instruction = instruction_def,
-        start_instruction = start_instruction_def,
-        repeatable_instruction = repeatable_instruction_def,
-        for_ = for_def,
-        foreach = foreach_def,
-        foreach_in = foreach_in_def,
-        while_ = while_def,
-        do_while = do_while_def,
-        variable_declaration = variable_declaration_def,
-        struct_declaration = struct_declaration_def,
-        array_declaration = array_declaration_def,
-        return_ = return_def,
-        delete_ = delete_def,
-        if_ = if_def,
-        else_if = else_if_def,
-        else_ = else_def,
-        swap = swap_def,
-        switch_ = switch_def,
-        switch_case = switch_case_def,
-        default_case = default_case_def
+        instruction,
+        start_instruction,
+        repeatable_instruction,
+        for_,
+        foreach,
+        foreach_in,
+        while_,
+        do_while,
+        variable_declaration,
+        struct_declaration,
+        array_declaration,
+        return_,
+        delete_,
+        if_,
+        else_if,
+        else_,
+        swap,
+        switch_,
+        switch_case,
+        default_case
     );
 
     /* Base */ 
@@ -1991,20 +2000,18 @@ namespace x3_grammar {
     /* Grammar */
 
     BOOST_SPIRIT_DEFINE(
-        source_file = source_file_def,
-        function_parameter = function_parameter_def, 
-        template_function_declaration = template_function_declaration_def, 
-        global_variable_declaration = global_variable_declaration_def,
-        global_array_declaration = global_array_declaration_def,
-        standard_import = standard_import_def,
-        import = import_def,
-        member_declaration = member_declaration_def,
-        constructor = constructor_def,
-        destructor = destructor_def,
-        template_struct = template_struct_def
+        source_file,
+        function_parameter, 
+        template_function_declaration, 
+        global_variable_declaration,
+        global_array_declaration,
+        standard_import,
+        import,
+        member_declaration,
+        constructor,
+        destructor,
+        template_struct
     );
-
-    const auto parser = source_file;
 
 } // end of grammar namespace
 
@@ -2030,8 +2037,6 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     file_contents.resize(size);
     in.read(&file_contents[0], size);
 
-    //auto& parser = x3_grammar::parser;
-
     x3_ast::source_file result;
 
     x3_grammar::iterator_type it(file_contents.begin());
@@ -2039,7 +2044,7 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
 
     x3_grammar::error_handler_type error_handler(it, end, std::cerr, file);
 
-    auto const parser = x3::with<x3_grammar::error_handler_tag>(std::ref(error_handler))[x3_grammar::parser];
+    auto const parser = x3::with<x3_grammar::error_handler_tag>(std::ref(error_handler))[x3_grammar::source_file];
     auto& skipper = x3_grammar::skipper;
 
         bool r = x3::phrase_parse(it, end, parser, skipper, result);
