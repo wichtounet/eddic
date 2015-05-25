@@ -1147,8 +1147,8 @@ namespace x3_grammar {
         }
     }; 
 
-    typedef std::string::iterator base_iterator_type;
-    typedef boost::spirit::line_pos_iterator<base_iterator_type> iterator_type;
+    //typedef std::string::iterator base_iterator_type;
+    typedef std::string::const_iterator iterator_type;
     typedef x3::phrase_parse_context<x3::ascii::space_type>::type phrase_context_type;
     typedef error_handler<iterator_type> error_handler_type;
 
