@@ -10,5 +10,6 @@ test_reports
 tests.tmp.log
 release
 debug
+release_debug
 html
 massif.*
