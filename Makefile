@@ -5,9 +5,11 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
+$(eval $(call use_libcxx))
+
 BOOST_PREFIX=$(HOME)/build/modular-boost/
-CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src -std=c++1y -stdlib=libc++ -isystem $(BOOST_PREFIX)/include
-LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_system 
+CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src -isystem $(BOOST_PREFIX)/include
+LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_system
 
 # Compile the sources files
 
@@ -45,7 +47,7 @@ $(eval $(call add_executable,test,$(TEST_CPP_FILES), -lboost_unit_test_framework
 debug: debug/bin/eddic debug/bin/time_parse debug/bin/generate_lexer debug/bin/test
 release: release/bin/eddic release/bin/time_parse release/bin/generate_lexer release/bin/test
 
-all: debug release 
+all: debug release
 
 # Custom targets
 
@@ -55,7 +57,7 @@ update_test_list: release/bin/test
 
 cppcheck:
 	cppcheck --platform=unix64 --enable=all --std=c++11 -I include src
-    
+
 doc:
 	doxygen doc/Doxyfile
 
