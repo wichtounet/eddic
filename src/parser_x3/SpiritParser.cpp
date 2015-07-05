@@ -33,7 +33,6 @@
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 #include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
-#include <boost/spirit/home/support/iterators/line_pos_iterator.hpp>
 
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -54,9 +53,9 @@ struct pointer_type;
 struct template_type;
 
 typedef x3::variant<
-        simple_type, 
-        x3::forward_ast<array_type>, 
-        x3::forward_ast<template_type>, 
+        simple_type,
+        x3::forward_ast<array_type>,
+        x3::forward_ast<template_type>,
         x3::forward_ast<pointer_type>
     > type;
 
@@ -255,8 +254,8 @@ typedef x3::variant<
         x3::forward_ast<switch_>,
         struct_declaration,
         array_declaration,
-        function_call, 
-        assignment, 
+        function_call,
+        assignment,
         swap
     > instruction;
 
@@ -365,12 +364,12 @@ struct member_declaration : x3::position_tagged {
     std::string name;
 };
 
-struct constructor : x3::position_tagged { 
+struct constructor : x3::position_tagged {
     std::vector<function_parameter> parameters;
     std::vector<instruction> instructions;
 };
 
-struct destructor { 
+struct destructor {
     std::vector<function_parameter> parameters;
     std::vector<instruction> instructions;
 	x3::unused_type fake_;
@@ -380,7 +379,7 @@ typedef x3::variant<
         member_declaration,
         array_declaration,
         template_function_declaration,
-        constructor, 
+        constructor,
         destructor
     > struct_block;
 
@@ -429,15 +428,15 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const standard_import& import){
         std::cout << indent() << "standard_import: " << import.file << std::endl;
     }
-    
+
     void operator()(const import& import){
         std::cout << indent() << "import: " << import.file << std::endl;
     }
-    
+
     void operator()(const template_struct&){
         //TODO
     }
-    
+
     void operator()(const template_function_declaration& function){
         std::cout << indent() << "template_function_declaration: " << function.name << std::endl;
         i += 2;
@@ -465,7 +464,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const for_& for_){
         //TODO
     }
@@ -488,7 +487,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const foreach_in& foreach){
         std::cout << indent() << "foreach_in: " << std::endl;
         i += 2;
@@ -579,7 +578,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const variable_declaration& declaration){
         std::cout << indent() << "variable_declaration: " << std::endl;
         i += 2;
@@ -597,7 +596,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         error_handler(declaration, "Variable declaration (handler)");
     }
-    
+
     void operator()(const struct_declaration& declaration){
         std::cout << indent() << "struct_declaration: " << std::endl;
         i += 2;
@@ -614,7 +613,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const global_variable_declaration& declaration){
         std::cout << indent() << "global_variable_declaration: " << std::endl;
         i += 2;
@@ -631,7 +630,7 @@ struct printer: public boost::static_visitor<>  {
         }
         i -= 2;
     }
-    
+
     void operator()(const global_array_declaration& declaration){
         std::cout << indent() << "global_array_declaration: " << std::endl;
         i += 2;
@@ -646,7 +645,7 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const array_declaration& declaration){
         std::cout << indent() << "array_declaration: " << std::endl;
         i += 2;
@@ -665,14 +664,14 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const simple_type& type){
         std::cout << indent() << "simple_type: " << type.base_type << std::endl;
     }
-    
+
     void operator()(const array_type& type){
         std::cout << indent() << "array_type: " << std::endl;
         i += 2;
         boost::apply_visitor(*this, type.base_type);
         i -= 2;
     }
-    
+
     void operator()(const template_type& type){
         std::cout << indent() << "template_type: " << std::endl;
         i += 2;
@@ -685,14 +684,14 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
         i -= 2;
     }
-    
+
     void operator()(const pointer_type& type){
         std::cout << indent() << "pointer_type: " << std::endl;
         i += 2;
         boost::apply_visitor(*this, type.base_type);
         i -= 2;
     }
-    
+
     void operator()(const new_array& value){
         std::cout << indent() << "new_array: " << std::endl;
         std::cout << indent() << "type: " << std::endl;
@@ -704,7 +703,7 @@ struct printer: public boost::static_visitor<>  {
         boost::apply_visitor(*this, value.size);
         i += 2;
     }
-    
+
     void operator()(const new_& value){
         std::cout << indent() << "new_: " << std::endl;
         std::cout << indent() << "type: " << std::endl;
@@ -726,11 +725,11 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const cast& value){
         //TODO
     }
-    
+
     void operator()(const prefix_operation& value){
         //TODO
     }
-    
+
     void operator()(const ternary& value){
         //TODO
     }
@@ -742,7 +741,7 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const integer_literal& integer){
         std::cout << indent() << "integer_literal: " << integer.value << std::endl;
     }
-    
+
     void operator()(const integer_suffix_literal& integer){
         std::cout << indent() << "integer_suffix_literal: " << integer.value << integer.suffix << std::endl;
     }
@@ -750,23 +749,23 @@ struct printer: public boost::static_visitor<>  {
     void operator()(const float_literal& integer){
         std::cout << indent() << "float_literal: " << integer.value << std::endl;
     }
-    
+
     void operator()(const string_literal& integer){
         std::cout << indent() << "string_literal: " << integer.value << std::endl;
     }
-    
+
     void operator()(const char_literal& integer){
         std::cout << indent() << "char_literal: " << integer.value << std::endl;
     }
-    
+
     void operator()(const variable_value& integer){
         std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
     }
-    
+
     void operator()(const null&){
         std::cout << indent() << "null: " << std::endl;
     }
-    
+
     void operator()(const swap&){
         std::cout << indent() << "swap: " << std::endl;
     }
@@ -781,7 +780,7 @@ struct printer: public boost::static_visitor<>  {
         }
         i += 2;
     }
-    
+
     void operator()(const function_call& value){
         std::cout << indent() << "function_call: " << std::endl;
         std::cout << indent() << "function_name: " << value.function_name << std::endl;
@@ -810,23 +809,23 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::simple_type, 
+    x3_ast::simple_type,
     (bool, const_)
     (std::string, base_type)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::array_type, 
+    x3_ast::array_type,
     (x3_ast::type, base_type)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::pointer_type, 
+    x3_ast::pointer_type,
     (x3_ast::type, base_type)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::template_type, 
+    x3_ast::template_type,
     (std::string, base_type)
     (std::vector<x3_ast::type>, template_types)
 )
@@ -834,99 +833,99 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::integer_literal, 
+    x3_ast::integer_literal,
     (int, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::integer_suffix_literal, 
+    x3_ast::integer_suffix_literal,
     (int, value)
     (std::string, suffix)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::float_literal, 
+    x3_ast::float_literal,
     (double, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::string_literal, 
+    x3_ast::string_literal,
     (std::string, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::boolean, 
+    x3_ast::boolean,
     (bool, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::char_literal, 
+    x3_ast::char_literal,
     (char, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::variable_value, 
+    x3_ast::variable_value,
     (std::string, variable_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::new_array, 
+    x3_ast::new_array,
     (x3_ast::type, type)
     (x3_ast::value, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::new_, 
+    x3_ast::new_,
     (x3_ast::type, type)
     (std::vector<x3_ast::value>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::builtin_operator, 
+    x3_ast::builtin_operator,
     (ast::BuiltinType, type)
     (std::vector<x3_ast::value>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::function_call, 
+    x3_ast::function_call,
     (std::string, function_name)
     (std::vector<x3_ast::type>, template_types)
     (std::vector<x3_ast::value>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::expression, 
+    x3_ast::expression,
     (x3_ast::value, first)
     (std::vector<x3_ast::operation>, operations)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::operation, 
+    x3_ast::operation,
     (ast::Operator, op)
     (x3_ast::operation_value, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::prefix_operation, 
+    x3_ast::prefix_operation,
     (ast::Operator, op)
     (x3_ast::value, left_value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::cast, 
+    x3_ast::cast,
     (x3_ast::type, type)
     (x3_ast::value, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::ternary, 
+    x3_ast::ternary,
     (x3_ast::value, condition)
     (x3_ast::value, true_value)
     (x3_ast::value, false_value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::assignment, 
+    x3_ast::assignment,
     (x3_ast::value, left_value)
     (ast::Operator, op)
     (x3_ast::value, value)
@@ -935,7 +934,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::for_, 
+    x3_ast::for_,
     (boost::optional<x3_ast::instruction>, start)
     (boost::optional<x3_ast::value>, condition)
     (boost::optional<x3_ast::instruction>, repeat)
@@ -943,7 +942,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::foreach_in, 
+    x3_ast::foreach_in,
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (std::string, array_name)
@@ -951,7 +950,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::foreach, 
+    x3_ast::foreach,
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (int, from)
@@ -960,64 +959,64 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::while_, 
+    x3_ast::while_,
     (x3_ast::value, condition)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::do_while, 
+    x3_ast::do_while,
     (std::vector<x3_ast::instruction>, instructions)
     (x3_ast::value, condition)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::variable_declaration, 
+    x3_ast::variable_declaration,
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (boost::optional<x3_ast::value>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::struct_declaration, 
+    x3_ast::struct_declaration,
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (std::vector<x3_ast::value>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::array_declaration, 
+    x3_ast::array_declaration,
     (x3_ast::type, array_type)
     (std::string, array_name)
     (x3_ast::value, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::return_, 
+    x3_ast::return_,
     (x3_ast::value, return_value)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::delete_, 
+    x3_ast::delete_,
     (x3_ast::value, value)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::else_if, 
+    x3_ast::else_if,
     (x3_ast::value, condition)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::else_, 
+    x3_ast::else_,
     (std::vector<x3_ast::instruction>, instructions)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::if_, 
+    x3_ast::if_,
     (x3_ast::value, condition)
     (std::vector<x3_ast::instruction>, instructions)
     (std::vector<x3_ast::else_if>, else_ifs)
@@ -1031,7 +1030,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::default_case, 
+    x3_ast::default_case,
     (std::vector<x3_ast::instruction>, instructions)
     (x3::unused_type, fake_)
 )
@@ -1044,7 +1043,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::switch_case, 
+    x3_ast::switch_case,
     (x3_ast::value, value)
     (std::vector<x3_ast::instruction>, instructions)
 )
@@ -1061,20 +1060,20 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::function_parameter, 
+    x3_ast::function_parameter,
     (x3_ast::type, parameter_type)
     (std::string, parameter_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::global_variable_declaration, 
+    x3_ast::global_variable_declaration,
     (x3_ast::type, variable_type)
     (std::string, variable_name)
     (boost::optional<x3_ast::value>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::global_array_declaration, 
+    x3_ast::global_array_declaration,
     (x3_ast::type, array_type)
     (std::string, array_name)
     (x3_ast::value, size)
@@ -1097,13 +1096,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::destructor, 
+    x3_ast::destructor,
     (std::vector<x3_ast::instruction>, instructions)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::constructor, 
+    x3_ast::constructor,
     (std::vector<x3_ast::function_parameter>, parameters)
     (std::vector<x3_ast::instruction>, instructions)
 )
@@ -1145,7 +1144,7 @@ namespace x3_grammar {
             auto& error_handler = x3::get<error_handler_tag>(context).get();
             error_handler.tag(ast, first, last);
         }
-    }; 
+    };
 
     //typedef std::string::iterator base_iterator_type;
     typedef std::string::const_iterator iterator_type;
@@ -1172,7 +1171,7 @@ namespace x3_grammar {
     /* Match operators into symbols */
 
     void add_keywords(){
-        static bool once = false; 
+        static bool once = false;
         if(once){
             return;
         }
@@ -1456,7 +1455,7 @@ namespace x3_grammar {
     BOOST_SPIRIT_DEFINE(identifier);
 
 
-    /* Types */ 
+    /* Types */
 
     auto const type_def =
             array_type
@@ -1464,12 +1463,12 @@ namespace x3_grammar {
         |   template_type
         |   simple_type;
 
-    auto const simple_type_def = 
+    auto const simple_type_def =
             const_
         >>  identifier;
 
     auto const template_type_def =
-            identifier 
+            identifier
         >>  '<'
         >>  type % ','
         >>  '>';
@@ -1497,14 +1496,14 @@ namespace x3_grammar {
         pointer_type
     );
 
-    /* Values */ 
+    /* Values */
 
     auto const integer_literal_def =
         x3::int_;
-    
+
     auto const integer_suffix_literal_def =
         x3::lexeme[
-                x3::int_ 
+                x3::int_
             >>  +x3::alpha
         ];
 
@@ -1517,8 +1516,8 @@ namespace x3_grammar {
         >   '\'';
 
     auto const string_literal_def =
-            x3::lit('"') 
-        >>  x3::no_skip[*(x3::char_ - '"')] 
+            x3::lit('"')
+        >>  x3::no_skip[*(x3::char_ - '"')]
         >   '"';
 
     auto const variable_value_def =
@@ -1547,7 +1546,7 @@ namespace x3_grammar {
         >>  '('
         >>  value % ','
         >>  ')';
-    
+
     auto const function_call_def =
             identifier
         >>  -(
@@ -1632,7 +1631,7 @@ namespace x3_grammar {
     auto const relational_expression_def =
             additive_expression
         >>  *(relational_op > additive_expression);
-    
+
     auto const logical_and_expression_def =
             relational_expression
         >>  *(logical_and_op > relational_expression);
@@ -1687,8 +1686,8 @@ namespace x3_grammar {
         additive_expression,
         multiplicative_expression,
         cast_expression,
-        relational_expression, 
-        logical_and_expression, 
+        relational_expression,
+        logical_and_expression,
         logical_or_expression,
         ternary,
         conditional_expression,
@@ -1725,7 +1724,7 @@ namespace x3_grammar {
         |   postfix_expression
         |   prefix_expression //TODO CHECk that
         |   function_call;
-    
+
     auto const for__def =
             x3::lit("for")
         >   '('
@@ -1752,7 +1751,7 @@ namespace x3_grammar {
         >   '{'
         >   *instruction
         >   '}';
-    
+
     auto const foreach_in_def =
             x3::lit("foreach")
         >>  '('
@@ -1764,7 +1763,7 @@ namespace x3_grammar {
         >   '{'
         >   *instruction
         >   '}';
-    
+
     auto const while__def =
             x3::lit("while")
         >   '('
@@ -1774,7 +1773,7 @@ namespace x3_grammar {
         >   *instruction
         >   '}'
         ;
-    
+
     auto const do_while_def =
             x3::lit("do")
         >  '{'
@@ -1791,14 +1790,14 @@ namespace x3_grammar {
             type
         >>  identifier
         >>  -('=' > value);
-    
+
     auto const struct_declaration_def =
             type
         >>  identifier
         >>  '('
         >>  -(value % ',')
         >>  ')';
-    
+
     auto const array_declaration_def =
             type
         >>  identifier
@@ -1836,7 +1835,7 @@ namespace x3_grammar {
         >   '{'
         >   *instruction
         >   '}';
-    
+
     auto const else__def =
             x3::lit("else")
         >   '{'
@@ -1895,9 +1894,9 @@ namespace x3_grammar {
         default_case
     );
 
-    /* Base */ 
+    /* Base */
 
-    auto const source_file_def = 
+    auto const source_file_def =
          *(
                 standard_import
             |   import
@@ -1907,19 +1906,19 @@ namespace x3_grammar {
             |   (global_variable_declaration > ';')
          );
 
-    auto const standard_import_def = 
+    auto const standard_import_def =
             x3::lit("include")
-        >>  '<' 
+        >>  '<'
         >   identifier
         >   '>';
 
-    auto const import_def = 
+    auto const import_def =
             x3::lit("include")
-        >>  '"' 
-        >   x3::no_skip[*(x3::char_ - '"')] 
+        >>  '"'
+        >   x3::no_skip[*(x3::char_ - '"')]
         >   '"';
 
-    auto const template_function_declaration_def = 
+    auto const template_function_declaration_def =
             -(
                     x3::lit("template")
                 >>  '<'
@@ -1928,10 +1927,10 @@ namespace x3_grammar {
             )
         >>  type
         >>  identifier
-        >>  '(' 
+        >>  '('
         >>  -(function_parameter % ',')
         >   ')'
-        >   '{' 
+        >   '{'
         >   *instruction
         >   '}';
 
@@ -1939,7 +1938,7 @@ namespace x3_grammar {
             type
         >>  identifier
         >>  -('=' >> value);
-    
+
     auto const global_array_declaration_def =
             type
         >>  identifier
@@ -1955,7 +1954,7 @@ namespace x3_grammar {
             type
         >>  identifier
         >>  ';';
-    
+
     auto const constructor_def =
             x3::lit("this")
         >   '('
@@ -1976,7 +1975,7 @@ namespace x3_grammar {
         >   x3::attr(1);
 
     auto template_struct_def =
-            -(  
+            -(
                     x3::lit("template")
                 >>  '<'
                 >>  (x3::lit("type") >> identifier) % ','
@@ -1985,7 +1984,7 @@ namespace x3_grammar {
         >>  x3::lit("struct")
         >>  identifier
         >>  -(
-                    "extends" 
+                    "extends"
                 >   type
              )
         >>  '{'
@@ -2002,8 +2001,8 @@ namespace x3_grammar {
 
     BOOST_SPIRIT_DEFINE(
         source_file,
-        function_parameter, 
-        template_function_declaration, 
+        function_parameter,
+        template_function_declaration,
         global_variable_declaration,
         global_array_declaration,
         standard_import,
