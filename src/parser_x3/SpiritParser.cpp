@@ -57,7 +57,7 @@ typedef x3::variant<
         x3::forward_ast<array_type>,
         x3::forward_ast<template_type>,
         x3::forward_ast<pointer_type>
-    > type;
+    > type_t;
 
 struct simple_type {
     bool const_;
@@ -65,16 +65,16 @@ struct simple_type {
 };
 
 struct array_type {
-    type base_type;
+    type_t base_type;
 };
 
 struct pointer_type {
-    type base_type;
+    type_t base_type;
 };
 
 struct template_type {
     std::string base_type;
-    std::vector<type> template_types;
+    std::vector<type_t> template_types;
 };
 
 //*****************************************
@@ -139,30 +139,30 @@ typedef x3::variant<
             x3::forward_ast<ternary>,
             x3::forward_ast<expression>,
             x3::forward_ast<assignment>
-        > value;
+        > value_t;
 
 struct function_call : x3::position_tagged {
     std::string function_name;
-    std::vector<type> template_types;
-    std::vector<value> values;
+    std::vector<type_t> template_types;
+    std::vector<value_t> values;
 };
 
 struct builtin_operator {
     ast::BuiltinType type;
-    std::vector<value> values;
+    std::vector<value_t> values;
 };
 
 struct new_array : x3::position_tagged {
-    type type;
-    value size;
+    type_t type;
+    value_t size;
 };
 
 struct new_ : x3::position_tagged {
-    type type;
-    std::vector<value> values;
+    type_t type;
+    std::vector<value_t> values;
 };
 
-typedef value operation_value;
+typedef value_t operation_value;
 
 struct operation {
     ast::Operator op;
@@ -170,29 +170,29 @@ struct operation {
 };
 
 struct expression : x3::position_tagged {
-    value first;
+    value_t first;
     std::vector<operation> operations;
 };
 
 struct prefix_operation : x3::position_tagged {
-    value left_value;
+    value_t left_value;
     ast::Operator op;
 };
 
 struct cast : x3::position_tagged {
-    type type;
-    value value;
+    type_t type;
+    value_t value;
 };
 
 struct ternary : x3::position_tagged {
-    value condition;
-    value true_value;
-    value false_value;
+    value_t condition;
+    value_t true_value;
+    value_t false_value;
 };
 
 struct assignment : x3::position_tagged {
-    value left_value;
-    value value;
+    value_t left_value;
+    value_t value;
     ast::Operator op = ast::Operator::ASSIGN; //If not specified, it is not a compound operator
 };
 
@@ -207,30 +207,30 @@ struct if_;
 struct switch_;
 
 struct variable_declaration : x3::position_tagged {
-    type variable_type;
+    type_t variable_type;
     std::string variable_name;
-    boost::optional<x3_ast::value> value;
+    boost::optional<x3_ast::value_t> value;
 };
 
 struct struct_declaration : x3::position_tagged {
-    type variable_type;
+    type_t variable_type;
     std::string variable_name;
-    std::vector<value> values;
+    std::vector<value_t> values;
 };
 
 struct array_declaration {
-    type array_type;
+    type_t array_type;
     std::string array_name;
-    value size;
+    value_t size;
 };
 
 struct delete_ : x3::position_tagged {
-    value value;
+    value_t value;
 	x3::unused_type fake_;
 };
 
 struct return_ : x3::position_tagged {
-    value return_value;
+    value_t return_value;
 	x3::unused_type fake_;
 };
 
@@ -259,48 +259,48 @@ typedef x3::variant<
         swap
     > instruction;
 
-struct default_case : x3::position_tagged {
+struct default_case_t : x3::position_tagged {
     std::vector<instruction> instructions;
 	x3::unused_type fake_;
 };
 
 struct switch_case : x3::position_tagged {
-    value value;
+    value_t value;
     std::vector<instruction> instructions;
 };
 
 struct switch_ : x3::position_tagged {
-    value value;
+    value_t value;
     std::vector<switch_case> cases;
-    boost::optional<default_case> default_case;
+    boost::optional<default_case_t> default_case;
 };
 
 struct while_ : x3::position_tagged {
-    value condition;
+    value_t condition;
     std::vector<instruction> instructions;
 };
 
 struct do_while : x3::position_tagged {
-    value condition;
+    value_t condition;
     std::vector<instruction> instructions;
 };
 
 struct for_ : x3::position_tagged {
     boost::optional<instruction> start;
-    boost::optional<value> condition;
+    boost::optional<value_t> condition;
     boost::optional<instruction> repeat;
     std::vector<instruction> instructions;
 };
 
 struct foreach_in : x3::position_tagged {
-    type variable_type;
+    type_t variable_type;
     std::string variable_name;
     std::string array_name;
     std::vector<instruction> instructions;
 };
 
 struct foreach : x3::position_tagged {
-    type variable_type;
+    type_t variable_type;
     std::string variable_name;
     int from;
     int to;
@@ -308,7 +308,7 @@ struct foreach : x3::position_tagged {
 };
 
 struct else_if {
-    value condition;
+    value_t condition;
     std::vector<instruction> instructions;
 };
 
@@ -318,7 +318,7 @@ struct else_ {
 };
 
 struct if_ {
-    value condition;
+    value_t condition;
     std::vector<instruction> instructions;
     std::vector<else_if> else_ifs;
     boost::optional<x3_ast::else_> else_;
@@ -327,28 +327,28 @@ struct if_ {
 //*****************************************
 
 struct function_parameter {
-    type  parameter_type;
+    type_t  parameter_type;
     std::string parameter_name;
 };
 
 struct template_function_declaration : x3::position_tagged {
     std::vector<std::string> template_types;
-    type return_type;
+    type_t return_type;
     std::string name;
     std::vector<function_parameter> parameters;
     std::vector<instruction> instructions;
 };
 
 struct global_variable_declaration : x3::position_tagged {
-    type variable_type;
+    type_t variable_type;
     std::string variable_name;
-    boost::optional<x3_ast::value> value;
+    boost::optional<x3_ast::value_t> value;
 };
 
 struct global_array_declaration : x3::position_tagged {
-    type array_type;
+    type_t array_type;
     std::string array_name;
-    value size;
+    value_t size;
 };
 
 struct standard_import : x3::position_tagged {
@@ -360,7 +360,7 @@ struct import : x3::position_tagged {
 };
 
 struct member_declaration : x3::position_tagged {
-    type type;
+    type_t type;
     std::string name;
 };
 
@@ -386,7 +386,7 @@ typedef x3::variant<
 struct template_struct : x3::position_tagged {
     std::vector<std::string> template_types;
     std::string name;
-    boost::optional<type> parent_type;
+    boost::optional<type_t> parent_type;
     std::vector<struct_block> blocks;
 };
 
@@ -816,18 +816,18 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::array_type,
-    (x3_ast::type, base_type)
+    (x3_ast::type_t, base_type)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::pointer_type,
-    (x3_ast::type, base_type)
+    (x3_ast::type_t, base_type)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_type,
     (std::string, base_type)
-    (std::vector<x3_ast::type>, template_types)
+    (std::vector<x3_ast::type_t>, template_types)
 )
 
 //***************
@@ -870,32 +870,32 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_array,
-    (x3_ast::type, type)
-    (x3_ast::value, size)
+    (x3_ast::type_t, type)
+    (x3_ast::value_t, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_,
-    (x3_ast::type, type)
-    (std::vector<x3_ast::value>, values)
+    (x3_ast::type_t, type)
+    (std::vector<x3_ast::value_t>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::builtin_operator,
     (ast::BuiltinType, type)
-    (std::vector<x3_ast::value>, values)
+    (std::vector<x3_ast::value_t>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_call,
     (std::string, function_name)
-    (std::vector<x3_ast::type>, template_types)
-    (std::vector<x3_ast::value>, values)
+    (std::vector<x3_ast::type_t>, template_types)
+    (std::vector<x3_ast::value_t>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::expression,
-    (x3_ast::value, first)
+    (x3_ast::value_t, first)
     (std::vector<x3_ast::operation>, operations)
 )
 
@@ -908,27 +908,27 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::prefix_operation,
     (ast::Operator, op)
-    (x3_ast::value, left_value)
+    (x3_ast::value_t, left_value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::cast,
-    (x3_ast::type, type)
-    (x3_ast::value, value)
+    (x3_ast::type_t, type)
+    (x3_ast::value_t, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::ternary,
-    (x3_ast::value, condition)
-    (x3_ast::value, true_value)
-    (x3_ast::value, false_value)
+    (x3_ast::value_t, condition)
+    (x3_ast::value_t, true_value)
+    (x3_ast::value_t, false_value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::assignment,
-    (x3_ast::value, left_value)
+    (x3_ast::value_t, left_value)
     (ast::Operator, op)
-    (x3_ast::value, value)
+    (x3_ast::value_t, value)
 )
 
 //***************
@@ -936,14 +936,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::for_,
     (boost::optional<x3_ast::instruction>, start)
-    (boost::optional<x3_ast::value>, condition)
+    (boost::optional<x3_ast::value_t>, condition)
     (boost::optional<x3_ast::instruction>, repeat)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach_in,
-    (x3_ast::type, variable_type)
+    (x3_ast::type_t, variable_type)
     (std::string, variable_name)
     (std::string, array_name)
     (std::vector<x3_ast::instruction>, instructions)
@@ -951,7 +951,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach,
-    (x3_ast::type, variable_type)
+    (x3_ast::type_t, variable_type)
     (std::string, variable_name)
     (int, from)
     (int, to)
@@ -960,52 +960,52 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::while_,
-    (x3_ast::value, condition)
+    (x3_ast::value_t, condition)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::do_while,
     (std::vector<x3_ast::instruction>, instructions)
-    (x3_ast::value, condition)
+    (x3_ast::value_t, condition)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::variable_declaration,
-    (x3_ast::type, variable_type)
+    (x3_ast::type_t, variable_type)
     (std::string, variable_name)
-    (boost::optional<x3_ast::value>, value)
+    (boost::optional<x3_ast::value_t>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::struct_declaration,
-    (x3_ast::type, variable_type)
+    (x3_ast::type_t, variable_type)
     (std::string, variable_name)
-    (std::vector<x3_ast::value>, values)
+    (std::vector<x3_ast::value_t>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::array_declaration,
-    (x3_ast::type, array_type)
+    (x3_ast::type_t, array_type)
     (std::string, array_name)
-    (x3_ast::value, size)
+    (x3_ast::value_t, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::return_,
-    (x3_ast::value, return_value)
+    (x3_ast::value_t, return_value)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::delete_,
-    (x3_ast::value, value)
+    (x3_ast::value_t, value)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::else_if,
-    (x3_ast::value, condition)
+    (x3_ast::value_t, condition)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
@@ -1017,7 +1017,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::if_,
-    (x3_ast::value, condition)
+    (x3_ast::value_t, condition)
     (std::vector<x3_ast::instruction>, instructions)
     (std::vector<x3_ast::else_if>, else_ifs)
     (boost::optional<x3_ast::else_>, else_)
@@ -1030,21 +1030,21 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::default_case,
+    x3_ast::default_case_t,
     (std::vector<x3_ast::instruction>, instructions)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::switch_,
-    (x3_ast::value, value)
+    (x3_ast::value_t, value)
     (std::vector<x3_ast::switch_case>, cases)
-    (boost::optional<x3_ast::default_case>, default_case)
+    (boost::optional<x3_ast::default_case_t>, default_case)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::switch_case,
-    (x3_ast::value, value)
+    (x3_ast::value_t, value)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
@@ -1053,7 +1053,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_function_declaration,
     (std::vector<std::string>, template_types)
-    (x3_ast::type, return_type)
+    (x3_ast::type_t, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
     (std::vector<x3_ast::instruction>, instructions)
@@ -1061,22 +1061,22 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_parameter,
-    (x3_ast::type, parameter_type)
+    (x3_ast::type_t, parameter_type)
     (std::string, parameter_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::global_variable_declaration,
-    (x3_ast::type, variable_type)
+    (x3_ast::type_t, variable_type)
     (std::string, variable_name)
-    (boost::optional<x3_ast::value>, value)
+    (boost::optional<x3_ast::value_t>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::global_array_declaration,
-    (x3_ast::type, array_type)
+    (x3_ast::type_t, array_type)
     (std::string, array_name)
-    (x3_ast::value, size)
+    (x3_ast::value_t, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1091,7 +1091,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::member_declaration,
-    (x3_ast::type, type)
+    (x3_ast::type_t, type)
     (std::string, name)
 )
 
@@ -1111,7 +1111,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_struct,
     (std::vector<std::string>, template_types)
     (std::string, name)
-    (boost::optional<x3_ast::type>, parent_type)
+    (boost::optional<x3_ast::type_t>, parent_type)
     (std::vector<x3_ast::struct_block>, blocks)
 )
 
@@ -1310,7 +1310,7 @@ namespace x3_grammar {
 
     x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
 
-    x3::rule<type_class, x3_ast::type> const type("type");
+    x3::rule<type_class, x3_ast::type_t> const type("type");
     x3::rule<simple_type_class, x3_ast::simple_type> const simple_type("simple_type");
     x3::rule<array_type_class, x3_ast::array_type> const array_type("array_type");
     x3::rule<pointer_type_class, x3_ast::pointer_type> const pointer_type("pointer_type");
@@ -1330,7 +1330,7 @@ namespace x3_grammar {
     x3::rule<function_call_class, x3_ast::function_call> const function_call("function_call");
     x3::rule<postfix_expression_class, x3_ast::expression> const postfix_expression("postfix_expression");
     x3::rule<prefix_expression_class, x3_ast::prefix_operation> const prefix_expression("prefix_expression");
-    x3::rule<unary_expression_class, x3_ast::value> const unary_expression("unary_expression");
+    x3::rule<unary_expression_class, x3_ast::value_t> const unary_expression("unary_expression");
     x3::rule<unary_operation_class, x3_ast::prefix_operation> const unary_operation("unary_operation");
     x3::rule<additive_expression_class, x3_ast::expression> const additive_expression("additive_expression");
     x3::rule<multiplicative_expression_class, x3_ast::expression> const multiplicative_expression("multiplicative_expression");
@@ -1339,12 +1339,12 @@ namespace x3_grammar {
     x3::rule<logical_and_expression_class, x3_ast::expression> const logical_and_expression("logical_and_expression");
     x3::rule<cast_class, x3_ast::cast> const cast("cast");
     x3::rule<assignment_class, x3_ast::assignment> const assignment("assignment");
-    x3::rule<assignment_expression_class, x3_ast::value> const assignment_expression("assignment_expression");
+    x3::rule<assignment_expression_class, x3_ast::value_t> const assignment_expression("assignment_expression");
     x3::rule<ternary_class, x3_ast::ternary> const ternary("ternary");
-    x3::rule<cast_expression_class, x3_ast::value> const cast_expression("cast_expression");
-    x3::rule<conditional_expression_class, x3_ast::value> const conditional_expression("conditional_expression");
-    x3::rule<value_class, x3_ast::value> const value("value");
-    x3::rule<primary_value_class, x3_ast::value> const primary_value("primary_value");
+    x3::rule<cast_expression_class, x3_ast::value_t> const cast_expression("cast_expression");
+    x3::rule<conditional_expression_class, x3_ast::value_t> const conditional_expression("conditional_expression");
+    x3::rule<value_class, x3_ast::value_t> const value("value");
+    x3::rule<primary_value_class, x3_ast::value_t> const primary_value("primary_value");
 
     x3::rule<instruction_class, x3_ast::instruction> const instruction("instruction");
     x3::rule<start_instruction_class, x3_ast::instruction> const start_instruction("start_instruction");
@@ -1365,7 +1365,7 @@ namespace x3_grammar {
     x3::rule<else_class, x3_ast::else_> const else_("else");
     x3::rule<switch_class, x3_ast::switch_> const switch_("switch");
     x3::rule<switch_case_class, x3_ast::switch_case> const switch_case("switch_case");
-    x3::rule<default_case_class, x3_ast::default_case> const default_case("default_case");
+    x3::rule<default_case_class, x3_ast::default_case_t> const default_case("default_case");
 
     x3::rule<function_parameter_class, x3_ast::function_parameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
