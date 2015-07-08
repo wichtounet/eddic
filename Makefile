@@ -2,6 +2,9 @@ default: release
 
 .PHONY: default release debug all clean cppcheck doc
 
+DEBUG_TEST_EXE=debug/bin/test
+RELEASE_TEST_EXE=release/bin/test
+
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
@@ -10,6 +13,11 @@ $(eval $(call use_libcxx))
 BOOST_PREFIX=$(HOME)/build/modular-boost/
 CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src -isystem $(BOOST_PREFIX)/include
 LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_system
+
+# Enable coverage if enabled for the user
+ifeq (,$(EDDIC_COVERAGE))
+$(eval $(call enable_coverage))
+endif
 
 # Compile the sources files
 
