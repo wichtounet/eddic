@@ -6,12 +6,13 @@
 //=======================================================================
 
 /**
- * Some hacks are necessary to make the grammar works
+ * eddic Parser using x3
  *
- * 1. Some structures have a fake_ field. This field is only here to make single-element structures works :(
- * 2. start_instruction rule is only here to make type deduction works :(
- * 3. The ugly end of primary_value rule (the 3 parts with ()) is only here to overcome limitations in type deduction
- * 4. Still needs eps parser
+ * Unfortunately some hacks are still necessary to make the grammar works
+ *
+ * 1. Some structures have a fake_ field. This field is only here to make single-element structures works (confirmed with boost 1.59)
+ * 2. start_instruction rule is only here to make type deduction works
+ * 3. Still needs eps parser (confirmed with boost 1.59)
  */
 
 #include <iomanip>
@@ -1516,9 +1517,7 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal
-        |   '(' >> assignment > ')'
-        |   '(' >> ternary > ')'
-        |   '(' >> logical_or_expression > ')'
+        |   '(' >> value > ')'
         ;
 
     auto const postfix_expression_def =
