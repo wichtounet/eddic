@@ -26,8 +26,7 @@
 //#define BOOST_SPIRIT_X3_DEBUG
 #define BOOST_SPIRIT_X3_NO_RTTI
 
-#include "ast/Operator.hpp"
-#include "ast/BuiltinOperator.hpp"
+#include "ast/SourceFile.hpp"
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
@@ -47,22 +46,16 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct simple_type;
 struct array_type;
 struct pointer_type;
 struct template_type;
 
 typedef x3::variant<
-        simple_type,
+        ast::SimpleType,
         x3::forward_ast<array_type>,
         x3::forward_ast<template_type>,
         x3::forward_ast<pointer_type>
     > type_t;
-
-struct simple_type {
-    bool const_;
-    std::string base_type;
-};
 
 struct array_type {
     type_t base_type;
@@ -79,23 +72,6 @@ struct template_type {
 
 //*****************************************
 
-struct integer_literal {
-    int value;
-};
-
-struct integer_suffix_literal {
-    int value;
-    std::string suffix;
-};
-
-struct float_literal {
-    double value;
-};
-
-struct string_literal {
-    std::string value;
-};
-
 struct char_literal {
     char value;
 };
@@ -107,8 +83,6 @@ struct variable_value : x3::position_tagged {
 struct boolean {
 	bool value;
 };
-
-struct null { };
 
 struct new_array;
 struct new_;
@@ -122,14 +96,14 @@ struct ternary;
 struct assignment;
 
 typedef x3::variant<
-            integer_literal,
-            integer_suffix_literal,
-            float_literal,
-            string_literal,
+            ast::Integer,
+            ast::IntegerSuffix,
+            ast::Float,
+            ast::Literal,
             char_literal,
             variable_value,
             boolean,
-            null,
+            ast::Null,
             x3::forward_ast<new_array>,
             x3::forward_ast<new_>,
             builtin_operator,
@@ -661,8 +635,8 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
     }
 
-    void operator()(const simple_type& type){
-        std::cout << indent() << "simple_type: " << type.base_type << std::endl;
+    void operator()(const ast::SimpleType& type){
+        std::cout << indent() << "simple_type: " << type.type << std::endl;
     }
 
     void operator()(const array_type& type){
@@ -738,19 +712,19 @@ struct printer: public boost::static_visitor<>  {
         //TODO
     }
 
-    void operator()(const integer_literal& integer){
+    void operator()(const ast::Integer& integer){
         std::cout << indent() << "integer_literal: " << integer.value << std::endl;
     }
 
-    void operator()(const integer_suffix_literal& integer){
+    void operator()(const ast::IntegerSuffix& integer){
         std::cout << indent() << "integer_suffix_literal: " << integer.value << integer.suffix << std::endl;
     }
 
-    void operator()(const float_literal& integer){
+    void operator()(const ast::Float& integer){
         std::cout << indent() << "float_literal: " << integer.value << std::endl;
     }
 
-    void operator()(const string_literal& integer){
+    void operator()(const ast::Literal& integer){
         std::cout << indent() << "string_literal: " << integer.value << std::endl;
     }
 
@@ -762,7 +736,7 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
     }
 
-    void operator()(const null&){
+    void operator()(const ast::Null&){
         std::cout << indent() << "null: " << std::endl;
     }
 
@@ -806,14 +780,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::block>, blocks)
 )
 
-//***************
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::simple_type,
-    (bool, const_)
-    (std::string, base_type)
-)
-
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::array_type,
     (x3_ast::type_t, base_type)
@@ -831,27 +797,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 //***************
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::integer_literal,
-    (int, value)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::integer_suffix_literal,
-    (int, value)
-    (std::string, suffix)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::float_literal,
-    (double, value)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::string_literal,
-    (std::string, value)
-)
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::boolean,
@@ -1311,20 +1256,20 @@ namespace x3_grammar {
     x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
 
     x3::rule<type_class, x3_ast::type_t> const type("type");
-    x3::rule<simple_type_class, x3_ast::simple_type> const simple_type("simple_type");
+    x3::rule<simple_type_class, ast::SimpleType> const simple_type("simple_type");
     x3::rule<array_type_class, x3_ast::array_type> const array_type("array_type");
     x3::rule<pointer_type_class, x3_ast::pointer_type> const pointer_type("pointer_type");
     x3::rule<template_type_class, x3_ast::template_type> const template_type("template_type");
 
-    x3::rule<integer_literal_class, x3_ast::integer_literal> const integer_literal("integer_literal");
-    x3::rule<integer_suffix_literal_class, x3_ast::integer_suffix_literal> const integer_suffix_literal("integer_suffix_literal");
-    x3::rule<float_literal_class, x3_ast::float_literal> const float_literal("float_literal");
-    x3::rule<string_literal_class, x3_ast::string_literal> const string_literal("string_literal");
+    x3::rule<integer_literal_class, ast::Integer> const integer_literal("integer_literal");
+    x3::rule<integer_suffix_literal_class, ast::IntegerSuffix> const integer_suffix_literal("integer_suffix_literal");
+    x3::rule<float_literal_class, ast::Float> const float_literal("float_literal");
+    x3::rule<string_literal_class, ast::Literal> const string_literal("string_literal");
     x3::rule<char_literal_class, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
     x3::rule<boolean_class, x3_ast::boolean> const boolean("boolean");
-    x3::rule<null_class, x3_ast::null> const null("null");
+    x3::rule<null_class, ast::Null> const null("null");
     x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
     x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
     x3::rule<function_call_class, x3_ast::function_call> const function_call("function_call");
