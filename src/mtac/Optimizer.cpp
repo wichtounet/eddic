@@ -374,7 +374,7 @@ struct pass_runner {
         if(has_to_be_run(pass)){
             timing_timer timer(system, mtac::pass_traits<Pass>::name());
 
-            bool local = local = apply<Pass>(pass);
+            bool local = apply<Pass>(pass);
             if(local){
                 program.context->stats().inc_counter(std::string(mtac::pass_traits<Pass>::name()) + "_true");
                 apply_todo<Pass>();
