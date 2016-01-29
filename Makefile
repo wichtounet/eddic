@@ -10,9 +10,8 @@ include make-utils/cpp-utils.mk
 
 $(eval $(call use_libcxx))
 
-BOOST_PREFIX=$(HOME)/build/modular-boost/
-CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src -isystem $(BOOST_PREFIX)/include
-LD_FLAGS += -L $(BOOST_PREFIX)/lib -lboost_system
+CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src
+LD_FLAGS += -lboost_system
 
 # Enable coverage if enabled for the user
 ifeq (,$(EDDIC_COVERAGE))
