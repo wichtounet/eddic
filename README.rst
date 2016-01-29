@@ -1,15 +1,17 @@
 EDDI Compiler 1.2.3
 ===================
 
-The compiler of the EDDI programming language. 
+The compiler of the EDDI programming language.
 
-This compiler outputs code for Intel X86 platform. It supports both 32 and 64 bits architecture. Only Linux is supported for now. 
+This compiler outputs code for Intel X86 platform. It supports both 32 and 64 bits architecture. Only Linux is supported for now.
 
 Building
 --------
 
-A compiler supporting the new C++ standard, C++11, is necessary to build the compiler. The compilation is known to be working on CLang 3.4. 
-It has not been tested on Windows. You need Boost 1.52.0 or superior installed on your computer to build this project. 
+A compiler supporting the new C++ standard, C++11, is necessary to build the
+compiler. The compilation should work fine with GCC 4.9+ and Clang 3.4+.  It
+has not been tested on Windows. You need Boost 1.59.0 or superior installed on
+your computer to build this project.
 
 You juste have to use CMake to build the compiler::
 
@@ -20,7 +22,7 @@ You juste have to use CMake to build the compiler::
 Usage
 -----
 
-You can compile an EDDI source file using the compiler easily. For example, with one of the provided sample:: 
+You can compile an EDDI source file using the compiler easily. For example, with one of the provided sample::
 
     $ cd eddic
     $ ./bin/eddic samples/assembly.eddi
@@ -60,7 +62,7 @@ You can find more informations about this project, on the `website http://baptis
 Troubleshooting
 ---------------
 
-Please consider using `Github issues tracker <http://github.com/wichtounet/eddic/issues>`_ to submit bug reports or feature requests. You can also contact me via my `website <http://baptiste-wicht.com/>`_. 
+Please consider using `Github issues tracker <http://github.com/wichtounet/eddic/issues>`_ to submit bug reports or feature requests. You can also contact me via my `website <http://baptiste-wicht.com/>`_.
 
 License
 -------
