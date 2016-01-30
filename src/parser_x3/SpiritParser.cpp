@@ -13,6 +13,7 @@
  * 1. Some structures have a fake_ field. This field is only here to make single-element structures works (confirmed with boost 1.59)
  * 2. start_instruction rule is only here to make type deduction works
  * 3. Still needs eps parser (confirmed with boost 1.59)
+ * 4. Ideally the old AST should use x3::variant and forward_ast, but it does not seem to be possible without changing a whole lot of code :(
  */
 
 #include <iomanip>
