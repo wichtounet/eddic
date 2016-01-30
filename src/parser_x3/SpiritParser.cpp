@@ -47,32 +47,6 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct array_type;
-struct pointer_type;
-struct template_type;
-
-typedef x3::variant<
-        ast::SimpleType,
-        x3::forward_ast<array_type>,
-        x3::forward_ast<template_type>,
-        x3::forward_ast<pointer_type>
-    > type_t;
-
-struct array_type {
-    type_t base_type;
-};
-
-struct pointer_type {
-    type_t base_type;
-};
-
-struct template_type {
-    std::string base_type;
-    std::vector<type_t> template_types;
-};
-
-//*****************************************
-
 struct char_literal {
     char value;
 };
@@ -118,7 +92,7 @@ typedef x3::variant<
 
 struct function_call : x3::position_tagged {
     std::string function_name;
-    std::vector<type_t> template_types;
+    std::vector<ast::Type> template_types;
     std::vector<value_t> values;
 };
 
@@ -128,12 +102,12 @@ struct builtin_operator {
 };
 
 struct new_array : x3::position_tagged {
-    type_t type;
+    ast::Type type;
     value_t size;
 };
 
 struct new_ : x3::position_tagged {
-    type_t type;
+    ast::Type type;
     std::vector<value_t> values;
 };
 
@@ -155,7 +129,7 @@ struct prefix_operation : x3::position_tagged {
 };
 
 struct cast : x3::position_tagged {
-    type_t type;
+    ast::Type type;
     value_t value;
 };
 
@@ -182,19 +156,19 @@ struct if_;
 struct switch_;
 
 struct variable_declaration : x3::position_tagged {
-    type_t variable_type;
+    ast::Type variable_type;
     std::string variable_name;
     boost::optional<x3_ast::value_t> value;
 };
 
 struct struct_declaration : x3::position_tagged {
-    type_t variable_type;
+    ast::Type variable_type;
     std::string variable_name;
     std::vector<value_t> values;
 };
 
 struct array_declaration {
-    type_t array_type;
+    ast::Type array_type;
     std::string array_name;
     value_t size;
 };
@@ -268,14 +242,14 @@ struct for_ : x3::position_tagged {
 };
 
 struct foreach_in : x3::position_tagged {
-    type_t variable_type;
+    ast::Type variable_type;
     std::string variable_name;
     std::string array_name;
     std::vector<instruction> instructions;
 };
 
 struct foreach : x3::position_tagged {
-    type_t variable_type;
+    ast::Type variable_type;
     std::string variable_name;
     int from;
     int to;
@@ -302,26 +276,26 @@ struct if_ {
 //*****************************************
 
 struct function_parameter {
-    type_t  parameter_type;
+    ast::Type  parameter_type;
     std::string parameter_name;
 };
 
 struct template_function_declaration : x3::position_tagged {
     std::vector<std::string> template_types;
-    type_t return_type;
+    ast::Type return_type;
     std::string name;
     std::vector<function_parameter> parameters;
     std::vector<instruction> instructions;
 };
 
 struct global_variable_declaration : x3::position_tagged {
-    type_t variable_type;
+    ast::Type variable_type;
     std::string variable_name;
     boost::optional<x3_ast::value_t> value;
 };
 
 struct global_array_declaration : x3::position_tagged {
-    type_t array_type;
+    ast::Type array_type;
     std::string array_name;
     value_t size;
 };
@@ -335,7 +309,7 @@ struct import : x3::position_tagged {
 };
 
 struct member_declaration : x3::position_tagged {
-    type_t type;
+    ast::Type type;
     std::string name;
 };
 
@@ -361,7 +335,7 @@ typedef x3::variant<
 struct template_struct : x3::position_tagged {
     std::vector<std::string> template_types;
     std::string name;
-    boost::optional<type_t> parent_type;
+    boost::optional<ast::Type> parent_type;
     std::vector<struct_block> blocks;
 };
 
@@ -640,17 +614,17 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "simple_type: " << type.type << std::endl;
     }
 
-    void operator()(const array_type& type){
+    void operator()(const ast::ArrayType& type){
         std::cout << indent() << "array_type: " << std::endl;
         i += 2;
-        boost::apply_visitor(*this, type.base_type);
+        boost::apply_visitor(*this, type.type);
         i -= 2;
     }
 
-    void operator()(const template_type& type){
+    void operator()(const ast::TemplateType& type){
         std::cout << indent() << "template_type: " << std::endl;
         i += 2;
-        std::cout << indent() << "base_type: " << type.base_type << std::endl;
+        std::cout << indent() << "base_type: " << type.type << std::endl;
         std::cout << indent() << "template_types: " << std::endl;
         i += 2;
         for(auto& t : type.template_types){
@@ -660,10 +634,10 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
     }
 
-    void operator()(const pointer_type& type){
+    void operator()(const ast::PointerType& type){
         std::cout << indent() << "pointer_type: " << std::endl;
         i += 2;
-        boost::apply_visitor(*this, type.base_type);
+        boost::apply_visitor(*this, type.type);
         i -= 2;
     }
 
@@ -781,22 +755,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::block>, blocks)
 )
 
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::array_type,
-    (x3_ast::type_t, base_type)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::pointer_type,
-    (x3_ast::type_t, base_type)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::template_type,
-    (std::string, base_type)
-    (std::vector<x3_ast::type_t>, template_types)
-)
-
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -816,13 +774,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_array,
-    (x3_ast::type_t, type)
+    (ast::Type, type)
     (x3_ast::value_t, size)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::new_,
-    (x3_ast::type_t, type)
+    (ast::Type, type)
     (std::vector<x3_ast::value_t>, values)
 )
 
@@ -835,7 +793,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_call,
     (std::string, function_name)
-    (std::vector<x3_ast::type_t>, template_types)
+    (std::vector<ast::Type>, template_types)
     (std::vector<x3_ast::value_t>, values)
 )
 
@@ -859,7 +817,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::cast,
-    (x3_ast::type_t, type)
+    (ast::Type, type)
     (x3_ast::value_t, value)
 )
 
@@ -889,7 +847,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach_in,
-    (x3_ast::type_t, variable_type)
+    (ast::Type, variable_type)
     (std::string, variable_name)
     (std::string, array_name)
     (std::vector<x3_ast::instruction>, instructions)
@@ -897,7 +855,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::foreach,
-    (x3_ast::type_t, variable_type)
+    (ast::Type, variable_type)
     (std::string, variable_name)
     (int, from)
     (int, to)
@@ -918,21 +876,21 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::variable_declaration,
-    (x3_ast::type_t, variable_type)
+    (ast::Type, variable_type)
     (std::string, variable_name)
     (boost::optional<x3_ast::value_t>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::struct_declaration,
-    (x3_ast::type_t, variable_type)
+    (ast::Type, variable_type)
     (std::string, variable_name)
     (std::vector<x3_ast::value_t>, values)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::array_declaration,
-    (x3_ast::type_t, array_type)
+    (ast::Type, array_type)
     (std::string, array_name)
     (x3_ast::value_t, size)
 )
@@ -999,7 +957,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_function_declaration,
     (std::vector<std::string>, template_types)
-    (x3_ast::type_t, return_type)
+    (ast::Type, return_type)
     (std::string, name)
     (std::vector<x3_ast::function_parameter>, parameters)
     (std::vector<x3_ast::instruction>, instructions)
@@ -1007,20 +965,20 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::function_parameter,
-    (x3_ast::type_t, parameter_type)
+    (ast::Type, parameter_type)
     (std::string, parameter_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::global_variable_declaration,
-    (x3_ast::type_t, variable_type)
+    (ast::Type, variable_type)
     (std::string, variable_name)
     (boost::optional<x3_ast::value_t>, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::global_array_declaration,
-    (x3_ast::type_t, array_type)
+    (ast::Type, array_type)
     (std::string, array_name)
     (x3_ast::value_t, size)
 )
@@ -1037,7 +995,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::member_declaration,
-    (x3_ast::type_t, type)
+    (ast::Type, type)
     (std::string, name)
 )
 
@@ -1057,7 +1015,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_struct,
     (std::vector<std::string>, template_types)
     (std::string, name)
-    (boost::optional<x3_ast::type_t>, parent_type)
+    (boost::optional<ast::Type>, parent_type)
     (std::vector<x3_ast::struct_block>, blocks)
 )
 
@@ -1256,11 +1214,11 @@ namespace x3_grammar {
 
     x3::rule<source_file_class, x3_ast::source_file> const source_file("source_file");
 
-    x3::rule<type_class, x3_ast::type_t> const type("type");
+    x3::rule<type_class, ast::Type> const type("type");
     x3::rule<simple_type_class, ast::SimpleType> const simple_type("simple_type");
-    x3::rule<array_type_class, x3_ast::array_type> const array_type("array_type");
-    x3::rule<pointer_type_class, x3_ast::pointer_type> const pointer_type("pointer_type");
-    x3::rule<template_type_class, x3_ast::template_type> const template_type("template_type");
+    x3::rule<array_type_class, ast::ArrayType> const array_type("array_type");
+    x3::rule<pointer_type_class, ast::PointerType> const pointer_type("pointer_type");
+    x3::rule<template_type_class, ast::TemplateType> const template_type("template_type");
 
     x3::rule<integer_literal_class, ast::Integer> const integer_literal("integer_literal");
     x3::rule<integer_suffix_literal_class, ast::IntegerSuffix> const integer_suffix_literal("integer_suffix_literal");
