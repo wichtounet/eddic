@@ -30,13 +30,13 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;  
+typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;
 
 struct Collector : public boost::static_visitor<> {
     public:
         AUTO_RECURSE_PROGRAM()
         AUTO_RECURSE_DESTRUCTOR()
-        
+
         void operator()(ast::struct_definition& struct_){
             if(!struct_.Content->is_template_declaration()){
                 visit_each(*this, struct_.Content->blocks);
@@ -50,15 +50,15 @@ struct Collector : public boost::static_visitor<> {
 
             visit_each(*this, function.Content->instructions);
         }
-        
+
         void operator()(ast::Constructor& function){
             for(auto& param : function.Content->parameters){
                 positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
             }
-            
+
             visit_each(*this, function.Content->instructions);
         }
-        
+
         void operator()(ast::GlobalVariableDeclaration& declaration){
             positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
         }
@@ -66,14 +66,14 @@ struct Collector : public boost::static_visitor<> {
         void operator()(ast::GlobalArrayDeclaration& declaration){
             positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
         }
-        
+
         void operator()(ast::ArrayDeclaration& declaration){
             //If this is null, it means that this an array inside a structure
             if(declaration.Content->context){
                 positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
             }
         }
-        
+
         void operator()(ast::VariableDeclaration& declaration){
             positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
         }
@@ -83,29 +83,29 @@ struct Collector : public boost::static_visitor<> {
         const ast::Position& getPosition(std::shared_ptr<Variable> var){
             assert(positions.find(var) != positions.end());
 
-            return positions[var];   
+            return positions[var];
         }
 
     private:
-        Positions positions;  
+        Positions positions;
 };
 
 struct Inspector : public boost::static_visitor<> {
     private:
         Collector& collector;
         ast::SourceFile& program;
-        
+
         std::shared_ptr<GlobalContext> context;
         std::shared_ptr<Configuration> configuration;
 
         bool standard = false;
 
     public:
-        Inspector(Collector& collector, ast::SourceFile& program, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) : 
+        Inspector(Collector& collector, ast::SourceFile& program, std::shared_ptr<GlobalContext> context, std::shared_ptr<Configuration> configuration) :
                 collector(collector), program(program), context(context), configuration(configuration) {}
-    
+
         /* The following constructions can contains instructions with warnings  */
-        AUTO_RECURSE_GLOBAL_DECLARATION() 
+        AUTO_RECURSE_GLOBAL_DECLARATION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_RETURN_VALUES()
@@ -113,7 +113,7 @@ struct Inspector : public boost::static_visitor<> {
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_SWITCH()
         AUTO_RECURSE_COMPOSED_VALUES()
-        
+
         void check(std::shared_ptr<Context> context){
             if(configuration->option_defined("warning-unused")){
                 auto iter = context->begin();
@@ -156,7 +156,7 @@ struct Inspector : public boost::static_visitor<> {
 
             warn(position, "Useless import: " + file);
         }
-        
+
         void operator()(ast::StandardImport& import){
             if(configuration->option_defined("warning-includes")){
                 check_header(import.header, import.position);
@@ -168,12 +168,12 @@ struct Inspector : public boost::static_visitor<> {
                 check_header(import.file, import.position);
             }
         }
-        
+
         void operator()(ast::struct_definition& declaration){
             if(declaration.Content->is_template_declaration()){
                 return;
             }
-        
+
             standard = declaration.Content->standard;
             visit_each(*this, declaration.Content->blocks);
             standard = false;
@@ -197,30 +197,30 @@ struct Inspector : public boost::static_visitor<> {
 
         void operator()(ast::FunctionDeclaration& declaration){
             check(declaration.Content->context);
-            
+
             if(!declaration.Content->standard && !standard){
                 check_each(declaration.Content->instructions);
             }
         }
-    
+
         void operator()(ast::Cast& cast){
             if(configuration->option_defined("warning-cast")){
-                auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
-                auto dest_type = visit(ast::TypeTransformer(context), cast.Content->type);
+                auto src_type = visit(ast::GetTypeVisitor(), cast.value);
+                auto dest_type = visit(ast::TypeTransformer(context), cast.type);
 
                 if(src_type == dest_type){
-                    warn(cast.Content->position, "useless cast");
+                    warn(cast.position, "useless cast");
                 }
             }
         }
-        
+
         void operator()(ast::If& if_){
             visit(*this, if_.Content->condition);
             check_each(if_.Content->instructions);
             visit_each_non_variant(*this, if_.Content->elseIfs);
             visit_optional_non_variant(*this, if_.Content->else_);
         }
-        
+
         void operator()(ast::ElseIf& elseIf){
             visit(*this, elseIf.condition);
             check_each(elseIf.instructions);
@@ -232,7 +232,7 @@ struct Inspector : public boost::static_visitor<> {
             visit_optional(*this, for_.Content->repeat);
             check_each(for_.Content->instructions);
         }
-        
+
         void operator()(ast::While& while_){
             visit(*this, while_.Content->condition);
             check_each(while_.Content->instructions);
@@ -242,7 +242,7 @@ struct Inspector : public boost::static_visitor<> {
             visit(*this, while_.Content->condition);
             check_each(while_.Content->instructions);
         }
-        
+
         void operator()(ast::Else& else_){
             check_each(else_.instructions);
         }
@@ -250,7 +250,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::Foreach& foreach_){
             check_each(foreach_.Content->instructions);
         }
-        
+
         void operator()(ast::ForeachIn& foreach_){
             check_each(foreach_.Content->instructions);
         }
@@ -263,7 +263,7 @@ struct Inspector : public boost::static_visitor<> {
         void operator()(ast::DefaultCase& default_case){
             check_each(default_case.instructions);
         }
-        
+
         void check_each(std::vector<ast::Instruction>& instructions){
             for(auto& instruction : instructions){
                 if(auto* ptr = boost::get<ast::Expression>(&instruction)){
@@ -285,7 +285,7 @@ struct Inspector : public boost::static_visitor<> {
                 visit(*this, instruction);
             }
         }
-        
+
         //No warnings for other types
         AUTO_IGNORE_OTHERS()
 };

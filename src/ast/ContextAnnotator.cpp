@@ -21,7 +21,7 @@
 
 using namespace eddic;
 
-//TODO This design is far from perfect, the Pass should be a static_visitor itself, but that 
+//TODO This design is far from perfect, the Pass should be a static_visitor itself, but that
 //would mean exposing all the AST node in the header
 
 namespace {
@@ -51,14 +51,14 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             visit_each(*this, functionCall.Content->values);
         }
 
-        template<typename Loop>            
+        template<typename Loop>
         void annotateWhileLoop(Loop& loop){
             currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
-            
+
             visit(*this, loop.Content->condition);
 
             visit_each(*this, loop.Content->instructions);
-            
+
             currentContext = currentContext->parent();
         }
 
@@ -77,20 +77,20 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             visit_each_non_variant(*this, switch_.Content->cases);
             visit_optional_non_variant(*this, switch_.Content->default_case);
         }
-        
+
         void operator()(ast::SwitchCase& switch_case){
             visit(*this, switch_case.value);
 
             currentContext = switch_case.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
-           
+
             visit_each(*this, switch_case.instructions);
 
             currentContext = currentContext->parent();
         }
-        
+
         void operator()(ast::DefaultCase& default_case){
             currentContext = default_case.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
-           
+
             visit_each(*this, default_case.instructions);
 
             currentContext = currentContext->parent();
@@ -98,13 +98,13 @@ struct AnnotateVisitor : public boost::static_visitor<> {
 
         void operator()(ast::For& for_){
             currentContext = for_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
-          
+
             visit_optional(*this, for_.Content->start);
             visit_optional(*this, for_.Content->condition);
             visit_optional(*this, for_.Content->repeat);
-            
+
             visit_each(*this, for_.Content->instructions);
-            
+
             currentContext = currentContext->parent();
         }
 
@@ -113,14 +113,14 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             loop.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit_each(*this, loop.Content->instructions);
-             
+
             currentContext = currentContext->parent();
         }
 
         void operator()(ast::Foreach& foreach){
             annotateSimpleLoop(foreach);
         }
-        
+
         void operator()(ast::ForeachIn& foreach){
             annotateSimpleLoop(foreach);
         }
@@ -129,11 +129,11 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             currentContext = if_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit(*this, if_.Content->condition);
-            
+
             visit_each(*this, if_.Content->instructions);
-            
+
             currentContext = currentContext->parent();
-            
+
             visit_each_non_variant(*this, if_.Content->elseIfs);
             visit_optional_non_variant(*this, if_.Content->else_);
         }
@@ -142,73 +142,73 @@ struct AnnotateVisitor : public boost::static_visitor<> {
             currentContext = elseIf.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
             visit(*this, elseIf.condition);
-            
+
             visit_each(*this, elseIf.instructions);
-            
+
             currentContext = currentContext->parent();
         }
-        
+
         void operator()(ast::Else& else_){
             currentContext = else_.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
-            
+
             visit_each(*this, else_.instructions);
-            
+
             currentContext = currentContext->parent();
         }
-        
+
         void operator()(ast::StructDeclaration& declaration){
             declaration.Content->context = currentContext;
-            
+
             visit_each(*this, declaration.Content->values);
         }
-        
+
         void operator()(ast::VariableDeclaration& declaration){
             declaration.Content->context = currentContext;
-            
+
             visit_optional(*this, declaration.Content->value);
         }
-        
+
         void operator()(ast::ArrayDeclaration& declaration){
             declaration.Content->context = currentContext;
-            
+
             visit(*this, declaration.Content->size);
         }
-        
+
         void operator()(ast::Assignment& assignment){
             assignment.Content->context = currentContext;
 
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
         }
-        
+
         void operator()(ast::VariableValue& variable){
             variable.Content->context = currentContext;
         }
-        
+
         void operator()(ast::Return& return_){
             return_.Content->context = functionContext;
 
             visit(*this, return_.Content->value);
         }
-        
-        void operator()(ast::Cast& cast){
-            cast.Content->context = currentContext;
 
-            visit(*this, cast.Content->value);
+        void operator()(ast::Cast& cast){
+            cast.context = currentContext;
+
+            visit(*this, cast.value);
         }
-        
+
         void operator()(ast::New& new_){
             new_.Content->context = currentContext;
-            
+
             visit_each(*this, new_.Content->values);
         }
-        
+
         void operator()(ast::NewArray& new_){
             new_.Content->context = currentContext;
-            
+
             visit(*this, new_.Content->size);
         }
-        
+
         void operator()(ast::Expression& expression){
             expression.Content->context = currentContext;
 

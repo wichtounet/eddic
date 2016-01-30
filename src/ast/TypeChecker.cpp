@@ -42,7 +42,7 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_BRANCHES()
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_STRUCT_DECLARATION()
-            
+
         AUTO_IGNORE_MEMBER_DECLARATION()
         AUTO_IGNORE_TEMPLATE_FUNCTION_DECLARATION()
         AUTO_IGNORE_ARRAY_DECLARATION()
@@ -63,7 +63,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 visit_each(*this, struct_.Content->blocks);
             }
         }
-        
+
         void operator()(ast::GlobalVariableDeclaration& declaration){
             auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
 
@@ -72,11 +72,11 @@ class CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
             }
         }
-        
+
         void operator()(ast::Foreach& foreach){
             visit_each(*this, foreach.Content->instructions);
         }
-        
+
         void operator()(ast::ForeachIn& foreach){
             auto var_type = foreach.Content->var->type();
             auto array_type = foreach.Content->arrayVar->type();
@@ -104,11 +104,11 @@ class CheckerVisitor : public boost::static_visitor<> {
             if(value_type != INT && value_type != STRING){
                 throw SemanticalException("Switch can only work on int and string types", switch_.Content->position);
             }
-            
+
             visit_each_non_variant(*this, switch_.Content->cases);
             visit_optional_non_variant(*this, switch_.Content->default_case);
         }
-        
+
         void operator()(ast::SwitchCase& switch_){
             visit(*this, switch_.value);
 
@@ -120,7 +120,7 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             visit_each(*this, switch_.instructions);
         }
-        
+
         void operator()(ast::Ternary& ternary){
             visit(*this, ternary.Content->condition);
             visit(*this, ternary.Content->false_value);
@@ -130,7 +130,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             if(condition_type != BOOL){
                 throw SemanticalException("Ternary can only be applied to bool", ternary.Content->position);
             }
-            
+
             auto true_type = visit(ast::GetTypeVisitor(), ternary.Content->true_value);
             auto false_type = visit(ast::GetTypeVisitor(), ternary.Content->false_value);
             if(true_type != false_type){
@@ -141,10 +141,10 @@ class CheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::Assignment& assignment){
             visit(*this, assignment.Content->left_value);
             visit(*this, assignment.Content->value);
-                        
+
             auto left_value_type = visit(ast::GetTypeVisitor(), assignment.Content->left_value);
             auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
-                
+
             if (left_value_type != right_value_type){
                 if(left_value_type->is_pointer()){
                     //Addresses are taken implicitly
@@ -195,20 +195,20 @@ class CheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Return& return_){
             visit(*this, return_.Content->value);
-           
+
             auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
             auto& function = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
             if(return_type != function.return_type()){
                 throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.Content->position);
             }
         }
-        
+
         void operator()(ast::VariableDeclaration& declaration){
             if(declaration.Content->value){
                 visit(*this, *declaration.Content->value);
 
                 auto var = (*declaration.Content->context)[declaration.Content->variableName];
-                
+
                 auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
                 if (valueType != var->type()) {
                     throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
@@ -218,11 +218,11 @@ class CheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Cast& cast){
             auto dst_type = visit_non_variant(ast::GetTypeVisitor(), cast);
-            auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
+            auto src_type = visit(ast::GetTypeVisitor(), cast.value);
 
             //Cast with no effects are always valid
             if(
-                        dst_type == src_type 
+                        dst_type == src_type
                     ||  (dst_type->is_pointer() && src_type->is_pointer())
                     ||  (dst_type->is_dynamic_array() && src_type->is_pointer())
                     ||  (dst_type->is_dynamic_array() && src_type->is_dynamic_array())){
@@ -231,18 +231,18 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             if(dst_type == INT){
                 if(src_type != FLOAT && src_type != CHAR){
-                    throw SemanticalException("Invalid cast to int", cast.Content->position);
+                    throw SemanticalException("Invalid cast to int", cast.position);
                 }
             } else if(dst_type == FLOAT){
                 if(src_type != INT){
-                    throw SemanticalException("Invalid cast to float", cast.Content->position);
+                    throw SemanticalException("Invalid cast to float", cast.position);
                 }
             } else if(dst_type == CHAR){
                 if(src_type != INT){
-                    throw SemanticalException("Invalid cast to char", cast.Content->position);
+                    throw SemanticalException("Invalid cast to char", cast.position);
                 }
             } else {
-                throw SemanticalException("Invalid cast", cast.Content->position);
+                throw SemanticalException("Invalid cast", cast.position);
             }
         }
 
@@ -251,7 +251,7 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             ast::GetTypeVisitor visitor;
             auto type = visit(visitor, value.Content->first);
-    
+
             auto global_context = value.Content->context->global();
 
             for(auto& operation : value.Content->operations){
@@ -332,15 +332,15 @@ class CheckerVisitor : public boost::static_visitor<> {
 
         void operator()(ast::BuiltinOperator& builtin){
             for_each(builtin.Content->values, [&](ast::Value& value){ visit(*this, value); });
-           
+
             if(builtin.Content->values.size() < 1){
                 throw SemanticalException("Too few arguments to the builtin operator", builtin.Content->position);
             }
-           
+
             if(builtin.Content->values.size() > 1){
                 throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
             }
-            
+
             auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0]);
 
             if(builtin.Content->type == ast::BuiltinType::SIZE){
@@ -361,7 +361,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("There are no such suffix as \"" + suffix  + "\" for integers. ");
             }
         }
-        
+
         void operator()(ast::New& new_){
             visit_each(*this, new_.Content->values);
 
@@ -371,7 +371,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("Only standard types and struct types can be dynamically allocated", new_.Content->position);
             }
         }
-        
+
         void operator()(ast::NewArray& new_){
             auto type = visit(ast::TypeTransformer(context), new_.Content->type);
 
@@ -379,7 +379,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 throw SemanticalException("Multidimensional arrays are not supported", new_.Content->position);
             }
         }
-        
+
         void operator()(ast::Delete& delete_){
             auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
 

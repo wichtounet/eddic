@@ -146,14 +146,14 @@ void operator()(ast::Expression& value){\
 
 #define AUTO_RECURSE_CAST_VALUES()\
 void operator()(ast::Cast& cast){\
-    visit(*this, cast.Content->value);\
+    visit(*this, cast.value);\
 }
 
 #define AUTO_RECURSE_PREFIX()\
 void operator()(ast::PrefixOperation& operation){\
     visit(*this, operation.Content->left_value);\
 }
-        
+
 #define AUTO_RECURSE_CONSTRUCTOR()\
 void operator()(ast::Constructor& function){\
     visit_each(*this, function.Content->instructions);\
@@ -223,7 +223,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_VALUE() void operator()(ast::VariableValue&){}
 
-/* auto return macros */ 
+/* auto return macros */
 
 #define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
 #define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
@@ -263,7 +263,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_OTHERS_CONST(return_type) template<typename T> return_type operator()(T& t) const {return t;}
 
 /* Break macros  */
-    
+
 #define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ cpp_unreachable("Type not supported in the visitor"); }
 #define AUTO_BREAK_OTHERS_CONST() template<typename T> result_type operator()(T&) const { cpp_unreachable("Type not supported in the visitor"); }
 

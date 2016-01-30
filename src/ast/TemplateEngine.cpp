@@ -30,64 +30,64 @@ namespace {
 struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Integer& source) const {
         ast::Integer copy;
-        
+
         copy.value = source.value;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::IntegerSuffix& source) const {
         ast::IntegerSuffix copy;
-        
+
         copy.value = source.value;
         copy.suffix = source.suffix;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Float& source) const {
         ast::Float copy;
-        
+
         copy.value = source.value;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Literal& source) const {
         ast::Literal copy;
-        
+
         copy.value = source.value;
         copy.label = source.label;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::CharLiteral& source) const {
         ast::CharLiteral copy;
-        
+
         copy.value = source.value;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::VariableValue& source) const {
         ast::VariableValue copy;
-        
+
         copy.Content->context = source.Content->context;
         copy.Content->var = source.Content->var;
         copy.Content->position = source.Content->position;
         copy.Content->variableName = source.Content->variableName;
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Expression& source) const {
         ast::Expression copy;
 
         copy.Content->context = source.Content->context;
         copy.Content->position = source.Content->position;
         copy.Content->first = visit(*this, source.Content->first);
-        
+
         for(auto& operation : source.Content->operations){
             if(ast::has_operation_value(operation)){
                 if(auto* ptr = boost::get<ast::Value>(&operation.get<1>())){
@@ -109,8 +109,8 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
                     copy.Content->operations.push_back(
                             boost::make_tuple(
-                                operation.get<0>(), 
-                                value_copy 
+                                operation.get<0>(),
+                                value_copy
                                 ));
                 } else {
                     copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::get<std::string>(operation.get<1>())));
@@ -122,19 +122,19 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Null& source) const {
         return source;
     }
-    
+
     ast::Value operator()(const ast::True& source) const {
         return source;
     }
-    
+
     ast::Value operator()(const ast::False& source) const {
         return source;
     }
-    
+
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
@@ -149,31 +149,31 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Cast& source) const {
         ast::Cast copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->type = source.Content->type;
-        copy.Content->value = visit(*this, source.Content->value);
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.type = source.type;
+        copy.value = visit(*this, source.value);
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::BuiltinOperator& source) const {
         ast::BuiltinOperator copy;
 
         copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
-        
+
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(*this, value));
         }
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Assignment& source) const {
         ast::Assignment copy;
 
@@ -185,7 +185,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::PrefixOperation& source) const {
         ast::PrefixOperation copy;
 
@@ -195,7 +195,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::Ternary& source) const {
         ast::Ternary copy;
 
@@ -206,7 +206,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         return copy;
     }
-    
+
     ast::Value operator()(const ast::New& source) const {
         ast::New copy;
 
@@ -214,14 +214,14 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->mangled_name = source.Content->mangled_name;
         copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
-        
+
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(*this, value));
         }
-        
+
         return copy;
     }
-    
+
     ast::Value operator()(const ast::NewArray& source) const {
         ast::NewArray copy;
 
@@ -229,7 +229,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.Content->position = source.Content->position;
         copy.Content->type = source.Content->type;
         copy.Content->size = visit(*this, source.Content->size);
-        
+
         return copy;
     }
 };
@@ -246,14 +246,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->position = source.Content->position;
         copy.Content->template_types = source.Content->template_types;
         copy.Content->function_name = source.Content->function_name;
-        
+
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(ValueCopier(), value));
         }
-        
+
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::VariableDeclaration& source) const {
         ast::VariableDeclaration copy;
 
@@ -261,14 +261,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
-        
+
         if(source.Content->value){
             copy.Content->value = visit(ValueCopier(), *source.Content->value);
         }
-        
+
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::StructDeclaration& source) const {
         ast::StructDeclaration copy;
 
@@ -276,14 +276,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->position = source.Content->position;
         copy.Content->variableType = source.Content->variableType;
         copy.Content->variableName = source.Content->variableName;
-        
+
         for(auto& value : source.Content->values){
             copy.Content->values.push_back(visit(ValueCopier(), value));
         }
-        
+
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::ArrayDeclaration& source) const {
         ast::ArrayDeclaration copy;
 
@@ -292,10 +292,10 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->arrayType = source.Content->arrayType;
         copy.Content->arrayName = source.Content->arrayName;
         copy.Content->size = source.Content->size;
-        
+
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::Assignment& source) const {
         ast::Assignment copy;
 
@@ -304,10 +304,10 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->left_value = visit(ValueCopier(), source.Content->left_value);
         copy.Content->value = visit(ValueCopier(), source.Content->value);
         copy.Content->op = source.Content->op;
-        
+
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::Return& source) const {
         ast::Return copy;
 
@@ -315,7 +315,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->context = source.Content->context;
         copy.Content->position = source.Content->position;
         copy.Content->value = visit(ValueCopier(), source.Content->value);
-        
+
         return copy;
     }
 
@@ -324,7 +324,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         copy.Content->context = source.Content->context;
         copy.Content->condition = visit(ValueCopier(), source.Content->condition);
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
@@ -334,7 +334,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
             else_if_copy.context = else_if.context;
             else_if_copy.condition = visit(ValueCopier(), else_if.condition);
-        
+
             for(auto& instruction : else_if.instructions){
                 else_if_copy.instructions.push_back(visit(*this, instruction));
             }
@@ -344,9 +344,9 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         if(source.Content->else_){
             ast::Else else_copy;
-            
+
             else_copy.context = source.Content->else_->context;
-            
+
             for(auto& instruction : (*source.Content->else_).instructions){
                 else_copy.instructions.push_back(visit(*this, instruction));
             }
@@ -356,33 +356,33 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::While& source) const {
         ast::While copy;
 
         copy.Content->context = source.Content->context;
         copy.Content->condition = visit(ValueCopier(), source.Content->condition);
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::DoWhile& source) const {
         ast::DoWhile copy;
 
         copy.Content->context = source.Content->context;
         copy.Content->condition = visit(ValueCopier(), source.Content->condition);
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::Foreach& source) const {
         ast::Foreach copy;
 
@@ -392,14 +392,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->variableName = source.Content->variableName;
         copy.Content->from = source.Content->from;
         copy.Content->to = source.Content->to;
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::ForeachIn& source) const {
         ast::ForeachIn copy;
 
@@ -411,14 +411,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.Content->var = source.Content->var;
         copy.Content->arrayVar = source.Content->arrayVar;
         copy.Content->iterVar = source.Content->iterVar;
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::PrefixOperation& source) const {
         ast::PrefixOperation copy;
 
@@ -428,10 +428,10 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::For& source) const {
         ast::For copy;
-        
+
         copy.Content->context = source.Content->context;
 
         if(source.Content->start){
@@ -445,14 +445,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         if(source.Content->repeat){
             copy.Content->repeat = visit(*this, *source.Content->repeat);
         }
-        
+
         for(auto& instruction : source.Content->instructions){
             copy.Content->instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::Switch& source) const {
         ast::Switch copy;
 
@@ -469,13 +469,13 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             for(auto& instruction : switch_case.instructions){
                 case_.instructions.push_back(visit(*this, instruction));
             }
-    
+
             copy.Content->cases.push_back(case_);
         }
 
         if(source.Content->default_case){
             ast::DefaultCase default_;
-            
+
             default_.context = source.Content->default_case->context;
 
             for(auto& instruction : source.Content->default_case->instructions){
@@ -487,7 +487,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         return copy;
     }
-    
+
     ast::Instruction operator()(const ast::Delete& source) const {
         ast::Delete copy;
 
@@ -516,7 +516,7 @@ struct Adaptor : public boost::static_visitor<> {
             visit_each(*this, struct_.Content->blocks);
         }
     }
-    
+
     bool has_to_be_replaced(const std::string& type){
         return replacements.find(type) != replacements.end();
     }
@@ -553,11 +553,11 @@ struct Adaptor : public boost::static_visitor<> {
             cpp_unreachable("Unhandled type");
         }
     }
-    
+
     void operator()(ast::MemberDeclaration& declaration){
-        declaration.Content->type = replace(declaration.Content->type); 
+        declaration.Content->type = replace(declaration.Content->type);
     }
-    
+
     void operator()(ast::Constructor& declaration){
         for(auto& param : declaration.Content->parameters){
             param.parameterType = replace(param.parameterType);
@@ -602,57 +602,57 @@ struct Adaptor : public boost::static_visitor<> {
 
         visit_each(*this, source.Content->values);
     }
-    
+
     void operator()(ast::Cast& source){
-        source.Content->type = replace(source.Content->type);
-        visit(*this, source.Content->value);
+        source.type = replace(source.type);
+        visit(*this, source.value);
     }
-    
+
     void operator()(ast::VariableDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
-        
+
         visit_optional(*this, source.Content->value);
     }
-    
+
     void operator()(ast::StructDeclaration& source){
         source.Content->variableType = replace(source.Content->variableType);
-        
+
         visit_each(*this, source.Content->values);
     }
-    
+
     void operator()(ast::ArrayDeclaration& source){
         source.Content->arrayType = replace(source.Content->arrayType);
     }
-    
+
     void operator()(ast::Foreach& source){
         source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
-    
+
     void operator()(ast::ForeachIn& source){
         source.Content->variableType = replace(source.Content->variableType);
 
         visit_each(*this, source.Content->instructions);
     }
-    
+
     void operator()(ast::New& source){
         source.Content->type = replace(source.Content->type);
-        
+
         visit_each(*this, source.Content->values);
     }
-    
+
     void operator()(ast::NewArray& source){
         source.Content->type = replace(source.Content->type);
-        
+
         visit(*this, source.Content->size);
     }
 
     AUTO_IGNORE_OTHERS()
 };
-    
+
 std::vector<ast::Instruction> copy(const std::vector<ast::Instruction>& source){
-    std::vector<ast::Instruction> destination;   
+    std::vector<ast::Instruction> destination;
     destination.reserve(source.size());
 
     InstructionCopier copier;
@@ -740,7 +740,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
     return destination;
 }
-    
+
 template<typename Container>
 bool is_instantiated(const Container& container, const std::string& name, const std::vector<ast::Type>& template_types){
     auto it_pair = container.equal_range(name);
@@ -773,10 +773,10 @@ bool ast::TemplateEngine::is_instantiated(const std::string& name, const std::st
 bool ast::TemplateEngine::is_class_instantiated(const std::string& name, const std::vector<ast::Type>& template_types){
     return ::is_instantiated(class_template_instantiations, name, template_types);
 }
-        
+
 void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
    if(function_call.Content->template_types.size() > 0){
-        check_function(function_call.Content->template_types, function_call.Content->function_name, function_call.Content->position, ""); 
+        check_function(function_call.Content->template_types, function_call.Content->function_name, function_call.Content->position, "");
    }
 }
 
@@ -788,10 +788,10 @@ void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Typ
             auto object_type = type->is_pointer() ? type->data_type() : type;
 
             check_function(
-                    value.template_types, 
-                    value.function_name, 
-                    position, 
-                    object_type->mangle()); 
+                    value.template_types,
+                    value.function_name,
+                    position,
+                    object_type->mangle());
         }
     }
 }
@@ -813,7 +813,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
             if(!is_instantiated(name, context, template_types)){
                 LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
 
-                //Instantiate the function 
+                //Instantiate the function
                 ast::FunctionDeclaration declaration;
                 declaration.Content->position = function_declaration.Content->position;
                 declaration.Content->returnType = function_declaration.Content->returnType;
@@ -824,7 +824,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 std::unordered_map<std::string, ast::Type> replacements;
 
                 for(std::size_t i = 0; i < template_types.size(); ++i){
-                    replacements[source_types[i]] = template_types[i];    
+                    replacements[source_types[i]] = template_types[i];
                 }
 
                 Adaptor adaptor(replacements);
@@ -834,7 +834,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
 
                 pass_manager.function_instantiated(declaration, context);
-            } 
+            }
 
             return;
         }
@@ -869,7 +869,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     ast::struct_definition declaration;
                     declaration.Content->name = struct_declaration.Content->name;
                     declaration.Content->position = struct_declaration.Content->position;
-                    declaration.Content->inst_template_types = template_types; 
+                    declaration.Content->inst_template_types = template_types;
                     declaration.Content->header = struct_declaration.Content->header;
                     declaration.Content->standard = struct_declaration.Content->standard;
 
@@ -878,7 +878,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                     std::unordered_map<std::string, ast::Type> replacements;
 
                     for(std::size_t i = 0; i < template_types.size(); ++i){
-                        replacements[source_types[i]] = template_types[i];    
+                        replacements[source_types[i]] = template_types[i];
                     }
 
                     Adaptor adaptor(replacements);
@@ -903,11 +903,11 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
         }
     }
 }
-        
+
 void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::struct_definition& declaration){
     LOG<Trace>("Template") << "Collected class template " << struct_ << log::endl;
 
-    class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration)); 
+    class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration));
 }
 
 void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){

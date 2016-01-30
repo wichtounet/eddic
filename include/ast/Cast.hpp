@@ -12,7 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Position.hpp"
 
@@ -24,26 +23,17 @@ class Type;
 namespace ast {
 
 /*!
- * \class ASTCast
- * \brief The AST node for a cast of a variable to another type.  
- * Should only be used from the Deferred version (eddic::ast::Cast).
+ * \class Cast
+ * \brief The AST node for a cast of a variable to another type.
  */
-struct ASTCast {
+struct Cast {
     std::shared_ptr<Context> context;
     std::shared_ptr<const eddic::Type> resolved_type;
 
     Position position;
     Type type;
     Value value;
-
-    mutable long references = 0;
 };
-
-/*!
- * \typedef Cast
- * \brief The AST node for a cast to another type. 
- */
-typedef Deferred<ASTCast> Cast;
 
 } //end of ast
 
@@ -51,10 +41,10 @@ typedef Deferred<ASTCast> Cast;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Cast, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->type)
-    (eddic::ast::Value, Content->value)
+    eddic::ast::Cast,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, type)
+    (eddic::ast::Value, value)
 )
 
 #endif

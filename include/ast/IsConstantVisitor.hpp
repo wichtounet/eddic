@@ -23,7 +23,7 @@ namespace ast {
 
 /*!
  * \struct IsConstantVisitor
- * \brief AST Visitor to test if a node is constant. 
+ * \brief AST Visitor to test if a node is constant.
  */
 struct IsConstantVisitor : public boost::static_visitor<bool> {
     typedef boost::mpl::vector<ast::Integer, ast::Literal, ast::CharLiteral, ast::IntegerSuffix, ast::Float, ast::True, ast::False, ast::Null> constant_types;
@@ -34,7 +34,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     typename std::enable_if<boost::mpl::contains<constant_types, T>::value, bool>::type operator()(T&) const {
         return true;
     }
-    
+
     template<typename T>
     typename std::enable_if<boost::mpl::contains<non_constant_types, T>::value, bool>::type operator()(T&) const {
         return false;
@@ -44,7 +44,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
         auto op = value.Content->op;
 
         if(
-                    op == ast::Operator::STAR || op == ast::Operator::ADDRESS || op == ast::Operator::CALL 
+                    op == ast::Operator::STAR || op == ast::Operator::ADDRESS || op == ast::Operator::CALL
                 ||  op == ast::Operator::DOT || op == ast::Operator::INC || op == ast::Operator::DEC){
             return false;
         }
@@ -53,7 +53,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     }
 
     bool operator()(ast::Cast& cast) const {
-        return visit(*this, cast.Content->value);
+        return visit(*this, cast.value);
     }
 
     bool operator()(ast::VariableValue& variable) const {

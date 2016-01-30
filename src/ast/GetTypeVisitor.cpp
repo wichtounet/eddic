@@ -45,14 +45,14 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::NewArray&
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
-   return visit(*this, ternary.Content->true_value); 
+   return visit(*this, ternary.Content->true_value);
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {
-    if(cast.Content->resolved_type){
-        return cast.Content->resolved_type;
+    if(cast.resolved_type){
+        return cast.resolved_type;
     } else {
-        return visit(ast::TypeTransformer(cast.Content->context->global()), cast.Content->type); 
+        return visit(ast::TypeTransformer(cast.context->global()), cast.type);
     }
 }
 
@@ -64,7 +64,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
     } else if(operation.Content->op == ast::Operator::ADDRESS){
         return new_pointer_type(type);
     } else {
-        return type; 
+        return type;
     }
 }
 
@@ -112,7 +112,7 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
         if(type->is_pointer()){
             type = type->data_type();
         }
-        
+
         auto member = boost::get<std::string>(operation.get<1>());
 
         auto struct_type = global_context->get_struct(type->mangle());

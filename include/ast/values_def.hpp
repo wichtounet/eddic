@@ -21,12 +21,10 @@ struct Literal;
 struct True;
 struct False;
 struct Null;
+struct Cast;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
-
-struct ASTCast;
-typedef Deferred<ASTCast> Cast;
 
 struct ASTBuiltinOperator;
 typedef Deferred<ASTBuiltinOperator> BuiltinOperator;

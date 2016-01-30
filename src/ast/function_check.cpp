@@ -88,7 +88,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             check_value(elseIf.condition);
             check_each(elseIf.instructions);
         }
-        
+
         void operator()(ast::Else& else_){
             check_each(else_.instructions);
         }
@@ -107,7 +107,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             variable_value.Content->position = position;
             variable_value.Content->variableName = "this";
             variable_value.Content->var = context->getVariable("this");
-            
+
             return variable_value;
         }
 
@@ -151,12 +151,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                             if(context->exists(mangled)){
                                 ast::Cast cast_value;
-                                cast_value.Content->resolved_type = new_pointer_type(struct_type);
-                                cast_value.Content->value = this_variable(functionCall.Content->context, functionCall.Content->position);
+                                cast_value.resolved_type = new_pointer_type(struct_type);
+                                cast_value.value = this_variable(functionCall.Content->context, functionCall.Content->position);
 
                                 ast::CallOperationValue function_call_operation;
-                                function_call_operation.function_name = functionCall.Content->function_name; 
-                                function_call_operation.template_types = functionCall.Content->template_types; 
+                                function_call_operation.function_name = functionCall.Content->function_name;
+                                function_call_operation.template_types = functionCall.Content->template_types;
                                 function_call_operation.values = functionCall.Content->values;
                                 function_call_operation.mangled_name = mangled;
 
@@ -187,7 +187,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
                         auto struct_type = global_context->get_struct(context->struct_type);
-                        
+
                         do {
                             if(struct_type->member_exists(variable.Content->variableName)){
                                 ast::Expression member_value;
@@ -222,23 +222,23 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             if(for_.Content->start){
                 check_value(*for_.Content->start);
             }
-            
+
             if(for_.Content->condition){
                 check_value(*for_.Content->condition);
             }
-            
+
             if(for_.Content->repeat){
                 check_value(*for_.Content->repeat);
             }
 
             check_each(for_.Content->instructions);
         }
-        
+
         void operator()(ast::While& while_){
             check_value(while_.Content->condition);
             check_each(while_.Content->instructions);
         }
-        
+
         void operator()(ast::DoWhile& while_){
             check_value(while_.Content->condition);
             check_each(while_.Content->instructions);
@@ -260,7 +260,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             return types;
         }
-    
+
         template<typename T>
         std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
             return get_types(functionCall.Content->values);
@@ -309,7 +309,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                         var->set_source_position(declaration.Content->position);
                     }
-                } 
+                }
                 //If it's a pointer type
                 else if(type->is_pointer()){
                     if(type->is_const()){
@@ -318,12 +318,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                     var->set_source_position(declaration.Content->position);
-                } 
+                }
                 //If it's a array
                 else if(type->is_array()){
                     auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
                     var->set_source_position(declaration.Content->position);
-                } 
+                }
                 //If it's a template or custom type
                 else {
                     auto mangled = type->mangle();
@@ -345,7 +345,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 check_value(*declaration.Content->value);
             }
         }
-    
+
         void operator()(ast::StructDeclaration& declaration){
             template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
 
@@ -407,7 +407,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::ArrayDeclaration& declaration){
             declare_array(declaration);
         }
-        
+
         void operator()(ast::PrefixOperation& operation){
             check_value(operation.Content->left_value);
         }
@@ -417,7 +417,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
             check_value(return_.Content->value);
         }
-    
+
         void operator()(ast::Ternary& ternary){
             check_value(ternary.Content->condition);
             check_value(ternary.Content->true_value);
@@ -429,14 +429,14 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Cast& cast){
-            check_value(cast.Content->value);
+            check_value(cast.value);
         }
-        
+
         void operator()(ast::Expression& value){
             check_value(value.Content->first);
 
             auto context = value.Content->context->global();
-            
+
             auto type = visit(ast::GetTypeVisitor(), value.Content->first);
             for(auto& op : value.Content->operations){
                 if(ast::has_operation_value(op)){
@@ -473,7 +473,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         struct_type = value.Content->context->global()->get_struct(struct_type->parent_type);
                     } while(struct_type);
 
-                    if(!found){ 
+                    if(!found){
                         throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.Content->position);
                     }
 
@@ -496,7 +496,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     bool found = false;
                     bool parent = false;
                     std::string mangled;
-                    
+
                     do {
                         mangled = mangle(name, types, struct_type);
 
@@ -531,11 +531,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void operator()(ast::NewArray& new_){
             check_value(new_.Content->size);
         }
-        
+
         void operator()(ast::Delete& delete_){
             check_value(delete_.Content->value);
         }
-    
+
         bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
             if(context->exists(name)){
                 auto var = context->getVariable(name);
@@ -544,7 +544,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 //parameters and variables generated by the compiler itself
                 //always have the same position 0:0:0
                 if(var->source_position() == position){
-                    return false; 
+                    return false;
                 } else {
                     throw SemanticalException("The Variable " + name + " has already been declared", position);
                 }
@@ -600,7 +600,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     }
 
                     auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-                    auto var = declaration.Content->context->addParameter(parameter.parameterName, type);    
+                    auto var = declaration.Content->context->addParameter(parameter.parameterName, type);
                     var->set_source_position(declaration.Content->position);
                 }
             }

@@ -26,18 +26,18 @@ namespace eddic {
 namespace ast {
 
 typedef boost::variant<
-            Integer, 
-            IntegerSuffix, 
+            Integer,
+            IntegerSuffix,
             Float,
-            Literal, 
-            CharLiteral, 
+            Literal,
+            CharLiteral,
             VariableValue,
             Expression,
             Null,
             True,
             False,
             FunctionCall,
-            Cast,
+            boost::recursive_wrapper<Cast>,
             BuiltinOperator,
             Assignment,
             PrefixOperation,
@@ -50,12 +50,13 @@ typedef boost::variant<
 
 } //end of eddic
 
+#include "ast/Cast.hpp"
+
 #include "ast/Assignment.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
-#include "ast/Cast.hpp"
 #include "ast/New.hpp"
 #include "ast/NewArray.hpp"
 #include "ast/PrefixOperation.hpp"
