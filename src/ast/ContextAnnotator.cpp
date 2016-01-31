@@ -198,9 +198,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::New& new_){
-            new_.Content->context = currentContext;
+            new_.context = currentContext;
 
-            visit_each(*this, new_.Content->values);
+            visit_each(*this, new_.values);
         }
 
         void operator()(ast::NewArray& new_){

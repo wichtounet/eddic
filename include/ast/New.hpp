@@ -23,10 +23,10 @@ namespace ast {
 
 /*!
  * \class ASTNew
- * \brief The AST node for a dynamic allocation.  
+ * \brief The AST node for a dynamic allocation.
  * Should only be used from the Deferred version (eddic::ast::New).
  */
-struct ASTNew {
+struct New {
     std::shared_ptr<Context> context;
     std::string mangled_name;
 
@@ -37,22 +37,16 @@ struct ASTNew {
     mutable long references = 0;
 };
 
-/*!
- * \typedef New 
- * \brief The AST node for a dynamic allocation.
-*/
-typedef Deferred<ASTNew> New;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::New, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->type)
-    (std::vector<eddic::ast::Value>, Content->values)
+    eddic::ast::New,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, type)
+    (std::vector<eddic::ast::Value>, values)
 )
 
 #endif

@@ -687,7 +687,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::New& new_) const {
-        auto type = visit(ast::TypeTransformer(function.context->global()), new_.Content->type);
+        auto type = visit(ast::TypeTransformer(function.context->global()), new_.type);
 
         function.emplace_back(mtac::Operator::PARAM, static_cast<int>(type->size(function.context->global()->target_platform())), "a", function.context->global()->getFunction("_F5allocI"));
 
@@ -697,7 +697,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         //If structure type, call the constructor
         if(type->is_custom_type() || type->is_template_type()){
-            construct(function, type, new_.Content->values, t1);
+            construct(function, type, new_.values, t1);
         }
 
         return {t1};

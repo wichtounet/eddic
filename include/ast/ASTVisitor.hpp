@@ -171,7 +171,7 @@ void operator()(ast::GlobalVariableDeclaration& declaration){\
 
 #define AUTO_RECURSE_NEW()\
 void operator()(ast::New& new_){\
-    visit_each(*this, new_.Content->values);\
+    visit_each(*this, new_.values);\
 }
 
 #define AUTO_RECURSE_DELETE()\

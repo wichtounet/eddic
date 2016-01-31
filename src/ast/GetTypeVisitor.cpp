@@ -37,7 +37,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Null& /*n
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::New& value) const {
-    return new_pointer_type(visit(ast::TypeTransformer(value.Content->context->global()), value.Content->type));
+    return new_pointer_type(visit(ast::TypeTransformer(value.context->global()), value.type));
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::NewArray& value) const {

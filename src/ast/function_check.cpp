@@ -525,7 +525,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::New& new_){
-            check_each(new_.Content->values);
+            check_each(new_.values);
         }
 
         void operator()(ast::NewArray& new_){

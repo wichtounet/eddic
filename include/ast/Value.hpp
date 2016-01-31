@@ -42,7 +42,7 @@ typedef boost::variant<
             Assignment,
             PrefixOperation,
             Ternary,
-            New,
+            boost::recursive_wrapper<New>,
             NewArray
         > Value;
 
@@ -51,13 +51,13 @@ typedef boost::variant<
 } //end of eddic
 
 #include "ast/Cast.hpp"
+#include "ast/New.hpp"
 
 #include "ast/Assignment.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/BuiltinOperator.hpp"
-#include "ast/New.hpp"
 #include "ast/NewArray.hpp"
 #include "ast/PrefixOperation.hpp"
 

@@ -175,8 +175,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::New& new_) const {
-        std::cout << indent() << "New " << ast::to_string(new_.Content->type) << std::endl;
-        print_each_sub(new_.Content->values, "Value");
+        std::cout << indent() << "New " << ast::to_string(new_.type) << std::endl;
+        print_each_sub(new_.values, "Value");
     }
 
     void operator()(ast::NewArray& new_array) const {

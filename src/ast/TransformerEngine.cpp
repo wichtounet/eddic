@@ -72,7 +72,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::New& new_){
-        for(auto& value : new_.Content->values){
+        for(auto& value : new_.values){
             value = visit(*this, value);
         }
 
@@ -159,7 +159,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::New& new_){
-        for(auto& value : new_.Content->values){
+        for(auto& value : new_.values){
             value = visit(*this, value);
         }
 
@@ -661,7 +661,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::New& new_){
-        for(auto& value : new_.Content->values){
+        for(auto& value : new_.values){
             value = visit(transformer, value);
         }
     }

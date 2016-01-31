@@ -22,6 +22,7 @@ struct True;
 struct False;
 struct Null;
 struct Cast;
+struct New;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
@@ -39,9 +40,6 @@ struct VariableValue;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
-
-struct ASTNew;
-typedef Deferred<ASTNew> New;
 
 struct ASTNewArray;
 typedef Deferred<ASTNewArray> NewArray;
