@@ -104,12 +104,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         >>  -( value >> *( lexer.comma > value))
         >>  lexer.right_parenth;
 
-    auto variable_value = boost::spirit::qi::as<ast::VariableValue>()[(
+    variable_value %=
+            qi::eps
+        >>
             (
-                    lexer.this_
-                |   lexer.identifier
+                lexer.this_
+            |   lexer.identifier
             )
-    )];
+    ;
 
     auto null = boost::spirit::qi::as<ast::Null>()[(
             qi::eps

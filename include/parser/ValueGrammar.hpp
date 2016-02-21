@@ -48,6 +48,7 @@ struct ValueGrammar :
     Rule<ast::Cast>               cast_value;
     Rule<ast::Value>              conditional_expression;
     Rule<ast::CallOperationValue> call_value;
+    Rule<ast::VariableValue>      variable_value;
 
     Rule<ast::Expression>         postfix_expression_helper;
 

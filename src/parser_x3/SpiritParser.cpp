@@ -711,6 +711,10 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "swap: " << std::endl;
     }
 
+    void operator()(const boolean&){
+        std::cout << indent() << "boolean: " << std::endl;
+    }
+
     void operator()(const builtin_operator& value){
         std::cout << indent() << "builtin_operator: " << std::endl;
         std::cout << indent() << "op: " << static_cast<unsigned int>(value.type) << std::endl;
@@ -1933,8 +1937,8 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
         bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
         if(r && it == end){
-            //x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
-            //printer(result);
+            x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
+            printer(result);
 
             return true;
         } else {
