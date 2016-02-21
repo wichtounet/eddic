@@ -14,8 +14,11 @@
 #include "boost_cfg.hpp"
 
 #include <boost/variant.hpp>
+#include <boost/spirit/home/x3/support/ast/variant.hpp>
 
 //For those who need variant with more than 20 template parameters
 #include <boost/mpl/vector.hpp>
+
+namespace x3 = boost::spirit::x3;
 
 #endif
