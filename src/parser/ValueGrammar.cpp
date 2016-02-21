@@ -105,8 +105,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         >>  lexer.right_parenth;
 
     auto variable_value = boost::spirit::qi::as<ast::VariableValue>()[(
-            local_begin
-        >>
             (
                     lexer.this_
                 |   lexer.identifier

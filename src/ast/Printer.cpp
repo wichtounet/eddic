@@ -354,7 +354,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableValue& value) const {
-        std::cout << indent() << "Variable " << value.Content->variableName << std::endl;
+        std::cout << indent() << "Variable " << value.variableName << std::endl;
     }
 
     void operator()(ast::Expression& value) const {

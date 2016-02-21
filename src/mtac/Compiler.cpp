@@ -865,7 +865,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::VariableValue& value) const {
-        return (*this)(value.Content->var);
+        return (*this)(value.var);
     }
 
     result_type dereference_variable(std::shared_ptr<Variable> variable, std::shared_ptr<const Type> type) const {
@@ -1123,7 +1123,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     void operator()(ast::VariableValue& variable_value){
         auto platform = function.context->global()->target_platform();
 
-        auto variable = variable_value.Content->var;
+        auto variable = variable_value.var;
         auto type = visit(ast::GetTypeVisitor(), right_value);
 
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
@@ -1319,9 +1319,9 @@ void assign(mtac::Function& function, ast::Value& left_value, ast::Value& value)
 
 void assign(mtac::Function& function, std::shared_ptr<Variable> variable, ast::Value& value){
     ast::VariableValue left_value;
-    left_value.Content->var = variable;
-    left_value.Content->variableName = variable->name();
-    left_value.Content->context = function.context;
+    left_value.var = variable;
+    left_value.variableName = variable->name();
+    left_value.context = function.context;
 
     AssignmentVisitor visitor(function, value);
     visit_non_variant(visitor, left_value);
@@ -1551,11 +1551,11 @@ class FunctionCompiler : public boost::static_visitor<> {
                 std::shared_ptr<Variable> rhs_var;
 
                 if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
-                    lhs_var = ptr->Content->var;
+                    lhs_var = ptr->var;
                 }
 
                 if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->value)){
-                    rhs_var = ptr->Content->var;
+                    rhs_var = ptr->var;
                 }
 
                 cpp_assert(lhs_var && rhs_var, "Invalid swap");

@@ -103,10 +103,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         ast::VariableValue this_variable(std::shared_ptr<Context> context, ast::Position position){
             ast::VariableValue variable_value;
 
-            variable_value.Content->context = context;
-            variable_value.Content->position = position;
-            variable_value.Content->variableName = "this";
-            variable_value.Content->var = context->getVariable("this");
+            variable_value.context = context;
+            variable_value.position = position;
+            variable_value.variableName = "this";
+            variable_value.var = context->getVariable("this");
 
             return variable_value;
         }
@@ -181,20 +181,20 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 }
             } else if(auto* ptr = boost::relaxed_get<ast::VariableValue>(&value)){
                 auto& variable = *ptr;
-                if (!variable.Content->context->exists(variable.Content->variableName)) {
-                    auto context = variable.Content->context->function();
-                    auto global_context = variable.Content->context->global();
+                if (!variable.context->exists(variable.variableName)) {
+                    auto context = variable.context->function();
+                    auto global_context = variable.context->global();
 
                     if(context && context->struct_type && global_context->struct_exists(context->struct_type->mangle())){
                         auto struct_type = global_context->get_struct(context->struct_type);
 
                         do {
-                            if(struct_type->member_exists(variable.Content->variableName)){
+                            if(struct_type->member_exists(variable.variableName)){
                                 ast::Expression member_value;
-                                member_value.Content->context = variable.Content->context;
-                                member_value.Content->position = variable.Content->position;
-                                member_value.Content->first = this_variable(variable.Content->context, variable.Content->position);
-                                member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.Content->variableName));
+                                member_value.Content->context = variable.context;
+                                member_value.Content->position = variable.position;
+                                member_value.Content->first = this_variable(variable.context, variable.position);
+                                member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName));
 
                                 value = member_value;
 
@@ -207,12 +207,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         } while(struct_type);
                     }
 
-                    throw SemanticalException("Variable " + variable.Content->variableName + " has not been declared", variable.Content->position);
+                    throw SemanticalException("Variable " + variable.variableName + " has not been declared", variable.position);
                 }
 
                 //Reference the variable
-                variable.Content->var = variable.Content->context->getVariable(variable.Content->variableName);
-                variable.Content->var->add_reference();
+                variable.var = variable.context->getVariable(variable.variableName);
+                variable.var->add_reference();
             } else {
                 visit(*this, value);
             }

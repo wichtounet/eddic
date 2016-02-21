@@ -52,10 +52,6 @@ struct char_literal {
     char value;
 };
 
-struct variable_value : x3::position_tagged {
-    std::string variable_name;
-};
-
 struct boolean {
 	bool value;
 };
@@ -77,7 +73,7 @@ typedef x3::variant<
             ast::Float,
             ast::Literal,
             char_literal,
-            variable_value,
+            ast::VariableValue,
             boolean,
             ast::Null,
             x3::forward_ast<new_array>,
@@ -703,8 +699,8 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "char_literal: " << integer.value << std::endl;
     }
 
-    void operator()(const variable_value& integer){
-        std::cout << indent() << "variable_value: " << integer.variable_name << std::endl;
+    void operator()(const ast::VariableValue& integer){
+        std::cout << indent() << "variable_value: " << integer.variableName << std::endl;
     }
 
     void operator()(const ast::Null&){
@@ -761,11 +757,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::char_literal,
     (char, value)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::variable_value,
-    (std::string, variable_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1219,7 +1210,7 @@ namespace x3_grammar {
     x3::rule<new_class, x3_ast::new_> const new_("new_");
     x3::rule<boolean_class, x3_ast::boolean> const boolean("boolean");
     x3::rule<null_class, ast::Null> const null("null");
-    x3::rule<variable_value_class, x3_ast::variable_value> const variable_value("variable_value");
+    x3::rule<variable_value_class, ast::VariableValue> const variable_value("variable_value");
     x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
     x3::rule<function_call_class, x3_ast::function_call> const function_call("function_call");
     x3::rule<postfix_expression_class, x3_ast::expression> const postfix_expression("postfix_expression");
@@ -1485,7 +1476,7 @@ namespace x3_grammar {
                      >>  variable_value
                 |
                          postfix_op
-                     >   x3::attr(x3_ast::variable_value())
+                     >   x3::attr(ast::VariableValue())
             );
 
     auto const prefix_expression_def =

@@ -73,10 +73,10 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::VariableValue& source) const {
         ast::VariableValue copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->var = source.Content->var;
-        copy.Content->position = source.Content->position;
-        copy.Content->variableName = source.Content->variableName;
+        copy.context = source.context;
+        copy.var = source.var;
+        copy.position = source.position;
+        copy.variableName = source.variableName;
 
         return copy;
     }

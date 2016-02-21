@@ -57,7 +57,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     }
 
     bool operator()(ast::VariableValue& variable) const {
-        return variable.Content->var->type()->is_const();
+        return variable.var->type()->is_const();
     }
 
     bool operator()(ast::Expression& value) const {

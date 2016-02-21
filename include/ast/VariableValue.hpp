@@ -23,30 +23,17 @@ namespace ast {
 
 /*!
  * \class ASTVariableValue
- * \brief The AST node for a variable value.  
- * Should only be used from the Deferred version (eddic::ast::VariableValue).
+ * \brief The AST node for a variable value.
  */
-struct ASTVariableValue {
+struct VariableValue : x3::position_tagged {
     std::shared_ptr<Context> context;
     std::shared_ptr<Variable> var;
 
     Position position;
     std::string variableName;
 
-    mutable long references = 0;
-};
-
-/*!
- * \struct VariableValue
- * \brief The AST node for a variable value.
-*/
-struct VariableValue : public Deferred<ASTVariableValue> {
     std::shared_ptr<Variable> variable() const {
-        return Content->var;
-    }
-    
-    std::shared_ptr<Context> context() const {
-        return Content->context;
+        return var;
     }
 };
 
@@ -56,9 +43,8 @@ struct VariableValue : public Deferred<ASTVariableValue> {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::VariableValue, 
-    (eddic::ast::Position, Content->position)
-    (std::string, Content->variableName)
+    eddic::ast::VariableValue,
+    (std::string, variableName)
 )
 
 #endif

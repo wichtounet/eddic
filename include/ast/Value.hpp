@@ -10,6 +10,8 @@
 
 #include "variant.hpp"
 
+#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
+
 #include "ast/values_def.hpp"
 #include "ast/Integer.hpp"
 #include "ast/IntegerSuffix.hpp"

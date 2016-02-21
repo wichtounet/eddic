@@ -69,7 +69,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOpe
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableValue& variable) const {
-    return variable.Content->var->type();
+    return variable.var->type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {

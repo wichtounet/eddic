@@ -182,7 +182,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableValue& variable){
-            variable.Content->context = currentContext;
+            variable.context = currentContext;
         }
 
         void operator()(ast::Return& return_){

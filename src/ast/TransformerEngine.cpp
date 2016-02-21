@@ -255,9 +255,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         if_.Content->condition = condition;
 
         ast::VariableValue left_value;
-        left_value.Content->context = foreach.Content->context;
-        left_value.Content->variableName = foreach.Content->variableName;
-        left_value.Content->var = foreach.Content->context->getVariable(foreach.Content->variableName);
+        left_value.context = foreach.Content->context;
+        left_value.variableName = foreach.Content->variableName;
+        left_value.var = foreach.Content->context->getVariable(foreach.Content->variableName);
 
         ast::Assignment start_assign;
         start_assign.Content->context = foreach.Content->context;
@@ -267,9 +267,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         if_.Content->instructions.push_back(start_assign);
 
         ast::VariableValue v;
-        v.Content->variableName = foreach.Content->variableName;
-        v.Content->context = foreach.Content->context;
-        v.Content->var = v.Content->context->getVariable(foreach.Content->variableName);
+        v.variableName = foreach.Content->variableName;
+        v.context = foreach.Content->context;
+        v.var = v.context->getVariable(foreach.Content->variableName);
 
         ast::Expression while_condition;
         while_condition.Content->context = foreach.Content->context;
@@ -313,9 +313,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         init_value.value = 0;
 
         ast::VariableValue left_value;
-        left_value.Content->context = foreach.Content->context;
-        left_value.Content->variableName = iterVar->name();
-        left_value.Content->var = foreach.Content->context->getVariable(iterVar->name());
+        left_value.context = foreach.Content->context;
+        left_value.variableName = iterVar->name();
+        left_value.var = foreach.Content->context->getVariable(iterVar->name());
 
         ast::Assignment init_assign;
         init_assign.Content->context = foreach.Content->context;
@@ -325,14 +325,14 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         instructions.push_back(init_assign);
 
         ast::VariableValue iter_var_value;
-        iter_var_value.Content->var = iterVar;
-        iter_var_value.Content->variableName = iterVar->name();
-        iter_var_value.Content->context = foreach.Content->context;
+        iter_var_value.var = iterVar;
+        iter_var_value.variableName = iterVar->name();
+        iter_var_value.context = foreach.Content->context;
 
         ast::VariableValue array_var_value;
-        array_var_value.Content->var = arrayVar;
-        array_var_value.Content->variableName = arrayVar->name();
-        array_var_value.Content->context = foreach.Content->context;
+        array_var_value.var = arrayVar;
+        array_var_value.variableName = arrayVar->name();
+        array_var_value.context = foreach.Content->context;
 
         ast::BuiltinOperator size_builtin;
         size_builtin.Content->values.push_back(array_var_value);
@@ -357,9 +357,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         do_while.Content->condition = while_condition;
 
         ast::VariableValue array_var_value_2;
-        array_var_value_2.Content->var = arrayVar;
-        array_var_value_2.Content->variableName = arrayVar->name();
-        array_var_value_2.Content->context = foreach.Content->context;
+        array_var_value_2.var = arrayVar;
+        array_var_value_2.variableName = arrayVar->name();
+        array_var_value_2.context = foreach.Content->context;
 
         ast::Expression array_value;
         array_value.Content->context = foreach.Content->context;

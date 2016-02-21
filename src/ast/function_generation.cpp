@@ -42,7 +42,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
             } else if(c.Content->parameters.size() == 1){
                 auto& parameter = c.Content->parameters.front();
                 auto parameter_type = visit(ast::TypeTransformer(context), parameter.parameterType);
-                
+
                 if(parameter_type == new_pointer_type(struct_.Content->struct_type)){
                     copy_constructor = true;
                 }
@@ -58,7 +58,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
 
         std::vector<std::shared_ptr<const eddic::Type>> types;
         c.Content->mangledName = mangle_ctor(types, c.Content->struct_type);
-                
+
         struct_.Content->blocks.push_back(c);
     }
 
@@ -68,7 +68,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
         d.Content->context = std::make_shared<FunctionContext>(context, context, platform, configuration);
         d.Content->struct_type = struct_.Content->struct_type;
         d.Content->mangledName = mangle_dtor(d.Content->struct_type);
-                
+
         struct_.Content->blocks.push_back(d);
     }
 
@@ -120,9 +120,9 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 assignment.Content->context = function_context;
 
                 ast::VariableValue this_value;
-                this_value.Content->context = function_context;
-                this_value.Content->variableName = "this";
-                this_value.Content->var = function_context->getVariable("this");
+                this_value.context = function_context;
+                this_value.variableName = "this";
+                this_value.var = function_context->getVariable("this");
 
                 ast::Expression left_expression;
                 left_expression.Content->context = function_context;
@@ -130,9 +130,9 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 left_expression.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, name));
 
                 ast::VariableValue rhs_value;
-                rhs_value.Content->context = function_context;
-                rhs_value.Content->variableName = "rhs";
-                rhs_value.Content->var = function_context->getVariable("rhs");
+                rhs_value.context = function_context;
+                rhs_value.variableName = "rhs";
+                rhs_value.var = function_context->getVariable("rhs");
 
                 ast::Expression right_expression;
                 right_expression.Content->context = function_context;

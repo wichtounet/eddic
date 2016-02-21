@@ -16,6 +16,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/home/support/attributes.hpp>
 #include <boost/spirit/home/classic/iterator.hpp>
+#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 
 #include "ast/Position.hpp"
 #include "ast/Deferred.hpp"
@@ -40,8 +41,8 @@ namespace ast {
  * \brief A first level block in a source file.
  */
 typedef boost::variant<
-            FunctionDeclaration, 
-            TemplateFunctionDeclaration, 
+            FunctionDeclaration,
+            TemplateFunctionDeclaration,
             GlobalVariableDeclaration,
             GlobalArrayDeclaration,
             StandardImport,
@@ -75,7 +76,7 @@ typedef Deferred<ASTSourceFile> SourceFile;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::SourceFile, 
+    eddic::ast::SourceFile,
     (eddic::ast::Position, Content->position)
     (std::vector<eddic::ast::SourceFileBlock>, Content->blocks)
 )
