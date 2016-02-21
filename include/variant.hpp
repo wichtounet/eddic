@@ -21,4 +21,28 @@
 
 namespace x3 = boost::spirit::x3;
 
+namespace eddic {
+
+namespace ast {
+
+template<typename... V1>
+std::ostream& operator<<(std::ostream& os, const boost::spirit::x3::variant<V1...>& v1){
+    return os << v1.get();
+}
+
+template<typename... V1, typename... V2>
+bool operator==(const boost::spirit::x3::variant<V1...>& v1, const boost::spirit::x3::variant<V2...>& v2){
+    return v1.get() == v2.get();
+}
+
+template<typename... V1, typename... V2>
+bool operator!=(const boost::spirit::x3::variant<V1...>& v1, const boost::spirit::x3::variant<V2...>& v2){
+    return v1.get() != v2.get();
+}
+
+
+} //end of namespace ast
+
+} //end of namespace eddic
+
 #endif
