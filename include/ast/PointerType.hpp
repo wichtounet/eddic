@@ -21,10 +21,10 @@ namespace ast {
 
 /*!
  * \struct PointerType
- * \brief A pointer type in the AST.  
+ * \brief A pointer type in the AST.
  */
 struct PointerType {
-    boost::recursive_wrapper<ast::Type> type;
+    ast::Type type;
 };
 
 bool operator==(const PointerType& a, const PointerType& b);
@@ -37,8 +37,8 @@ std::ostream& operator<<(std::ostream& out, const ast::PointerType& type);
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::PointerType, 
-    (boost::recursive_wrapper<eddic::ast::Type>, type)
+    eddic::ast::PointerType,
+    (eddic::ast::Type, type)
 )
 
 #endif

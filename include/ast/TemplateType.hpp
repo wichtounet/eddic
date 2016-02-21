@@ -24,7 +24,7 @@ namespace ast {
 
 /*!
  * \struct TemplateType
- * \brief A template type in the AST.  
+ * \brief A template type in the AST.
  */
 struct TemplateType {
     std::string type;
@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& out, const ast::TemplateType& type);
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::TemplateType, 
+    eddic::ast::TemplateType,
     (std::string, type)
     (std::vector<eddic::ast::Type>, template_types)
 )

@@ -22,9 +22,14 @@ struct PointerType;
 
 /*!
  * \typedef Type
- * \brief A type in the AST.  
+ * \brief A type in the AST.
  */
-typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
+typedef boost::spirit::x3::variant<
+        SimpleType,
+        boost::spirit::x3::forward_ast<ArrayType>,
+        boost::spirit::x3::forward_ast<TemplateType>,
+        boost::spirit::x3::forward_ast<PointerType>
+    > Type;
 
 std::string to_string(const ast::Type& type);
 
@@ -35,5 +40,9 @@ std::string to_string(const ast::Type& type);
 #include "ast/PointerType.hpp"
 #include "ast/ArrayType.hpp"
 #include "ast/TemplateType.hpp"
+
+X3_FORWARD_AST(eddic::ast::ArrayType)
+X3_FORWARD_AST(eddic::ast::TemplateType)
+X3_FORWARD_AST(eddic::ast::PointerType)
 
 #endif

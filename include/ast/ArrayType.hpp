@@ -20,10 +20,10 @@ namespace ast {
 
 /*!
  * \struct ArrayType
- * \brief An array type in the AST.  
+ * \brief An array type in the AST.
  */
 struct ArrayType {
-    boost::recursive_wrapper<ast::Type> type;
+    ast::Type type;
 };
 
 bool operator==(const ArrayType& a, const ArrayType& b);
@@ -41,8 +41,8 @@ std::ostream& operator<<(std::ostream& out, const ast::ArrayType& type);
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ArrayType, 
-    (boost::recursive_wrapper<eddic::ast::Type>, type)
+    eddic::ast::ArrayType,
+    (eddic::ast::Type, type)
 )
 
 #endif
