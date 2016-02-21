@@ -112,12 +112,7 @@ struct new_ : x3::position_tagged {
     std::vector<value_t> values;
 };
 
-typedef value_t operation_value;
-
-struct operation {
-    ast::Operator op;
-    operation_value value;
-};
+using operation = boost::tuple<ast::Operator, value_t>;
 
 struct expression : x3::position_tagged {
     value_t first;
@@ -802,12 +797,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::expression,
     (x3_ast::value_t, first)
     (std::vector<x3_ast::operation>, operations)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::operation,
-    (ast::Operator, op)
-    (x3_ast::operation_value, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
