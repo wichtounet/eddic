@@ -19,6 +19,8 @@
 //For those who need variant with more than 20 template parameters
 #include <boost/mpl/vector.hpp>
 
+#include "smart_get.hpp"
+
 namespace x3 = boost::spirit::x3;
 
 namespace eddic {
