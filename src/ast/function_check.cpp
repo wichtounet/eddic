@@ -393,7 +393,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 }
 
                 auto value = visit(ast::GetConstantValue(), declaration.Content->size);
-                auto size = boost::get<int>(value);
+                auto size = boost::smart_get<int>(value);
 
                 auto var = declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
                 var->set_source_position(declaration.Content->position);
@@ -440,9 +440,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             auto type = visit(ast::GetTypeVisitor(), value.Content->first);
             for(auto& op : value.Content->operations){
                 if(ast::has_operation_value(op)){
-                    if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
+                    if(auto* ptr = boost::smart_get<ast::Value>(&op.get<1>())){
                         check_value(*ptr);
-                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
+                    } else if(auto* ptr = boost::smart_get<ast::CallOperationValue>(&op.get<1>())){
                         check_each(ptr->values);
                     }
                 }
@@ -461,7 +461,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     //Reference the structure
                     struct_type->add_reference();
 
-                    auto member = boost::get<std::string>(op.get<1>());
+                    auto member = boost::smart_get<std::string>(op.get<1>());
                     bool found = false;
 
                     do {
@@ -488,7 +488,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         throw SemanticalException("Member functions can only be used with structures", value.Content->position);
                     }
 
-                    auto& call_value = boost::get<ast::CallOperationValue>(op.get<1>());
+                    auto& call_value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
                     std::string name = call_value.function_name;
 
                     auto types = get_types(call_value.values);
@@ -569,18 +569,18 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         bool is_valid(const ast::Type& type){
-            if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-                return is_valid(ptr->type.get());
-            } else if(auto* ptr = boost::get<ast::SimpleType>(&type)){
+            if(auto* ptr = boost::smart_get<ast::ArrayType>(&type)){
+                return is_valid(ptr->type);
+            } else if(auto* ptr = boost::smart_get<ast::SimpleType>(&type)){
                 if(is_standard_type(ptr->type)){
                     return true;
                 }
 
                 auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
                 return context->struct_exists(t->mangle());
-            } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-                return is_valid(ptr->type.get());
-            } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            } else if(auto* ptr = boost::smart_get<ast::PointerType>(&type)){
+                return is_valid(ptr->type);
+            } else if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
                 auto t = visit_non_variant(ast::TypeTransformer(context), *ptr);
                 return context->struct_exists(t->mangle());
             }
@@ -662,9 +662,9 @@ void ast::FunctionCheckPass::apply_program(ast::SourceFile& program, bool indica
         visitor.context = context;
 
         for(auto& block : program.Content->blocks){
-            if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
+            if(auto* ptr = boost::smart_get<ast::GlobalArrayDeclaration>(&block)){
                 visit_non_variant(visitor, *ptr);
-            } else if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
+            } else if(auto* ptr = boost::smart_get<ast::GlobalVariableDeclaration>(&block)){
                 visit_non_variant(visitor, *ptr);
             }
         }

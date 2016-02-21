@@ -90,9 +90,9 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         for(auto& operation : source.Content->operations){
             if(ast::has_operation_value(operation)){
-                if(auto* ptr = boost::get<ast::Value>(&operation.get<1>())){
+                if(auto* ptr = boost::smart_get<ast::Value>(&operation.get<1>())){
                     copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, *ptr)));
-                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&operation.get<1>())){
+                } else if(auto* ptr = boost::smart_get<ast::CallOperationValue>(&operation.get<1>())){
                     ast::CallOperationValue value_copy;
                     value_copy.function_name = ptr->function_name;
                     value_copy.template_types = ptr->template_types;
@@ -113,7 +113,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
                                 value_copy
                                 ));
                 } else {
-                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::get<std::string>(operation.get<1>())));
+                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::smart_get<std::string>(operation.get<1>())));
                 }
             } else {
                 copy.Content->operations.push_back(operation);
@@ -236,7 +236,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
 struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Expression& expression) const {
-        return boost::get<ast::Expression>(visit_non_variant(ValueCopier(), expression));
+        return boost::smart_get<ast::Expression>(visit_non_variant(ValueCopier(), expression));
     }
 
     ast::Instruction operator()(const ast::FunctionCall& source) const {
@@ -522,25 +522,25 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     ast::Type replace(ast::Type& type){
-        if(auto* ptr = boost::get<ast::SimpleType>(&type)){
+        if(auto* ptr = boost::smart_get<ast::SimpleType>(&type)){
             if(has_to_be_replaced(ptr->type)){
                 return replacements.at(ptr->type);
             } else {
-                return *ptr;
+                return ast::Type(*ptr);
             }
-        } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-            ptr->type = replace(ptr->type.get());
+        } else if(auto* ptr = boost::smart_get<ast::ArrayType>(&type)){
+            ptr->type = replace(ptr->type);
 
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-            ptr->type = replace(ptr->type.get());
+            return ast::Type(*ptr);
+        } else if(auto* ptr = boost::smart_get<ast::PointerType>(&type)){
+            ptr->type = replace(ptr->type);
 
-            return *ptr;
-        } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+            return ast::Type(*ptr);
+        } else if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
             if(has_to_be_replaced(ptr->type)){
                 auto replacement = replacements.at(ptr->type);
 
-                auto simple = boost::get<ast::SimpleType>(replacement);
+                auto simple = boost::smart_get<ast::SimpleType>(replacement);
                 ptr->type = simple.type;
             }
 
@@ -548,7 +548,7 @@ struct Adaptor : public boost::static_visitor<> {
                 ptr->template_types[i] = replace(ptr->template_types[i]);
             }
 
-            return *ptr;
+            return ast::Type(*ptr);
         } else {
             cpp_unreachable("Unhandled type");
         }
@@ -584,7 +584,7 @@ struct Adaptor : public boost::static_visitor<> {
     void operator()(ast::Expression& expression){
         for(auto& op : expression.Content->operations){
             if(op.get<0>() == ast::Operator::CALL){
-                auto& value = boost::get<ast::CallOperationValue>(op.get<1>());
+                auto& value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
 
                 for(auto& type : value.template_types){
                     type = replace(type);
@@ -669,7 +669,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
     destination.reserve(blocks.size());
 
     for(auto& block : blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
+        if(auto* ptr = boost::smart_get<ast::FunctionDeclaration>(&block)){
             auto& function = *ptr;
 
             ast::FunctionDeclaration f;
@@ -681,7 +681,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             f.Content->parameters = function.Content->parameters;
 
             destination.push_back(f);
-        } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
+        } else if(auto* ptr = boost::smart_get<ast::Destructor>(&block)){
             auto& destructor = *ptr;
 
             ast::Destructor d;
@@ -691,7 +691,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             d.Content->instructions = copy(destructor.Content->instructions);
 
             destination.push_back(d);
-        } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
+        } else if(auto* ptr = boost::smart_get<ast::Constructor>(&block)){
             auto& constructor = *ptr;
 
             ast::Constructor c;
@@ -701,7 +701,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             c.Content->instructions = copy(constructor.Content->instructions);
 
             destination.push_back(c);
-        } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
+        } else if(auto* ptr = boost::smart_get<ast::ArrayDeclaration>(&block)){
             auto& array_declaration = *ptr;
 
             ast::ArrayDeclaration copy;
@@ -712,7 +712,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             copy.Content->size = array_declaration.Content->size;
 
             destination.push_back(copy);
-        } else if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
+        } else if(auto* ptr = boost::smart_get<ast::MemberDeclaration>(&block)){
             auto& member_declaration = *ptr;
 
             ast::MemberDeclaration member;
@@ -721,7 +721,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             member.Content->name = member_declaration.Content->name;
 
             destination.push_back(member);
-        } else if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+        } else if(auto* ptr = boost::smart_get<ast::TemplateFunctionDeclaration>(&block)){
             auto& function = *ptr;
 
             ast::TemplateFunctionDeclaration f;
@@ -782,7 +782,7 @@ void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
 
 void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Type> type, ast::Operation& op, ast::Position& position){
     if(op.get<0>() == ast::Operator::CALL){
-        auto& value = boost::get<ast::CallOperationValue>(op.get<1>());
+        auto& value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
 
         if(!value.template_types.empty()){
             auto object_type = type->is_pointer() ? type->data_type() : type;
@@ -847,7 +847,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
 
 
 void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
-    if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+    if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
         auto template_types = ptr->template_types;
         auto name = ptr->type;
 
@@ -893,11 +893,11 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
                 return;
             }
         }
-    } else if(auto* ptr = boost::get<ast::ArrayType>(&type)){
-        check_type(ptr->type.get(), position);
-    } else if(auto* ptr = boost::get<ast::PointerType>(&type)){
-        check_type(ptr->type.get(), position);
-    } else if(auto* ptr = boost::get<ast::TemplateType>(&type)){
+    } else if(auto* ptr = boost::smart_get<ast::ArrayType>(&type)){
+        check_type(ptr->type, position);
+    } else if(auto* ptr = boost::smart_get<ast::PointerType>(&type)){
+        check_type(ptr->type, position);
+    } else if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
         for(auto& type : ptr->template_types){
             check_type(type, position);
         }
