@@ -341,16 +341,12 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Float [" << float_.value << "]" << std::endl;
     }
 
-    void operator()(ast::True&) const {
-        std::cout << indent() << "true" << std::endl;
+    void operator()(ast::Boolean& boolean) const {
+        std::cout << indent() << boolean.value << std::endl;
     }
 
     void operator()(ast::Null&) const {
         std::cout << indent() << "null" << std::endl;
-    }
-
-    void operator()(ast::False&) const {
-        std::cout << indent() << "false" << std::endl;
     }
 
     void operator()(ast::VariableValue& value) const {

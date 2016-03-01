@@ -52,10 +52,6 @@ struct char_literal {
     char value;
 };
 
-struct boolean {
-	bool value;
-};
-
 struct new_array;
 struct new_;
 struct builtin_operator;
@@ -74,7 +70,7 @@ typedef x3::variant<
             ast::Literal,
             char_literal,
             ast::VariableValue,
-            boolean,
+            ast::Boolean,
             ast::Null,
             x3::forward_ast<new_array>,
             x3::forward_ast<new_>,
@@ -711,7 +707,7 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "swap: " << std::endl;
     }
 
-    void operator()(const boolean&){
+    void operator()(const ast::Boolean&){
         std::cout << indent() << "boolean: " << std::endl;
     }
 
@@ -754,7 +750,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 //***************
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::boolean,
+    ast::Boolean,
     (bool, value)
 )
 
@@ -1212,7 +1208,7 @@ namespace x3_grammar {
     x3::rule<char_literal_class, x3_ast::char_literal> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
-    x3::rule<boolean_class, x3_ast::boolean> const boolean("boolean");
+    x3::rule<boolean_class, ast::Boolean> const boolean("boolean");
     x3::rule<null_class, ast::Null> const null("null");
     x3::rule<variable_value_class, ast::VariableValue> const variable_value("variable_value");
     x3::rule<builtin_operator_class, x3_ast::builtin_operator> const builtin_operator("builtin_operator");
@@ -1937,11 +1933,12 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
         bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
         if(r && it == end){
-            x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
-            printer(result);
+            //x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
+            //printer(result);
 
             return true;
         } else {
+            std::cout << "Invalid source file" << std::endl;
             return false;
         }
 }

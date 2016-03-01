@@ -21,6 +21,7 @@
 #include "ast/VariableValue.hpp"
 #include "ast/True.hpp"
 #include "ast/False.hpp"
+#include "ast/Boolean.hpp"
 #include "ast/Null.hpp"
 
 namespace eddic {
@@ -36,8 +37,7 @@ typedef boost::variant<
             VariableValue,
             Expression,
             Null,
-            True,
-            False,
+            Boolean,
             FunctionCall,
             boost::recursive_wrapper<Cast>,
             BuiltinOperator,

@@ -674,16 +674,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         return {float_.value};
     }
 
-    result_type operator()(ast::False&) const {
-        return {0};
-    }
-
-    result_type operator()(ast::True&) const {
-        return {1};
-    }
-
     result_type operator()(ast::Null&) const {
         return {0};
+    }
+
+    result_type operator()(ast::Boolean& boolean) const {
+        return {boolean.value ? 1 : 0};
     }
 
     result_type operator()(ast::New& new_) const {

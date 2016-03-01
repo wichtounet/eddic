@@ -24,12 +24,8 @@ Val ast::GetConstantValue::operator()(const ast::Integer& integer) const {
     return integer.value;
 }
 
-Val ast::GetConstantValue::operator()(const ast::False&) const {
-    return false;
-}
-
-Val ast::GetConstantValue::operator()(const ast::True&) const {
-    return true;
+Val ast::GetConstantValue::operator()(const ast::Boolean& literal) const {
+    return literal.value;
 }
 
 Val ast::GetConstantValue::operator()(const ast::IntegerSuffix& integer) const {

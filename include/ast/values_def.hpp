@@ -20,6 +20,7 @@ struct Float;
 struct Literal;
 struct True;
 struct False;
+struct Boolean;
 struct Null;
 struct Cast;
 struct New;

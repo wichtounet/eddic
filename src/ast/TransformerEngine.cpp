@@ -23,8 +23,7 @@ using namespace eddic;
 namespace {
 
 struct ValueCleaner : public boost::static_visitor<ast::Value> {
-    AUTO_RETURN_FALSE(ast::Value)
-    AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_BOOLEAN(ast::Value)
     AUTO_RETURN_NULL(ast::Value)
     AUTO_RETURN_LITERAL(ast::Value)
     AUTO_RETURN_CHAR_LITERAL(ast::Value)
@@ -116,8 +115,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
 };
 
 struct ValueTransformer : public boost::static_visitor<ast::Value> {
-    AUTO_RETURN_FALSE(ast::Value)
-    AUTO_RETURN_TRUE(ast::Value)
+    AUTO_RETURN_BOOLEAN(ast::Value)
     AUTO_RETURN_NULL(ast::Value)
     AUTO_RETURN_LITERAL(ast::Value)
     AUTO_RETURN_CHAR_LITERAL(ast::Value)
@@ -423,7 +421,8 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
             instructions.push_back(if_);
         } else {
-            ast::True condition;
+            ast::Boolean condition;
+            condition.value = true;
 
             ast::DoWhile do_while;
             do_while.Content->context = for_.Content->context;
@@ -542,8 +541,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_FOREACH()
 
     AUTO_IGNORE_MEMBER_DECLARATION()
-    AUTO_IGNORE_FALSE()
-    AUTO_IGNORE_TRUE()
+    AUTO_IGNORE_BOOLEAN()
     AUTO_IGNORE_NULL()
     AUTO_IGNORE_LITERAL()
     AUTO_IGNORE_CHAR_LITERAL()

@@ -25,14 +25,13 @@ namespace ast {
 
 /*!
  * \class GetConstantValue
- * \brief AST Visitor to retrieve the constant value of an AST node. 
+ * \brief AST Visitor to retrieve the constant value of an AST node.
  * This visitor should only be used on a constant node.
- * \see eddic::ast::IsConstantVisitor 
+ * \see eddic::ast::IsConstantVisitor
  */
 struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const Literal& literal) const;
-    Val operator()(const True& literal) const;
-    Val operator()(const False& literal) const;
+    Val operator()(const Boolean& literal) const;
     Val operator()(const Integer& literal) const;
     Val operator()(const IntegerSuffix& literal) const;
     Val operator()(const Float& literal) const;

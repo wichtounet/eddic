@@ -23,22 +23,21 @@ namespace ast {
 
 /*!
  * \class Getconst eddic::TypeVisitor
- * \brief Static Visitor to get the const eddic::Type of a Value from the AST. 
+ * \brief Static Visitor to get the const eddic::Type of a Value from the AST.
  */
 struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic::Type>> {
-    std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::Ternary& assign) const; 
+    std::shared_ptr<const eddic::Type> operator()(const ast::Assignment& assign) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Ternary& assign) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Literal& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::CharLiteral& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Integer& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::IntegerSuffix& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Float& literal) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::VariableValue& variable) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::BuiltinOperator& value) const; 
-    std::shared_ptr<const eddic::Type> operator()(const ast::True& value) const;
-    std::shared_ptr<const eddic::Type> operator()(const ast::False& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Expression& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::FunctionCall& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::BuiltinOperator& value) const;
+    std::shared_ptr<const eddic::Type> operator()(const ast::Boolean& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Null& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::Cast& cast) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::PrefixOperation& value) const;

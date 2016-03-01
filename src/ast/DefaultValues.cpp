@@ -49,7 +49,8 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
                     declaration.Content->value = float_;
                 } else if(type == BOOL){
-                    ast::False false_;
+                    ast::Boolean false_;
+                    false_.value = false;
 
                     declaration.Content->value = false_;
                 } else {

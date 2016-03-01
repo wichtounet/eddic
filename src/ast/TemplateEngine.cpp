@@ -127,11 +127,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         return source;
     }
 
-    ast::Value operator()(const ast::True& source) const {
-        return source;
-    }
-
-    ast::Value operator()(const ast::False& source) const {
+    ast::Value operator()(const ast::Boolean& source) const {
         return source;
     }
 

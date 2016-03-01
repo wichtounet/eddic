@@ -192,7 +192,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_CAST() void operator()(ast::Cast&){}
 #define AUTO_IGNORE_DELETE() void operator()(ast::Delete&){}
 #define AUTO_IGNORE_EXPRESSION() void operator()(ast::Expression&){}
-#define AUTO_IGNORE_FALSE() void operator()(ast::False&){}
 #define AUTO_IGNORE_FLOAT() void operator()(ast::Float&){}
 #define AUTO_IGNORE_FOR_LOOP() void operator()(ast::For&){}
 #define AUTO_IGNORE_FOREACH_LOOP() void operator()(ast::Foreach&){}
@@ -217,7 +216,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_SWITCH() void operator()(ast::Switch&){}
 #define AUTO_IGNORE_SWITCH_CASE() void operator()(ast::SwitchCase&){}
 #define AUTO_IGNORE_DEFAULT_CASE() void operator()(ast::DefaultCase&){}
-#define AUTO_IGNORE_TRUE() void operator()(ast::True&){}
+#define AUTO_IGNORE_BOOLEAN() void operator()(ast::Boolean&){}
 #define AUTO_IGNORE_TERNARY() void operator()(ast::Ternary&){}
 #define AUTO_IGNORE_STRUCT_DECLARATION() void operator()(ast::StructDeclaration&){}
 #define AUTO_IGNORE_VARIABLE_DECLARATION() void operator()(ast::VariableDeclaration&){}
@@ -230,7 +229,6 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
 #define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
 #define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return t;}
-#define AUTO_RETURN_FALSE(return_type) return_type operator()(ast::False& t){return t;}
 #define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return t;}
 #define AUTO_RETURN_FOR_LOOP(return_type) return_type operator()(ast::For& t){return t;}
 #define AUTO_RETURN_FOREACH_LOOP(return_type) return_type operator()(ast::Foreach& t){return t;}
@@ -247,7 +245,7 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
 #define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
 #define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
-#define AUTO_RETURN_TRUE(return_type) return_type operator()(ast::True& t){return t;}
+#define AUTO_RETURN_BOOLEAN(return_type) return_type operator()(ast::Boolean& t){return t;}
 #define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
 #define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
 #define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}

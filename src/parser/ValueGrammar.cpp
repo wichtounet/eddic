@@ -167,8 +167,6 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         |   new_
         |   variable_value
         |   null
-        |   true_
-        |   false_
         |   (lexer.left_parenth >> value >> lexer.right_parenth);
 
     call_value %=
