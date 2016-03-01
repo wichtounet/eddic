@@ -44,6 +44,11 @@ struct GetTypeVisitor : public boost::static_visitor<std::shared_ptr<const eddic
     std::shared_ptr<const eddic::Type> operator()(const ast::New& value) const;
     std::shared_ptr<const eddic::Type> operator()(const ast::NewArray& value) const;
     std::shared_ptr<const eddic::Type> operator()(const std::shared_ptr<Variable> value) const;
+
+    template<typename T>
+    std::shared_ptr<const eddic::Type> operator()(const x3::forward_ast<T>& value) const {
+        return (*this)(value.get());
+    }
 };
 
 std::shared_ptr<const eddic::Type> operation_type(std::shared_ptr<const eddic::Type> left, std::shared_ptr<Context> context, const ast::Operation& operation);

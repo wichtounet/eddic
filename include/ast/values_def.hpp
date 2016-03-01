@@ -42,8 +42,7 @@ struct VariableValue;
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
 
-struct ASTNewArray;
-typedef Deferred<ASTNewArray> NewArray;
+struct NewArray;
 
 struct ASTPrefixOperation;
 typedef Deferred<ASTPrefixOperation> PrefixOperation;

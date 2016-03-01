@@ -203,9 +203,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::NewArray& new_){
-            new_.Content->context = currentContext;
+            new_.context = currentContext;
 
-            visit(*this, new_.Content->size);
+            visit(*this, new_.size);
         }
 
         void operator()(ast::Expression& expression){

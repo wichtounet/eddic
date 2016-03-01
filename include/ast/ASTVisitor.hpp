@@ -181,7 +181,7 @@ void operator()(ast::Delete& delete_){\
 
 #define AUTO_RECURSE_NEW_ARRAY()\
 void operator()(ast::NewArray& new_){\
-    visit(*this, new_.Content->size);\
+    visit(*this, new_.size);\
 }
 
 /* Ignore macros  */

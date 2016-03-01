@@ -45,7 +45,7 @@ typedef boost::variant<
             PrefixOperation,
             Ternary,
             boost::recursive_wrapper<New>,
-            NewArray
+            boost::recursive_wrapper<NewArray>
         > Value;
 
 } //end of ast
