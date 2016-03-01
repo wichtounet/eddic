@@ -419,9 +419,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Ternary& ternary){
-            check_value(ternary.Content->condition);
-            check_value(ternary.Content->true_value);
-            check_value(ternary.Content->false_value);
+            check_value(ternary.condition);
+            check_value(ternary.true_value);
+            check_value(ternary.false_value);
         }
 
         void operator()(ast::BuiltinOperator& builtin){

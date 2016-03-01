@@ -121,19 +121,19 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Ternary& ternary){
-            visit(*this, ternary.Content->condition);
-            visit(*this, ternary.Content->false_value);
-            visit(*this, ternary.Content->true_value);
+            visit(*this, ternary.condition);
+            visit(*this, ternary.false_value);
+            visit(*this, ternary.true_value);
 
-            auto condition_type = visit(ast::GetTypeVisitor(), ternary.Content->condition);
+            auto condition_type = visit(ast::GetTypeVisitor(), ternary.condition);
             if(condition_type != BOOL){
-                throw SemanticalException("Ternary can only be applied to bool", ternary.Content->position);
+                throw SemanticalException("Ternary can only be applied to bool", ternary.position);
             }
 
-            auto true_type = visit(ast::GetTypeVisitor(), ternary.Content->true_value);
-            auto false_type = visit(ast::GetTypeVisitor(), ternary.Content->false_value);
+            auto true_type = visit(ast::GetTypeVisitor(), ternary.true_value);
+            auto false_type = visit(ast::GetTypeVisitor(), ternary.false_value);
             if(true_type != false_type){
-                throw SemanticalException("Incompatible values in ternary operator", ternary.Content->position);
+                throw SemanticalException("Incompatible values in ternary operator", ternary.position);
             }
         }
 

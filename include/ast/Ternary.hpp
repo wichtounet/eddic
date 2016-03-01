@@ -19,10 +19,9 @@ namespace ast {
 
 /*!
  * \class ASTTernary
- * \brief The AST node for a ternary operator.    
- * Should only be used from the Deferred version (eddic::ast::Ternary).
+ * \brief The AST node for a ternary operator.
  */
-struct ASTTernary {
+struct Ternary {
     Position position;
     Value condition;
     Value true_value;
@@ -31,23 +30,17 @@ struct ASTTernary {
     mutable long references = 0;
 };
 
-/*!
- * \typedef If
- * \brief The AST node for a if. 
- */
-typedef Deferred<ASTTernary> Ternary;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Ternary, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->condition)
-    (eddic::ast::Value, Content->true_value)
-    (eddic::ast::Value, Content->false_value)
+    eddic::ast::Ternary,
+    (eddic::ast::Position, position)
+    (eddic::ast::Value, condition)
+    (eddic::ast::Value, true_value)
+    (eddic::ast::Value, false_value)
 )
 
 #endif

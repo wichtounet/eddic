@@ -1330,12 +1330,12 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
     if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
         auto t1 = function.context->new_temporary(type);
 
-        jump_if_false(function, falseLabel, ternary.Content->condition);
-        assign(function, t1, ternary.Content->true_value);
+        jump_if_false(function, falseLabel, ternary.condition);
+        assign(function, t1, ternary.true_value);
         function.emplace_back(endLabel, mtac::Operator::GOTO);
 
         function.emplace_back(falseLabel, mtac::Operator::LABEL);
-        assign(function, t1, ternary.Content->false_value);
+        assign(function, t1, ternary.false_value);
 
         function.emplace_back(endLabel, mtac::Operator::LABEL);
 
@@ -1344,15 +1344,15 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
         auto t1 = function.context->new_temporary(INT);
         auto t2 = function.context->new_temporary(INT);
 
-        jump_if_false(function, falseLabel, ternary.Content->condition);
-        auto args = visit(ToArgumentsVisitor<>(function), ternary.Content->true_value);
+        jump_if_false(function, falseLabel, ternary.condition);
+        auto args = visit(ToArgumentsVisitor<>(function), ternary.true_value);
         function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);
         function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);
 
         function.emplace_back(endLabel, mtac::Operator::GOTO);
 
         function.emplace_back(falseLabel, mtac::Operator::LABEL);
-        args = visit(ToArgumentsVisitor<>(function), ternary.Content->false_value);
+        args = visit(ToArgumentsVisitor<>(function), ternary.false_value);
         function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);
         function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);
 

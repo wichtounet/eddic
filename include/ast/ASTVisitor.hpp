@@ -33,9 +33,9 @@ void operator()(ast::FunctionDeclaration& function){\
 
 #define AUTO_RECURSE_TERNARY()\
 void operator()(ast::Ternary& ternary){\
-    visit(*this, ternary.Content->condition);\
-    visit(*this, ternary.Content->true_value);\
-    visit(*this, ternary.Content->false_value);\
+    visit(*this, ternary.condition);\
+    visit(*this, ternary.true_value);\
+    visit(*this, ternary.false_value);\
 }
 
 #define AUTO_RECURSE_ELSE()\

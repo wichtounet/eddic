@@ -312,9 +312,9 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::Ternary& ternary) const {
         std::cout << indent() << "Ternary" << std::endl;
 
-        print_sub(ternary.Content->condition, "Condition");
-        print_sub(ternary.Content->true_value, "True Value");
-        print_sub(ternary.Content->false_value, "False Value");
+        print_sub(ternary.condition, "Condition");
+        print_sub(ternary.true_value, "True Value");
+        print_sub(ternary.false_value, "False Value");
     }
 
     void operator()(ast::Return& return_) const {

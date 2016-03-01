@@ -44,7 +44,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::NewArray&
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Ternary& ternary) const {
-   return visit(*this, ternary.Content->true_value);
+   return visit(*this, ternary.true_value);
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cast) const {

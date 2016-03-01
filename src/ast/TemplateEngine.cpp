@@ -191,10 +191,10 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Ternary& source) const {
         ast::Ternary copy;
 
-        copy.Content->position = source.Content->position;
-        copy.Content->condition = visit(*this, source.Content->condition);
-        copy.Content->false_value = visit(*this, source.Content->false_value);
-        copy.Content->true_value = visit(*this, source.Content->true_value);
+        copy.position = source.position;
+        copy.condition = visit(*this, source.condition);
+        copy.false_value = visit(*this, source.false_value);
+        copy.true_value = visit(*this, source.true_value);
 
         return copy;
     }

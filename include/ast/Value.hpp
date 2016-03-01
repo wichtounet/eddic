@@ -43,7 +43,7 @@ typedef boost::variant<
             BuiltinOperator,
             Assignment,
             PrefixOperation,
-            Ternary,
+            boost::recursive_wrapper<Ternary>,
             boost::recursive_wrapper<New>,
             boost::recursive_wrapper<NewArray>
         > Value;

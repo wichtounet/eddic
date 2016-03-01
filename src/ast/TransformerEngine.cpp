@@ -92,9 +92,9 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Ternary& ternary){
-        ternary.Content->condition = visit(*this, ternary.Content->condition);
-        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
-        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
+        ternary.condition = visit(*this, ternary.condition);
+        ternary.true_value = visit(*this, ternary.true_value);
+        ternary.false_value = visit(*this, ternary.false_value);
 
         return ternary;
     }
@@ -178,9 +178,9 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Ternary& ternary){
-        ternary.Content->condition = visit(*this, ternary.Content->condition);
-        ternary.Content->true_value = visit(*this, ternary.Content->true_value);
-        ternary.Content->false_value = visit(*this, ternary.Content->false_value);
+        ternary.condition = visit(*this, ternary.condition);
+        ternary.true_value = visit(*this, ternary.true_value);
+        ternary.false_value = visit(*this, ternary.false_value);
 
         return ternary;
     }
@@ -634,9 +634,9 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Ternary& ternary){
-        ternary.Content->condition = visit(transformer, ternary.Content->condition);
-        ternary.Content->true_value = visit(transformer, ternary.Content->true_value);
-        ternary.Content->false_value = visit(transformer, ternary.Content->false_value);
+        ternary.condition = visit(transformer, ternary.condition);
+        ternary.true_value = visit(transformer, ternary.true_value);
+        ternary.false_value = visit(transformer, ternary.false_value);
     }
 
     void operator()(ast::Return& return_){
