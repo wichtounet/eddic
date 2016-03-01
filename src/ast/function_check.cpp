@@ -529,7 +529,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::NewArray& new_){
-            check_value(new_.Content->size);
+            check_value(new_.size);
         }
 
         void operator()(ast::Delete& delete_){

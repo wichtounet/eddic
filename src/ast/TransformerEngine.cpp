@@ -79,7 +79,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::NewArray& new_){
-        new_.Content->size = visit(*this, new_.Content->size);
+        new_.size = visit(*this, new_.size);
 
         return new_;
     }
@@ -165,7 +165,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::NewArray& new_){
-        new_.Content->size = visit(*this, new_.Content->size);
+        new_.size = visit(*this, new_.size);
 
         return new_;
     }
@@ -664,7 +664,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::NewArray& new_){
-        new_.Content->size = visit(transformer, new_.Content->size);
+        new_.size = visit(transformer, new_.size);
     }
 
     void operator()(ast::VariableDeclaration& declaration){

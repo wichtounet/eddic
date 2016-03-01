@@ -701,7 +701,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         auto type = visit_non_variant(ast::GetTypeVisitor(), new_);
 
         auto size = function.context->new_temporary(INT);
-        auto size_temp = visit(ToArgumentsVisitor<>(function), new_.Content->size)[0];
+        auto size_temp = visit(ToArgumentsVisitor<>(function), new_.size)[0];
 
         auto platform = function.context->global()->target_platform();
 

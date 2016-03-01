@@ -180,8 +180,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::NewArray& new_array) const {
-        std::cout << indent() << "New array of " << ast::to_string(new_array.Content->type) << std::endl;
-        print_sub(new_array.Content->size, "Size");
+        std::cout << indent() << "New array of " << ast::to_string(new_array.type) << std::endl;
+        print_sub(new_array.size, "Size");
     }
 
     void operator()(ast::Delete& delete_) const {
@@ -384,6 +384,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << "Cast " << std::endl;
         std::cout << indent() << "\tType: " << ast::to_string(cast.type) << std::endl;
         print_sub(cast.value);
+    }
+
+    template<typename T>
+    void operator()(x3::forward_ast<T>& value) const {
+        (*this)(value.get());
     }
 };
 

@@ -217,12 +217,17 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::NewArray& source) const {
         ast::NewArray copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->type = source.Content->type;
-        copy.Content->size = visit(*this, source.Content->size);
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.type = source.type;
+        copy.size = visit(*this, source.size);
 
-        return copy;
+        return ast::Value{copy};
+    }
+
+    template<typename T>
+    ast::Value operator()(const x3::forward_ast<T>& value) const {
+        return (*this)(value.get());
     }
 };
 
@@ -635,9 +640,9 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::NewArray& source){
-        source.Content->type = replace(source.Content->type);
+        source.type = replace(source.type);
 
-        visit(*this, source.Content->size);
+        visit(*this, source.size);
     }
 
     AUTO_IGNORE_OTHERS()
