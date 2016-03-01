@@ -48,10 +48,6 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct char_literal {
-    char value;
-};
-
 struct new_array;
 struct new_;
 struct builtin_operator;
@@ -68,7 +64,7 @@ typedef x3::variant<
             ast::IntegerSuffix,
             ast::Float,
             ast::Literal,
-            char_literal,
+            ast::CharLiteral,
             ast::VariableValue,
             ast::Boolean,
             ast::Null,
@@ -691,7 +687,7 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "string_literal: " << integer.value << std::endl;
     }
 
-    void operator()(const char_literal& integer){
+    void operator()(const ast::CharLiteral& integer){
         std::cout << indent() << "char_literal: " << integer.value << std::endl;
     }
 
@@ -752,11 +748,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     ast::Boolean,
     (bool, value)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::char_literal,
-    (char, value)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1205,7 +1196,7 @@ namespace x3_grammar {
     x3::rule<integer_suffix_literal_class, ast::IntegerSuffix> const integer_suffix_literal("integer_suffix_literal");
     x3::rule<float_literal_class, ast::Float> const float_literal("float_literal");
     x3::rule<string_literal_class, ast::Literal> const string_literal("string_literal");
-    x3::rule<char_literal_class, x3_ast::char_literal> const char_literal("char_literal");
+    x3::rule<char_literal_class, ast::CharLiteral> const char_literal("char_literal");
     x3::rule<new_array_class, x3_ast::new_array> const new_array("new_array");
     x3::rule<new_class, x3_ast::new_> const new_("new_");
     x3::rule<boolean_class, ast::Boolean> const boolean("boolean");
