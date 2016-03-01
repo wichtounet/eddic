@@ -18,10 +18,10 @@ namespace ast {
 
 /*!
  * \class CharLiteral
- * \brief The AST node for a char literal.    
+ * \brief The AST node for a char literal.
  */
 struct CharLiteral {
-    std::string value;
+    char value;
 };
 
 } //end of ast
@@ -30,8 +30,8 @@ struct CharLiteral {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::CharLiteral, 
-    (std::string, value)
+    eddic::ast::CharLiteral,
+    (char, value)
 )
 
 #endif

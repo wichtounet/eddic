@@ -657,9 +657,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::CharLiteral& literal) const {
-        char v = literal.value[1];
-
-        return {static_cast<int>(v)};
+        return {static_cast<int>(literal.value)};
     }
 
     result_type operator()(ast::Integer& integer) const {
