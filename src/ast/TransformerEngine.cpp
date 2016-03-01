@@ -421,8 +421,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
             instructions.push_back(if_);
         } else {
-            ast::Boolean condition;
-            condition.value = true;
+            ast::Boolean condition{true};
 
             ast::DoWhile do_while;
             do_while.Content->context = for_.Content->context;
