@@ -330,25 +330,25 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::BuiltinOperator& builtin){
-            for_each(builtin.Content->values, [&](ast::Value& value){ visit(*this, value); });
+            for_each(builtin.values, [&](ast::Value& value){ visit(*this, value); });
 
-            if(builtin.Content->values.size() < 1){
-                throw SemanticalException("Too few arguments to the builtin operator", builtin.Content->position);
+            if(builtin.values.size() < 1){
+                throw SemanticalException("Too few arguments to the builtin operator", builtin.position);
             }
 
-            if(builtin.Content->values.size() > 1){
-                throw SemanticalException("Too many arguments to the builtin operator", builtin.Content->position);
+            if(builtin.values.size() > 1){
+                throw SemanticalException("Too many arguments to the builtin operator", builtin.position);
             }
 
-            auto type = visit(ast::GetTypeVisitor(), builtin.Content->values[0]);
+            auto type = visit(ast::GetTypeVisitor(), builtin.values[0]);
 
-            if(builtin.Content->type == ast::BuiltinType::SIZE){
+            if(builtin.type == ast::BuiltinType::SIZE){
                 if(!type->is_array()){
-                    throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.Content->position);
+                    throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.position);
                 }
-            } else if(builtin.Content->type == ast::BuiltinType::LENGTH){
+            } else if(builtin.type == ast::BuiltinType::LENGTH){
                 if(type != STRING){
-                    throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.Content->position);
+                    throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.position);
                 }
             }
         }

@@ -274,8 +274,8 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::BuiltinOperator& builtin) const {
-        std::cout << indent() << "Builtin Operator " << (int) builtin.Content->type << std::endl;
-        print_each_sub(builtin.Content->values);
+        std::cout << indent() << "Builtin Operator " << (int) builtin.type << std::endl;
+        print_each_sub(builtin.values);
     }
 
     void operator()(ast::StructDeclaration& declaration) const {

@@ -425,7 +425,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::BuiltinOperator& builtin){
-            check_each(builtin.Content->values);
+            check_each(builtin.values);
         }
 
         void operator()(ast::Cast& cast){

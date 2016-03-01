@@ -40,7 +40,7 @@ typedef boost::variant<
             Boolean,
             FunctionCall,
             boost::recursive_wrapper<Cast>,
-            BuiltinOperator,
+            boost::recursive_wrapper<BuiltinOperator>,
             Assignment,
             PrefixOperation,
             boost::recursive_wrapper<Ternary>,

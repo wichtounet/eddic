@@ -124,7 +124,7 @@ void operator()(ast::FunctionCall& functionCall){\
 
 #define AUTO_RECURSE_BUILTIN_OPERATORS()\
 void operator()(ast::BuiltinOperator& builtin){\
-    visit_each(*this, builtin.Content->values);\
+    visit_each(*this, builtin.values);\
 }
 
 #define VISIT_COMPOSED_VALUE(value)\

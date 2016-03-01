@@ -720,11 +720,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::BuiltinOperator& builtin) const {
-        switch(builtin.Content->type){
+        switch(builtin.type){
             case ast::BuiltinType::SIZE:
                 {
                     //Get a reference to the array
-                    arguments right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.Content->values.at(0));
+                    arguments right = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), builtin.values.at(0));
 
                     cpp_assert(mtac::isVariable(right[0]), "The visitor should return a variable");
 
@@ -748,7 +748,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             case ast::BuiltinType::LENGTH:
                 {
-                    auto& value = builtin.Content->values[0];
+                    auto& value = builtin.values[0];
 
                     return {visit(*this, value)[1]};
                 }

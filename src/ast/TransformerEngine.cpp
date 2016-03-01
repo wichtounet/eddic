@@ -106,7 +106,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
-        for(auto& value : builtin.Content->values){
+        for(auto& value : builtin.values){
             value = visit(*this, value);
         }
 
@@ -192,7 +192,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::BuiltinOperator& builtin){
-        for(auto& value : builtin.Content->values){
+        for(auto& value : builtin.values){
             value = visit(*this, value);
         }
 
@@ -333,12 +333,12 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         array_var_value.context = foreach.Content->context;
 
         ast::BuiltinOperator size_builtin;
-        size_builtin.Content->values.push_back(array_var_value);
+        size_builtin.values.push_back(array_var_value);
 
         if(arrayVar->type()->is_array()){
-            size_builtin.Content->type = ast::BuiltinType::SIZE;
+            size_builtin.type = ast::BuiltinType::SIZE;
         } else {
-            size_builtin.Content->type = ast::BuiltinType::LENGTH;
+            size_builtin.type = ast::BuiltinType::LENGTH;
         }
 
         ast::Expression while_condition;
@@ -609,7 +609,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::BuiltinOperator& builtin){
-        for(auto& value : builtin.Content->values){
+        for(auto& value : builtin.values){
             value = visit(transformer, value);
         }
     }

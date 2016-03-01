@@ -156,11 +156,11 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::BuiltinOperator& source) const {
         ast::BuiltinOperator copy;
 
-        copy.Content->position = source.Content->position;
-        copy.Content->type = source.Content->type;
+        copy.position = source.position;
+        copy.type = source.type;
 
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(*this, value));
+        for(auto& value : source.values){
+            copy.values.push_back(visit(*this, value));
         }
 
         return copy;

@@ -28,8 +28,7 @@ struct New;
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
-struct ASTBuiltinOperator;
-typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
+struct BuiltinOperator;
 
 struct ASTAssignment;
 typedef Deferred<ASTAssignment> Assignment;

@@ -30,10 +30,10 @@ std::ostream& operator<< (std::ostream& stream, BuiltinType type);
 
 /*!
  * \class ASTFunctionCall
- * \brief The AST node for a function call. 
+ * \brief The AST node for a function call.
  * Should only be used from the Deferred version (eddic::ast::FunctionCall).
  */
-struct ASTBuiltinOperator {
+struct BuiltinOperator {
     Position position;
     BuiltinType type;
     std::vector<Value> values;
@@ -41,22 +41,16 @@ struct ASTBuiltinOperator {
     mutable long references = 0;
 };
 
-/*!
- * \typedef FunctionCall
- * \brief The AST node for a function call.
- */
-typedef Deferred<ASTBuiltinOperator> BuiltinOperator;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::BuiltinOperator, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::BuiltinType, Content->type)
-    (std::vector<eddic::ast::Value>, Content->values)
+    eddic::ast::BuiltinOperator,
+    (eddic::ast::Position, position)
+    (eddic::ast::BuiltinType, type)
+    (std::vector<eddic::ast::Value>, values)
 )
 
 #endif
