@@ -22,11 +22,9 @@ struct PointerType;
 
 /*!
  * \typedef Type
- * \brief A type in the AST.  
+ * \brief A type in the AST.
  */
 typedef boost::variant<SimpleType, ArrayType, TemplateType, PointerType> Type;
-
-bool operator!=(const Type& a, const Type& b);
 
 std::string to_string(const ast::Type& type);
 
