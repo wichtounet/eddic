@@ -37,8 +37,8 @@ Val ast::GetConstantValue::operator()(const ast::Float& float_) const {
 }
 
 Val ast::GetConstantValue::operator()(const ast::PrefixOperation& minus) const {
-    if(minus.Content->op == ast::Operator::SUB){
-        return -1 * boost::get<int>(boost::apply_visitor(*this, minus.Content->left_value));
+    if(minus.op == ast::Operator::SUB){
+        return -1 * boost::get<int>(boost::apply_visitor(*this, minus.left_value));
     }
 
     cpp_unreachable("Not constant");

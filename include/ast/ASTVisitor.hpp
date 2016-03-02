@@ -151,7 +151,7 @@ void operator()(ast::Cast& cast){\
 
 #define AUTO_RECURSE_PREFIX()\
 void operator()(ast::PrefixOperation& operation){\
-    visit(*this, operation.Content->left_value);\
+    visit(*this, operation.left_value);\
 }
 
 #define AUTO_RECURSE_CONSTRUCTOR()\

@@ -409,7 +409,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::PrefixOperation& operation){
-            check_value(operation.Content->left_value);
+            check_value(operation.left_value);
         }
 
         void operator()(ast::Return& return_){

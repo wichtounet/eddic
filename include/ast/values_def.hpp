@@ -24,26 +24,20 @@ struct Boolean;
 struct Null;
 struct Cast;
 struct New;
+struct BuiltinOperator;
+struct NewArray;
+struct PrefixOperation;
+struct Ternary;
+struct VariableValue;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
 
-struct BuiltinOperator;
-
 struct ASTAssignment;
 typedef Deferred<ASTAssignment> Assignment;
 
-struct Ternary;
-
-struct VariableValue;
-
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;
-
-struct NewArray;
-
-struct ASTPrefixOperation;
-typedef Deferred<ASTPrefixOperation> PrefixOperation;
 
 } //end of ast
 

@@ -179,15 +179,15 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::PrefixOperation& operation){
-            if(operation.Content->op == ast::Operator::INC || operation.Content->op == ast::Operator::DEC){
-                auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+            if(operation.op == ast::Operator::INC || operation.op == ast::Operator::DEC){
+                auto type = visit(ast::GetTypeVisitor(), operation.left_value);
 
                 if(type != INT && type != FLOAT){
-                    throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.Content->position);
+                    throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.position);
                 }
 
                 if(type->is_const()){
-                    throw SemanticalException("The value is const, cannot edit it", operation.Content->position);
+                    throw SemanticalException("The value is const, cannot edit it", operation.position);
                 }
             }
         }

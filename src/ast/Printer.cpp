@@ -297,9 +297,9 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& op) const {
-        std::cout << indent() << ast::toString(op.Content->op) << "(prefix)" << std::endl;
+        std::cout << indent() << ast::toString(op.op) << "(prefix)" << std::endl;
 
-        print_sub(op.Content->left_value, "Left Value");
+        print_sub(op.left_value, "Left Value");
     }
 
     void operator()(ast::Assignment& assign) const {

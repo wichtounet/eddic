@@ -56,11 +56,11 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Cast& cas
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::PrefixOperation& operation) const {
-    auto type = visit(*this, operation.Content->left_value);
+    auto type = visit(*this, operation.left_value);
 
-    if(operation.Content->op == ast::Operator::STAR){
+    if(operation.op == ast::Operator::STAR){
         return type->data_type();
-    } else if(operation.Content->op == ast::Operator::ADDRESS){
+    } else if(operation.op == ast::Operator::ADDRESS){
         return new_pointer_type(type);
     } else {
         return type;

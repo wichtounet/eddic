@@ -19,7 +19,7 @@ namespace eddic {
 
 namespace ast {
 
-struct ASTPrefixOperation {
+struct PrefixOperation {
     Position position;
     Value left_value;
     ast::Operator op;
@@ -27,18 +27,16 @@ struct ASTPrefixOperation {
     mutable long references = 0;
 };
 
-typedef Deferred<ASTPrefixOperation> PrefixOperation;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::PrefixOperation, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Operator, Content->op)
-    (eddic::ast::Value, Content->left_value)
+    eddic::ast::PrefixOperation,
+    (eddic::ast::Position, position)
+    (eddic::ast::Operator, op)
+    (eddic::ast::Value, left_value)
 )
 
 #endif

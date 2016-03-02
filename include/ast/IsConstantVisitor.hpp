@@ -41,7 +41,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
     }
 
     bool operator()(ast::PrefixOperation& value) const {
-        auto op = value.Content->op;
+        auto op = value.op;
 
         if(
                     op == ast::Operator::STAR || op == ast::Operator::ADDRESS || op == ast::Operator::CALL
@@ -49,7 +49,7 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
             return false;
         }
 
-        return visit(*this, value.Content->left_value);
+        return visit(*this, value.left_value);
     }
 
     bool operator()(ast::Cast& cast) const {

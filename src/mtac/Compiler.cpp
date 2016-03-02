@@ -897,13 +897,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::PrefixOperation& operation) const {
-        auto op = operation.Content->op;
-        auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
+        auto op = operation.op;
+        auto type = visit(ast::GetTypeVisitor(), operation.left_value);
 
         switch(op){
             case ast::Operator::STAR:
             {
-                auto left = visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<>(function), operation.left_value);
 
                 cpp_assert(left.size() == 1, "STAR only support one value");
                 cpp_assert(mtac::isVariable(left[0]), "The visitor should return a temporary variable");
@@ -919,7 +919,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             case ast::Operator::ADDRESS:
             {
-                auto left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), operation.left_value);
 
                 cpp_assert(left.size() == 1, "ADDRESS only support one value");
 
@@ -928,7 +928,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             case ast::Operator::NOT:
             {
-                auto left = visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<>(function), operation.left_value);
 
                 cpp_assert(left.size() == 1, "NOT only support one value");
 
@@ -941,11 +941,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             //The + unary operator has no effect
             case ast::Operator::ADD:
-                return visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
+                return visit(ToArgumentsVisitor<>(function), operation.left_value);
 
             case ast::Operator::SUB:
             {
-                auto left = visit(ToArgumentsVisitor<>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<>(function), operation.left_value);
 
                 cpp_assert(left.size() == 1, "SUB only support one value");
 
@@ -965,7 +965,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             case ast::Operator::INC:
             {
                 //INC needs a reference to the left value
-                auto left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), operation.left_value);
 
                 cpp_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
 
@@ -985,7 +985,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             case ast::Operator::DEC:
             {
                 //DEC needs a reference to the left value
-                auto left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), operation.Content->left_value);
+                auto left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), operation.left_value);
 
                 cpp_assert(mtac::isVariable(left[0]), "The visitor should return a variable");
 
@@ -1269,8 +1269,8 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     void operator()(ast::PrefixOperation& dereference_value){
         auto platform = function.context->global()->target_platform();
 
-        if(dereference_value.Content->op == ast::Operator::STAR){
-            auto left = visit(ToArgumentsVisitor<>(function), dereference_value.Content->left_value);
+        if(dereference_value.op == ast::Operator::STAR){
+            auto left = visit(ToArgumentsVisitor<>(function), dereference_value.left_value);
             assert(mtac::isVariable(left[0]));
             auto pointer_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 

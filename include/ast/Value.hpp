@@ -42,7 +42,7 @@ typedef boost::variant<
             boost::recursive_wrapper<Cast>,
             boost::recursive_wrapper<BuiltinOperator>,
             Assignment,
-            PrefixOperation,
+            boost::recursive_wrapper<PrefixOperation>,
             boost::recursive_wrapper<Ternary>,
             boost::recursive_wrapper<New>,
             boost::recursive_wrapper<NewArray>

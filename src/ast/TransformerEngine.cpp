@@ -100,7 +100,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = visit(*this, operation.Content->left_value);
+        operation.left_value = visit(*this, operation.left_value);
 
         return operation;
     }
@@ -186,7 +186,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = visit(*this, operation.Content->left_value);
+        operation.left_value = visit(*this, operation.left_value);
 
         return operation;
     }
@@ -648,7 +648,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = visit(transformer, operation.Content->left_value);
+        operation.left_value = visit(transformer, operation.left_value);
     }
 
     void operator()(ast::StructDeclaration& declaration){
@@ -821,7 +821,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::PrefixOperation& operation){
-        operation.Content->left_value = visit(transformer, operation.Content->left_value);
+        operation.left_value = visit(transformer, operation.left_value);
     }
 
     void operator()(ast::Return& return_){
