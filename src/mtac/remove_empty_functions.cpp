@@ -59,7 +59,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
 
                         if(std::find(removed_functions.begin(), removed_functions.end(), function_name) != removed_functions.end()){
                             //Update the call graph
-                            --program.call_graph.edge(function.definition(), quadruple.function())->count;
+                            --program.cg.edge(function.definition(), quadruple.function())->count;
 
                             int parameters = quadruple.function().parameters().size();
 
@@ -79,7 +79,7 @@ bool mtac::remove_empty_functions::operator()(mtac::Program& program){
                                     }
 
                                     fit = block->statements.erase(fit);
-                                } 
+                                }
                                 //The parameters are in the same block
                                 else {
                                     while(parameters >= 0){

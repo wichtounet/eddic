@@ -53,7 +53,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     function.context->global()->stats().inc_counter("loop_unrolled");
 
                     optimized = true;
-                    
+
                     auto& statements = bb->statements;
 
                     //The comparison is not necessary here anymore
@@ -61,11 +61,11 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     statements.pop_back();
 
                     int limit = statements.size();
-                    
+
                     //There are perhaps new references to functions
                     for(auto& statement : statements){
                         if(statement.op == mtac::Operator::CALL){
-                            program.call_graph.edge(function.definition(), statement.function())->count += (factor - 1);
+                            program.cg.edge(function.definition(), statement.function())->count += (factor - 1);
                         }
                     }
 
@@ -75,7 +75,7 @@ bool mtac::loop_unrolling::operator()(mtac::Function& function){
                     //Start at 1 because there is already the original body
                     for(unsigned int i = 1; i < factor; ++i){
                         for(int j = 0; j < limit; ++j){
-                            statements.push_back(statements[j]); 
+                            statements.push_back(statements[j]);
                         }
                     }
 

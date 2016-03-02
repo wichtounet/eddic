@@ -48,13 +48,13 @@ int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> co
     if(configuration->option_defined("32")){
         platform = Platform::INTEL_X86;
     }
-    
+
     if(configuration->option_defined("64")){
         platform = Platform::INTEL_X86_64;
     }
 
     StopWatch timer;
-    
+
     int code = compile_only(file, platform, configuration);
 
     if(!configuration->option_defined("quiet")){
@@ -65,7 +65,7 @@ int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> co
 }
 
 int Compiler::compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration) {
-    int code = 0; 
+    int code = 0;
 
     std::unique_ptr<mtac::Program> program;
     std::shared_ptr<FrontEnd> front_end;
@@ -99,7 +99,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             std::cout << "\t" << counter.first << ":" << counter.second << std::endl;
         }
     }
-    
+
     //Display timings if necessary
     if(program && configuration->option_defined("time")){
         program->context->timing().display();
@@ -109,7 +109,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
 }
 
 std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::compile_mtac(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration){
-    //Make sure that the file exists 
+    //Make sure that the file exists
     if(!file_exists(file)){
         throw SemanticalException("The file \"" + file + "\" does not exists");
     }
@@ -119,7 +119,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
     if(!front_end){
         throw SemanticalException("The file \"" + file + "\" cannot be compiled using eddic");
     }
-    
+
     front_end->set_configuration(configuration);
 
     auto program = front_end->compile(file, platform);
@@ -136,7 +136,7 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
         if(configuration->option_defined("mtac-opt")){
             std::cout << *program << std::endl;
         }
-            
+
         //Build the call graph (will be used for each optimization level)
         mtac::build_call_graph(*program);
 
@@ -157,10 +157,10 @@ std::pair<std::unique_ptr<mtac::Program>, std::shared_ptr<FrontEnd>> Compiler::c
 
     return {std::move(program), front_end};
 }
-    
+
 void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<FrontEnd> front_end){
     //Compute the definitive reachable flag for functions
-    program.call_graph.compute_reachable();
+    program.cg.compute_reachable();
 
     auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 

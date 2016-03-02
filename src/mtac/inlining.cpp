@@ -38,7 +38,7 @@ mtac::basic_block_p create_safe_block(mtac::Function& dest_function, mtac::basic
     for(auto succ : bb->successors){
         mtac::make_edge(safe_block, succ);
     }
-    
+
     while(!bb->successors.empty()){
         mtac::remove_edge(bb, bb->successors[0]);
     }
@@ -67,7 +67,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         for(auto succ : bb->successors){
             mtac::make_edge(split_block, succ);
         }
-    
+
         while(!bb->successors.empty()){
             mtac::remove_edge(bb, bb->successors[0]);
         }
@@ -84,7 +84,7 @@ mtac::basic_block_p split_if_necessary(mtac::Function& dest_function, mtac::basi
         pit = bb->statements.erase(pit);
 
         //Transfer the remaining statements to split_block
-        split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end()); 
+        split_block->statements.insert(split_block->statements.begin(), pit, bb->statements.end());
         bb->statements.erase(pit, bb->statements.end());
 
         return split_block;
@@ -112,7 +112,7 @@ mtac::BBClones clone(mtac::Function& source_function, mtac::Function& dest_funct
             //Copy the control flow graph properties, they will be corrected after
             new_bb->successors = block->successors;
             new_bb->predecessors = block->predecessors;
-    
+
             for(auto& statement : block->statements){
                 new_bb->statements.push_back(mtac::copy(statement));
             }
@@ -125,7 +125,7 @@ mtac::BBClones clone(mtac::Function& source_function, mtac::Function& dest_funct
     }
 
     mtac::remove_edge(entry, exit);
-    
+
     for(auto& block : cloned){
         for(auto& succ : block->successors){
             if(succ == old_exit){
@@ -145,7 +145,7 @@ mtac::BBClones clone(mtac::Function& source_function, mtac::Function& dest_funct
             }
         }
     }
-    
+
     return bb_clones;
 }
 
@@ -215,11 +215,11 @@ mtac::VariableClones copy_parameters(mtac::Function& source_function, mtac::Func
                     dest_var = dest_definition.context()->new_temporary(type);
 
                     if(type == INT || type == BOOL || type == CHAR){
-                        statement.op = mtac::Operator::ASSIGN; 
+                        statement.op = mtac::Operator::ASSIGN;
                     } else if(type->is_pointer()){
                         statement.op = mtac::Operator::PASSIGN;
                     } else {
-                        statement.op = mtac::Operator::FASSIGN; 
+                        statement.op = mtac::Operator::FASSIGN;
                     }
 
                     variable_clones[src_var] = dest_var;
@@ -244,7 +244,7 @@ unsigned int count_constant_parameters(mtac::Function& source_function, mtac::Fu
 
     if(source_definition.parameters().size() > 0){
         mtac::basic_block::iterator pit;
-        
+
         if(bb->statements.front() == call){
             pit = bb->prev->statements.end() - 1;
         } else {
@@ -396,16 +396,16 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
         if(call.depth > 1){
             return caller_size < 250 && callee_size < 75;
         }
-        
+
         //For single loop, increase a bit the changes of inlining
         if(call.depth > 0){
             return caller_size < 150 && callee_size < 50;
         }
 
         //function called once
-        if(program.call_graph.node(target_function.definition())->in_edges.size() == 1){
+        if(program.cg.node(target_function.definition())->in_edges.size() == 1){
             return caller_size < 100 && callee_size < 100;
-        } 
+        }
 
         return callee_size < SMALL_FUNCTION && caller_size < 200;
     }
@@ -428,10 +428,10 @@ bool non_standard_target(mtac::Quadruple& call, mtac::Program& program){
 bool call_site_inlining(mtac::Function& dest_function, mtac::Function& source_function, mtac::Program& program){
     auto bit = dest_function.begin();
     auto bend = dest_function.end();
-    
+
     auto& source_definition = source_function.definition();
     auto& dest_definition = dest_function.definition();
-        
+
     while(bit != bend){
         auto basic_block = *bit;
 
@@ -472,13 +472,13 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Function& source_fu
                         adapt_instructions(variable_clones, bb_clones, call, safe);
 
                         //The target function is called one less time
-                        --program.call_graph.edge(dest_definition, source_definition)->count;
+                        --program.cg.edge(dest_definition, source_definition)->count;
 
                         //There are perhaps new references to functions
                         for(auto& block : source_function){
                             for(auto& statement : block){
                                 if(statement.op == mtac::Operator::CALL){
-                                    program.call_graph.add_edge(dest_definition, statement.function());
+                                    program.cg.add_edge(dest_definition, statement.function());
                                 }
                             }
                         }
@@ -513,7 +513,7 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     bool optimized = false;
     auto global_context = program.context;
 
-    auto& call_graph = program.call_graph;
+    auto& call_graph = program.cg;
 
     auto order = call_graph.topological_order();
     call_graph.compute_reachable();
@@ -540,7 +540,7 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
 
                 //Sort them to inline the edges in the order of the topological sort
 
-                std::sort(callers.begin(), callers.end(), 
+                std::sort(callers.begin(), callers.end(),
                         [&order](const func_ref& lhs, const func_ref& rhs){ return std::find(order.begin(), order.end(), lhs) < std::find(order.begin(),order.end(), rhs); });
 
                 auto& source_function = program.mtac_function(function);

@@ -25,7 +25,7 @@ using namespace eddic;
 as::IntelX86CodeGenerator::IntelX86CodeGenerator(AssemblyFileWriter& w, mtac::Program& program, std::shared_ptr<GlobalContext> context) : IntelCodeGenerator(w, program, context) {}
 
 namespace {
-    
+
 const std::string registers[6] = {"eax", "ebx", "ecx", "edx", "esi", "edi"};
 const std::string registers_8[6] = {"al", "bl", "cl", "dl", "", ""};
 const std::string registers_16[6] = {"ax", "bx", "cx", "dx", "si", "di"};
@@ -35,18 +35,18 @@ const std::string float_registers[8] = {"xmm0", "xmm1", "xmm2", "xmm3", "xmm4", 
 struct X86_32StringConverter : public as::StringConverter, public boost::static_visitor<std::string> {
     std::string operator()(ltac::Register& reg) const {
         if(static_cast<int>(reg) == 1000){
-            return "esp"; 
+            return "esp";
         } else if(static_cast<int>(reg) == 1001){
-            return "ebp"; 
+            return "ebp";
         }
 
         return registers[static_cast<int>(reg)];
     }
-    
+
     std::string operator()(ltac::FloatRegister& reg) const {
         return float_registers[static_cast<int>(reg)];
     }
-    
+
     std::string operator()(ltac::Address& address) const {
         return address_to_string(address);
     }
@@ -373,24 +373,24 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "global _start" << '\n' << '\n';
 
     writer.stream() << "_start:" << '\n';
-    
-    //If necessary init memory manager 
-    if(context->exists("_F4mainAS") 
-            || program.call_graph.is_reachable(context->getFunction("_F4freePI")) 
-            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
-        writer.stream() << "call _F4init" << '\n'; 
+
+    //If necessary init memory manager
+    if(context->exists("_F4mainAS")
+            || program.cg.is_reachable(context->getFunction("_F4freePI"))
+            || program.cg.is_reachable(context->getFunction("_F5allocI"))){
+        writer.stream() << "call _F4init" << '\n';
     }
 
     //If the user wants the args, we add support for them
     if(context->exists("_F4mainAS")){
         writer.stream() << "pop ebx" << '\n';                          //ebx = number of args
-        
+
         writer.stream() << "lea ecx, [4 + ebx * 8]" << '\n';           //ecx = size of the array
         writer.stream() << "call _F5allocI" << '\n';                  //eax = start address of the array
 
         writer.stream() << "mov esi, eax" << '\n';         //esi = last address of the array
         writer.stream() << "mov edx, esi" << '\n';                     //edx = last address of the array
-        
+
         writer.stream() << "mov [esi], ebx" << '\n';                   //Set the length of the array
         writer.stream() << "add esi, 4" << '\n';                       //Move to the destination address of the first arg
 
@@ -421,7 +421,7 @@ void as::IntelX86CodeGenerator::writeRuntimeSupport(){
     } else {
         writer.stream() << "call _F4main" << '\n';
     }
-    
+
     /* Exit the program */
     writer.stream() << "mov eax, 1" << '\n';
     writer.stream() << "xor ebx, ebx" << '\n';
@@ -478,30 +478,30 @@ void as::IntelX86CodeGenerator::declareFloat(const std::string& label, double va
 }
 
 void as::IntelX86CodeGenerator::addStandardFunctions(){
-    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
+    if(program.cg.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_32_printC");
     }
-    
-    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){ 
+
+    if(program.cg.is_reachable(context->getFunction("_F5printS"))){
         output_function("x86_32_printS");
     }
-    
+
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
+    if(context->exists("_F4mainAS") || program.cg.is_reachable(context->getFunction("_F4freePI")) || program.cg.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_32_alloc");
         output_function("x86_32_init");
         output_function("x86_32_free");
     }
-    
-    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
+
+    if(program.cg.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_32_time");
     }
-    
-    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
+
+    if(program.cg.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_32_duration");
     }
-    
-    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
+
+    if(program.cg.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_32_read_char");
     }
 }

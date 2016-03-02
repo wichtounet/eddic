@@ -36,7 +36,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
     }
 
     bool optimized = false;
-    
+
     auto lit = iterate(function.loops());
 
     while(lit.has_next()){
@@ -67,26 +67,26 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
 
                 //Remove the back edge
                 remove_back_edge(loop);
-                
+
                 //There are perhaps new references to functions
                 for(auto& bb : loop){
                     for(auto& statement : bb->statements){
                         if(statement.op == mtac::Operator::CALL){
-                            program.call_graph.edge(function.definition(), statement.function())->count += (iterations - 1);
+                            program.cg.edge(function.definition(), statement.function())->count += (iterations - 1);
                         }
                     }
                 }
-                
+
                 auto preheader = loop.find_safe_preheader(function, true);
                 auto it = function.at(preheader);
-                    
+
                 std::vector<mtac::basic_block_p> source_bbs;
 
                 for(auto& bb : loop){
                     source_bbs.push_back(bb);
                 }
 
-                std::sort(source_bbs.begin(), source_bbs.end(), 
+                std::sort(source_bbs.begin(), source_bbs.end(),
                         [&function](const mtac::basic_block_p& lhs, const mtac::basic_block_p& rhs){ return function.position(lhs) > function.position(rhs);});
 
                 std::vector<mtac::basic_block_p> cloned;
@@ -99,7 +99,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
 
                     for(auto& bb : source_bbs){
                         auto clone_bb = mtac::clone(function, bb);
-                
+
                         LOG<Trace>("loops") << "Cloned " << bb << " into " << clone_bb << log::endl;
 
                         bb_clones[bb] = clone_bb;
@@ -110,7 +110,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                     }
 
                     //Adapt the CFG
-                    
+
                     for(auto& clone : local_cloned){
                         for(auto& succ : clone->successors){
                             if(bb_clones.find(succ) != bb_clones.end()){
@@ -119,13 +119,13 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                                 succ = entry;
                             }
                         }
-                        
+
                         for(auto& pred : clone->predecessors){
                             if(bb_clones.find(pred) != bb_clones.end()){
                                 pred = bb_clones[pred];
                             }
                         }
-                        
+
                         //Adapt the instructions themselves
                         for(auto& goto_ : clone){
                             if(bb_clones.find(goto_.block) != bb_clones.end()){
@@ -148,7 +148,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
                         preheader->successors.front() = entry;
                     }
                 }
-                
+
                 for(auto& pred : real_entry->predecessors){
                     if(pred == preheader){
                         pred = real_entry->prev;

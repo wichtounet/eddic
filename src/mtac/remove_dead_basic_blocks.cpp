@@ -48,7 +48,7 @@ bool mtac::remove_dead_basic_blocks::operator()(mtac::Function& function){
                 //Update the call graph if necessary
                 for(auto& statement : block){
                     if(statement.op == mtac::Operator::CALL){
-                        --program.call_graph.edge(function.definition(), statement.function())->count;
+                        --program.cg.edge(function.definition(), statement.function())->count;
                     }
                 }
 
