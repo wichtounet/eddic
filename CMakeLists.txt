@@ -8,20 +8,20 @@ set(VERSION_MINOR 2)
 set(VERSION_PATCH 3)
 
 #Boost is necessary
-FIND_PACKAGE(Boost REQUIRED) 
+FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Activate warnings and C++11 support
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS                 "-pipe -pthread -std=c++11")
+    set(CMAKE_CXX_FLAGS                 "-pipe -pthread -std=c++11 -DBOOST_NO_EXCEPTIONS")
     set(CMAKE_EXE_LINKER_FLAGS          "")
-    
+
     set(CMAKE_CXX_FLAGS_DEBUG           "-g -pedantic -Wuninitialized -Wall -Wextra -Wno-long-long -Winit-self -fstack-protector-all")
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG    "")
-    
+
     set(CMAKE_CXX_FLAGS_RELEASE         "-g -DLOGGING_DISABLE -DNDEBUG -O3 -fomit-frame-pointer -march=native")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE  "")
-    
+
     set(CMAKE_CXX_FLAGS_COVERAGE        "${CMAKE_CXX_FLAGS} --coverage")
     set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -43,13 +43,13 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 # Add a target to inspect the whole code with cppcheck
-add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src 
+add_custom_target(cppcheck cppcheck --platform=unix64 --enable=all --std=c++11 -I ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
 )
 
 # Add a target to profile the whole code with oprofile
-add_custom_target(oprofile 
+add_custom_target(oprofile
     sudo opcontrol --reset
     && sudo opcontrol --event=CPU_CLK_UNHALTED:50000:0:1:1
     && sudo opcontrol --vmlinux=/usr/src/linux/arch/x86/boot/compressed/vmlinux
@@ -58,7 +58,7 @@ add_custom_target(oprofile
     && sudo opcontrol --stop
     && sudo opcontrol --shutdown
     && sudo opreport -a -e _fini -l ${CMAKE_CURRENT_BINARY_DIR}/bin/eddic > ${CMAKE_CURRENT_BINARY_DIR}/profile
-    
+
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Analysing the code with cppcheck" VERBATIM
 )
@@ -86,7 +86,7 @@ add_custom_target(gitstats gitstats ${CMAKE_CURRENT_SOURCE_DIR} stats
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Gathering git stats" VERBATIM
 )
- 
+
 # The compiler and the tests should go to the bin directory
 set(EXECUTABLE_OUTPUT_PATH bin)
 
@@ -169,7 +169,7 @@ include(BoostTestTargets.cmake)
 add_boost_test(eddic_boost_test
     SOURCES ${test_files}
     LIBRARIES boost_program_options
-    TESTS 
+    TESTS
     ApplicationsSuite/applications_hangman
     SamplesSuite/samples_arrays
     SamplesSuite/samples_asm
@@ -286,7 +286,7 @@ add_boost_test(eddic_boost_test
     #Unit tests
     toString
     toNumber
-    bb_entry_exit_count 
+    bb_entry_exit_count
     bb_iterators
     bb_new_bb
     bb_remove_bb
