@@ -20,7 +20,7 @@ SemanticalException::~SemanticalException() throw() {}
 const char* SemanticalException::what() const throw() {
     return m_message.c_str();
 }
-        
+
 const std::string& SemanticalException::message() const {
     return m_message;
 }
@@ -31,7 +31,7 @@ boost::optional<eddic::ast::Position> SemanticalException::position() const {
 
 void eddic::output_exception(const SemanticalException& e){
     if(e.position()){
-        auto& position = *e.position();
+        const auto& position = *e.position();
 
         std::cout << position.file << ":" << position.line << ":" << " error: " << e.what() << std::endl;
         std::cout << position.theLine << std::endl;
