@@ -25,7 +25,7 @@ as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, mtac::Program&
 void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     resetNumbering();
 
-    writeRuntimeSupport(); 
+    writeRuntimeSupport();
 
     for(auto& function : program){
         compile(function);
@@ -38,10 +38,10 @@ void as::IntelCodeGenerator::generate(std::shared_ptr<StringPool> pool, std::sha
 
 void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool, std::shared_ptr<FloatPool> float_pool){
     defineDataSection();
-     
+
     for(auto& it : context->getVariables()){
         auto type = it.second->type();
-        
+
         //The const variables are not stored
         if(type->is_const()){
             continue;
@@ -60,13 +60,13 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool
                 declareIntVariable(it.second->position().name(), boost::get<int>(it.second->val()));
             } else if(type == STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
-  
-                //If that's not the case, there is a problem with the pool 
+
+                //If that's not the case, there is a problem with the pool
                 assert(value.first.size() > 0);
-    
-                declareStringVariable(it.second->position().name(), pool->label(value.first), value.second);            
+
+                declareStringVariable(it.second->position().name(), pool->label(value.first), value.second);
             } else if(type == CHAR){
-                declareCharVariable(it.second->position().name(), boost::get<char>(it.second->val()));
+                declareCharVariable(it.second->position().name(), (char) boost::get<int>(it.second->val()));
             } else if(type == BOOL){
                 declareBoolVariable(it.second->position().name(), boost::get<bool>(it.second->val()));
             } else {
@@ -74,11 +74,11 @@ void as::IntelCodeGenerator::addGlobalVariables(std::shared_ptr<StringPool> pool
             }
         }
     }
-    
+
     for (auto it : pool->getPool()){
         declareString(it.second, it.first);
     }
-    
+
     for (auto it : float_pool->get_pool()){
         declareFloat(it.second, it.first);
     }
@@ -99,6 +99,6 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
             writer.stream() << line << '\n';
         }
     }
-    
+
     writer.stream() << '\n';
 }
