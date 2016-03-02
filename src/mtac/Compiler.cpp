@@ -55,12 +55,12 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary);
 
 mtac::Argument index_of_array(std::shared_ptr<Variable> array, ast::Value indexValue, mtac::Function& function){
     auto index = moveToArgument(indexValue, function);
-    
+
     auto temp = function.context->new_temporary(INT);
 
     function.emplace_back(temp, index, mtac::Operator::MUL, static_cast<int>(array->type()->data_type()->size(function.context->global()->target_platform())));
     function.emplace_back(temp, temp, mtac::Operator::ADD, static_cast<int>(INT->size(function.context->global()->target_platform())));
-   
+
     return temp;
 }
 
@@ -89,7 +89,7 @@ void construct(mtac::Function& function, std::shared_ptr<const Type> type, std::
     function.emplace_back(mtac::Operator::PPARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
 
     //Call the constructor
-    function.emplace_back(mtac::Operator::CALL, ctor_function); 
+    function.emplace_back(mtac::Operator::CALL, ctor_function);
 }
 
 void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg, ast::Value rhs_arg){
@@ -111,7 +111,7 @@ void copy_construct(mtac::Function& function, std::shared_ptr<const Type> type, 
 
     function.emplace_back(mtac::Operator::PPARAM, this_arg, ctor_function.context()->getVariable(ctor_function.parameter(0).name()), ctor_function);
 
-    function.emplace_back(mtac::Operator::CALL, ctor_function); 
+    function.emplace_back(mtac::Operator::CALL, ctor_function);
 }
 
 void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::Argument this_arg){
@@ -124,7 +124,7 @@ void destruct(mtac::Function& function, std::shared_ptr<const Type> type, mtac::
 
     function.emplace_back(mtac::Operator::PPARAM, this_arg, dtor_function.context()->getVariable(dtor_function.parameter(0).name()), dtor_function);
 
-    function.emplace_back(mtac::Operator::CALL, dtor_function); 
+    function.emplace_back(mtac::Operator::CALL, dtor_function);
 }
 
 template<typename Source>
@@ -155,7 +155,7 @@ enum class ArgumentType : unsigned int {
     ADDRESS,
     REFERENCE
 };
-    
+
 template<ArgumentType T = ArgumentType::NORMAL>
 arguments get_member(mtac::Function& function, unsigned int offset, std::shared_ptr<const Type> member_type, std::shared_ptr<Variable> var){
     auto platform = function.context->global()->target_platform();
@@ -172,7 +172,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         //Get a reference to the array
         if(T == ArgumentType::REFERENCE){
             return {function.context->new_reference(member_type, var, offset)};
-        } 
+        }
         //Get all the values of an array
         else {
             auto elements = member_type->elements();
@@ -187,7 +187,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
                 if(data_type == STRING){
                     auto t1 = function.context->new_temporary(INT);
                     auto t2 = function.context->new_temporary(INT);
-                    
+
                     function.emplace_back(t1, var, mtac::Operator::DOT, static_cast<int>(index_offset));
                     function.emplace_back(t2, var, mtac::Operator::DOT, static_cast<int>(index_offset + INT->size(function.context->global()->target_platform())));
 
@@ -230,7 +230,7 @@ arguments get_member(mtac::Function& function, unsigned int offset, std::shared_
         if(T == ArgumentType::REFERENCE){
             return {function.context->new_reference(member_type, var, offset)};
         } else if(T == ArgumentType::NORMAL){
-            return struct_to_arguments(function, member_type, var, offset);      
+            return struct_to_arguments(function, member_type, var, offset);
         }
 
         eddic_unreachable("Unhandled ArgumentType");
@@ -306,7 +306,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                 break;
             }
-        
+
         case ast::Operator::EQUALS:
         case ast::Operator::NOT_EQUALS:
         case ast::Operator::LESS:
@@ -332,7 +332,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
         case ast::Operator::AND:
             {
-                auto t1 = function.context->new_temporary(INT); 
+                auto t1 = function.context->new_temporary(INT);
 
                 auto falseLabel = newLabel();
                 auto endLabel = newLabel();
@@ -356,7 +356,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
         case ast::Operator::OR:
             {
-                auto t1 = function.context->new_temporary(INT); 
+                auto t1 = function.context->new_temporary(INT);
 
                 auto trueLabel = newLabel();
                 auto endLabel = newLabel();
@@ -392,7 +392,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                     //Get the label
                     function.emplace_back(pointer_temp, left[0], mtac::Operator::ASSIGN);
 
-                    //Get the specified char 
+                    //Get the specified char
                     mtac::Quadruple quadruple(t1, pointer_temp, mtac::Operator::DOT, index);
                     quadruple.size = mtac::Size::BYTE;
                     function.emplace_back(std::move(quadruple));
@@ -401,9 +401,9 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                 } else {
                     assert(left.size() == 1);
 
-                    auto index = index_of_array(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function); 
+                    auto index = index_of_array(boost::get<std::shared_ptr<Variable>>(left[0]), index_value, function);
                     auto data_type = type->data_type();
-                    
+
                     if(T == ArgumentType::ADDRESS){
                         auto temp = function.context->new_temporary(data_type->is_pointer() ? data_type : new_pointer_type(data_type));
 
@@ -418,7 +418,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                             } else {
                                 temp = function.context->new_temporary(data_type);
                             }
-                            
+
                             function.emplace_back(temp, left[0], mtac::Operator::DOT, index);
 
                             left = {temp};
@@ -429,7 +429,7 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                             } else {
                                 temp = function.context->new_temporary(data_type);
                             }
-                            
+
                             mtac::Quadruple dot(temp, left[0], mtac::Operator::DOT, index);
                             dot.size = mtac::Size::BYTE;
                             function.push_back(std::move(dot));
@@ -511,13 +511,13 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
                         if(parent == dest_type){
                             break;
                         }
-                        
+
                         auto struct_type = global_context->get_struct(parent);
                         parent = struct_type->parent_type;
-                        
+
                         offset += global_context->self_size_of_struct(struct_type);
                     }
-                    
+
                     auto t1 = function.context->new_temporary(type->is_pointer() ? type : new_pointer_type(type));
 
                     if(type->is_pointer()){
@@ -537,13 +537,13 @@ arguments compute_expression_operation(mtac::Function& function, std::shared_ptr
 
                     //Initialize the temporary
                     construct(function, type, {}, var);
-                    
+
                     //Pass the address of return
                     function.emplace_back(mtac::Operator::PPARAM, var, definition.context()->getVariable("__ret"), definition);
 
                     //Pass the normal arguments of the function
                     pass_arguments(function, definition, call_operation_value.values);
-                    
+
                     //Pass the address of the object to the member function
                     function.emplace_back(mtac::Operator::PPARAM, left_value, definition.context()->getVariable(definition.parameter(0).name()), definition);
 
@@ -643,7 +643,7 @@ bool need_pointer(ast::Operator op, std::shared_ptr<const Type> left_type){
 
 //Indicate if a postfix operator needs a reference as left value
 bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
-    return 
+    return
             op == ast::Operator::INC || op == ast::Operator::DEC    //Modifies the left value, needs a reference
         ||  op == ast::Operator::BRACKET                            //Needs a reference to the left array
         ||  (op == ast::Operator::DOT && !left_type->is_pointer()); //If it is not a pointer, needs a reference to the struct variable
@@ -654,7 +654,7 @@ bool need_reference(ast::Operator op, std::shared_ptr<const Type> left_type){
 template<ArgumentType T = ArgumentType::NORMAL>
 struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     ToArgumentsVisitor(mtac::Function& f) : function(f) {}
-    
+
     mtac::Function& function;
 
     result_type operator()(ast::Literal& literal) const {
@@ -670,36 +670,36 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::Integer& integer) const {
         return {integer.value};
     }
-    
+
     result_type operator()(ast::IntegerSuffix& integer) const {
         return {(double) integer.value};
     }
-    
+
     result_type operator()(ast::Float& float_) const {
         return {float_.value};
     }
-    
+
     result_type operator()(ast::False&) const {
         return {0};
     }
-    
+
     result_type operator()(ast::True&) const {
         return {1};
     }
-    
+
     result_type operator()(ast::Null&) const {
         return {0};
     }
 
     result_type operator()(ast::New& new_) const {
         auto type = visit(ast::TypeTransformer(function.context->global()), new_.Content->type);
-    
+
         function.emplace_back(mtac::Operator::PARAM, static_cast<int>(type->size(function.context->global()->target_platform())), "a", function.context->global()->getFunction("_F5allocI"));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
-        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
-            
+        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1);
+
         //If structure type, call the constructor
         if(type->is_custom_type() || type->is_template_type()){
             construct(function, type, new_.Content->values, t1);
@@ -707,24 +707,24 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
         return {t1};
     }
-    
+
     result_type operator()(ast::NewArray& new_) const {
         auto type = visit_non_variant(ast::GetTypeVisitor(), new_);
 
         auto size = function.context->new_temporary(INT);
         auto size_temp = visit(ToArgumentsVisitor<>(function), new_.Content->size)[0];
-        
+
         auto platform = function.context->global()->target_platform();
 
         function.emplace_back(size, size_temp, mtac::Operator::MUL, static_cast<int>(type->data_type()->size(platform)));
         function.emplace_back(size, size, mtac::Operator::ADD, static_cast<int>(INT->size(platform)));
-    
+
         function.emplace_back(mtac::Operator::PARAM, size, "a", function.context->global()->getFunction("_F5allocI"));
 
         auto t1 = function.context->new_temporary(new_pointer_type(INT));
 
-        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1); 
-        
+        function.emplace_back(mtac::Operator::CALL, function.context->global()->getFunction("_F5allocI"), t1);
+
         function.emplace_back(t1, 0, mtac::Operator::DOT_ASSIGN, size_temp);
 
         return {t1};
@@ -756,7 +756,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                     eddic_unreachable("The variable is not of a valid type");
                 }
-            
+
             case ast::BuiltinType::LENGTH:
                 {
                     auto& value = builtin.Content->values[0];
@@ -800,18 +800,18 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             //Initialize the temporary
             construct(function, type, {}, var);
-            
+
             //Pass the address of return
             function.emplace_back(mtac::Operator::PPARAM, var, definition.context()->getVariable("__ret"), definition);
-    
+
             //Pass the normal arguments of the function
             pass_arguments(function, definition, call.Content->values);
 
             function.emplace_back(mtac::Operator::CALL, definition, nullptr, nullptr);
-            
+
             return {var};
         }
-        
+
         eddic_unreachable("Unhandled function return type");
     }
 
@@ -842,14 +842,14 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             if(nc_type == INT || nc_type == BOOL){
                 return {boost::get<int>(val)};
             } else if(nc_type == CHAR){
-                return {boost::get<char>(val)};        
+                return {(char) boost::get<int>(val)};
             } else if(nc_type == FLOAT){
-                return {boost::get<double>(val)};        
+                return {boost::get<double>(val)};
             } else if(nc_type == STRING){
                 auto value = boost::get<std::pair<std::string, int>>(val);
 
                 return {value.first, value.second};
-            } 
+            }
 
             eddic_unreachable("void is not a type");
         } else if(type->is_array() || type->is_pointer()){
@@ -863,8 +863,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             return {var, temp};
         } else if(type->is_structure()) {
             return struct_to_arguments(function, type, var, 0);
-        } 
-    
+        }
+
         eddic_unreachable("Unhandled type");
     }
 
@@ -902,7 +902,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
             return {t1, t2};
         } else if(type->is_structure()){
-            return struct_to_arguments(function, type, variable, 0);         
+            return struct_to_arguments(function, type, variable, 0);
         }
 
         eddic_unreachable("Unhandled type");
@@ -911,7 +911,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     result_type operator()(ast::PrefixOperation& operation) const {
         auto op = operation.Content->op;
         auto type = visit(ast::GetTypeVisitor(), operation.Content->left_value);
-            
+
         switch(op){
             case ast::Operator::STAR:
             {
@@ -923,12 +923,12 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                 auto variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
                 if(T == ArgumentType::ADDRESS){
-                    return {variable}; 
+                    return {variable};
                 } else {
                     return dereference_variable(variable, type->data_type());
                 }
             }
-            
+
             case ast::Operator::ADDRESS:
             {
                 auto left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), operation.Content->left_value);
@@ -973,7 +973,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                 return {t1};
             }
-            
+
             case ast::Operator::INC:
             {
                 //INC needs a reference to the left value
@@ -993,7 +993,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                 return {t1};
             }
-            
+
             case ast::Operator::DEC:
             {
                 //DEC needs a reference to the left value
@@ -1015,13 +1015,13 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             }
 
             default:
-                eddic_unreachable("Unsupported operator");    
+                eddic_unreachable("Unsupported operator");
         }
     }
 
     result_type operator()(ast::Expression& value) const {
         auto type = visit(ast::GetTypeVisitor(), value.Content->first);
-        
+
         arguments left;
         if(need_reference(value.Content->operations[0].get<0>(), type)){
             left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
@@ -1056,7 +1056,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
     result_type operator()(ast::Cast& cast) const {
         mtac::Argument arg = moveToArgument(cast.Content->value, function);
-        
+
         auto dest_type = visit_non_variant(ast::GetTypeVisitor(), cast);
         auto src_type = visit(ast::GetTypeVisitor(), cast.Content->value);
 
@@ -1095,10 +1095,10 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
                             is_parent = true;
                             break;
                         }
-                        
+
                         auto struct_type = global_context->get_struct(parent);
                         parent = struct_type->parent_type;
-                        
+
                         offset += global_context->self_size_of_struct(struct_type);
                     }
 
@@ -1107,8 +1107,8 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
 
                         return {t1};
                     }
-                } 
-            } 
+                }
+            }
         }
 
         //If it has not been there is nothing to do (cast without effect)
@@ -1130,14 +1130,14 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         auto platform = function.context->global()->target_platform();
 
         auto variable = variable_value.Content->var;
-        auto type = visit(ast::GetTypeVisitor(), right_value); 
+        auto type = visit(ast::GetTypeVisitor(), right_value);
 
         if(type->is_pointer() || (variable->type()->is_array() && variable->type()->data_type()->is_pointer())){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
             function.emplace_back(variable, values[0], mtac::Operator::PASSIGN);
         } else if(type == CHAR || type == BOOL){
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            
+
             mtac::Quadruple mov(variable, values[0], mtac::Operator::ASSIGN);
             mov.size = mtac::Size::BYTE;
             function.push_back(std::move(mov));
@@ -1189,7 +1189,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             } else {
                 left = compute_expression_operation<>(function, type, left, operation);
             }
-            
+
             type = future_type;
         }
 
@@ -1203,11 +1203,11 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto array_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
 
             auto& index_value = boost::get<ast::Value>(*last_operation.get<1>());
-            auto index = index_of_array(array_variable, index_value, function); 
-        
+            auto index = index_of_array(array_variable, index_value, function);
+
             auto left_type = array_variable->type()->data_type();
-            auto right_type = visit(ast::GetTypeVisitor(), right_value); 
-            
+            auto right_type = visit(ast::GetTypeVisitor(), right_value);
+
             arguments values;
             if(left_type->is_pointer()){
                 values = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), right_value);
@@ -1234,7 +1234,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             } else {
                 eddic_unreachable("Unhandled value type");
             }
-        } 
+        }
         //Assign to a member of a structure
         else if(last_operation.get<0>() == ast::Operator::DOT){
             assert(mtac::isVariable(left[0]));
@@ -1291,9 +1291,9 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             auto left = visit(ToArgumentsVisitor<>(function), dereference_value.Content->left_value);
             assert(mtac::isVariable(left[0]));
             auto pointer_variable = boost::get<std::shared_ptr<Variable>>(left[0]);
-        
+
             auto values = visit(ToArgumentsVisitor<>(function), right_value);
-            auto right_type = visit(ast::GetTypeVisitor(), right_value); 
+            auto right_type = visit(ast::GetTypeVisitor(), right_value);
 
             if(right_type->is_pointer()){
                 function.emplace_back(pointer_variable, 0, mtac::Operator::DOT_PASSIGN, values[0]);
@@ -1311,7 +1311,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
             } else {
                 eddic_unreachable("Unhandled variable type");
             }
-        } 
+        }
         //The others prefix operators does not yield left values
         else {
             eddic_unreachable("This prefix operator does not result in a left value");
@@ -1319,7 +1319,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     }
 
     //Other ast::Value type does not yield a left value
-    
+
     template<typename T>
     void operator()(T&){
         eddic_unreachable("Not a left value");
@@ -1350,34 +1350,34 @@ arguments compile_ternary(mtac::Function& function, ast::Ternary& ternary){
     if(type == INT || type == CHAR || type == BOOL || type == FLOAT){
         auto t1 = function.context->new_temporary(type);
 
-        jump_if_false(function, falseLabel, ternary.Content->condition); 
+        jump_if_false(function, falseLabel, ternary.Content->condition);
         assign(function, t1, ternary.Content->true_value);
         function.emplace_back(endLabel, mtac::Operator::GOTO);
-        
+
         function.emplace_back(falseLabel, mtac::Operator::LABEL);
         assign(function, t1, ternary.Content->false_value);
-        
+
         function.emplace_back(endLabel, mtac::Operator::LABEL);
 
         return {t1};
     } else if(type == STRING){
         auto t1 = function.context->new_temporary(INT);
         auto t2 = function.context->new_temporary(INT);
-        
-        jump_if_false(function, falseLabel, ternary.Content->condition); 
+
+        jump_if_false(function, falseLabel, ternary.Content->condition);
         auto args = visit(ToArgumentsVisitor<>(function), ternary.Content->true_value);
         function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);
         function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);
 
         function.emplace_back(endLabel, mtac::Operator::GOTO);
-        
+
         function.emplace_back(falseLabel, mtac::Operator::LABEL);
         args = visit(ToArgumentsVisitor<>(function), ternary.Content->false_value);
-        function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);  
-        function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);  
-        
+        function.emplace_back(t1, args[0], mtac::Operator::ASSIGN);
+        function.emplace_back(t2, args[1], mtac::Operator::ASSIGN);
+
         function.emplace_back(endLabel, mtac::Operator::LABEL);
-        
+
         return {t1, t2};
     }
 
@@ -1390,7 +1390,7 @@ class FunctionCompiler : public boost::static_visitor<> {
     private:
         mtac::Program& program;
         mtac::Function& function;
-    
+
     public:
         FunctionCompiler(mtac::Program& program, mtac::Function& function) : program(program), function(function)  {}
 
@@ -1430,7 +1430,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     function.emplace_back(endLabel, mtac::Operator::LABEL);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
-                    
+
                     issue_destructors((*if_.Content->else_).context);
 
                     function.emplace_back(elseLabel, mtac::Operator::LABEL);
@@ -1444,7 +1444,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                 jump_if_false(function, next, if_.Content->condition);
 
                 visit_each(*this, if_.Content->instructions);
-                
+
                 issue_destructors(if_.Content->context);
 
                 function.emplace_back(end, mtac::Operator::GOTO);
@@ -1468,7 +1468,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     jump_if_false(function, next, elseIf.condition);
 
                     visit_each(*this, elseIf.instructions);
-                    
+
                     issue_destructors(elseIf.context);
 
                     function.emplace_back(end, mtac::Operator::GOTO);
@@ -1478,7 +1478,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     function.emplace_back(next, mtac::Operator::LABEL);
 
                     visit_each(*this, (*if_.Content->else_).instructions);
-                    
+
                     issue_destructors((*if_.Content->else_).context);
                 }
 
@@ -1515,14 +1515,14 @@ class FunctionCompiler : public boost::static_visitor<> {
         void operator()(ast::Swap& swap){
             auto lhs_var = swap.Content->lhs_var;
             auto rhs_var = swap.Content->rhs_var;
-            
+
             auto t1 = swap.Content->context->new_temporary(INT);
 
             if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
                 function.emplace_back(t1, rhs_var, mtac::Operator::ASSIGN);
                 function.emplace_back(rhs_var, lhs_var, mtac::Operator::ASSIGN);
                 function.emplace_back(lhs_var, t1, mtac::Operator::ASSIGN);
-                
+
                 if(lhs_var->type() == STRING){
                     auto t2 = swap.Content->context->new_temporary(INT);
 
@@ -1568,7 +1568,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     function.emplace_back(mtac::Operator::RETURN, arguments[0], arguments[1]);
                 } else {
                     eddic_unreachable("Unhandled arguments size");
-                }   
+                }
             }
         }
 
@@ -1584,9 +1584,9 @@ class FunctionCompiler : public boost::static_visitor<> {
 
             function.emplace_back(mtac::Operator::PARAM, arg, "a", free_function);
 
-            function.emplace_back(mtac::Operator::CALL, free_function); 
+            function.emplace_back(mtac::Operator::CALL, free_function);
         }
-       
+
         void operator()(ast::Assignment& assignment){
             eddic_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
@@ -1596,7 +1596,7 @@ class FunctionCompiler : public boost::static_visitor<> {
         //For statements that are also values, it is enough to transform them to arguments
         //If they have side effects, it will be handled and the eventually useless generated
         //temporaries will be removed by optimizations
-        
+
         void operator()(ast::Expression& expression){
             visit_non_variant(ToArgumentsVisitor<>(function), expression);
         }
@@ -1604,7 +1604,7 @@ class FunctionCompiler : public boost::static_visitor<> {
         void operator()(ast::PrefixOperation& operation){
             visit_non_variant(ToArgumentsVisitor<>(function), operation);
         }
-        
+
         void operator()(ast::FunctionCall& functionCall){
             visit_non_variant(ToArgumentsVisitor<>(function), functionCall);
         }
@@ -1613,7 +1613,7 @@ class FunctionCompiler : public boost::static_visitor<> {
 
         template<typename T>
         void operator()(T&){
-            eddic_unreachable("This element should have been transformed"); 
+            eddic_unreachable("This element should have been transformed");
         }
 };
 
@@ -1638,8 +1638,8 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
         int i = definition.parameters().size()-1;
 
         for(auto& first : boost::adaptors::reverse(values)){
-            auto param = definition.parameter(i--).name(); 
-            
+            auto param = definition.parameter(i--).name();
+
             auto args = visit(ToArgumentsVisitor<>(function), first);
             for(auto& arg : boost::adaptors::reverse(args)){
                 function.emplace_back(mtac::Operator::PARAM, arg, param, definition);
@@ -1665,7 +1665,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
             } else {
                 if(param->type()->is_custom_type()){
                     auto new_temporary = function.context->generate_variable("tmp_", param->type());
-                    
+
                     copy_construct(function, param->type(), new_temporary, first);
 
                     args = visit_non_variant(ToArgumentsVisitor<>(function), new_temporary);
@@ -1673,7 +1673,7 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
                     args = visit(ToArgumentsVisitor<>(function), first);
                 }
             }
-            
+
             for(auto& arg : boost::adaptors::reverse(args)){
                 if(param->type()->is_pointer()){
                     function.emplace_back(mtac::Operator::PPARAM, arg, param, definition);
