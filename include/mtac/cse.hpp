@@ -35,7 +35,7 @@ struct expression {
     std::shared_ptr<Variable> tmp;
     std::shared_ptr<const Type> type;
 
-    expression(std::size_t uid, mtac::Argument arg1, mtac::Argument arg2, mtac::Operator op, std::shared_ptr<Variable> tmp, std::shared_ptr<const Type> type) 
+    expression(std::size_t uid, mtac::Argument arg1, mtac::Argument arg2, mtac::Operator op, std::shared_ptr<Variable> tmp, std::shared_ptr<const Type> type)
             : uid(uid), arg1(arg1), arg2(arg2), op(op), tmp(tmp), type(type) {
         //Nothing
     }
@@ -43,11 +43,11 @@ struct expression {
     bool operator==(const mtac::expression& rhs) const {
         return arg1 == rhs.arg1 && arg2 == rhs.arg2 && op == rhs.op;
     }
-    
+
     bool operator!=(const mtac::expression& rhs) const {
         return !(*this == rhs);
     }
-    
+
     bool operator<(const mtac::expression& rhs) const {
         if(arg1 == rhs.arg1){
             if(arg2 == rhs.arg2){
@@ -101,7 +101,7 @@ namespace std {
     template<>
     class hash<eddic::mtac::expression> {
         private:
-            std::hash<eddic::mtac::Argument> hasher_arg;
+            boost::hash<eddic::mtac::Argument> hasher_arg;
 
         public:
             size_t operator()(const eddic::mtac::expression& val) const {
@@ -110,7 +110,7 @@ namespace std {
                 boost::hash_combine(seed, hasher_arg(val.arg1));
                 boost::hash_combine(seed, hasher_arg(val.arg2));
                 boost::hash_combine(seed, static_cast<unsigned int>(val.op));
-                
+
                 return seed;
             }
     };
