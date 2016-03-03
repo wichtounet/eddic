@@ -29,12 +29,10 @@ struct NewArray;
 struct PrefixOperation;
 struct Ternary;
 struct VariableValue;
+struct Assignment;
 
 struct ASTFunctionCall;
 typedef Deferred<ASTFunctionCall> FunctionCall;
-
-struct ASTAssignment;
-typedef Deferred<ASTAssignment> Assignment;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;

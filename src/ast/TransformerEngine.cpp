@@ -85,8 +85,8 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = visit(*this, assignment.Content->left_value);
-        assignment.Content->value = visit(*this, assignment.Content->value);
+        assignment.left_value = visit(*this, assignment.left_value);
+        assignment.value = visit(*this, assignment.value);
 
         return assignment;
     }
@@ -171,8 +171,8 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = visit(*this, assignment.Content->left_value);
-        assignment.Content->value = visit(*this, assignment.Content->value);
+        assignment.left_value = visit(*this, assignment.left_value);
+        assignment.value = visit(*this, assignment.value);
 
         return assignment;
     }
@@ -202,19 +202,19 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
 
 struct InstructionTransformer : public boost::static_visitor<std::vector<ast::Instruction>> {
     result_type operator()(ast::Assignment& compound) const {
-        if(compound.Content->op == ast::Operator::ASSIGN || compound.Content->op == ast::Operator::SWAP){
+        if(compound.op == ast::Operator::ASSIGN || compound.op == ast::Operator::SWAP){
             return {};
         }
 
         ast::Expression composed;
-        composed.Content->context = compound.Content->context;
-        composed.Content->first = compound.Content->left_value;
-        composed.Content->operations.push_back(boost::make_tuple(compound.Content->op, compound.Content->value));
+        composed.Content->context = compound.context;
+        composed.Content->first = compound.left_value;
+        composed.Content->operations.push_back(boost::make_tuple(compound.op, compound.value));
 
         ast::Assignment assignment;
-        assignment.Content->context = compound.Content->context;
-        assignment.Content->left_value = compound.Content->left_value;
-        assignment.Content->value = composed;
+        assignment.context = compound.context;
+        assignment.left_value = compound.left_value;
+        assignment.value = composed;
 
         return {assignment};
     }
@@ -258,9 +258,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         left_value.var = foreach.Content->context->getVariable(foreach.Content->variableName);
 
         ast::Assignment start_assign;
-        start_assign.Content->context = foreach.Content->context;
-        start_assign.Content->left_value = left_value;
-        start_assign.Content->value = from_value;
+        start_assign.context = foreach.Content->context;
+        start_assign.left_value = left_value;
+        start_assign.value = from_value;
 
         if_.Content->instructions.push_back(start_assign);
 
@@ -288,9 +288,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         addition.Content->operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
 
         ast::Assignment repeat_assign;
-        repeat_assign.Content->context = foreach.Content->context;
-        repeat_assign.Content->left_value = left_value;
-        repeat_assign.Content->value = addition;
+        repeat_assign.context = foreach.Content->context;
+        repeat_assign.left_value = left_value;
+        repeat_assign.value = addition;
 
         do_while.Content->instructions.push_back(repeat_assign);
 
@@ -316,9 +316,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         left_value.var = foreach.Content->context->getVariable(iterVar->name());
 
         ast::Assignment init_assign;
-        init_assign.Content->context = foreach.Content->context;
-        init_assign.Content->left_value = left_value;
-        init_assign.Content->value = init_value;
+        init_assign.context = foreach.Content->context;
+        init_assign.left_value = left_value;
+        init_assign.value = init_value;
 
         instructions.push_back(init_assign);
 
@@ -383,9 +383,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         addition.Content->operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
 
         ast::Assignment repeat_assign;
-        repeat_assign.Content->context = foreach.Content->context;
-        repeat_assign.Content->left_value = left_value;
-        repeat_assign.Content->value = addition;
+        repeat_assign.context = foreach.Content->context;
+        repeat_assign.left_value = left_value;
+        repeat_assign.value = addition;
 
         do_while.Content->instructions.push_back(repeat_assign);
 
@@ -629,8 +629,8 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = visit(transformer, assignment.Content->left_value);
-        assignment.Content->value = visit(transformer, assignment.Content->value);
+        assignment.left_value = visit(transformer, assignment.left_value);
+        assignment.value = visit(transformer, assignment.value);
     }
 
     void operator()(ast::Ternary& ternary){
@@ -810,8 +810,8 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assignment){
-        assignment.Content->left_value = visit(transformer, assignment.Content->left_value);
-        assignment.Content->value = visit(transformer, assignment.Content->value);
+        assignment.left_value = visit(transformer, assignment.left_value);
+        assignment.value = visit(transformer, assignment.value);
     }
 
     void operator()(ast::StructDeclaration& declaration){

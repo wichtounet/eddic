@@ -805,11 +805,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::Assignment& assignment) const {
-        cpp_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+        cpp_assert(assignment.op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-        assign(function, assignment.Content->left_value, assignment.Content->value);
+        assign(function, assignment.left_value, assignment.value);
 
-        return visit(*this, assignment.Content->left_value);
+        return visit(*this, assignment.left_value);
     }
 
     result_type operator()(ast::Ternary& ternary) const {
@@ -1540,21 +1540,21 @@ class FunctionCompiler : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            if(assignment.Content->op == ast::Operator::SWAP){
+            if(assignment.op == ast::Operator::SWAP){
                 std::shared_ptr<Variable> lhs_var;
                 std::shared_ptr<Variable> rhs_var;
 
-                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.left_value)){
                     lhs_var = ptr->var;
                 }
 
-                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->value)){
+                if(auto* ptr = boost::get<ast::VariableValue>(&assignment.value)){
                     rhs_var = ptr->var;
                 }
 
                 cpp_assert(lhs_var && rhs_var, "Invalid swap");
 
-                auto t1 = assignment.Content->context->new_temporary(INT);
+                auto t1 = assignment.context->new_temporary(INT);
 
                 if(lhs_var->type() == INT || lhs_var->type() == CHAR || lhs_var->type() == BOOL || lhs_var->type() == STRING){
                     function.emplace_back(t1, rhs_var, mtac::Operator::ASSIGN);
@@ -1562,7 +1562,7 @@ class FunctionCompiler : public boost::static_visitor<> {
                     function.emplace_back(lhs_var, t1, mtac::Operator::ASSIGN);
 
                     if(lhs_var->type() == STRING){
-                        auto t2 = assignment.Content->context->new_temporary(INT);
+                        auto t2 = assignment.context->new_temporary(INT);
 
                         //t1 = 4(b)
                         function.emplace_back(t1, rhs_var, mtac::Operator::DOT, static_cast<int>(INT->size(function.context->global()->target_platform())));
@@ -1577,9 +1577,9 @@ class FunctionCompiler : public boost::static_visitor<> {
                     cpp_unreachable("Unhandled variable type");
                 }
             } else {
-                cpp_assert(assignment.Content->op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
+                cpp_assert(assignment.op == ast::Operator::ASSIGN, "Compound assignment should be transformed into Assignment");
 
-                assign(function, assignment.Content->left_value, assignment.Content->value);
+                assign(function, assignment.left_value, assignment.value);
             }
         }
 

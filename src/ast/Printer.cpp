@@ -303,10 +303,10 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Assignment& assign) const {
-        std::cout << indent() << "Assignment [" << ast::toString(assign.Content->op) << "] " << std::endl;
+        std::cout << indent() << "Assignment [" << ast::toString(assign.op) << "] " << std::endl;
 
-        print_sub(assign.Content->left_value, "Left Value");
-        print_sub(assign.Content->value, "Right Value");
+        print_sub(assign.left_value, "Left Value");
+        print_sub(assign.value, "Right Value");
     }
 
     void operator()(ast::Ternary& ternary) const {

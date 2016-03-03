@@ -100,8 +100,8 @@ void operator()(ast::DefaultCase& default_case){\
 
 #define AUTO_RECURSE_VARIABLE_OPERATIONS()\
 void operator()(ast::Assignment& assignment){\
-    visit(*this, assignment.Content->left_value);\
-    visit(*this, assignment.Content->value);\
+    visit(*this, assignment.left_value);\
+    visit(*this, assignment.value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
     visit_optional(*this, declaration.Content->value);\

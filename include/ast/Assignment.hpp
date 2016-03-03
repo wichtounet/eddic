@@ -24,10 +24,9 @@ namespace ast {
 
 /*!
  * \class ASTAssignment
- * \brief The AST node for an assignement to a variable.  
- * Should only be used from the Deferred version (eddic::ast::Assignment).
+ * \brief The AST node for an assignement to a variable.
  */
-struct ASTAssignment {
+struct Assignment {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -38,23 +37,17 @@ struct ASTAssignment {
     mutable long references = 0;
 };
 
-/*!
- * \typedef Assignment
- * \brief The AST node for an assignment to a variable. 
- */
-typedef Deferred<ASTAssignment> Assignment;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Assignment, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->left_value)
-    (eddic::ast::Operator, Content->op)
-    (eddic::ast::Value, Content->value)
+    eddic::ast::Assignment,
+    (eddic::ast::Position, position)
+    (eddic::ast::Value, left_value)
+    (eddic::ast::Operator, op)
+    (eddic::ast::Value, value)
 )
 
 #endif

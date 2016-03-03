@@ -138,20 +138,20 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            visit(*this, assignment.Content->left_value);
-            visit(*this, assignment.Content->value);
+            visit(*this, assignment.left_value);
+            visit(*this, assignment.value);
 
-            auto left_value_type = visit(ast::GetTypeVisitor(), assignment.Content->left_value);
-            auto right_value_type = visit(ast::GetTypeVisitor(), assignment.Content->value);
+            auto left_value_type = visit(ast::GetTypeVisitor(), assignment.left_value);
+            auto right_value_type = visit(ast::GetTypeVisitor(), assignment.value);
 
             if (left_value_type != right_value_type){
                 if(left_value_type->is_pointer()){
                     //Addresses are taken implicitly
                     if(left_value_type->data_type() != right_value_type){
-                        throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+                        throw SemanticalException("Incompatible type in assignment", assignment.position);
                     }
                 } else {
-                    throw SemanticalException("Incompatible type in assignment", assignment.Content->position);
+                    throw SemanticalException("Incompatible type in assignment", assignment.position);
                 }
             }
 
@@ -160,20 +160,20 @@ class CheckerVisitor : public boost::static_visitor<> {
                 auto ctor_name = mangle_ctor(ctor_types, left_value_type);
 
                 if(!context->exists(ctor_name)){
-                    throw SemanticalException("Assigning to a structure needs a copy constructor", assignment.Content->position);
+                    throw SemanticalException("Assigning to a structure needs a copy constructor", assignment.position);
                 }
             }
 
             //Special rules for assignments of variables
-            if(auto* ptr = boost::get<ast::VariableValue>(&assignment.Content->left_value)){
+            if(auto* ptr = boost::get<ast::VariableValue>(&assignment.left_value)){
                 auto var = (*ptr).variable();
 
                 if(var->type()->is_const()){
-                    throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.Content->position);
+                    throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.position);
                 }
 
                 if(var->position().isParameter() || var->position().isParamRegister()){
-                    throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.Content->position);
+                    throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.position);
                 }
             }
         }

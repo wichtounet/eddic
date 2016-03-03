@@ -278,8 +278,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Assignment& assignment){
-            check_value(assignment.Content->left_value);
-            check_value(assignment.Content->value);
+            check_value(assignment.left_value);
+            check_value(assignment.value);
         }
 
         void operator()(ast::VariableDeclaration& declaration){

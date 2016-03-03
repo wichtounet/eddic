@@ -72,7 +72,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::VariableV
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Assignment& assign) const {
-    return visit(*this, assign.Content->left_value);
+    return visit(*this, assign.left_value);
 }
 
 std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<const eddic::Type> left, std::shared_ptr<Context> context, const ast::Operation& operation){

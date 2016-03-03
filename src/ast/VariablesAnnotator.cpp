@@ -35,7 +35,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     std::shared_ptr<GlobalContext> context;
     std::shared_ptr<ast::TemplateEngine> template_engine;
 
-    VariablesVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) : 
+    VariablesVisitor(std::shared_ptr<GlobalContext> context, std::shared_ptr<ast::TemplateEngine> template_engine) :
             context(context), template_engine(template_engine) {
                 //NOP
     }
@@ -57,8 +57,8 @@ struct VariablesVisitor : public boost::static_visitor<> {
     AUTO_RECURSE_FUNCTION_CALLS()
 
     void operator()(ast::Assignment& assignment){
-        visit(*this, assignment.Content->left_value);
-        visit(*this, assignment.Content->value);
+        visit(*this, assignment.left_value);
+        visit(*this, assignment.value);
     }
 
     void visit_function(ast::FunctionDeclaration& declaration){
@@ -70,7 +70,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         visit_each(*this, declaration.Content->instructions);
     }
-    
+
     void visit_function(ast::Constructor& declaration){
         for(auto& parameter : declaration.Content->parameters){
             template_engine->check_type(parameter.parameterType, declaration.Content->position);
@@ -78,7 +78,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
         visit_each(*this, declaration.Content->instructions);
     }
-    
+
     void visit_function(ast::Destructor& declaration){
         visit_each(*this, declaration.Content->instructions);
     }
@@ -90,36 +90,36 @@ struct VariablesVisitor : public boost::static_visitor<> {
     void operator()(ast::GlobalArrayDeclaration& declaration){
         template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
     }
-    
+
     void operator()(ast::ArrayDeclaration& declaration){
         template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
     }
-    
+
     void operator()(ast::Foreach& foreach){
         template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
 
         visit_each(*this, foreach.Content->instructions);
     }
-    
+
     void operator()(ast::ForeachIn& foreach){
         template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
 
         visit_each(*this, foreach.Content->instructions);
     }
-    
+
     void operator()(ast::StructDeclaration& declaration){
         template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
     }
-    
+
     void operator()(ast::VariableDeclaration& declaration){
         template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
     }
-    
+
     AUTO_IGNORE_OTHERS()
 };
 
 } //end of anonymous namespace
-    
+
 void ast::VariableAnnotationPass::apply_function(ast::FunctionDeclaration& function){
     VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);

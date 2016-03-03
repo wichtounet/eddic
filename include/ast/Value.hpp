@@ -41,7 +41,7 @@ typedef boost::variant<
             FunctionCall,
             boost::recursive_wrapper<Cast>,
             boost::recursive_wrapper<BuiltinOperator>,
-            Assignment,
+            boost::recursive_wrapper<Assignment>,
             boost::recursive_wrapper<PrefixOperation>,
             boost::recursive_wrapper<Ternary>,
             boost::recursive_wrapper<New>,
