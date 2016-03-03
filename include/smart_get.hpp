@@ -27,6 +27,22 @@ struct x3_smart_get {
     static inline T* get(boost::spirit::x3::variant<Types...>* x){
         return boost::get<T>(&x->get());
     }
+
+    static inline T const& relaxed_get(boost::spirit::x3::variant<Types...> const& x){
+        return boost::relaxed_get<T>(x.get());
+    }
+
+    static inline T& relaxed_get(boost::spirit::x3::variant<Types...>& x){
+        return boost::relaxed_get<T>(x.get());
+    }
+
+    static inline const T* relaxed_get(boost::spirit::x3::variant<Types...> const* x){
+        return boost::relaxed_get<T>(&x->get());
+    }
+
+    static inline T* relaxed_get(boost::spirit::x3::variant<Types...>* x){
+        return boost::relaxed_get<T>(&x->get());
+    }
 };
 
 } //end of namespace boost
@@ -46,6 +62,18 @@ struct x3_smart_get<Type, Types...> { \
     } \
     static inline Type* get(boost::spirit::x3::variant<Types...>* x){ \
         return boost::get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    } \
+    static inline const Type& relaxed_get(boost::spirit::x3::variant<Types...> const& x){ \
+        return boost::relaxed_get<x3::forward_ast<Type>>(x.get()).get(); \
+    } \
+    static inline Type& relaxed_get(boost::spirit::x3::variant<Types...>& x){ \
+        return boost::relaxed_get<x3::forward_ast<Type>>(x.get()).get(); \
+    } \
+    static inline const Type* relaxed_get(boost::spirit::x3::variant<Types...> const* x){ \
+        return boost::relaxed_get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    } \
+    static inline Type* relaxed_get(boost::spirit::x3::variant<Types...>* x){ \
+        return boost::relaxed_get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
     } \
 };\
 }
@@ -94,6 +122,50 @@ inline T const* smart_get(boost::variant<Types...> const* x){
 template <typename T, typename ...Types>
 inline T* smart_get(boost::variant<Types...>* x){
     return boost::get<T>(x);
+}
+
+//x3::variant versions delegate to x3_smart_get
+
+template <typename T, typename ...Types>
+inline const T& smart_relaxed_get(boost::spirit::x3::variant<Types...> const& x){
+    return boost::x3_smart_get<T, Types...>::relaxed_get(x);
+}
+
+template <typename T, typename ...Types>
+inline T& smart_relaxed_get(boost::spirit::x3::variant<Types...>& x){
+    return boost::x3_smart_get<T, Types...>::relaxed_get(x);
+}
+
+template <typename T, typename ...Types>
+inline const T* smart_relaxed_get(boost::spirit::x3::variant<Types...> const* x){
+    return boost::x3_smart_get<T, Types...>::relaxed_get(x);
+}
+
+template <typename T, typename ...Types>
+inline T* smart_relaxed_get(boost::spirit::x3::variant<Types...>* x){
+    return boost::x3_smart_get<T, Types...>::relaxed_get(x);
+}
+
+//boost::variant versions simply delegate to boost::relaxed_get
+
+template <typename T, typename ...Types>
+inline const T & smart_relaxed_get(boost::variant<Types...> const& x){
+    return boost::relaxed_get<T>(x);
+}
+
+template <typename T, typename ...Types>
+inline T& smart_relaxed_get(boost::variant<Types...>& x){
+    return boost::relaxed_get<T>(x);
+}
+
+template <typename T, typename ...Types>
+inline T const* smart_relaxed_get(boost::variant<Types...> const* x){
+    return boost::relaxed_get<T>(x);
+}
+
+template <typename T, typename ...Types>
+inline T* smart_relaxed_get(boost::variant<Types...>* x){
+    return boost::relaxed_get<T>(x);
 }
 
 } //end of namespace boost
