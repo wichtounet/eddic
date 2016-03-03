@@ -758,11 +758,11 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::FunctionCall& call) const {
-        auto& definition = call.Content->context->global()->getFunction(call.Content->mangled_name);
+        auto& definition = call.context->global()->getFunction(call.mangled_name);
         auto type = definition.return_type();
 
         if(type == VOID){
-            pass_arguments(function, definition, call.Content->values);
+            pass_arguments(function, definition, call.values);
 
             function.emplace_back(mtac::Operator::CALL, definition, nullptr, nullptr);
 
@@ -770,7 +770,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
         } else if(type == BOOL || type == CHAR || type == INT || type == FLOAT || type->is_pointer()){
             auto t1 = function.context->new_temporary(type);
 
-            pass_arguments(function, definition, call.Content->values);
+            pass_arguments(function, definition, call.values);
 
             function.emplace_back(mtac::Operator::CALL, definition, t1, nullptr);
 
@@ -779,7 +779,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             auto t1 = function.context->new_temporary(INT);
             auto t2 = function.context->new_temporary(INT);
 
-            pass_arguments(function, definition, call.Content->values);
+            pass_arguments(function, definition, call.values);
 
             function.emplace_back(mtac::Operator::CALL, definition, t1, t2);
 
@@ -794,7 +794,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
             function.emplace_back(mtac::Operator::PPARAM, var, definition.context()->getVariable("__ret"), definition);
 
             //Pass the normal arguments of the function
-            pass_arguments(function, definition, call.Content->values);
+            pass_arguments(function, definition, call.values);
 
             function.emplace_back(mtac::Operator::CALL, definition, nullptr, nullptr);
 

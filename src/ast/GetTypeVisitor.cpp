@@ -142,7 +142,7 @@ std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expressio
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::FunctionCall& call) const {
-    return call.Content->context->global()->getFunction(call.Content->mangled_name).return_type();
+    return call.context->global()->getFunction(call.mangled_name).return_type();
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const std::shared_ptr<Variable> value) const {

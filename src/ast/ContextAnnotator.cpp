@@ -45,9 +45,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_INTEGER_SUFFIX()
 
         void operator()(ast::FunctionCall& functionCall){
-            functionCall.Content->context = currentContext;
+            functionCall.context = currentContext;
 
-            visit_each(*this, functionCall.Content->values);
+            visit_each(*this, functionCall.values);
         }
 
         template<typename Loop>

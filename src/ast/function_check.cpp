@@ -118,9 +118,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                 template_engine->check_function(functionCall);
 
-                check_each(functionCall.Content->values);
+                check_each(functionCall.values);
 
-                std::string name = functionCall.Content->function_name;
+                std::string name = functionCall.function_name;
 
                 auto types = get_types(functionCall);
 
@@ -133,15 +133,15 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         auto ctor_name = mangle_ctor(ctor_types, type);
 
                         if(!context->exists(ctor_name)){
-                            throw SemanticalException("Passing a structure by value needs a copy constructor", functionCall.Content->position);
+                            throw SemanticalException("Passing a structure by value needs a copy constructor", functionCall.position);
                         }
                     }
                 }
 
                 if(context->exists(mangled)){
-                    functionCall.Content->mangled_name = mangled;
+                    functionCall.mangled_name = mangled;
                 } else {
-                    auto local_context = functionCall.Content->context->function();
+                    auto local_context = functionCall.context->function();
 
                     if(local_context && local_context->struct_type && context->struct_exists(local_context->struct_type->mangle())){
                         auto struct_type = local_context->struct_type;
@@ -152,17 +152,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             if(context->exists(mangled)){
                                 ast::Cast cast_value;
                                 cast_value.resolved_type = new_pointer_type(struct_type);
-                                cast_value.value = this_variable(functionCall.Content->context, functionCall.Content->position);
+                                cast_value.value = this_variable(functionCall.context, functionCall.position);
 
                                 ast::CallOperationValue function_call_operation;
-                                function_call_operation.function_name = functionCall.Content->function_name;
-                                function_call_operation.template_types = functionCall.Content->template_types;
-                                function_call_operation.values = functionCall.Content->values;
+                                function_call_operation.function_name = functionCall.function_name;
+                                function_call_operation.template_types = functionCall.template_types;
+                                function_call_operation.values = functionCall.values;
                                 function_call_operation.mangled_name = mangled;
 
                                 ast::Expression member_function_call;
-                                member_function_call.Content->context = functionCall.Content->context;
-                                member_function_call.Content->position = functionCall.Content->position;
+                                member_function_call.Content->context = functionCall.context;
+                                member_function_call.Content->position = functionCall.position;
                                 member_function_call.Content->first = cast_value;
                                 member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
@@ -177,7 +177,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         } while(struct_type);
                     }
 
-                    throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.Content->position);
+                    throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.position);
                 }
             } else if(auto* ptr = boost::relaxed_get<ast::VariableValue>(&value)){
                 auto& variable = *ptr;
@@ -263,7 +263,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         template<typename T>
         std::vector<std::shared_ptr<const Type>> get_types(T& functionCall){
-            return get_types(functionCall.Content->values);
+            return get_types(functionCall.values);
         }
 
         void operator()(ast::Switch& switch_){

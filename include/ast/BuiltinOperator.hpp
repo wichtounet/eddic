@@ -29,9 +29,7 @@ enum class BuiltinType : unsigned int {
 std::ostream& operator<< (std::ostream& stream, BuiltinType type);
 
 /*!
- * \class ASTFunctionCall
  * \brief The AST node for a function call.
- * Should only be used from the Deferred version (eddic::ast::FunctionCall).
  */
 struct BuiltinOperator {
     Position position;

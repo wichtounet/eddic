@@ -267,10 +267,10 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& call) const {
-        std::cout << indent() << "FunctionCall " << call.Content->function_name;
-        print_template_list(call.Content->template_types);
+        std::cout << indent() << "FunctionCall " << call.function_name;
+        print_template_list(call.template_types);
         std::cout << std::endl;
-        print_each_sub(call.Content->values);
+        print_each_sub(call.values);
     }
 
     void operator()(ast::BuiltinOperator& builtin) const {

@@ -36,8 +36,7 @@ typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
 
 //Instructions
 
-struct ASTFunctionCall;
-typedef Deferred<ASTFunctionCall> FunctionCall;
+struct FunctionCall;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;

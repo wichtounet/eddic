@@ -30,9 +30,7 @@ struct PrefixOperation;
 struct Ternary;
 struct VariableValue;
 struct Assignment;
-
-struct ASTFunctionCall;
-typedef Deferred<ASTFunctionCall> FunctionCall;
+struct FunctionCall;
 
 struct ASTExpression;
 typedef Deferred<ASTExpression> Expression;

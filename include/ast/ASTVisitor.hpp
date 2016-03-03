@@ -119,7 +119,7 @@ void operator()(ast::StructDeclaration& declaration){\
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
 void operator()(ast::FunctionCall& functionCall){\
-    visit_each(*this, functionCall.Content->values);\
+    visit_each(*this, functionCall.values);\
 }
 
 #define AUTO_RECURSE_BUILTIN_OPERATORS()\

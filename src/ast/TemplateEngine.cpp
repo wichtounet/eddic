@@ -130,13 +130,13 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->mangled_name = source.Content->mangled_name;
-        copy.Content->position = source.Content->position;
-        copy.Content->function_name = source.Content->function_name;
-        copy.Content->template_types = source.Content->template_types;
+        copy.mangled_name = source.mangled_name;
+        copy.position = source.position;
+        copy.function_name = source.function_name;
+        copy.template_types = source.template_types;
 
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(*this, value));
+        for(auto& value : source.values){
+            copy.values.push_back(visit(*this, value));
         }
 
         return copy;
@@ -239,13 +239,13 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::FunctionCall& source) const {
         ast::FunctionCall copy;
 
-        copy.Content->mangled_name = source.Content->mangled_name;
-        copy.Content->position = source.Content->position;
-        copy.Content->template_types = source.Content->template_types;
-        copy.Content->function_name = source.Content->function_name;
+        copy.mangled_name = source.mangled_name;
+        copy.position = source.position;
+        copy.template_types = source.template_types;
+        copy.function_name = source.function_name;
 
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(ValueCopier(), value));
+        for(auto& value : source.values){
+            copy.values.push_back(visit(ValueCopier(), value));
         }
 
         return copy;
@@ -593,11 +593,11 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& source){
-        for(std::size_t i = 0; i < source.Content->template_types.size(); ++i){
-            source.Content->template_types[i] = replace(source.Content->template_types[i]);
+        for(std::size_t i = 0; i < source.template_types.size(); ++i){
+            source.template_types[i] = replace(source.template_types[i]);
         }
 
-        visit_each(*this, source.Content->values);
+        visit_each(*this, source.values);
     }
 
     void operator()(ast::Cast& source){
@@ -772,8 +772,8 @@ bool ast::TemplateEngine::is_class_instantiated(const std::string& name, const s
 }
 
 void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
-   if(function_call.Content->template_types.size() > 0){
-        check_function(function_call.Content->template_types, function_call.Content->function_name, function_call.Content->position, "");
+   if(function_call.template_types.size() > 0){
+        check_function(function_call.template_types, function_call.function_name, function_call.position, "");
    }
 }
 

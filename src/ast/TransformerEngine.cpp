@@ -63,7 +63,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
-        for(auto& value : functionCall.Content->values){
+        for(auto& value : functionCall.values){
             value = visit(*this, value);
         }
 
@@ -149,7 +149,7 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::FunctionCall& functionCall){
-        for(auto& value : functionCall.Content->values){
+        for(auto& value : functionCall.values){
             value = visit(*this, value);
         }
 
@@ -478,12 +478,12 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             return {if_};
         } else if(value_type == STRING){
             ast::FunctionCall first_condition;
-            first_condition.Content->context = switch_.Content->context;
-            first_condition.Content->position = switch_.Content->position;
-            first_condition.Content->function_name = "str_equals";
-            first_condition.Content->mangled_name = "_F10str_equalsSS";
-            first_condition.Content->values.push_back(switch_.Content->value);
-            first_condition.Content->values.push_back(cases[0].value);
+            first_condition.context = switch_.Content->context;
+            first_condition.position = switch_.Content->position;
+            first_condition.function_name = "str_equals";
+            first_condition.mangled_name = "_F10str_equalsSS";
+            first_condition.values.push_back(switch_.Content->value);
+            first_condition.values.push_back(cases[0].value);
 
             ast::If if_;
             if_.Content->context = switch_.Content->context;
@@ -492,12 +492,12 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
             for(const auto& case_ : cases){
                 ast::FunctionCall condition;
-                condition.Content->context = switch_.Content->context;
-                condition.Content->position = case_.position;
-                condition.Content->function_name = "str_equals";
-                condition.Content->mangled_name = "_F10str_equalsSS";
-                condition.Content->values.push_back(switch_.Content->value);
-                condition.Content->values.push_back(case_.value);
+                condition.context = switch_.Content->context;
+                condition.position = case_.position;
+                condition.function_name = "str_equals";
+                condition.mangled_name = "_F10str_equalsSS";
+                condition.values.push_back(switch_.Content->value);
+                condition.values.push_back(case_.value);
 
                 ast::ElseIf else_if;
                 else_if.context = case_.context;
@@ -603,7 +603,7 @@ struct CleanerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& functionCall){
-        for(auto& value : functionCall.Content->values){
+        for(auto& value : functionCall.values){
             value = visit(transformer, value);
         }
     }
@@ -783,7 +783,7 @@ struct TransformerVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionCall& functionCall){
-        for(auto& value : functionCall.Content->values){
+        for(auto& value : functionCall.values){
             value = visit(transformer, value);
         }
     }
