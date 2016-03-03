@@ -26,7 +26,7 @@ namespace ast {
  * \brief The AST node for a dynamic allocation.
  * Should only be used from the Deferred version (eddic::ast::New).
  */
-struct New {
+struct New: x3::position_tagged  {
     std::shared_ptr<Context> context;
     std::string mangled_name;
 
@@ -44,7 +44,6 @@ struct New {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::New,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, type)
     (std::vector<eddic::ast::Value>, values)
 )

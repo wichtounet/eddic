@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTAssignment
  * \brief The AST node for an assignement to a variable.
  */
-struct Assignment {
+struct Assignment : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -44,7 +44,6 @@ struct Assignment {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Assignment,
-    (eddic::ast::Position, position)
     (eddic::ast::Value, left_value)
     (eddic::ast::Operator, op)
     (eddic::ast::Value, value)

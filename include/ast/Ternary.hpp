@@ -21,7 +21,7 @@ namespace ast {
  * \class ASTTernary
  * \brief The AST node for a ternary operator.
  */
-struct Ternary {
+struct Ternary : x3::position_tagged {
     Position position;
     Value condition;
     Value true_value;
@@ -37,7 +37,6 @@ struct Ternary {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Ternary,
-    (eddic::ast::Position, position)
     (eddic::ast::Value, condition)
     (eddic::ast::Value, true_value)
     (eddic::ast::Value, false_value)

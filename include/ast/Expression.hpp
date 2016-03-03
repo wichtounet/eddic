@@ -50,7 +50,7 @@ typedef std::vector<Operation> Operations;
  * \brief The AST node for an expression.
  * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values).
  */
-struct Expression {
+struct Expression : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -70,7 +70,6 @@ bool has_operation_value(const ast::Operation& operation);
 
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Expression,
-    (eddic::ast::Position, position)
     (eddic::ast::Value, first)
     (eddic::ast::Operations, operations)
 )

@@ -26,7 +26,7 @@ namespace ast {
  * \class Cast
  * \brief The AST node for a cast of a variable to another type.
  */
-struct Cast {
+struct Cast : x3::position_tagged {
     std::shared_ptr<Context> context;
     std::shared_ptr<const eddic::Type> resolved_type;
 
@@ -42,7 +42,6 @@ struct Cast {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Cast,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, type)
     (eddic::ast::Value, value)
 )

@@ -26,7 +26,7 @@ namespace ast {
  * \brief The AST node for a dynamic allocation of array.
  * Should only be used from the Deferred version (eddic::ast::NewArray).
  */
-struct NewArray {
+struct NewArray : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -43,7 +43,6 @@ struct NewArray {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::NewArray,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, type)
     (eddic::ast::Value, size)
 )

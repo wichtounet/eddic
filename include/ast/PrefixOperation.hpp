@@ -19,7 +19,7 @@ namespace eddic {
 
 namespace ast {
 
-struct PrefixOperation {
+struct PrefixOperation: x3::position_tagged  {
     Position position;
     Value left_value;
     ast::Operator op;
@@ -34,7 +34,6 @@ struct PrefixOperation {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::PrefixOperation,
-    (eddic::ast::Position, position)
     (eddic::ast::Operator, op)
     (eddic::ast::Value, left_value)
 )
