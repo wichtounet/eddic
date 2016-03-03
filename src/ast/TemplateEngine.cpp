@@ -33,7 +33,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         copy.value = source.value;
 
-        return copy;
+        return ast::Value{copy};
     }
 
     ast::Value operator()(const ast::IntegerSuffix& source) const {
@@ -42,7 +42,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.value = source.value;
         copy.suffix = source.suffix;
 
-        return copy;
+        return ast::Value{copy};
     }
 
     ast::Value operator()(const ast::Float& source) const {
@@ -50,7 +50,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         copy.value = source.value;
 
-        return copy;
+        return ast::Value{copy};
     }
 
     ast::Value operator()(const ast::Literal& source) const {
@@ -59,11 +59,11 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.value = source.value;
         copy.label = source.label;
 
-        return copy;
+        return ast::Value{copy};
     }
 
     ast::Value operator()(const ast::CharLiteral& source) const {
-        return ast::CharLiteral(source);
+        return ast::Value(ast::CharLiteral(source));
     }
 
     ast::Value operator()(const ast::VariableValue& source) const {
@@ -74,7 +74,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.position = source.position;
         copy.variableName = source.variableName;
 
-        return copy;
+        return ast::Value{copy};
     }
 
     ast::Value operator()(const ast::Expression& source) const {
@@ -116,15 +116,15 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
             }
         }
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::Null& source) const {
-        return source;
+        return ast::Value(source);
     }
 
     ast::Value operator()(const ast::Boolean& source) const {
-        return source;
+        return ast::Value(source);
     }
 
     ast::Value operator()(const ast::FunctionCall& source) const {
@@ -139,7 +139,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
             copy.values.push_back(visit(*this, value));
         }
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::Cast& source) const {
@@ -150,7 +150,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.type = source.type;
         copy.value = visit(*this, source.value);
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::BuiltinOperator& source) const {
@@ -163,7 +163,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
             copy.values.push_back(visit(*this, value));
         }
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::Assignment& source) const {
@@ -175,7 +175,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.value = visit(*this, source.value);
         copy.left_value = visit(*this, source.left_value);
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::PrefixOperation& source) const {
@@ -185,7 +185,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.op = source.op;
         copy.left_value = visit(*this, source.left_value);
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::Ternary& source) const {
@@ -196,7 +196,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         copy.false_value = visit(*this, source.false_value);
         copy.true_value = visit(*this, source.true_value);
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::New& source) const {
@@ -211,7 +211,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
             copy.values.push_back(visit(*this, value));
         }
 
-        return copy;
+        return ast::Value(copy);
     }
 
     ast::Value operator()(const ast::NewArray& source) const {

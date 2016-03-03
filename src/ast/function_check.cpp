@@ -113,7 +113,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         template<typename V>
         void check_value(V& value){
-            if(auto* ptr = boost::relaxed_get<ast::FunctionCall>(&value)){
+            if(auto* ptr = boost::smart_relaxed_get<ast::FunctionCall>(&value)){
                 auto functionCall = *ptr;
 
                 template_engine->check_function(functionCall);
@@ -179,7 +179,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.position);
                 }
-            } else if(auto* ptr = boost::relaxed_get<ast::VariableValue>(&value)){
+            } else if(auto* ptr = boost::smart_relaxed_get<ast::VariableValue>(&value)){
                 auto& variable = *ptr;
                 if (!variable.context->exists(variable.variableName)) {
                     auto context = variable.context->function();

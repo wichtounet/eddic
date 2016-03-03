@@ -36,22 +36,22 @@ struct SetDefaultValues : public boost::static_visitor<> {
                     ast::Integer integer;
                     integer.value = 0;
 
-                    declaration.Content->value = integer;
+                    declaration.Content->value = ast::Value(integer);
                 } else if(type == STRING){
                     ast::Literal literal;
                     literal.value = "\"\"";
                     literal.label = "S1";
 
-                    declaration.Content->value = literal;
+                    declaration.Content->value = ast::Value(literal);
                 } else if(type == FLOAT){
                     ast::Float float_;
                     float_.value = 0.0;
 
-                    declaration.Content->value = float_;
+                    declaration.Content->value = ast::Value(float_);
                 } else if(type == BOOL){
                     ast::Boolean false_{false};
 
-                    declaration.Content->value = false_;
+                    declaration.Content->value = ast::Value(false_);
                 } else {
                     cpp_unreachable("Unhandled type");
                 }

@@ -224,31 +224,31 @@ void operator()(ast::NewArray& new_){\
 
 /* auto return macros */
 
-#define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return t;}
-#define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return t;}
-#define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return t;}
-#define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return t;}
-#define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return t;}
-#define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return t;}
-#define AUTO_RETURN_FOR_LOOP(return_type) return_type operator()(ast::For& t){return t;}
-#define AUTO_RETURN_FOREACH_LOOP(return_type) return_type operator()(ast::Foreach& t){return t;}
-#define AUTO_RETURN_FOREACH_IN_LOOP(return_type) return_type operator()(ast::ForeachIn& t){return t;}
-#define AUTO_RETURN_FUNCTION_CALLS(return_type) return_type operator()(ast::FunctionCall& t){return t;}
-#define AUTO_RETURN_GLOBAL_ARRAY_DECLARATION(return_type) return_type operator()(ast::GlobalArrayDeclaration& t){return t;}
-#define AUTO_RETURN_GLOBAL_VARIABLE_DECLARATION(return_type) return_type operator()(ast::GlobalVariableDeclaration& t){return t;}
-#define AUTO_RETURN_IMPORT(return_type) return_type operator()(ast::Import& t){return t;}
-#define AUTO_RETURN_INTEGER(return_type) return_type operator()(ast::Integer& t){return t;}
-#define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return t;}
-#define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Literal& t){return t;}
-#define AUTO_RETURN_CHAR_LITERAL(return_type) return_type operator()(ast::CharLiteral& t){return t;}
-#define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return t;}
-#define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return t;}
-#define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return t;}
-#define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return t;}
-#define AUTO_RETURN_BOOLEAN(return_type) return_type operator()(ast::Boolean& t){return t;}
-#define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return t;}
-#define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return t;}
-#define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return t;}
+#define AUTO_RETURN_ARRAY_DECLARATION(return_type) return_type operator()(ast::ArrayDeclaration& t){return return_type(t);}
+#define AUTO_RETURN_ASSIGNMENT(return_type) return_type operator()(ast::Assignment& t){return return_type(t);}
+#define AUTO_RETURN_BUILTIN_OPERATOR(return_type) return_type operator()(ast::BuiltinOperator& t){return return_type(t);}
+#define AUTO_RETURN_CAST(return_type) return_type operator()(ast::Cast& t){return return_type(t);}
+#define AUTO_RETURN_EXPRESSION(return_type) return_type operator()(ast::Expression& t){return return_type(t);}
+#define AUTO_RETURN_FLOAT(return_type) return_type operator()(ast::Float& t){return return_type(t);}
+#define AUTO_RETURN_FOR_LOOP(return_type) return_type operator()(ast::For& t){return return_type(t);}
+#define AUTO_RETURN_FOREACH_LOOP(return_type) return_type operator()(ast::Foreach& t){return return_type(t);}
+#define AUTO_RETURN_FOREACH_IN_LOOP(return_type) return_type operator()(ast::ForeachIn& t){return return_type(t);}
+#define AUTO_RETURN_FUNCTION_CALLS(return_type) return_type operator()(ast::FunctionCall& t){return return_type(t);}
+#define AUTO_RETURN_GLOBAL_ARRAY_DECLARATION(return_type) return_type operator()(ast::GlobalArrayDeclaration& t){return return_type(t);}
+#define AUTO_RETURN_GLOBAL_VARIABLE_DECLARATION(return_type) return_type operator()(ast::GlobalVariableDeclaration& t){return return_type(t);}
+#define AUTO_RETURN_IMPORT(return_type) return_type operator()(ast::Import& t){return return_type(t);}
+#define AUTO_RETURN_INTEGER(return_type) return_type operator()(ast::Integer& t){return return_type(t);}
+#define AUTO_RETURN_INTEGER_SUFFIX(return_type) return_type operator()(ast::IntegerSuffix& t){return return_type(t);}
+#define AUTO_RETURN_LITERAL(return_type) return_type operator()(ast::Literal& t){return return_type(t);}
+#define AUTO_RETURN_CHAR_LITERAL(return_type) return_type operator()(ast::CharLiteral& t){return return_type(t);}
+#define AUTO_RETURN_NEW(return_type) return_type operator()(ast::New& t){return return_type(t);}
+#define AUTO_RETURN_PREFIX_OPERATION(return_type) return_type operator()(ast::PrefixOperation& t){return return_type(t);}
+#define AUTO_RETURN_RETURN(return_type) return_type operator()(ast::Return& t){return return_type(t);}
+#define AUTO_RETURN_STANDARD_IMPORT(return_type) return_type operator()(ast::StandardImport& t){return return_type(t);}
+#define AUTO_RETURN_BOOLEAN(return_type) return_type operator()(ast::Boolean& t){return return_type(t);}
+#define AUTO_RETURN_NULL(return_type) return_type operator()(ast::Null& t){return return_type(t);}
+#define AUTO_RETURN_VARIABLE_DECLARATION(return_type) return_type operator()(ast::VariableDeclaration& t){return return_type(t);}
+#define AUTO_RETURN_VARIABLE_VALUE(return_type) return_type operator()(ast::VariableValue& t){return return_type(t);}
 
 //The following macros should be used very sparsely as they are increasing the
 //difficulty to add new AST Node in the right way
@@ -257,8 +257,8 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_IGNORE_OTHERS_CONST() template<typename T> void operator()(T&) const {}
 #define AUTO_IGNORE_OTHERS_CONST_CONST() template<typename T> void operator()(const T&) const {}
 
-#define AUTO_RETURN_OTHERS(return_type) template<typename T> return_type operator()(T& t){return t;}
-#define AUTO_RETURN_OTHERS_CONST(return_type) template<typename T> return_type operator()(T& t) const {return t;}
+#define AUTO_RETURN_OTHERS(return_type) template<typename T> return_type operator()(T& t){return return_type(t);}
+#define AUTO_RETURN_OTHERS_CONST(return_type) template<typename T> return_type operator()(T& t) const {return return_type(t);}
 
 /* Break macros  */
 

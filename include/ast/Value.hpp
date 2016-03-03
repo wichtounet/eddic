@@ -28,24 +28,24 @@ namespace eddic {
 
 namespace ast {
 
-typedef boost::variant<
+typedef x3::variant<
             Integer,
             IntegerSuffix,
             Float,
             Literal,
             CharLiteral,
             VariableValue,
-            Null,
             Boolean,
-            boost::recursive_wrapper<Expression>,
-            boost::recursive_wrapper<FunctionCall>,
-            boost::recursive_wrapper<Cast>,
-            boost::recursive_wrapper<BuiltinOperator>,
-            boost::recursive_wrapper<Assignment>,
-            boost::recursive_wrapper<PrefixOperation>,
-            boost::recursive_wrapper<Ternary>,
-            boost::recursive_wrapper<New>,
-            boost::recursive_wrapper<NewArray>
+            Null,
+            x3::forward_ast<Expression>,
+            x3::forward_ast<FunctionCall>,
+            x3::forward_ast<Cast>,
+            x3::forward_ast<BuiltinOperator>,
+            x3::forward_ast<Assignment>,
+            x3::forward_ast<PrefixOperation>,
+            x3::forward_ast<Ternary>,
+            x3::forward_ast<New>,
+            x3::forward_ast<NewArray>
         > Value;
 
 } //end of ast
@@ -62,5 +62,15 @@ typedef boost::variant<
 #include "ast/BuiltinOperator.hpp"
 #include "ast/NewArray.hpp"
 #include "ast/PrefixOperation.hpp"
+
+X3_FORWARD_AST(eddic::ast::Expression)
+X3_FORWARD_AST(eddic::ast::FunctionCall)
+X3_FORWARD_AST(eddic::ast::Cast)
+X3_FORWARD_AST(eddic::ast::BuiltinOperator)
+X3_FORWARD_AST(eddic::ast::Assignment)
+X3_FORWARD_AST(eddic::ast::PrefixOperation)
+X3_FORWARD_AST(eddic::ast::Ternary)
+X3_FORWARD_AST(eddic::ast::New)
+X3_FORWARD_AST(eddic::ast::NewArray)
 
 #endif

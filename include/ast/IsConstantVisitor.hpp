@@ -83,6 +83,11 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
 
         return false;
     }
+
+    template<typename T>
+    bool operator()(x3::forward_ast<T>& value) const {
+        return (*this)(value.get());
+    }
 };
 
 } //end of ast

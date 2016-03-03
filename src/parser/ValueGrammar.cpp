@@ -25,6 +25,8 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
 
     /* Match operators into symbols */
 
+#if 0 //Disable for X3
+
     unary_op.add
         ("+", ast::Operator::ADD)
         ("-", ast::Operator::SUB)
@@ -294,4 +296,7 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         >>  lexer.left_parenth
         >>  value >> *( lexer.comma > value)
         >>  lexer.right_parenth;
+
+#endif
+
 }
