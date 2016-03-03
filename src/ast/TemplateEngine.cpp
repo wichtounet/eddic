@@ -80,14 +80,14 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Expression& source) const {
         ast::Expression copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->first = visit(*this, source.Content->first);
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.first = visit(*this, source.first);
 
-        for(auto& operation : source.Content->operations){
+        for(auto& operation : source.operations){
             if(ast::has_operation_value(operation)){
                 if(auto* ptr = boost::smart_get<ast::Value>(&operation.get<1>())){
-                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, *ptr)));
+                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, *ptr)));
                 } else if(auto* ptr = boost::smart_get<ast::CallOperationValue>(&operation.get<1>())){
                     ast::CallOperationValue value_copy;
                     value_copy.function_name = ptr->function_name;
@@ -103,16 +103,16 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
                     value_copy.values = values;
 
-                    copy.Content->operations.push_back(
+                    copy.operations.push_back(
                             boost::make_tuple(
                                 operation.get<0>(),
                                 value_copy
                                 ));
                 } else {
-                    copy.Content->operations.push_back(boost::make_tuple(operation.get<0>(), boost::smart_get<std::string>(operation.get<1>())));
+                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), boost::smart_get<std::string>(operation.get<1>())));
                 }
             } else {
-                copy.Content->operations.push_back(operation);
+                copy.operations.push_back(operation);
             }
         }
 
@@ -579,7 +579,7 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Expression& expression){
-        for(auto& op : expression.Content->operations){
+        for(auto& op : expression.operations){
             if(op.get<0>() == ast::Operator::CALL){
                 auto& value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
 

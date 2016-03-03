@@ -1008,28 +1008,28 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     }
 
     result_type operator()(ast::Expression& value) const {
-        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+        auto type = visit(ast::GetTypeVisitor(), value.first);
 
         arguments left;
-        if(need_reference(value.Content->operations[0].get<0>(), type)){
-            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
-        } else if(need_pointer(value.Content->operations[0].get<0>(), type)){
-            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.Content->first);
+        if(need_reference(value.operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.first);
+        } else if(need_pointer(value.operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.first);
         } else {
-            left = visit(*this, value.Content->first);
+            left = visit(*this, value.first);
         }
 
         //Compute each operation
-        for(std::size_t i = 0; i < value.Content->operations.size(); ++i){
-            auto& operation = value.Content->operations[i];
+        for(std::size_t i = 0; i < value.operations.size(); ++i){
+            auto& operation = value.operations[i];
 
             //Get the type computed by the current operation for the next one
-            auto future_type = ast::operation_type(type, value.Content->context, operation);
+            auto future_type = ast::operation_type(type, value.context, operation);
 
             //Execute the current operation
-            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
+            if(i < value.operations.size() - 1 && need_reference(value.operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
-            } else if(i < value.Content->operations.size() - 1 && need_pointer(value.Content->operations[i + 1].get<0>(), future_type)){
+            } else if(i < value.operations.size() - 1 && need_pointer(value.operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::ADDRESS>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<T>(function, type, left, operation);
@@ -1147,30 +1147,30 @@ struct AssignmentVisitor : public boost::static_visitor<> {
     //Assignment of the form A[i] = X or A.i = X
 
     void operator()(ast::Expression& value){
-        auto type = visit(ast::GetTypeVisitor(), value.Content->first);
+        auto type = visit(ast::GetTypeVisitor(), value.first);
 
         arguments left;
-        if(need_reference(value.Content->operations[0].get<0>(), type)){
-            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.Content->first);
-        } else if(need_pointer(value.Content->operations[0].get<0>(), type)){
-            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.Content->first);
+        if(need_reference(value.operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::REFERENCE>(function), value.first);
+        } else if(need_pointer(value.operations[0].get<0>(), type)){
+            left = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), value.first);
         } else {
-            left = visit(ToArgumentsVisitor<>(function), value.Content->first);
+            left = visit(ToArgumentsVisitor<>(function), value.first);
         }
 
         auto platform = function.context->global()->target_platform();
 
         //Compute each operation but the last
-        for(std::size_t i = 0; i < value.Content->operations.size() - 1; ++i){
-            auto& operation = value.Content->operations[i];
+        for(std::size_t i = 0; i < value.operations.size() - 1; ++i){
+            auto& operation = value.operations[i];
 
             //Get the type computed by the current operation for the next one
-            auto future_type = ast::operation_type(type, value.Content->context, operation);
+            auto future_type = ast::operation_type(type, value.context, operation);
 
             //Execute the current operation
-            if(i < value.Content->operations.size() - 1 && need_reference(value.Content->operations[i + 1].get<0>(), future_type)){
+            if(i < value.operations.size() - 1 && need_reference(value.operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::REFERENCE>(function, type, left, operation);
-            } else if(i < value.Content->operations.size() - 1 && need_pointer(value.Content->operations[i + 1].get<0>(), future_type)){
+            } else if(i < value.operations.size() - 1 && need_pointer(value.operations[i + 1].get<0>(), future_type)){
                 left = compute_expression_operation<ArgumentType::ADDRESS>(function, type, left, operation);
             } else {
                 left = compute_expression_operation<>(function, type, left, operation);
@@ -1181,7 +1181,7 @@ struct AssignmentVisitor : public boost::static_visitor<> {
 
         //Assign the right value to the left value generated
 
-        auto& last_operation = value.Content->operations.back();
+        auto& last_operation = value.operations.back();
 
         //Assign to an element of an array
         if(last_operation.get<0>() == ast::Operator::BRACKET){

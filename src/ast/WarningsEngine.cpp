@@ -270,7 +270,7 @@ struct Inspector : public boost::static_visitor<> {
                     auto& value = *ptr;
                     bool effects = false;
 
-                    for(auto& op : value.Content->operations){
+                    for(auto& op : value.operations){
                         if(op.get<0>() == ast::Operator::INC || op.get<0>() == ast::Operator::DEC || op.get<0>() == ast::Operator::CALL){
                             effects = true;
                             break;
@@ -278,7 +278,7 @@ struct Inspector : public boost::static_visitor<> {
                     }
 
                     if(!effects){
-                        warn(value.Content->position, "Statement without any effect");
+                        warn(value.position, "Statement without any effect");
                     }
                 }
 

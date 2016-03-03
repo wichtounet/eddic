@@ -249,30 +249,30 @@ class CheckerVisitor : public boost::static_visitor<> {
             VISIT_COMPOSED_VALUE(value);
 
             ast::GetTypeVisitor visitor;
-            auto type = visit(visitor, value.Content->first);
+            auto type = visit(visitor, value.first);
 
-            auto global_context = value.Content->context->global();
+            auto global_context = value.context->global();
 
-            for(auto& operation : value.Content->operations){
+            for(auto& operation : value.operations){
                 auto op = operation.get<0>();
 
                 //1. Verify that the left type is OK for the current operation
                 if(op == ast::Operator::BRACKET){
                     if(!type->is_array() && type != STRING){
-                        throw SemanticalException("The left value is not an array, neither a string", value.Content->position);
+                        throw SemanticalException("The left value is not an array, neither a string", value.position);
                     }
 
                     auto index_type = visit(visitor, boost::get<ast::Value>(operation.get<1>()));
                     if (index_type != INT || index_type->is_array()) {
-                        throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.Content->position);
+                        throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.position);
                     }
                 } else if(op == ast::Operator::INC || op == ast::Operator::DEC){
                     if(type != INT && type != FLOAT){
-                        throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", value.Content->position);
+                        throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", value.position);
                     }
 
                     if(type->is_const()){
-                        throw SemanticalException("The value is const, cannot edit it", value.Content->position);
+                        throw SemanticalException("The value is const, cannot edit it", value.position);
                     }
                 } else if(op == ast::Operator::DOT){
                     //Checked by structure and variables annotators
@@ -283,17 +283,17 @@ class CheckerVisitor : public boost::static_visitor<> {
 
                     if(type->is_pointer()){
                         if(!operationType->is_pointer()){
-                            throw SemanticalException("Incompatible type", value.Content->position);
+                            throw SemanticalException("Incompatible type", value.position);
                         }
                     } else if(type != operationType){
-                        throw SemanticalException("Incompatible type", value.Content->position);
+                        throw SemanticalException("Incompatible type", value.position);
                     }
 
                     auto op = operation.get<0>();
 
                     if(type->is_pointer()){
                         if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers", value.Content->position);
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers", value.position);
                         }
                     }
 
@@ -301,7 +301,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                         if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
                                 op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                                 op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int", value.Content->position);
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int", value.position);
                         }
                     }
 
@@ -309,23 +309,23 @@ class CheckerVisitor : public boost::static_visitor<> {
                         if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
                                 op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                                 op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float", value.Content->position);
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float", value.position);
                         }
                     }
 
                     if(type == STRING){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.Content->position);
+                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.position);
                     }
 
                     if(type == BOOL){
                         if(op != ast::Operator::AND && op != ast::Operator::OR){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.Content->position);
+                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.position);
                         }
                     }
                 }
 
                 //2. Compute the next type
-                type = ast::operation_type(type, value.Content->context, operation);
+                type = ast::operation_type(type, value.context, operation);
             }
         }
 

@@ -132,10 +132,10 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
 }
 
 std::shared_ptr<const Type> ast::GetTypeVisitor::operator()(const ast::Expression& value) const {
-    auto type = visit(*this, value.Content->first);
+    auto type = visit(*this, value.first);
 
-    for(auto& operation : value.Content->operations){
-        type = ast::operation_type(type, value.Content->context, operation);
+    for(auto& operation : value.operations){
+        type = ast::operation_type(type, value.context, operation);
     }
 
     return type;

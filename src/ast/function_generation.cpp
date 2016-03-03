@@ -125,9 +125,9 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 this_value.var = function_context->getVariable("this");
 
                 ast::Expression left_expression;
-                left_expression.Content->context = function_context;
-                left_expression.Content->first = this_value;
-                left_expression.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, name));
+                left_expression.context = function_context;
+                left_expression.first = this_value;
+                left_expression.operations.push_back(boost::make_tuple(ast::Operator::DOT, name));
 
                 ast::VariableValue rhs_value;
                 rhs_value.context = function_context;
@@ -135,9 +135,9 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 rhs_value.var = function_context->getVariable("rhs");
 
                 ast::Expression right_expression;
-                right_expression.Content->context = function_context;
-                right_expression.Content->first = rhs_value;
-                right_expression.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, name));
+                right_expression.context = function_context;
+                right_expression.first = rhs_value;
+                right_expression.operations.push_back(boost::make_tuple(ast::Operator::DOT, name));
 
                 assignment.left_value = left_expression;
                 assignment.value = right_expression;

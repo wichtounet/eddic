@@ -31,9 +31,7 @@ struct Ternary;
 struct VariableValue;
 struct Assignment;
 struct FunctionCall;
-
-struct ASTExpression;
-typedef Deferred<ASTExpression> Expression;
+struct Expression;
 
 } //end of ast
 

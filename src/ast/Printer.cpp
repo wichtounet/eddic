@@ -354,12 +354,12 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Expression& value) const {
-        std::cout << indent() << "Expression [" << value.Content->operations.size() << "]" << std::endl;
+        std::cout << indent() << "Expression [" << value.operations.size() << "]" << std::endl;
         ++level;
 
-        visit(*this, value.Content->first);
+        visit(*this, value.first);
 
-        for(auto& operation : value.Content->operations){
+        for(auto& operation : value.operations){
             std::cout << indent() << ast::toString(operation.get<0>()) << std::endl;
 
             if(ast::has_operation_value(operation)){

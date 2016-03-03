@@ -37,8 +37,8 @@ struct CallOperationValue {
 };
 
 typedef boost::variant<
-        Value, 
-        std::string, 
+        Value,
+        std::string,
         CallOperationValue
     >  OperationValue;
 
@@ -47,11 +47,10 @@ typedef std::vector<Operation> Operations;
 
 /*!
  * \class ASTExpression
- * \brief The AST node for an expression. 
- * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values). 
- * Should only be used from the Deferred version (eddic::ast::Expression).
+ * \brief The AST node for an expression.
+ * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values).
  */
-struct ASTExpression {
+struct Expression {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -63,12 +62,6 @@ struct ASTExpression {
 
 bool has_operation_value(const ast::Operation& operation);
 
-/*!
- * \typedef Expression
- * \brief The AST node for a composed value. 
- */
-typedef Deferred<ASTExpression> Expression;
-
 } //end of ast
 
 } //end of eddic
@@ -76,14 +69,14 @@ typedef Deferred<ASTExpression> Expression;
 //Adapt the structures for the AST
 
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Expression, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->first)
-    (eddic::ast::Operations, Content->operations)
+    eddic::ast::Expression,
+    (eddic::ast::Position, position)
+    (eddic::ast::Value, first)
+    (eddic::ast::Operations, operations)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::CallOperationValue, 
+    eddic::ast::CallOperationValue,
     (std::string, function_name)
     (std::vector<eddic::ast::Type>, template_types)
     (std::vector<eddic::ast::Value>, values)

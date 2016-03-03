@@ -161,10 +161,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                                 function_call_operation.mangled_name = mangled;
 
                                 ast::Expression member_function_call;
-                                member_function_call.Content->context = functionCall.context;
-                                member_function_call.Content->position = functionCall.position;
-                                member_function_call.Content->first = cast_value;
-                                member_function_call.Content->operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
+                                member_function_call.context = functionCall.context;
+                                member_function_call.position = functionCall.position;
+                                member_function_call.first = cast_value;
+                                member_function_call.operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
                                 value = member_function_call;
 
@@ -191,10 +191,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         do {
                             if(struct_type->member_exists(variable.variableName)){
                                 ast::Expression member_value;
-                                member_value.Content->context = variable.context;
-                                member_value.Content->position = variable.position;
-                                member_value.Content->first = this_variable(variable.context, variable.position);
-                                member_value.Content->operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName));
+                                member_value.context = variable.context;
+                                member_value.position = variable.position;
+                                member_value.first = this_variable(variable.context, variable.position);
+                                member_value.operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName));
 
                                 value = member_value;
 
@@ -433,12 +433,12 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& value){
-            check_value(value.Content->first);
+            check_value(value.first);
 
-            auto context = value.Content->context->global();
+            auto context = value.context->global();
 
-            auto type = visit(ast::GetTypeVisitor(), value.Content->first);
-            for(auto& op : value.Content->operations){
+            auto type = visit(ast::GetTypeVisitor(), value.first);
+            for(auto& op : value.operations){
                 if(ast::has_operation_value(op)){
                     if(auto* ptr = boost::smart_get<ast::Value>(&op.get<1>())){
                         check_value(*ptr);
@@ -447,10 +447,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     }
                 }
 
-                template_engine->check_member_function(type, op, value.Content->position);
+                template_engine->check_member_function(type, op, value.position);
 
                 if(op.get<0>() == ast::Operator::DOT){
-                    auto struct_type = value.Content->context->global()->get_struct(type);
+                    auto struct_type = value.context->global()->get_struct(type);
                     auto orig = struct_type;
 
                     //We delay it
@@ -470,11 +470,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             break;
                         }
 
-                        struct_type = value.Content->context->global()->get_struct(struct_type->parent_type);
+                        struct_type = value.context->global()->get_struct(struct_type->parent_type);
                     } while(struct_type);
 
                     if(!found){
-                        throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.Content->position);
+                        throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.position);
                     }
 
                     //Add a reference to the member
@@ -485,7 +485,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                     if(!struct_type->is_structure()){
-                        throw SemanticalException("Member functions can only be used with structures", value.Content->position);
+                        throw SemanticalException("Member functions can only be used with structures", value.position);
                     }
 
                     auto& call_value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
@@ -516,11 +516,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     } while(struct_type);
 
                     if(!found){
-                        throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.Content->position);
+                        throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.position);
                     }
                 }
 
-                type = ast::operation_type(type, value.Content->context, op);
+                type = ast::operation_type(type, value.context, op);
             }
         }
 

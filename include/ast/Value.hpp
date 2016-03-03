@@ -37,7 +37,7 @@ typedef boost::variant<
             VariableValue,
             Null,
             Boolean,
-            Expression,
+            boost::recursive_wrapper<Expression>,
             boost::recursive_wrapper<FunctionCall>,
             boost::recursive_wrapper<Cast>,
             boost::recursive_wrapper<BuiltinOperator>,

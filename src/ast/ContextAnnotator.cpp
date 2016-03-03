@@ -209,7 +209,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Expression& expression){
-            expression.Content->context = currentContext;
+            expression.context = currentContext;
 
             VISIT_COMPOSED_VALUE(expression);
         }

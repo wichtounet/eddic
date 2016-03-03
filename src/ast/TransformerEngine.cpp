@@ -33,13 +33,13 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
     AUTO_RETURN_VARIABLE_VALUE(ast::Value)
 
     ast::Value operator()(ast::Expression& value){
-        if(value.Content->operations.empty()){
-            return visit(*this, value.Content->first);
+        if(value.operations.empty()){
+            return visit(*this, value.first);
         }
 
-        value.Content->first = visit(*this, value.Content->first);
+        value.first = visit(*this, value.first);
 
-        for(auto& op : value.Content->operations){
+        for(auto& op : value.operations){
             if(ast::has_operation_value(op)){
                 if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
@@ -51,7 +51,7 @@ struct ValueCleaner : public boost::static_visitor<ast::Value> {
             }
         }
 
-        assert(value.Content->operations.size() > 0); //Once here, there is no more empty composed value
+        assert(value.operations.size() > 0); //Once here, there is no more empty composed value
 
         return value;
     }
@@ -131,9 +131,9 @@ struct ValueTransformer : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(ast::Expression& value){
-        value.Content->first = visit(*this, value.Content->first);
+        value.first = visit(*this, value.first);
 
-        for(auto& op : value.Content->operations){
+        for(auto& op : value.operations){
             if(ast::has_operation_value(op)){
                 if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
                     op.get<1>() = visit(*this, *ptr);
@@ -207,9 +207,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         }
 
         ast::Expression composed;
-        composed.Content->context = compound.context;
-        composed.Content->first = compound.left_value;
-        composed.Content->operations.push_back(boost::make_tuple(compound.op, compound.value));
+        composed.context = compound.context;
+        composed.first = compound.left_value;
+        composed.operations.push_back(boost::make_tuple(compound.op, compound.value));
 
         ast::Assignment assignment;
         assignment.context = compound.context;
@@ -244,9 +244,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         to_value.value = foreach.Content->to;
 
         ast::Expression condition;
-        condition.Content->context = foreach.Content->context;
-        condition.Content->first = from_value;
-        condition.Content->operations.push_back(boost::make_tuple(ast::Operator::LESS_EQUALS, to_value));
+        condition.context = foreach.Content->context;
+        condition.first = from_value;
+        condition.operations.push_back(boost::make_tuple(ast::Operator::LESS_EQUALS, to_value));
 
         ast::If if_;
         if_.Content->context = foreach.Content->context;
@@ -270,9 +270,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         v.var = v.context->getVariable(foreach.Content->variableName);
 
         ast::Expression while_condition;
-        while_condition.Content->context = foreach.Content->context;
-        while_condition.Content->first = v;
-        while_condition.Content->operations.push_back(boost::make_tuple(ast::Operator::LESS_EQUALS, to_value));
+        while_condition.context = foreach.Content->context;
+        while_condition.first = v;
+        while_condition.operations.push_back(boost::make_tuple(ast::Operator::LESS_EQUALS, to_value));
 
         ast::DoWhile do_while;
         do_while.Content->context = foreach.Content->context;
@@ -283,9 +283,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         inc.value = 1;
 
         ast::Expression addition;
-        addition.Content->context = foreach.Content->context;
-        addition.Content->first = v;
-        addition.Content->operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
+        addition.context = foreach.Content->context;
+        addition.first = v;
+        addition.operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
 
         ast::Assignment repeat_assign;
         repeat_assign.context = foreach.Content->context;
@@ -342,9 +342,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         }
 
         ast::Expression while_condition;
-        while_condition.Content->context = foreach.Content->context;
-        while_condition.Content->first = iter_var_value;
-        while_condition.Content->operations.push_back(boost::make_tuple(ast::Operator::LESS, size_builtin));
+        while_condition.context = foreach.Content->context;
+        while_condition.first = iter_var_value;
+        while_condition.operations.push_back(boost::make_tuple(ast::Operator::LESS, size_builtin));
 
         ast::If if_;
         if_.Content->context = foreach.Content->context;
@@ -360,9 +360,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         array_var_value_2.context = foreach.Content->context;
 
         ast::Expression array_value;
-        array_value.Content->context = foreach.Content->context;
-        array_value.Content->first = array_var_value_2;
-        array_value.Content->operations.push_back(boost::make_tuple(ast::Operator::BRACKET, iter_var_value));
+        array_value.context = foreach.Content->context;
+        array_value.first = array_var_value_2;
+        array_value.operations.push_back(boost::make_tuple(ast::Operator::BRACKET, iter_var_value));
 
         ast::VariableDeclaration variable_declaration;
         variable_declaration.Content->context = foreach.Content->context;
@@ -378,9 +378,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         inc.value = 1;
 
         ast::Expression addition;
-        addition.Content->context = foreach.Content->context;
-        addition.Content->first = iter_var_value;
-        addition.Content->operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
+        addition.context = foreach.Content->context;
+        addition.first = iter_var_value;
+        addition.operations.push_back(boost::make_tuple(ast::Operator::ADD, inc));
 
         ast::Assignment repeat_assign;
         repeat_assign.context = foreach.Content->context;
@@ -444,9 +444,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
         if(value_type == INT){
             ast::Expression first_condition;
-            first_condition.Content->context = switch_.Content->context;
-            first_condition.Content->first = switch_.Content->value;
-            first_condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, cases[0].value));
+            first_condition.context = switch_.Content->context;
+            first_condition.first = switch_.Content->value;
+            first_condition.operations.push_back(boost::make_tuple(ast::Operator::EQUALS, cases[0].value));
 
             ast::If if_;
             if_.Content->context = switch_.Content->context;
@@ -455,9 +455,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
 
             for(const auto& case_ : cases){
                 ast::Expression condition;
-                condition.Content->context = switch_.Content->context;
-                condition.Content->first = switch_.Content->value;
-                condition.Content->operations.push_back(boost::make_tuple(ast::Operator::EQUALS, case_.value));
+                condition.context = switch_.Content->context;
+                condition.first = switch_.Content->value;
+                condition.operations.push_back(boost::make_tuple(ast::Operator::EQUALS, case_.value));
 
                 ast::ElseIf else_if;
                 else_if.context = case_.context;
