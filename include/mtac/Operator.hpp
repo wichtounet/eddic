@@ -23,11 +23,11 @@ enum class Operator : unsigned int {
   PASSIGN, ///< Pointer assign
 
   /* Integer operators */
-  ADD,
-  SUB,
-  MUL,
-  DIV,
-  MOD,
+  ADD, ///< Add two values and store in result
+  SUB, ///< Subtract two values and store in result
+  MUL, ///< Multiply two values and store in result
+  DIV, ///< Divide two values and store in result
+  MOD, ///< Perform modulo of two values and store in result
 
   /* Float operators  */
   FADD,
