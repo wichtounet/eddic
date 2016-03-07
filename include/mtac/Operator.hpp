@@ -30,10 +30,10 @@ enum class Operator : unsigned int {
   MOD, ///< Perform modulo of two values and store in result
 
   /* Float operators  */
-  FADD,
-  FSUB,
-  FMUL,
-  FDIV,
+  FADD, ///< Add two float values and store in result
+  FSUB, ///< Subtract two float values and store in result
+  FMUL, ///< Multiply two float values and store in result
+  FDIV, ///< Divide two float values and store in result
 
   /* relational operators for expressions */
   EQUALS,
