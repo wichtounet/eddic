@@ -36,12 +36,12 @@ enum class Operator : unsigned int {
   FDIV, ///< Divide two float values and store in result
 
   /* relational operators for expressions */
-  EQUALS,
-  NOT_EQUALS,
-  GREATER,
-  GREATER_EQUALS,
-  LESS,
-  LESS_EQUALS,
+  EQUALS,         ///< result = arg1 == arg2
+  NOT_EQUALS,     ///< result = arg1 != arg2
+  GREATER,        ///< result = arg1 > arg2
+  GREATER_EQUALS, ///< result = arg1 >= arg2
+  LESS,           ///< result = arg1 < arg2
+  LESS_EQUALS,    ///< result = arg1 <= arg2
 
   /* Operators for If */
 
@@ -95,17 +95,17 @@ enum class Operator : unsigned int {
   FLE,
   FL,
 
-  MINUS, // result = -arg1
+  MINUS,  // result = -arg1
   FMINUS, // result = -arg1
 
   I2F, // result = (float) arg1
   F2I, // result = (int) arg1
 
-  DOT, // result = (arg1)+arg2
+  DOT,  // result = (arg1)+arg2
   FDOT, // result = (arg1)+arg2
   PDOT, // result = address of arg1 + arg2
 
-  DOT_ASSIGN, // result+arg1=arg2
+  DOT_ASSIGN,  // result+arg1=arg2
   DOT_FASSIGN, // result+arg1=arg2
   DOT_PASSIGN, // result+arg1=arg2
 
@@ -115,7 +115,7 @@ enum class Operator : unsigned int {
 
   NOP, // for optimization purpose
 
-  PARAM, // for parameter passing
+  PARAM,  // for parameter passing
   PPARAM, // for parameter passing by address
 
   CALL, // call functions
