@@ -8,8 +8,6 @@ RELEASE_TEST_EXE=release/bin/test
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-$(eval $(call use_libcxx))
-
 CXX_FLAGS += -ftemplate-depth-2048 -use-gold -Iinclude -Icxxopts/src
 LD_FLAGS += -lboost_system
 
