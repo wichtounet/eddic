@@ -167,11 +167,6 @@ struct return_ : x3::position_tagged {
 	x3::unused_type fake_;
 };
 
-struct swap : x3::position_tagged {
-    std::string lhs;
-    std::string rhs;
-};
-
 typedef x3::variant<
         expression,
         prefix_operation,
@@ -188,8 +183,7 @@ typedef x3::variant<
         struct_declaration,
         array_declaration,
         function_call,
-        assignment,
-        swap
+        assignment
     > instruction;
 
 struct default_case_t : x3::position_tagged {
@@ -699,10 +693,6 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "null: " << std::endl;
     }
 
-    void operator()(const swap&){
-        std::cout << indent() << "swap: " << std::endl;
-    }
-
     void operator()(const ast::Boolean&){
         std::cout << indent() << "boolean: " << std::endl;
     }
@@ -897,12 +887,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::instruction>, instructions)
     (std::vector<x3_ast::else_if>, else_ifs)
     (boost::optional<x3_ast::else_>, else_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::swap,
-    (std::string, lhs)
-    (std::string, rhs)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -1110,6 +1094,7 @@ namespace x3_grammar {
             ("/=", ast::Operator::DIV)
             ("*=", ast::Operator::MUL)
             ("%=", ast::Operator::MOD)
+            ("<=>", ast::Operator::SWAP)
             ;
     }
 
@@ -1163,7 +1148,6 @@ namespace x3_grammar {
     struct array_declaration_class;
     struct return_class;
     struct delete_class;
-    struct swap_class;
     struct if_class;
     struct else_if_class {};
     struct else_class {};
@@ -1235,7 +1219,6 @@ namespace x3_grammar {
     x3::rule<array_declaration_class, x3_ast::array_declaration> const array_declaration("array_declaration");
     x3::rule<return_class, x3_ast::return_> const return_("return");
     x3::rule<delete_class, x3_ast::delete_> const delete_("delete");
-    x3::rule<swap_class, x3_ast::swap> const swap("swap");
     x3::rule<if_class, x3_ast::if_> const if_("if");
     x3::rule<else_if_class, x3_ast::else_if> const else_if("else_if");
     x3::rule<else_class, x3_ast::else_> const else_("else");
@@ -1269,7 +1252,6 @@ namespace x3_grammar {
     struct array_declaration_class : annotation_base {};
     struct return_class : annotation_base {};
     struct delete_class : annotation_base {};
-    struct swap_class : annotation_base {};
     struct if_class : annotation_base {};
     struct switch_class : annotation_base {};
     struct switch_case_class : annotation_base {};
@@ -1584,7 +1566,6 @@ namespace x3_grammar {
         |   do_while
         |   (return_ > ';')
         |   (delete_ > ';')
-        |   (swap > ';')
         |   (function_call > ';')
         |   (struct_declaration > ';')
         |   (array_declaration > ';')
@@ -1594,7 +1575,6 @@ namespace x3_grammar {
 
     auto repeatable_instruction_def =
             assignment
-        |   swap
         |   postfix_expression
         |   prefix_expression //TODO CHECk that
         |   function_call;
@@ -1717,11 +1697,6 @@ namespace x3_grammar {
         >   '}'
         >   x3::attr(42);
 
-    auto const swap_def =
-            identifier
-        >>  "<=>"
-        >   identifier;
-
     auto const default_case_def =
             x3::lit("default")
         >   ':'
@@ -1762,7 +1737,6 @@ namespace x3_grammar {
         if_,
         else_if,
         else_,
-        swap,
         switch_,
         switch_case,
         default_case
