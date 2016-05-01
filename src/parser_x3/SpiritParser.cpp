@@ -1921,15 +1921,15 @@ bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& 
     auto const parser = x3::with<x3_grammar::error_handler_tag>(std::ref(error_handler))[x3_grammar::source_file];
     auto& skipper = x3_grammar::skipper;
 
-        bool r = x3::phrase_parse(it, end, parser, skipper, result);
+    bool r = x3::phrase_parse(it, end, parser, skipper, result);
 
-        if(r && it == end){
-            //x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
-            //printer(result);
+    if(r && it == end){
+        //x3_ast::printer<x3_grammar::error_handler_type> printer(error_handler);
+        //printer(result);
 
-            return true;
-        } else {
-            std::cout << "Invalid source file" << std::endl;
-            return false;
-        }
+        return true;
+    } else {
+        std::cout << "Invalid source file" << std::endl;
+        return false;
+    }
 }
