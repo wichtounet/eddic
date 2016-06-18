@@ -552,7 +552,7 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberDeclaration& declaration){
-        declaration.Content->type = replace(declaration.Content->type);
+        declaration.type = replace(declaration.type);
     }
 
     void operator()(ast::Constructor& declaration){
@@ -713,9 +713,9 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             auto& member_declaration = *ptr;
 
             ast::MemberDeclaration member;
-            member.Content->position = member_declaration.Content->position;
-            member.Content->type = member_declaration.Content->type;
-            member.Content->name = member_declaration.Content->name;
+            member.position = member_declaration.position;
+            member.type = member_declaration.type;
+            member.name = member_declaration.name;
 
             destination.push_back(member);
         } else if(auto* ptr = boost::smart_get<ast::TemplateFunctionDeclaration>(&block)){

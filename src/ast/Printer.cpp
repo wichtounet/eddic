@@ -163,7 +163,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {
-        std::cout << indent() << ast::to_string(declaration.Content->type)  << " " << declaration.Content->name << std::endl;
+        std::cout << indent() << ast::to_string(declaration.type)  << " " << declaration.name << std::endl;
     }
 
     void operator()(ast::GlobalVariableDeclaration&) const {
