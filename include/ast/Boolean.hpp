@@ -10,6 +10,8 @@
 
 #include <ostream>
 
+#include <boost/fusion/include/adapt_struct.hpp>
+
 namespace eddic {
 
 namespace ast {
@@ -27,5 +29,10 @@ std::ostream& operator<< (std::ostream& stream, const Boolean& bool_);
 } //end of ast
 
 } //end of eddic
+
+BOOST_FUSION_ADAPT_STRUCT(
+    eddic::ast::Boolean,
+    (bool, value)
+)
 
 #endif
