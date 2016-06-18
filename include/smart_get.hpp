@@ -170,6 +170,4 @@ inline T* smart_relaxed_get(boost::variant<Types...>* x){
 
 } //end of namespace boost
 
-
-
 #endif

@@ -66,13 +66,10 @@ typedef x3::variant<
 #include "ast/PrefixOperation.hpp"
 
 X3_FORWARD_AST(eddic::ast::Expression)
-//X3_FORWARD_AST(eddic::ast::FunctionCall)
 X3_FORWARD_AST(eddic::ast::Cast)
-//X3_FORWARD_AST(eddic::ast::BuiltinOperator)
 X3_FORWARD_AST(eddic::ast::Assignment)
 X3_FORWARD_AST(eddic::ast::PrefixOperation)
 X3_FORWARD_AST(eddic::ast::Ternary)
-//X3_FORWARD_AST(eddic::ast::New)
 X3_FORWARD_AST(eddic::ast::NewArray)
 
 #endif
