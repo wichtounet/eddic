@@ -59,7 +59,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
         std::vector<std::shared_ptr<const eddic::Type>> types;
         c.mangledName = mangle_ctor(types, c.struct_type);
 
-        struct_.blocks.push_back(c);
+        struct_.blocks.emplace_back(c);
     }
 
     //Generate destructor if necessary
@@ -69,7 +69,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
         d.struct_type = struct_.struct_type;
         d.mangledName = mangle_dtor(d.struct_type);
 
-        struct_.blocks.push_back(d);
+        struct_.blocks.emplace_back(d);
     }
 
     //Generate copy constructor if necessary
@@ -142,10 +142,10 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 assignment.left_value = left_expression;
                 assignment.value = right_expression;
 
-                c.instructions.push_back(std::move(assignment));
+                c.instructions.emplace_back(std::move(assignment));
             }
 
-            struct_.blocks.push_back(std::move(c));
+            struct_.blocks.emplace_back(std::move(c));
         }
     }
 }

@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "cpp_utils/assert.hpp"
+#include "cpp_utils/tmp.hpp"
 
 #include "variant.hpp"
 #include "VisitorUtils.hpp"
@@ -216,7 +217,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         assignment.left_value = compound.left_value;
         assignment.value = composed;
 
-        return {assignment};
+        return {ast::Instruction(assignment)};
     }
 
     //Transform while in do while loop as an optimization (less jumps)
@@ -230,9 +231,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         do_while.condition = while_.condition;
         do_while.instructions = while_.instructions;
 
-        if_.instructions.push_back(do_while);
+        if_.instructions.emplace_back(do_while);
 
-        return {if_};
+        return {ast::Instruction(if_)};
     }
 
     //Transform foreach loop in do while loop
@@ -262,7 +263,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         start_assign.left_value = left_value;
         start_assign.value = from_value;
 
-        if_.instructions.push_back(start_assign);
+        if_.instructions.emplace_back(start_assign);
 
         ast::VariableValue v;
         v.variableName = foreach.variableName;
@@ -292,11 +293,11 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         repeat_assign.left_value = left_value;
         repeat_assign.value = addition;
 
-        do_while.instructions.push_back(repeat_assign);
+        do_while.instructions.emplace_back(repeat_assign);
 
-        if_.instructions.push_back(do_while);
+        if_.instructions.emplace_back(do_while);
 
-        return {if_};
+        return {ast::Instruction(if_)};
     }
 
     //Transform foreach loop in do while loop
@@ -320,7 +321,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         init_assign.left_value = left_value;
         init_assign.value = init_value;
 
-        instructions.push_back(init_assign);
+        instructions.emplace_back(init_assign);
 
         ast::VariableValue iter_var_value;
         iter_var_value.var = iterVar;
@@ -369,7 +370,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         variable_declaration.value = ast::Value(array_value);
         variable_declaration.variableName = var->name();
 
-        do_while.instructions.push_back(variable_declaration);
+        do_while.instructions.emplace_back(variable_declaration);
 
         //Insert all the instructions of the foreach
         std::copy(foreach.instructions.begin(), foreach.instructions.end(), std::back_inserter(do_while.instructions));
@@ -387,11 +388,11 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         repeat_assign.left_value = left_value;
         repeat_assign.value = ast::Value(addition);
 
-        do_while.instructions.push_back(repeat_assign);
+        do_while.instructions.emplace_back(repeat_assign);
 
-        if_.instructions.push_back(do_while);
+        if_.instructions.emplace_back(do_while);
 
-        instructions.push_back(if_);
+        instructions.emplace_back(if_);
 
         return instructions;
     }
@@ -417,9 +418,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             ast::If if_;
             if_.context = for_.context;
             if_.condition = *for_.condition;
-            if_.instructions.push_back(do_while);
+            if_.instructions.emplace_back(do_while);
 
-            instructions.push_back(if_);
+            instructions.emplace_back(if_);
         } else {
             ast::Boolean condition{true};
 
@@ -432,7 +433,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 do_while.instructions.push_back(*for_.repeat);
             }
 
-            instructions.push_back(do_while);
+            instructions.emplace_back(do_while);
         }
 
         return instructions;
@@ -475,7 +476,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 if_.else_ = else_;
             }
 
-            return {if_};
+            return {ast::Instruction(if_)};
         } else if(value_type == STRING){
             ast::FunctionCall first_condition;
             first_condition.context = switch_.context;
@@ -515,13 +516,19 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 if_.else_ = else_;
             }
 
-            return {if_};
+            return {ast::Instruction(if_)};
         } else {
             cpp_unreachable("Unhandled switch value type");
         }
     }
 
     //No transformation for the other nodes
+    //template<typename T, std::enable_if_t<std::is_same<x3::forward_ast<>, T>::value, int> = 43>
+    template<typename T>
+    result_type operator()(x3::forward_ast<T>& a) const {
+        return {(*this)((T&)(a))};
+    }
+
     template<typename T>
     result_type operator()(T&) const {
         return {};//Empty vector means no transformation

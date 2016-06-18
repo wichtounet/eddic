@@ -36,7 +36,7 @@ namespace ast {
  * \typedef StructBlock
  * \brief A block inside a structure.
  */
-typedef boost::variant<
+typedef x3::variant<
             MemberDeclaration,
             ArrayDeclaration,
             Constructor,

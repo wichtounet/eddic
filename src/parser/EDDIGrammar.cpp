@@ -277,6 +277,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
+#if 0
     template_struct %=
             local_begin
         >>
@@ -312,7 +313,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
              )
         >>  lexer.right_brace;
 
-#if 0
     auto standard_import = boost::spirit::qi::as<ast::StandardImport>()[(
             lexer.include
         >>  qi::omit[lexer.less]

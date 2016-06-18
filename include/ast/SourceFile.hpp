@@ -39,7 +39,7 @@ namespace ast {
  * \typedef SourceFileBlock
  * \brief A first level block in a source file.
  */
-typedef boost::variant<
+typedef x3::variant<
             FunctionDeclaration,
             TemplateFunctionDeclaration,
             GlobalVariableDeclaration,

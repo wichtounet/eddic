@@ -233,7 +233,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
 struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Expression& expression) const {
-        return boost::smart_get<ast::Expression>(visit_non_variant(ValueCopier(), expression));
+        return ast::Instruction{boost::smart_get<ast::Expression>(visit_non_variant(ValueCopier(), expression))};
     }
 
     ast::Instruction operator()(const ast::FunctionCall& source) const {
@@ -248,7 +248,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.values.push_back(visit(ValueCopier(), value));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::VariableDeclaration& source) const {
@@ -263,7 +263,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.value = visit(ValueCopier(), *source.value);
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::StructDeclaration& source) const {
@@ -278,7 +278,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.values.push_back(visit(ValueCopier(), value));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::ArrayDeclaration& source) const {
@@ -290,7 +290,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.arrayName = source.arrayName;
         copy.size = source.size;
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::Assignment& source) const {
@@ -302,7 +302,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.value = visit(ValueCopier(), source.value);
         copy.op = source.op;
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::Return& source) const {
@@ -313,7 +313,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.position = source.position;
         copy.value = visit(ValueCopier(), source.value);
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::If& source) const {
@@ -351,7 +351,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.else_ = else_copy;
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::While& source) const {
@@ -364,7 +364,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.instructions.push_back(visit(*this, instruction));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::DoWhile& source) const {
@@ -377,7 +377,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.instructions.push_back(visit(*this, instruction));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::Foreach& source) const {
@@ -394,7 +394,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.instructions.push_back(visit(*this, instruction));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::ForeachIn& source) const {
@@ -413,7 +413,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.instructions.push_back(visit(*this, instruction));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::PrefixOperation& source) const {
@@ -423,7 +423,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.left_value = visit(ValueCopier(), source.left_value);
         copy.op = source.op;
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::For& source) const {
@@ -447,7 +447,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.instructions.push_back(visit(*this, instruction));
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::Switch& source) const {
@@ -482,7 +482,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
             copy.default_case = default_;
         }
 
-        return copy;
+        return ast::Instruction{copy};
     }
 
     ast::Instruction operator()(const ast::Delete& source) const {
@@ -491,7 +491,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         copy.position = source.position;
         copy.value = visit(ValueCopier(), source.value);
 
-        return copy;
+        return ast::Instruction{copy};
     }
 };
 
@@ -677,7 +677,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             f.instructions = copy(function.instructions);
             f.parameters = function.parameters;
 
-            destination.push_back(f);
+            destination.emplace_back(f);
         } else if(auto* ptr = boost::smart_get<ast::Destructor>(&block)){
             auto& destructor = *ptr;
 
@@ -687,7 +687,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             d.parameters = destructor.parameters;
             d.instructions = copy(destructor.instructions);
 
-            destination.push_back(d);
+            destination.emplace_back(d);
         } else if(auto* ptr = boost::smart_get<ast::Constructor>(&block)){
             auto& constructor = *ptr;
 
@@ -697,7 +697,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             c.parameters = constructor.parameters;
             c.instructions = copy(constructor.instructions);
 
-            destination.push_back(c);
+            destination.emplace_back(c);
         } else if(auto* ptr = boost::smart_get<ast::ArrayDeclaration>(&block)){
             auto& array_declaration = *ptr;
 
@@ -708,7 +708,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             copy.arrayName = array_declaration.arrayName;
             copy.size = array_declaration.size;
 
-            destination.push_back(copy);
+            destination.emplace_back(copy);
         } else if(auto* ptr = boost::smart_get<ast::MemberDeclaration>(&block)){
             auto& member_declaration = *ptr;
 
@@ -717,7 +717,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             member.type = member_declaration.type;
             member.name = member_declaration.name;
 
-            destination.push_back(member);
+            destination.emplace_back(member);
         } else if(auto* ptr = boost::smart_get<ast::TemplateFunctionDeclaration>(&block)){
             auto& function = *ptr;
 
@@ -731,7 +731,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             f.instructions = copy(function.instructions);
             f.parameters = function.parameters;
 
-            destination.push_back(f);
+            destination.emplace_back(f);
         }
     }
 

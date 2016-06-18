@@ -32,7 +32,7 @@ struct ForeachIn;
 struct Switch;
 struct Delete;
 
-typedef boost::variant<
+typedef x3::variant<
             FunctionCall,
             Expression,
             VariableDeclaration,
@@ -40,15 +40,15 @@ typedef boost::variant<
             ArrayDeclaration,
             Assignment,
             Return,
-            boost::recursive_wrapper<If>,
-            boost::recursive_wrapper<While>,
-            boost::recursive_wrapper<DoWhile>,
-            boost::recursive_wrapper<Foreach>,
-            boost::recursive_wrapper<ForeachIn>,
+            x3::forward_ast<If>,
+            x3::forward_ast<While>,
+            x3::forward_ast<DoWhile>,
+            x3::forward_ast<Foreach>,
+            x3::forward_ast<ForeachIn>,
             PrefixOperation,
             Delete,
-            boost::recursive_wrapper<Switch>,
-            boost::recursive_wrapper<For>>
+            x3::forward_ast<Switch>,
+            x3::forward_ast<For>>
         Instruction;
 
 } //end of ast

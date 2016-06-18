@@ -259,7 +259,7 @@ void ast::PassManager::run_passes(){
             //Add the instantiated class and function templates to the actual program
 
             for(auto& struct_ : class_instantiated){
-                program.blocks.push_back(struct_);
+                program.blocks.emplace_back(struct_);
             }
 
             for(auto& function_pair : functions_instantiated){
@@ -267,12 +267,12 @@ void ast::PassManager::run_passes(){
                 auto& function = function_pair.second;
 
                 if(context.empty()){
-                    program.blocks.push_back(function);
+                    program.blocks.emplace_back(function);
                 } else {
                     for(auto& block : program.blocks){
                         if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
                             if(!struct_type->is_template_declaration() && struct_type->struct_type->mangle() == context){
-                                struct_type->blocks.push_back(function);
+                                struct_type->blocks.emplace_back(function);
                                 break;
                             }
                         }
