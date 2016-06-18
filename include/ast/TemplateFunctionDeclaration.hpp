@@ -22,13 +22,12 @@ class FunctionContext;
 namespace ast {
 
 /*!
- * \class ASTTemplateFunctionDeclaration
- * \brief The AST node for a template function declaration.  
- * Should only be used from the Deferred version (eddic::ast::TemplateFunctionDeclaration).
+ * \class TemplateFunctionDeclaration
+ * \brief The AST node for a template function declaration.
  */
-struct ASTTemplateFunctionDeclaration { 
+struct TemplateFunctionDeclaration {
     std::shared_ptr<FunctionContext> context;
-    
+
     std::string mangledName;
     std::string struct_name;
 
@@ -42,25 +41,19 @@ struct ASTTemplateFunctionDeclaration {
     mutable long references = 0;
 };
 
-/*!
- * \typedef TemplateFunctionDeclaration
- * \brief The AST node for a template function declaration.
- */
-typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::TemplateFunctionDeclaration, 
-    (eddic::ast::Position, Content->position)
-    (std::vector<std::string>, Content->template_types)
-    (eddic::ast::Type, Content->returnType)
-    (std::string, Content->functionName)
-    (std::vector<eddic::ast::FunctionParameter>, Content->parameters)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::TemplateFunctionDeclaration,
+    (eddic::ast::Position, position)
+    (std::vector<std::string>, template_types)
+    (eddic::ast::Type, returnType)
+    (std::string, functionName)
+    (std::vector<eddic::ast::FunctionParameter>, parameters)
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

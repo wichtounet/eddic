@@ -13,7 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
@@ -25,9 +24,8 @@ class Context;
 namespace ast {
 
 /*!
- * \class ASTStructDeclaration
- * \brief The AST node for a declaration of a local struct. 
- * Should only be used from the Deferred version (eddic::ast::StructDeclaration).
+ * \class StructDeclaration
+ * \brief The AST node for a declaration of a local struct.
  */
 struct ASTStructDeclaration {
     std::shared_ptr<Context> context;
@@ -40,12 +38,6 @@ struct ASTStructDeclaration {
     mutable long references = 0;
 };
 
-/*!
- * \typedef StructDeclaration
- * \brief The AST node for a declaration of a local struct. 
- */
-typedef Deferred<ASTStructDeclaration> StructDeclaration;
-
 } //end of ast
 
 } //end of eddic
@@ -53,10 +45,10 @@ typedef Deferred<ASTStructDeclaration> StructDeclaration;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StructDeclaration,
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->variableType)
-    (std::string, Content->variableName)
-    (std::vector<eddic::ast::Value>, Content->values)
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, variableType)
+    (std::string, variableName)
+    (std::vector<eddic::ast::Value>, values)
 )
 
 #endif

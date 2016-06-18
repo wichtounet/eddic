@@ -12,7 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
@@ -24,11 +23,10 @@ class Context;
 namespace ast {
 
 /*!
- * \class ASTVariableDeclaration
- * \brief The AST node for a declaration of a local variable. 
- * Should only be used from the Deferred version (eddic::ast::VariableDeclaration).
+ * \class VariableDeclaration
+ * \brief The AST node for a declaration of a local variable.
  */
-struct ASTVariableDeclaration {
+struct VariableDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -39,23 +37,17 @@ struct ASTVariableDeclaration {
     mutable long references = 0;
 };
 
-/*!
- * \typedef VariableDeclaration
- * \brief The AST node for a declaration of a local variable. 
- */
-typedef Deferred<ASTVariableDeclaration> VariableDeclaration;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::VariableDeclaration, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->variableType)
-    (std::string, Content->variableName)
-    (boost::optional<eddic::ast::Value>, Content->value)
+    eddic::ast::VariableDeclaration,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, variableType)
+    (std::string, variableName)
+    (boost::optional<eddic::ast::Value>, value)
 )
 
 #endif

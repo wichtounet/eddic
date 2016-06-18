@@ -10,7 +10,6 @@
 
 #include "variant.hpp"
 
-#include "ast/Deferred.hpp"
 #include "ast/FunctionCall.hpp"
 #include "ast/Expression.hpp"
 #include "ast/Return.hpp"
@@ -26,12 +25,8 @@ namespace ast {
 
 struct While;
 struct DoWhile;
-
 struct For;
-
-struct ASTIf;
-typedef Deferred<ASTIf> If;
-
+struct If;
 struct Foreach;
 struct ForeachIn;
 struct Switch;
@@ -45,7 +40,7 @@ typedef boost::variant<
             ArrayDeclaration,
             Assignment,
             Return,
-            If,
+            boost::recursive_wrapper<If>,
             boost::recursive_wrapper<While>,
             boost::recursive_wrapper<DoWhile>,
             boost::recursive_wrapper<Foreach>,

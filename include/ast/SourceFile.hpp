@@ -19,7 +19,6 @@
 #include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 
 #include "ast/Position.hpp"
-#include "ast/Deferred.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
@@ -53,9 +52,8 @@ typedef boost::variant<
 /*!
  * \class ASTSourceFile
  * \brief The AST root node for a program.
- * Should only be used from the Deferred version (eddic::ast::SourceFile).
  */
-struct ASTSourceFile {
+struct SourceFile {
     std::shared_ptr<GlobalContext> context;
 
     Position position;
@@ -64,12 +62,6 @@ struct ASTSourceFile {
     mutable long references = 0;
 };
 
-/*!
- * \typedef SourceFile
- * \brief The AST root node for a program.
- */
-typedef Deferred<ASTSourceFile> SourceFile;
-
 } //end of ast
 
 } //end of eddic
@@ -77,8 +69,8 @@ typedef Deferred<ASTSourceFile> SourceFile;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SourceFile,
-    (eddic::ast::Position, Content->position)
-    (std::vector<eddic::ast::SourceFileBlock>, Content->blocks)
+    (eddic::ast::Position, position)
+    (std::vector<eddic::ast::SourceFileBlock>, blocks)
 )
 
 #endif

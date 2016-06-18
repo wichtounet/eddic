@@ -20,7 +20,6 @@
 
 #include "Type.hpp"
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/ArrayDeclaration.hpp"
 #include "ast/MemberDeclaration.hpp"
@@ -35,21 +34,21 @@ namespace ast {
 
 /*!
  * \typedef StructBlock
- * \brief A block inside a structure. 
+ * \brief A block inside a structure.
  */
 typedef boost::variant<
             MemberDeclaration,
             ArrayDeclaration,
-            Constructor, 
+            Constructor,
             Destructor,
             FunctionDeclaration,
             TemplateFunctionDeclaration
         > StructBlock;
 
-struct ast_struct_definition {
+struct struct_definition {
     bool standard = false;
     std::string header = "";
-    
+
     std::shared_ptr<const eddic::Type> struct_type;
 
     Position position;
@@ -57,7 +56,7 @@ struct ast_struct_definition {
     std::string name;
     boost::optional<Type> parent_type;
     std::vector<StructBlock> blocks;
-    
+
     std::vector<ast::Type> inst_template_types;
 
     mutable long references = 0;
@@ -71,8 +70,6 @@ struct ast_struct_definition {
     }
 };
 
-typedef Deferred<ast_struct_definition> struct_definition;
-
 } //end of ast
 
 } //end of eddic
@@ -80,11 +77,11 @@ typedef Deferred<ast_struct_definition> struct_definition;
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::struct_definition,
-    (eddic::ast::Position, Content->position)
-    (std::vector<std::string>, Content->decl_template_types)
-    (std::string, Content->name)
-    (boost::optional<eddic::ast::Type>, Content->parent_type)
-    (std::vector<eddic::ast::StructBlock>, Content->blocks)
+    (eddic::ast::Position, position)
+    (std::vector<std::string>, decl_template_types)
+    (std::string, name)
+    (boost::optional<eddic::ast::Type>, parent_type)
+    (std::vector<eddic::ast::StructBlock>, blocks)
 )
 
 #endif

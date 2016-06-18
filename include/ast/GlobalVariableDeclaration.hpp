@@ -23,10 +23,9 @@ namespace ast {
 
 /*!
  * \class ASTGlobalVariableDeclaration
- * \brief The AST node for a declaration of a global variable. 
- * Should only be used from the Deferred version (eddic::ast::GlobalVariableDeclaration).
+ * \brief The AST node for a declaration of a global variable.
  */
-struct ASTGlobalVariableDeclaration {
+struct GlobalVariableDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -37,23 +36,17 @@ struct ASTGlobalVariableDeclaration {
     mutable long references = 0;
 };
 
-/*!
- * \typedef GlobalVariableDeclaration
- * \brief The AST node for a declaration of a global variable. 
- */
-typedef Deferred<ASTGlobalVariableDeclaration> GlobalVariableDeclaration;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::GlobalVariableDeclaration, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->variableType)
-    (std::string, Content->variableName)
-    (boost::optional<eddic::ast::Value>, Content->value)
+    eddic::ast::GlobalVariableDeclaration,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, variableType)
+    (std::string, variableName)
+    (boost::optional<eddic::ast::Value>, value)
 )
 
 #endif
