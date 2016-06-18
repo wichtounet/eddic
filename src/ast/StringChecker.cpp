@@ -43,8 +43,8 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_DELETE()
         
         void operator()(ast::struct_definition& struct_){
-            if(!struct_.Content->is_template_declaration()){
-                visit_each(*this, struct_.Content->blocks);
+            if(!struct_.is_template_declaration()){
+                visit_each(*this, struct_.blocks);
             }
         }
 

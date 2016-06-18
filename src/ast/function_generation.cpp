@@ -29,7 +29,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
     bool destructor = false;
     bool copy_constructor = false;
 
-    for(auto& block : struct_.Content->blocks){
+    for(auto& block : struct_.blocks){
         if(boost::get<ast::Destructor>(&block)){
             destructor = true;
         } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
@@ -43,7 +43,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 auto& parameter = c.parameters.front();
                 auto parameter_type = visit(ast::TypeTransformer(context), parameter.parameterType);
 
-                if(parameter_type == new_pointer_type(struct_.Content->struct_type)){
+                if(parameter_type == new_pointer_type(struct_.struct_type)){
                     copy_constructor = true;
                 }
             }
@@ -54,27 +54,27 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
     if(!default_constructor && !constructor){
         ast::Constructor c;
         c.context = std::make_shared<FunctionContext>(context, context, platform, configuration);
-        c.struct_type = struct_.Content->struct_type;
+        c.struct_type = struct_.struct_type;
 
         std::vector<std::shared_ptr<const eddic::Type>> types;
         c.mangledName = mangle_ctor(types, c.struct_type);
 
-        struct_.Content->blocks.push_back(c);
+        struct_.blocks.push_back(c);
     }
 
     //Generate destructor if necessary
     if(!destructor){
         ast::Destructor d;
         d.context = std::make_shared<FunctionContext>(context, context, platform, configuration);
-        d.struct_type = struct_.Content->struct_type;
+        d.struct_type = struct_.struct_type;
         d.mangledName = mangle_dtor(d.struct_type);
 
-        struct_.Content->blocks.push_back(d);
+        struct_.blocks.push_back(d);
     }
 
     //Generate copy constructor if necessary
     if(!copy_constructor){
-        auto type = struct_.Content->struct_type;
+        auto type = struct_.struct_type;
         auto struct_type = context->get_struct(type->mangle());
 
         bool possible = true;
@@ -145,7 +145,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 c.instructions.push_back(std::move(assignment));
             }
 
-            struct_.Content->blocks.push_back(std::move(c));
+            struct_.blocks.push_back(std::move(c));
         }
     }
 }

@@ -30,11 +30,11 @@ void generate_program(ast::SourceFile& program, std::shared_ptr<Configuration> c
 std::unique_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Platform platform){
     //The program to build
     ast::SourceFile source;
-    source.Content->context = std::make_shared<GlobalContext>(platform);
+    source.context = std::make_shared<GlobalContext>(platform);
 
     //Parse the file into the program
     parser::SpiritParser parser;
-    bool parsing = parser.parse(file, source, source.Content->context); 
+    bool parsing = parser.parse(file, source, source.context); 
 
     //If the parsing was successfully
     if(parsing){
@@ -87,7 +87,7 @@ void generate_program(ast::SourceFile& source, std::shared_ptr<Configuration> co
     pass_manager.run_passes();
 
     //Check that there is a main in the program
-    check_for_main(source.Content->context);
+    check_for_main(source.context);
 }
 
 void check_for_main(std::shared_ptr<GlobalContext> context){

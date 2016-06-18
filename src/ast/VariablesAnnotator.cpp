@@ -84,7 +84,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+        template_engine->check_type(declaration.variableType, declaration.position);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -108,11 +108,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::StructDeclaration& declaration){
-        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+        template_engine->check_type(declaration.variableType, declaration.position);
     }
 
     void operator()(ast::VariableDeclaration& declaration){
-        template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+        template_engine->check_type(declaration.variableType, declaration.position);
     }
 
     AUTO_IGNORE_OTHERS()
@@ -141,12 +141,12 @@ void ast::VariableAnnotationPass::apply_struct_destructor(ast::Destructor& destr
 }
 
 void ast::VariableAnnotationPass::apply_program(ast::SourceFile& program, bool indicator){
-    context = program.Content->context;
+    context = program.context;
 
     if(!indicator){
         VariablesVisitor visitor(context, template_engine);
 
-        for(auto& block : program.Content->blocks){
+        for(auto& block : program.blocks){
             if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
                 visit_non_variant(visitor, *ptr);
             } else if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){

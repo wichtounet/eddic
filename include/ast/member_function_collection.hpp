@@ -20,7 +20,7 @@ struct MemberFunctionCollectionPass : Pass {
     void apply_struct_constructor(ast::Constructor& constructor) override;
     void apply_struct_destructor(ast::Destructor& destructor) override;
 
-    ast::struct_definition current_struct;
+    ast::struct_definition* current_struct;
 };
 
 } //end of ast

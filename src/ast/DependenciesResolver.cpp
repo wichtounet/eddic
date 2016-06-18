@@ -48,16 +48,16 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
 
             ast::SourceFile dependency;
-            if(parser.parse(headerFile, dependency, source_program.Content->context)){
+            if(parser.parse(headerFile, dependency, source_program.context)){
                 (*this)(dependency);
 
-                for(ast::SourceFileBlock& block : dependency.Content->blocks){
+                for(ast::SourceFileBlock& block : dependency.blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                         ptr->standard = true;
                         ptr->header = import.header;
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
-                        ptr->Content->standard = true;
-                        ptr->Content->header = import.header;
+                        ptr->standard = true;
+                        ptr->header = import.header;
                     }
 
                     blocks.push_back(block);
@@ -77,14 +77,14 @@ class DependencyVisitor : public boost::static_visitor<> {
             }
 
             ast::SourceFile dependency;
-            if(parser.parse(file, dependency, source_program.Content->context)){
+            if(parser.parse(file, dependency, source_program.context)){
                 (*this)(dependency);
 
-                for(ast::SourceFileBlock& block : dependency.Content->blocks){
+                for(ast::SourceFileBlock& block : dependency.blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
                         ptr->header = import.file;
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
-                        ptr->Content->header = import.file;
+                        ptr->header = import.file;
                     }
 
                     blocks.push_back(block);
@@ -102,6 +102,6 @@ void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& pa
     visitor(program);
 
     for(auto& block : visitor.blocks){
-       program.Content->blocks.push_back(block);
+       program.blocks.push_back(block);
     }
 }

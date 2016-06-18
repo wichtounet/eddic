@@ -125,16 +125,16 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            currentContext = if_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
+            currentContext = if_.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
-            visit(*this, if_.Content->condition);
+            visit(*this, if_.condition);
 
-            visit_each(*this, if_.Content->instructions);
+            visit_each(*this, if_.instructions);
 
             currentContext = currentContext->parent();
 
-            visit_each_non_variant(*this, if_.Content->elseIfs);
-            visit_optional_non_variant(*this, if_.Content->else_);
+            visit_each_non_variant(*this, if_.elseIfs);
+            visit_optional_non_variant(*this, if_.else_);
         }
 
         void operator()(ast::ElseIf& elseIf){
@@ -156,15 +156,15 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::StructDeclaration& declaration){
-            declaration.Content->context = currentContext;
+            declaration.context = currentContext;
 
-            visit_each(*this, declaration.Content->values);
+            visit_each(*this, declaration.values);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            declaration.Content->context = currentContext;
+            declaration.context = currentContext;
 
-            visit_optional(*this, declaration.Content->value);
+            visit_optional(*this, declaration.value);
         }
 
         void operator()(ast::ArrayDeclaration& declaration){
@@ -227,13 +227,13 @@ inline AnnotateVisitor make_visitor(std::shared_ptr<GlobalContext> globalContext
 
 void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool indicator){
     if(indicator){
-        currentContext = globalContext = program.Content->context;
+        currentContext = globalContext = program.context;
     } else {
-        currentContext = globalContext = program.Content->context;
+        currentContext = globalContext = program.context;
 
-        for(auto& block : program.Content->blocks){
+        for(auto& block : program.blocks){
             if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
-                ptr->Content->context = currentContext;
+                ptr->context = currentContext;
             } else if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
                 ptr->context = currentContext;
             }

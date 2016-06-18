@@ -254,13 +254,13 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::VariableDeclaration& source) const {
         ast::VariableDeclaration copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->variableType = source.Content->variableType;
-        copy.Content->variableName = source.Content->variableName;
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.variableType = source.variableType;
+        copy.variableName = source.variableName;
 
-        if(source.Content->value){
-            copy.Content->value = visit(ValueCopier(), *source.Content->value);
+        if(source.value){
+            copy.value = visit(ValueCopier(), *source.value);
         }
 
         return copy;
@@ -269,13 +269,13 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::StructDeclaration& source) const {
         ast::StructDeclaration copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->variableType = source.Content->variableType;
-        copy.Content->variableName = source.Content->variableName;
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.variableType = source.variableType;
+        copy.variableName = source.variableName;
 
-        for(auto& value : source.Content->values){
-            copy.Content->values.push_back(visit(ValueCopier(), value));
+        for(auto& value : source.values){
+            copy.values.push_back(visit(ValueCopier(), value));
         }
 
         return copy;
@@ -319,14 +319,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::If& source) const {
         ast::If copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->condition = visit(ValueCopier(), source.Content->condition);
+        copy.context = source.context;
+        copy.condition = visit(ValueCopier(), source.condition);
 
-        for(auto& instruction : source.Content->instructions){
-            copy.Content->instructions.push_back(visit(*this, instruction));
+        for(auto& instruction : source.instructions){
+            copy.instructions.push_back(visit(*this, instruction));
         }
 
-        for(auto& else_if : source.Content->elseIfs){
+        for(auto& else_if : source.elseIfs){
             ast::ElseIf else_if_copy;
 
             else_if_copy.context = else_if.context;
@@ -336,19 +336,19 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
                 else_if_copy.instructions.push_back(visit(*this, instruction));
             }
 
-            copy.Content->elseIfs.push_back(else_if_copy);
+            copy.elseIfs.push_back(else_if_copy);
         }
 
-        if(source.Content->else_){
+        if(source.else_){
             ast::Else else_copy;
 
-            else_copy.context = source.Content->else_->context;
+            else_copy.context = source.else_->context;
 
-            for(auto& instruction : (*source.Content->else_).instructions){
+            for(auto& instruction : (*source.else_).instructions){
                 else_copy.instructions.push_back(visit(*this, instruction));
             }
 
-            copy.Content->else_ = else_copy;
+            copy.else_ = else_copy;
         }
 
         return copy;
@@ -509,8 +509,8 @@ struct Adaptor : public boost::static_visitor<> {
     AUTO_RECURSE_SWITCH()
 
     void operator()(ast::struct_definition& struct_){
-        if(!struct_.Content->is_template_declaration()){
-            visit_each(*this, struct_.Content->blocks);
+        if(!struct_.is_template_declaration()){
+            visit_each(*this, struct_.blocks);
         }
     }
 
@@ -606,15 +606,15 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::VariableDeclaration& source){
-        source.Content->variableType = replace(source.Content->variableType);
+        source.variableType = replace(source.variableType);
 
-        visit_optional(*this, source.Content->value);
+        visit_optional(*this, source.value);
     }
 
     void operator()(ast::StructDeclaration& source){
-        source.Content->variableType = replace(source.Content->variableType);
+        source.variableType = replace(source.variableType);
 
-        visit_each(*this, source.Content->values);
+        visit_each(*this, source.values);
     }
 
     void operator()(ast::ArrayDeclaration& source){
@@ -722,14 +722,14 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             auto& function = *ptr;
 
             ast::TemplateFunctionDeclaration f;
-            f.Content->context = function.Content->context;
-            f.Content->position = function.Content->position;
-            f.Content->struct_name = function.Content->struct_name;
-            f.Content->template_types = function.Content->template_types;
-            f.Content->returnType = function.Content->returnType;
-            f.Content->functionName = function.Content->functionName;
-            f.Content->instructions = copy(function.Content->instructions);
-            f.Content->parameters = function.Content->parameters;
+            f.context = function.context;
+            f.position = function.position;
+            f.struct_name = function.struct_name;
+            f.template_types = function.template_types;
+            f.returnType = function.returnType;
+            f.functionName = function.functionName;
+            f.instructions = copy(function.instructions);
+            f.parameters = function.parameters;
 
             destination.push_back(f);
         }
@@ -803,8 +803,8 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
     }
 
     do{
-        auto function_declaration = it_pair.first->second;
-        auto source_types = function_declaration.Content->template_types;
+        auto function_declaration = *it_pair.first->second;
+        auto source_types = function_declaration.template_types;
 
         if(source_types.size() == template_types.size()){
             if(!is_instantiated(name, context, template_types)){
@@ -812,11 +812,11 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
 
                 //Instantiate the function
                 ast::FunctionDeclaration declaration;
-                declaration.position = function_declaration.Content->position;
-                declaration.returnType = function_declaration.Content->returnType;
-                declaration.functionName = function_declaration.Content->functionName;
-                declaration.parameters = function_declaration.Content->parameters;
-                declaration.instructions = copy(function_declaration.Content->instructions);
+                declaration.position = function_declaration.position;
+                declaration.returnType = function_declaration.returnType;
+                declaration.functionName = function_declaration.functionName;
+                declaration.parameters = function_declaration.parameters;
+                declaration.instructions = copy(function_declaration.instructions);
 
                 std::unordered_map<std::string, ast::Type> replacements;
 
@@ -855,8 +855,8 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
         }
 
         while(it != class_templates.end()){
-            auto struct_declaration = it->second;
-            auto source_types = struct_declaration.Content->decl_template_types;
+            auto struct_declaration = *it->second;
+            auto source_types = struct_declaration.decl_template_types;
 
             if(source_types.size() == template_types.size()){
                 if(!is_class_instantiated(name, template_types)){
@@ -864,13 +864,13 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
                     //Instantiate the struct
                     ast::struct_definition declaration;
-                    declaration.Content->name = struct_declaration.Content->name;
-                    declaration.Content->position = struct_declaration.Content->position;
-                    declaration.Content->inst_template_types = template_types;
-                    declaration.Content->header = struct_declaration.Content->header;
-                    declaration.Content->standard = struct_declaration.Content->standard;
+                    declaration.name = struct_declaration.name;
+                    declaration.position = struct_declaration.position;
+                    declaration.inst_template_types = template_types;
+                    declaration.header = struct_declaration.header;
+                    declaration.standard = struct_declaration.standard;
 
-                    declaration.Content->blocks = copy(struct_declaration.Content->blocks);
+                    declaration.blocks = copy(struct_declaration.blocks);
 
                     std::unordered_map<std::string, ast::Type> replacements;
 
@@ -904,11 +904,11 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::struct_definition& declaration){
     LOG<Trace>("Template") << "Collected class template " << struct_ << log::endl;
 
-    class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, declaration));
+    class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, &declaration));
 }
 
 void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){
     LOG<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
 
-    function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, declaration));
+    function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, &declaration));
 }

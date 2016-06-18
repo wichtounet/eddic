@@ -11,5 +11,5 @@
 using namespace eddic;
 
 void ast::ContextAwarePass::apply_program(ast::SourceFile& program, bool){
-    context = program.Content->context;
+    context = program.context;
 }

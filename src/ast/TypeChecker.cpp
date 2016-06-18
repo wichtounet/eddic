@@ -58,17 +58,17 @@ class CheckerVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_VARIABLE_VALUE()
 
         void operator()(ast::struct_definition& struct_){
-            if(!struct_.Content->is_template_declaration()){
-                visit_each(*this, struct_.Content->blocks);
+            if(!struct_.is_template_declaration()){
+                visit_each(*this, struct_.blocks);
             }
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
-            auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+            auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
-            auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+            auto valueType = visit(ast::GetTypeVisitor(), *declaration.value);
             if (valueType != type) {
-                throw SemanticalException("Incompatible type for global variable " + declaration.Content->variableName, declaration.Content->position);
+                throw SemanticalException("Incompatible type for global variable " + declaration.variableName, declaration.position);
             }
         }
 
@@ -203,14 +203,14 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            if(declaration.Content->value){
-                visit(*this, *declaration.Content->value);
+            if(declaration.value){
+                visit(*this, *declaration.value);
 
-                auto var = (*declaration.Content->context)[declaration.Content->variableName];
+                auto var = (*declaration.context)[declaration.variableName];
 
-                auto valueType = visit(ast::GetTypeVisitor(), *declaration.Content->value);
+                auto valueType = visit(ast::GetTypeVisitor(), *declaration.value);
                 if (valueType != var->type()) {
-                    throw SemanticalException("Incompatible type in declaration of variable " + declaration.Content->variableName, declaration.Content->position);
+                    throw SemanticalException("Incompatible type in declaration of variable " + declaration.variableName, declaration.position);
                 }
             }
         }
@@ -397,16 +397,16 @@ class CheckerVisitor : public boost::static_visitor<> {
 //And remove the exception code from here
 
 void ast::TypeCheckingPass::apply_program(ast::SourceFile& program, bool){
-    CheckerVisitor visitor(program.Content->context);
+    CheckerVisitor visitor(program.context);
 
     bool valid = true;
 
-    for(auto& block : program.Content->blocks){
+    for(auto& block : program.blocks){
         try {
             visit(visitor, block);
         } catch (const SemanticalException& e){
             if(!configuration->option_defined("quiet")){
-                output_exception(e, program.Content->context);
+                output_exception(e, program.context);
             }
             valid = false;
         }

@@ -1393,25 +1393,25 @@ class FunctionCompiler : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            if (if_.Content->elseIfs.empty()) {
+            if (if_.elseIfs.empty()) {
                 std::string endLabel = newLabel();
 
-                jump_if_false(function, endLabel, if_.Content->condition);
+                jump_if_false(function, endLabel, if_.condition);
 
-                visit_each(*this, if_.Content->instructions);
+                visit_each(*this, if_.instructions);
 
-                issue_destructors(if_.Content->context);
+                issue_destructors(if_.context);
 
-                if (if_.Content->else_) {
+                if (if_.else_) {
                     std::string elseLabel = newLabel();
 
                     function.emplace_back(elseLabel, mtac::Operator::GOTO);
 
                     function.emplace_back(endLabel, mtac::Operator::LABEL);
 
-                    visit_each(*this, (*if_.Content->else_).instructions);
+                    visit_each(*this, (*if_.else_).instructions);
 
-                    issue_destructors((*if_.Content->else_).context);
+                    issue_destructors((*if_.else_).context);
 
                     function.emplace_back(elseLabel, mtac::Operator::LABEL);
                 } else {
@@ -1421,22 +1421,22 @@ class FunctionCompiler : public boost::static_visitor<> {
                 std::string end = newLabel();
                 std::string next = newLabel();
 
-                jump_if_false(function, next, if_.Content->condition);
+                jump_if_false(function, next, if_.condition);
 
-                visit_each(*this, if_.Content->instructions);
+                visit_each(*this, if_.instructions);
 
-                issue_destructors(if_.Content->context);
+                issue_destructors(if_.context);
 
                 function.emplace_back(end, mtac::Operator::GOTO);
 
-                for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.Content->elseIfs.size(); ++i) {
-                    ast::ElseIf& elseIf = if_.Content->elseIfs[i];
+                for (std::vector<ast::ElseIf>::size_type i = 0; i < if_.elseIfs.size(); ++i) {
+                    ast::ElseIf& elseIf = if_.elseIfs[i];
 
                     function.emplace_back(next, mtac::Operator::LABEL);
 
                     //Last elseif
-                    if (i == if_.Content->elseIfs.size() - 1) {
-                        if (if_.Content->else_) {
+                    if (i == if_.elseIfs.size() - 1) {
+                        if (if_.else_) {
                             next = newLabel();
                         } else {
                             next = end;
@@ -1454,12 +1454,12 @@ class FunctionCompiler : public boost::static_visitor<> {
                     function.emplace_back(end, mtac::Operator::GOTO);
                 }
 
-                if (if_.Content->else_) {
+                if (if_.else_) {
                     function.emplace_back(next, mtac::Operator::LABEL);
 
-                    visit_each(*this, (*if_.Content->else_).instructions);
+                    visit_each(*this, (*if_.else_).instructions);
 
-                    issue_destructors((*if_.Content->else_).context);
+                    issue_destructors((*if_.else_).context);
                 }
 
                 function.emplace_back(end, mtac::Operator::LABEL);
@@ -1467,26 +1467,26 @@ class FunctionCompiler : public boost::static_visitor<> {
         }
 
         void operator()(ast::StructDeclaration& declaration){
-            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+            auto var = declaration.context->getVariable(declaration.variableName);
 
             //Initialize the structure variable
-            construct(function, var->type(), declaration.Content->values, var);
+            construct(function, var->type(), declaration.values, var);
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            auto var = declaration.Content->context->getVariable(declaration.Content->variableName);
+            auto var = declaration.context->getVariable(declaration.variableName);
 
             if(var->type()->is_custom_type() || var->type()->is_template_type()){
-                if(declaration.Content->value){
-                    copy_construct(function, var->type(), var, *declaration.Content->value);
+                if(declaration.value){
+                    copy_construct(function, var->type(), var, *declaration.value);
                 } else {
                     //If there is no value, it is a simple initialization
                     construct(function, var->type(), {}, var);
                 }
             } else {
-                if(declaration.Content->value){
+                if(declaration.value){
                     if(!var->type()->is_const()){
-                        assign(function, var, *declaration.Content->value);
+                        assign(function, var, *declaration.value);
                     }
                 }
             }
@@ -1678,11 +1678,11 @@ void pass_arguments(mtac::Function& function, eddic::Function& definition, std::
 } //end of anonymous namespace
 
 void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool>, mtac::Program& program) const {
-    timing_timer timer(source.Content->context->timing(), "mtac_compilation");
+    timing_timer timer(source.context->timing(), "mtac_compilation");
 
-    program.context = source.Content->context;
+    program.context = source.context;
 
-    for(auto& block : source.Content->blocks){
+    for(auto& block : source.blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
             auto& function = program.functions.back();
@@ -1693,12 +1693,12 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
             visit_each(compiler, ptr->instructions);
             compiler.issue_destructors(ptr->context);
         } else if(auto* struct_ptr = boost::get<ast::struct_definition>(&block)){
-            if(!struct_ptr->Content->is_template_declaration()){
-                for(auto& struct_block : struct_ptr->Content->blocks){
+            if(!struct_ptr->is_template_declaration()){
+                for(auto& struct_block : struct_ptr->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
                         program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
-                        function.standard() = struct_ptr->Content->standard;
+                        function.standard() = struct_ptr->standard;
 
                         FunctionCompiler compiler(program, function);
 
@@ -1707,7 +1707,7 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
                     } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
                         program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
-                        function.standard() = struct_ptr->Content->standard;
+                        function.standard() = struct_ptr->standard;
 
                         FunctionCompiler compiler(program, function);
 
@@ -1716,7 +1716,7 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
                     } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
                         program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
-                        function.standard() = struct_ptr->Content->standard;
+                        function.standard() = struct_ptr->standard;
 
                         FunctionCompiler compiler(program, function);
 

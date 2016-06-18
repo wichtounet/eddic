@@ -14,14 +14,14 @@
 
 #define AUTO_RECURSE_PROGRAM()\
 void operator()(ast::SourceFile& program){\
-    visit_each(*this, program.Content->blocks);\
+    visit_each(*this, program.blocks);\
 }
 
 /* Functions */
 
 #define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
 void operator()(ast::TemplateFunctionDeclaration& function){\
-    visit_each(*this, function.Content->instructions);\
+    visit_each(*this, function.instructions);\
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
@@ -45,10 +45,10 @@ void operator()(ast::Else& else_){\
 
 #define AUTO_RECURSE_BRANCHES()\
 void operator()(ast::If& if_){\
-    visit(*this, if_.Content->condition);\
-    visit_each(*this, if_.Content->instructions);\
-    visit_each_non_variant(*this, if_.Content->elseIfs);\
-    visit_optional_non_variant(*this, if_.Content->else_);\
+    visit(*this, if_.condition);\
+    visit_each(*this, if_.instructions);\
+    visit_each_non_variant(*this, if_.elseIfs);\
+    visit_optional_non_variant(*this, if_.else_);\
 }\
 void operator()(ast::ElseIf& elseIf){\
     visit(*this, elseIf.condition);\
@@ -104,7 +104,7 @@ void operator()(ast::Assignment& assignment){\
     visit(*this, assignment.value);\
 }\
 void operator()(ast::VariableDeclaration& declaration){\
-    visit_optional(*this, declaration.Content->value);\
+    visit_optional(*this, declaration.value);\
 }
 
 #define AUTO_RECURSE_RETURN_VALUES()\
@@ -114,7 +114,7 @@ void operator()(ast::Return& return_){\
 
 #define AUTO_RECURSE_STRUCT_DECLARATION()\
 void operator()(ast::StructDeclaration& declaration){\
-    visit_each(*this, declaration.Content->values);\
+    visit_each(*this, declaration.values);\
 }
 
 #define AUTO_RECURSE_FUNCTION_CALLS()\
@@ -166,7 +166,7 @@ void operator()(ast::Destructor& function){\
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
 void operator()(ast::GlobalVariableDeclaration& declaration){\
-    visit_optional(*this, declaration.Content->value);\
+    visit_optional(*this, declaration.value);\
 }
 
 #define AUTO_RECURSE_NEW()\

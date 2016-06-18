@@ -18,7 +18,7 @@
 using namespace eddic;
 
 void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool){
-    auto context = program.Content->context;
+    auto context = program.context;
 
     std::unordered_set<std::string> resolved_structures;
 
@@ -26,15 +26,15 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
         auto start_size = resolved_structures.size();
         std::size_t structures = 0;
 
-        for(auto& block : program.Content->blocks){
+        for(auto& block : program.blocks){
             if(auto* ptr = boost::get<ast::struct_definition>(&block)){
-                if(ptr->Content->is_template_declaration()){
+                if(ptr->is_template_declaration()){
                     continue;
                 }
 
                 ++structures;
 
-                auto type = ptr->Content->struct_type;
+                auto type = ptr->struct_type;
                 auto struct_type = context->get_struct(type);
 
                 //If already resolved
@@ -44,15 +44,15 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
                 }
 
                 //If no parent type, already resolved
-                if(!ptr->Content->parent_type){
+                if(!ptr->parent_type){
                     resolved_structures.insert(type->mangle()); 
                     continue;
                 }
 
-                auto parent_type = visit(ast::TypeTransformer(context), *ptr->Content->parent_type);
+                auto parent_type = visit(ast::TypeTransformer(context), *ptr->parent_type);
 
                 if(!context->struct_exists(parent_type)){
-                    throw SemanticalException("The parent type is not a valid structure type", ptr->Content->position);
+                    throw SemanticalException("The parent type is not a valid structure type", ptr->position);
                 }
 
                 if(resolved_structures.find(parent_type->mangle()) != resolved_structures.end()){

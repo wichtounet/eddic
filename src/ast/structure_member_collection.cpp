@@ -28,10 +28,10 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& st
         return;
     }
 
-    auto signature = context->get_struct(struct_.Content->struct_type->mangle());
+    auto signature = context->get_struct(struct_.struct_type->mangle());
     std::vector<std::string> names;
 
-    for(auto& block : struct_.Content->blocks){
+    for(auto& block : struct_.blocks){
         if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
             auto& member = *ptr;
 

@@ -78,10 +78,10 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            check_value(if_.Content->condition);
-            check_each(if_.Content->instructions);
-            visit_each_non_variant(*this, if_.Content->elseIfs);
-            visit_optional_non_variant(*this, if_.Content->else_);
+            check_value(if_.condition);
+            check_each(if_.instructions);
+            visit_each_non_variant(*this, if_.elseIfs);
+            visit_optional_non_variant(*this, if_.else_);
         }
 
         void operator()(ast::ElseIf& elseIf){
@@ -245,9 +245,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::SourceFile& program){
-            context = program.Content->context;
+            context = program.context;
 
-            visit_each(*this, program.Content->blocks);
+            visit_each(*this, program.blocks);
         }
 
         std::vector<std::shared_ptr<const Type>> get_types(std::vector<ast::Value>& values){
@@ -283,46 +283,46 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+            template_engine->check_type(declaration.variableType, declaration.position);
 
-            if(declaration.Content->value){
-                check_value(*declaration.Content->value);
+            if(declaration.value){
+                check_value(*declaration.value);
             }
 
-            if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-                auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+                auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
                 //If it's a standard type
                 if(type->is_standard_type()){
                     if(type->is_const()){
-                        if(!declaration.Content->value){
-                            throw SemanticalException("A constant variable must have a value", declaration.Content->position);
+                        if(!declaration.value){
+                            throw SemanticalException("A constant variable must have a value", declaration.position);
                         }
 
-                        if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                            throw SemanticalException("The value must be constant", declaration.Content->position);
+                        if(!visit(ast::IsConstantVisitor(), *declaration.value)){
+                            throw SemanticalException("The value must be constant", declaration.position);
                         }
 
-                        auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-                        var->set_source_position(declaration.Content->position);
+                        auto var = declaration.context->addVariable(declaration.variableName, type, *declaration.value);
+                        var->set_source_position(declaration.position);
                     } else {
-                        auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                        var->set_source_position(declaration.Content->position);
+                        auto var = declaration.context->addVariable(declaration.variableName, type);
+                        var->set_source_position(declaration.position);
                     }
                 }
                 //If it's a pointer type
                 else if(type->is_pointer()){
                     if(type->is_const()){
-                        throw SemanticalException("Pointer types cannot be const", declaration.Content->position);
+                        throw SemanticalException("Pointer types cannot be const", declaration.position);
                     }
 
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                    var->set_source_position(declaration.Content->position);
+                    auto var = declaration.context->addVariable(declaration.variableName, type);
+                    var->set_source_position(declaration.position);
                 }
                 //If it's a array
                 else if(type->is_array()){
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                    var->set_source_position(declaration.Content->position);
+                    auto var = declaration.context->addVariable(declaration.variableName, type);
+                    var->set_source_position(declaration.position);
                 }
                 //If it's a template or custom type
                 else {
@@ -330,45 +330,45 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     if(context->struct_exists(mangled)){
                         if(type->is_const()){
-                            throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+                            throw SemanticalException("Custom types cannot be const", declaration.position);
                         }
 
-                        auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                        var->set_source_position(declaration.Content->position);
+                        auto var = declaration.context->addVariable(declaration.variableName, type);
+                        var->set_source_position(declaration.position);
                     } else {
-                        throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
+                        throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.position);
                     }
                 }
             }
 
-            if(declaration.Content->value){
-                check_value(*declaration.Content->value);
+            if(declaration.value){
+                check_value(*declaration.value);
             }
         }
 
         void operator()(ast::StructDeclaration& declaration){
-            template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+            template_engine->check_type(declaration.variableType, declaration.position);
 
-            check_each(declaration.Content->values);
+            check_each(declaration.values);
 
-            if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-                auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+                auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
                 if(!type->is_custom_type() && !type->is_template_type()){
-                    throw SemanticalException("Only custom types take parameters when declared", declaration.Content->position);
+                    throw SemanticalException("Only custom types take parameters when declared", declaration.position);
                 }
 
                 auto mangled = type->mangle();
 
                 if(context->struct_exists(mangled)){
                     if(type->is_const()){
-                        throw SemanticalException("Custom types cannot be const", declaration.Content->position);
+                        throw SemanticalException("Custom types cannot be const", declaration.position);
                     }
 
-                    auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type);
-                    var->set_source_position(declaration.Content->position);
+                    auto var = declaration.context->addVariable(declaration.variableName, type);
+                    var->set_source_position(declaration.position);
                 } else {
-                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.Content->position);
+                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.position);
                 }
             }
         }
@@ -554,17 +554,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
-            template_engine->check_type(declaration.Content->variableType, declaration.Content->position);
+            template_engine->check_type(declaration.variableType, declaration.position);
 
-            if(check_variable(declaration.Content->context, declaration.Content->variableName, declaration.Content->position)){
-                if(!visit(ast::IsConstantVisitor(), *declaration.Content->value)){
-                    throw SemanticalException("The value must be constant", declaration.Content->position);
+            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+                if(!visit(ast::IsConstantVisitor(), *declaration.value)){
+                    throw SemanticalException("The value must be constant", declaration.position);
                 }
 
-                auto type = visit(ast::TypeTransformer(context), declaration.Content->variableType);
+                auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
-                auto var = declaration.Content->context->addVariable(declaration.Content->variableName, type, *declaration.Content->value);
-                var->set_source_position(declaration.Content->position);
+                auto var = declaration.context->addVariable(declaration.variableName, type, *declaration.value);
+                var->set_source_position(declaration.position);
             }
         }
 
@@ -622,8 +622,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 } //end of anonymous namespace
 
 void ast::FunctionCheckPass::apply_struct(ast::struct_definition& struct_, bool indicator){
-    if(!indicator && context->is_recursively_nested(context->get_struct(struct_.Content->struct_type))){
-        throw SemanticalException("The structure " + struct_.Content->struct_type->mangle() + " is invalidly nested", struct_.Content->position);
+    if(!indicator && context->is_recursively_nested(context->get_struct(struct_.struct_type))){
+        throw SemanticalException("The structure " + struct_.struct_type->mangle() + " is invalidly nested", struct_.position);
     }
 }
 
@@ -655,13 +655,13 @@ void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor
 }
 
 void ast::FunctionCheckPass::apply_program(ast::SourceFile& program, bool indicator){
-    context = program.Content->context;
+    context = program.context;
 
     if(!indicator){
         FunctionCheckerVisitor visitor(template_engine, "");
         visitor.context = context;
 
-        for(auto& block : program.Content->blocks){
+        for(auto& block : program.blocks){
             if(auto* ptr = boost::smart_get<ast::GlobalArrayDeclaration>(&block)){
                 visit_non_variant(visitor, *ptr);
             } else if(auto* ptr = boost::smart_get<ast::GlobalVariableDeclaration>(&block)){

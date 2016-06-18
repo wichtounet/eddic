@@ -25,13 +25,13 @@ struct TemplateEngine {
     public:
         TemplateEngine(ast::PassManager& pass_manager);
 
-        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration> LocalFunctionTemplateMap;
+        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration*> LocalFunctionTemplateMap;
         typedef std::unordered_map<std::string, LocalFunctionTemplateMap> FunctionTemplateMap;
 
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> LocalFunctionInstantiationMap;
         typedef std::unordered_map<std::string, LocalFunctionInstantiationMap> FunctionInstantiationMap;
 
-        typedef std::unordered_multimap<std::string, ast::struct_definition> ClassTemplateMap;
+        typedef std::unordered_multimap<std::string, ast::struct_definition*> ClassTemplateMap;
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> ClassInstantiationMap;
 
         void check_function(ast::FunctionCall& function_call);
@@ -43,7 +43,7 @@ struct TemplateEngine {
 
         FunctionTemplateMap function_templates;
         FunctionInstantiationMap function_template_instantiations;
-        
+
         ClassTemplateMap class_templates;
         ClassInstantiationMap class_template_instantiations;
 

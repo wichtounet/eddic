@@ -15,11 +15,11 @@
 #include "Variable.hpp"
 
 #include "ast/member_function_collection.hpp"
-#include "ast/SourceFile.hpp"
 #include "ast/TypeTransformer.hpp"
 #include "ast/ASTVisitor.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TemplateEngine.hpp"
+#include "ast/SourceFile.hpp"
 
 using namespace eddic;
 
@@ -27,19 +27,19 @@ namespace {
 
 template<typename T>
 void annotate(T& declaration, ast::struct_definition& current_struct){
-    declaration.struct_type = current_struct.Content->struct_type;
+    declaration.struct_type = current_struct.struct_type;
 
     ast::PointerType paramType;
 
-    if(current_struct.Content->is_template_instantation()){
+    if(current_struct.is_template_instantation()){
         ast::TemplateType struct_type;
-        struct_type.type = current_struct.Content->name;
-        struct_type.template_types = current_struct.Content->inst_template_types;
+        struct_type.type = current_struct.name;
+        struct_type.template_types = current_struct.inst_template_types;
 
         paramType.type = struct_type;
     } else {
         ast::SimpleType struct_type;
-        struct_type.type = current_struct.Content->name;
+        struct_type.type = current_struct.name;
         struct_type.const_ = false;
 
         paramType.type = struct_type;
@@ -55,17 +55,17 @@ void annotate(T& declaration, ast::struct_definition& current_struct){
 } //end of anonymous namespace
 
 void ast::MemberFunctionCollectionPass::apply_struct(ast::struct_definition& struct_, bool){
-    current_struct = struct_;
+    current_struct = &struct_;
 }
 
 void ast::MemberFunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
-    annotate(function, current_struct);
+    annotate(function, *current_struct);
 }
 
 void ast::MemberFunctionCollectionPass::apply_struct_constructor(ast::Constructor& constructor){
-    annotate(constructor, current_struct);
+    annotate(constructor, *current_struct);
 }
 
 void ast::MemberFunctionCollectionPass::apply_struct_destructor(ast::Destructor& destructor){
-    annotate(destructor, current_struct);
+    annotate(destructor, *current_struct);
 }

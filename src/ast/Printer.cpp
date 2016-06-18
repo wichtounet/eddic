@@ -100,7 +100,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::SourceFile& program) const {
-        print_each_sub(program.Content->blocks, "SourceFile");
+        print_each_sub(program.blocks, "SourceFile");
     }
 
     void operator()(ast::Import& import) const {
@@ -113,20 +113,20 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::struct_definition& declaration) const {
         std::cout << indent() << "Struct Definition";
-        if(declaration.Content->is_template_declaration()){
-            print_template_list(declaration.Content->decl_template_types);
+        if(declaration.is_template_declaration()){
+            print_template_list(declaration.decl_template_types);
         }
-        std::cout << " " << declaration.Content->name << std::endl;
+        std::cout << " " << declaration.name << std::endl;
         level++;
-        print_each_sub(declaration.Content->blocks, "Blocks");
+        print_each_sub(declaration.blocks, "Blocks");
         level--;
         std::cout << std::endl;
     }
 
     void operator()(ast::TemplateFunctionDeclaration& declaration) const {
         std::cout << indent() << "Template Function";
-        print_template_list(declaration.Content->template_types);
-        std::cout << declaration.Content->functionName << std::endl;
+        print_template_list(declaration.template_types);
+        std::cout << declaration.functionName << std::endl;
         std::cout << std::endl;
     }
 
@@ -249,20 +249,20 @@ struct DebugVisitor : public boost::static_visitor<> {
     void operator()(ast::If& if_) const {
         std::cout << indent() << "If" << std::endl;
 
-        print_sub(if_.Content->condition, "Condition");
-        print_each_sub(if_.Content->instructions, "Instructions");
+        print_sub(if_.condition, "Condition");
+        print_each_sub(if_.instructions, "Instructions");
 
-        for(auto& else_if : if_.Content->elseIfs){
+        for(auto& else_if : if_.elseIfs){
             std::cout << indent() << "ElseIf" << std::endl;
 
             print_sub(else_if.condition, "Condition");
             print_each_sub(else_if.instructions, "Instructions");
         }
 
-        if(if_.Content->else_){
+        if(if_.else_){
             std::cout << indent() << "Else" << std::endl;
 
-            print_each_sub((*if_.Content->else_).instructions, "Instructions");
+            print_each_sub((*if_.else_).instructions, "Instructions");
         }
     }
 
@@ -279,16 +279,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::StructDeclaration& declaration) const {
-        std::cout << indent() << "Struct declaration [" << declaration.Content->variableName << "]" << std::endl;
+        std::cout << indent() << "Struct declaration [" << declaration.variableName << "]" << std::endl;
 
-        print_each_sub(declaration.Content->values, "Values");
+        print_each_sub(declaration.values, "Values");
     }
 
     void operator()(ast::VariableDeclaration& declaration) const {
-        std::cout << indent() << "Variable declaration [" << declaration.Content->variableName << "]" << std::endl;
+        std::cout << indent() << "Variable declaration [" << declaration.variableName << "]" << std::endl;
 
-        if(declaration.Content->value){
-            print_sub(*declaration.Content->value);
+        if(declaration.value){
+            print_sub(*declaration.value);
         }
     }
 

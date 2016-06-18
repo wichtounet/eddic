@@ -38,8 +38,8 @@ struct Collector : public boost::static_visitor<> {
         AUTO_RECURSE_DESTRUCTOR()
 
         void operator()(ast::struct_definition& struct_){
-            if(!struct_.Content->is_template_declaration()){
-                visit_each(*this, struct_.Content->blocks);
+            if(!struct_.is_template_declaration()){
+                visit_each(*this, struct_.blocks);
             }
         }
 
@@ -60,7 +60,7 @@ struct Collector : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
+            positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
         }
 
         void operator()(ast::GlobalArrayDeclaration& declaration){
@@ -75,7 +75,7 @@ struct Collector : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->variableName)] = declaration.Content->position;
+            positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
         }
 
         AUTO_IGNORE_OTHERS()
@@ -136,16 +136,16 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::SourceFile& program){
-            check(program.Content->context);
+            check(program.context);
 
-            visit_each(*this, program.Content->blocks);
+            visit_each(*this, program.blocks);
         }
 
         void check_header(const std::string& file, const ast::Position& position){
-            for(auto& block : program.Content->blocks){
+            for(auto& block : program.blocks){
                 if(auto* ptr = boost::get<ast::struct_definition>(&block)){
-                    if(!ptr->Content->is_template_declaration() && ptr->Content->header == file){
-                        auto struct_ = context->get_struct(ptr->Content->struct_type->mangle());
+                    if(!ptr->is_template_declaration() && ptr->header == file){
+                        auto struct_ = context->get_struct(ptr->struct_type->mangle());
 
                         if(struct_->get_references() > 0){
                             return;
@@ -170,24 +170,24 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::struct_definition& declaration){
-            if(declaration.Content->is_template_declaration()){
+            if(declaration.is_template_declaration()){
                 return;
             }
 
-            standard = declaration.Content->standard;
-            visit_each(*this, declaration.Content->blocks);
+            standard = declaration.standard;
+            visit_each(*this, declaration.blocks);
             standard = false;
 
-            if(!declaration.Content->standard){
+            if(!declaration.standard){
                 if(configuration->option_defined("warning-unused")){
-                    auto struct_ = context->get_struct(declaration.Content->struct_type->mangle());
+                    auto struct_ = context->get_struct(declaration.struct_type->mangle());
 
                     if(struct_->get_references() == 0){
-                        warn(declaration.Content->position, "unused structure '" + declaration.Content->name + "'");
+                        warn(declaration.position, "unused structure '" + declaration.name + "'");
                     } else {
                         for(auto& member : struct_->members){
                             if(member.get_references() == 0){
-                                warn(declaration.Content->position, "unused member '" + declaration.Content->name + ".'" + member.name);
+                                warn(declaration.position, "unused member '" + declaration.name + ".'" + member.name);
                             }
                         }
                     }
@@ -215,10 +215,10 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::If& if_){
-            visit(*this, if_.Content->condition);
-            check_each(if_.Content->instructions);
-            visit_each_non_variant(*this, if_.Content->elseIfs);
-            visit_optional_non_variant(*this, if_.Content->else_);
+            visit(*this, if_.condition);
+            check_each(if_.instructions);
+            visit_each_non_variant(*this, if_.elseIfs);
+            visit_optional_non_variant(*this, if_.else_);
         }
 
         void operator()(ast::ElseIf& elseIf){
@@ -296,7 +296,7 @@ void ast::WarningsPass::apply_program(ast::SourceFile& program, bool){
     Collector collector;
     visit_non_variant(collector, program);
 
-    Inspector inspector(collector, program, program.Content->context, configuration);
+    Inspector inspector(collector, program, program.context, configuration);
     visit_non_variant(inspector, program);
 }
 

@@ -27,7 +27,7 @@ namespace ast {
  * \class StructDeclaration
  * \brief The AST node for a declaration of a local struct.
  */
-struct ASTStructDeclaration {
+struct StructDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;

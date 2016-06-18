@@ -25,9 +25,9 @@ void ast::StructureCheckPass::apply_struct(ast::struct_definition& struct_, bool
         return;
     }
 
-    auto struct_type = context->get_struct(struct_.Content->struct_type);
+    auto struct_type = context->get_struct(struct_.struct_type);
 
-    for(auto& block : struct_.Content->blocks){
+    for(auto& block : struct_.blocks){
         if(auto* ptr = boost::get<ast::MemberDeclaration>(&block)){
             auto& member = *ptr;
 
