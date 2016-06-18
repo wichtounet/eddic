@@ -273,10 +273,6 @@ struct global_array_declaration : x3::position_tagged {
     value_t size;
 };
 
-struct import : x3::position_tagged {
-    std::string file;
-};
-
 struct member_declaration : x3::position_tagged {
     ast::Type type;
     std::string name;
@@ -310,7 +306,7 @@ struct template_struct : x3::position_tagged {
 
 typedef x3::variant<
         ast::StandardImport,
-        import,
+        ast::Import,
         template_struct,
         template_function_declaration,
         global_array_declaration,
@@ -347,7 +343,7 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "standard_import: " << import.header << std::endl;
     }
 
-    void operator()(const import& import){
+    void operator()(const ast::Import& import){
         std::cout << indent() << "import: " << import.file << std::endl;
     }
 
@@ -925,11 +921,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::import,
-    (std::string, file)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::member_declaration,
     (ast::Type, type)
     (std::string, name)
@@ -1211,7 +1202,7 @@ namespace x3_grammar {
     x3::rule<global_variable_declaration_class, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
     x3::rule<global_array_declaration_class, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_class, ast::StandardImport> const standard_import("standard_import");
-    x3::rule<import_class, x3_ast::import> const import("import");
+    x3::rule<import_class, ast::Import> const import("import");
     x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
     x3::rule<constructor_class, x3_ast::constructor> const constructor("constructor");
     x3::rule<destructor_class, x3_ast::destructor> const destructor("destructor");

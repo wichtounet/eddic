@@ -18,9 +18,9 @@ namespace ast {
 
 /*!
  * \class Import
- * \brief The AST node for an import.    
+ * \brief The AST node for an import.
  */
-struct Import {
+struct Import : x3::position_tagged {
     Position position;
     std::string file;
 };
@@ -31,8 +31,7 @@ struct Import {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Import, 
-    (eddic::ast::Position, position)
+    eddic::ast::Import,
     (std::string, file)
 )
 
