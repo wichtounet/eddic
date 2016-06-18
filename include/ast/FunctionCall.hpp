@@ -13,6 +13,7 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include "Type.hpp"
 #include "ast/Position.hpp"
 #include "ast/Value.hpp"
 #include "ast/VariableType.hpp"

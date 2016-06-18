@@ -38,13 +38,13 @@ typedef x3::variant<
             Boolean,
             Null,
             x3::forward_ast<Expression>,
-            x3::forward_ast<FunctionCall>,
+            FunctionCall,
             x3::forward_ast<Cast>,
-            x3::forward_ast<BuiltinOperator>,
+            BuiltinOperator,
             x3::forward_ast<Assignment>,
             x3::forward_ast<PrefixOperation>,
             x3::forward_ast<Ternary>,
-            x3::forward_ast<New>,
+            New,
             x3::forward_ast<NewArray>
         > Value;
 
@@ -52,25 +52,27 @@ typedef x3::variant<
 
 } //end of eddic
 
-#include "ast/Cast.hpp"
+// Recursive but not forwarded
+#include "ast/BuiltinOperator.hpp"
 #include "ast/New.hpp"
+#include "ast/FunctionCall.hpp"
 
+// Forwarded
+#include "ast/Cast.hpp"
 #include "ast/Assignment.hpp"
 #include "ast/Ternary.hpp"
 #include "ast/Expression.hpp"
-#include "ast/FunctionCall.hpp"
-#include "ast/BuiltinOperator.hpp"
 #include "ast/NewArray.hpp"
 #include "ast/PrefixOperation.hpp"
 
 X3_FORWARD_AST(eddic::ast::Expression)
-X3_FORWARD_AST(eddic::ast::FunctionCall)
+//X3_FORWARD_AST(eddic::ast::FunctionCall)
 X3_FORWARD_AST(eddic::ast::Cast)
-X3_FORWARD_AST(eddic::ast::BuiltinOperator)
+//X3_FORWARD_AST(eddic::ast::BuiltinOperator)
 X3_FORWARD_AST(eddic::ast::Assignment)
 X3_FORWARD_AST(eddic::ast::PrefixOperation)
 X3_FORWARD_AST(eddic::ast::Ternary)
-X3_FORWARD_AST(eddic::ast::New)
+//X3_FORWARD_AST(eddic::ast::New)
 X3_FORWARD_AST(eddic::ast::NewArray)
 
 #endif
