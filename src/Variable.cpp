@@ -11,13 +11,13 @@
 
 using namespace eddic;
 
-Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position) 
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position)
     : m_name(std::move(name)), m_type(std::move(type)), m_position(std::move(position)) {}
 
-Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position, Val value) 
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, Position position, Val value)
     : m_name(std::move(name)), m_type(std::move(type)), m_position(std::move(position)), v_value(std::move(value)) {}
 
-Variable::Variable(std::string name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset) 
+Variable::Variable(std::string name, std::shared_ptr<const Type> type, std::shared_ptr<Variable> reference, Offset offset)
     : m_name(std::move(name)), m_type(std::move(type)), m_position(PositionType::TEMPORARY), m_reference(std::move(reference)), m_offset(std::move(offset)) {}
 
 std::string Variable::name() const  {
@@ -39,7 +39,7 @@ Val Variable::val() const {
 void Variable::setPosition(Position position){
     m_position = position;
 }
-        
+
 const ast::Position& Variable::source_position() const {
     return m_source_position;
 }
@@ -47,7 +47,7 @@ const ast::Position& Variable::source_position() const {
 void Variable::set_source_position(const ast::Position& position){
     m_source_position = position;
 }
-        
+
 bool Variable::is_reference() const {
     return m_reference != nullptr;
 }
@@ -121,6 +121,8 @@ std::ostream& eddic::operator<<(std::ostream& stream, const Variable& variable){
         case PositionType::PARAM_REGISTER:
             return stream << variable.name() << "(pr," << type << ")";
     }
+
+    return stream << "error:Should never happen";
 }
 
 std::ostream& eddic::operator<<(std::ostream& stream, const std::shared_ptr<Variable>& variable){
