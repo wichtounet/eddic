@@ -64,13 +64,13 @@ struct Collector : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalArrayDeclaration& declaration){
-            positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            positions[declaration.context->getVariable(declaration.arrayName)] = declaration.position;
         }
 
         void operator()(ast::ArrayDeclaration& declaration){
             //If this is null, it means that this an array inside a structure
-            if(declaration.Content->context){
-                positions[declaration.Content->context->getVariable(declaration.Content->arrayName)] = declaration.Content->position;
+            if(declaration.context){
+                positions[declaration.context->getVariable(declaration.arrayName)] = declaration.position;
             }
         }
 
@@ -227,10 +227,10 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::For& for_){
-            visit_optional(*this, for_.Content->start);
-            visit_optional(*this, for_.Content->condition);
-            visit_optional(*this, for_.Content->repeat);
-            check_each(for_.Content->instructions);
+            visit_optional(*this, for_.start);
+            visit_optional(*this, for_.condition);
+            visit_optional(*this, for_.repeat);
+            check_each(for_.instructions);
         }
 
         void operator()(ast::While& while_){

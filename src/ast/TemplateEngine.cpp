@@ -284,11 +284,11 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::ArrayDeclaration& source) const {
         ast::ArrayDeclaration copy;
 
-        copy.Content->context = source.Content->context;
-        copy.Content->position = source.Content->position;
-        copy.Content->arrayType = source.Content->arrayType;
-        copy.Content->arrayName = source.Content->arrayName;
-        copy.Content->size = source.Content->size;
+        copy.context = source.context;
+        copy.position = source.position;
+        copy.arrayType = source.arrayType;
+        copy.arrayName = source.arrayName;
+        copy.size = source.size;
 
         return copy;
     }
@@ -429,22 +429,22 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::For& source) const {
         ast::For copy;
 
-        copy.Content->context = source.Content->context;
+        copy.context = source.context;
 
-        if(source.Content->start){
-            copy.Content->start = visit(*this, *source.Content->start);
+        if(source.start){
+            copy.start = visit(*this, *source.start);
         }
 
-        if(source.Content->condition){
-            copy.Content->condition = visit(ValueCopier(), *source.Content->condition);
+        if(source.condition){
+            copy.condition = visit(ValueCopier(), *source.condition);
         }
 
-        if(source.Content->repeat){
-            copy.Content->repeat = visit(*this, *source.Content->repeat);
+        if(source.repeat){
+            copy.repeat = visit(*this, *source.repeat);
         }
 
-        for(auto& instruction : source.Content->instructions){
-            copy.Content->instructions.push_back(visit(*this, instruction));
+        for(auto& instruction : source.instructions){
+            copy.instructions.push_back(visit(*this, instruction));
         }
 
         return copy;
@@ -618,7 +618,7 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     void operator()(ast::ArrayDeclaration& source){
-        source.Content->arrayType = replace(source.Content->arrayType);
+        source.arrayType = replace(source.arrayType);
     }
 
     void operator()(ast::Foreach& source){
@@ -702,11 +702,11 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
             auto& array_declaration = *ptr;
 
             ast::ArrayDeclaration copy;
-            copy.Content->context = array_declaration.Content->context;
-            copy.Content->position = array_declaration.Content->position;
-            copy.Content->arrayType = array_declaration.Content->arrayType;
-            copy.Content->arrayName = array_declaration.Content->arrayName;
-            copy.Content->size = array_declaration.Content->size;
+            copy.context = array_declaration.context;
+            copy.position = array_declaration.position;
+            copy.arrayType = array_declaration.arrayType;
+            copy.arrayName = array_declaration.arrayName;
+            copy.size = array_declaration.size;
 
             destination.push_back(copy);
         } else if(auto* ptr = boost::smart_get<ast::MemberDeclaration>(&block)){

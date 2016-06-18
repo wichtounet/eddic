@@ -41,11 +41,11 @@ void ast::StructureCheckPass::apply_struct(ast::struct_definition& struct_, bool
         } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
             auto& member = *ptr;
 
-            auto type = (*struct_type)[member.Content->arrayName].type;
+            auto type = (*struct_type)[member.arrayName].type;
 
             if(type->is_custom_type()){
                 if(!context->struct_exists(type)){
-                    throw SemanticalException("Invalid member type " + type->mangle(), member.Content->position);
+                    throw SemanticalException("Invalid member type " + type->mangle(), member.position);
                 }
             }
         }

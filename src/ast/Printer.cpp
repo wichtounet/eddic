@@ -190,7 +190,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::For& for_) const {
-        print_each_sub(for_.Content->instructions, "For");
+        print_each_sub(for_.instructions, "For");
     }
 
     void operator()(ast::Foreach& for_) const {

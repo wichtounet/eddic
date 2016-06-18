@@ -219,19 +219,19 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::For& for_){
-            if(for_.Content->start){
-                check_value(*for_.Content->start);
+            if(for_.start){
+                check_value(*for_.start);
             }
 
-            if(for_.Content->condition){
-                check_value(*for_.Content->condition);
+            if(for_.condition){
+                check_value(*for_.condition);
             }
 
-            if(for_.Content->repeat){
-                check_value(*for_.Content->repeat);
+            if(for_.repeat){
+                check_value(*for_.repeat);
             }
 
-            check_each(for_.Content->instructions);
+            check_each(for_.instructions);
         }
 
         void operator()(ast::While& while_){
@@ -375,28 +375,28 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
         template<typename ArrayDeclaration>
         void declare_array(ArrayDeclaration& declaration){
-            template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
+            template_engine->check_type(declaration.arrayType, declaration.position);
 
-            check_value(declaration.Content->size);
+            check_value(declaration.size);
 
-            if(check_variable(declaration.Content->context, declaration.Content->arrayName, declaration.Content->position)){
-                auto element_type = visit(ast::TypeTransformer(context), declaration.Content->arrayType);
+            if(check_variable(declaration.context, declaration.arrayName, declaration.position)){
+                auto element_type = visit(ast::TypeTransformer(context), declaration.arrayType);
 
                 if(element_type->is_array()){
-                    throw SemanticalException("Arrays of arrays are not supported", declaration.Content->position);
+                    throw SemanticalException("Arrays of arrays are not supported", declaration.position);
                 }
 
-                auto constant = visit(ast::IsConstantVisitor(), declaration.Content->size);
+                auto constant = visit(ast::IsConstantVisitor(), declaration.size);
 
                 if(!constant){
-                    throw SemanticalException("Array size must be constant", declaration.Content->position);
+                    throw SemanticalException("Array size must be constant", declaration.position);
                 }
 
-                auto value = visit(ast::GetConstantValue(), declaration.Content->size);
+                auto value = visit(ast::GetConstantValue(), declaration.size);
                 auto size = boost::smart_get<int>(value);
 
-                auto var = declaration.Content->context->addVariable(declaration.Content->arrayName, new_array_type(element_type, size));
-                var->set_source_position(declaration.Content->position);
+                auto var = declaration.context->addVariable(declaration.arrayName, new_array_type(element_type, size));
+                var->set_source_position(declaration.position);
             }
         }
 

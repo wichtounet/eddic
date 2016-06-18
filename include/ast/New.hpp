@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
@@ -22,9 +21,8 @@ class Context;
 namespace ast {
 
 /*!
- * \class ASTNew
+ * \class New
  * \brief The AST node for a dynamic allocation.
- * Should only be used from the Deferred version (eddic::ast::New).
  */
 struct New: x3::position_tagged  {
     std::shared_ptr<Context> context;

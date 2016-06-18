@@ -273,11 +273,6 @@ struct global_array_declaration : x3::position_tagged {
     value_t size;
 };
 
-struct member_declaration : x3::position_tagged {
-    ast::Type type;
-    std::string name;
-};
-
 struct constructor : x3::position_tagged {
     std::vector<ast::FunctionParameter> parameters;
     std::vector<instruction> instructions;
@@ -290,7 +285,7 @@ struct destructor {
 };
 
 typedef x3::variant<
-        member_declaration,
+        ast::MemberDeclaration,
         array_declaration,
         template_function_declaration,
         constructor,
@@ -921,12 +916,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::member_declaration,
-    (ast::Type, type)
-    (std::string, name)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::destructor,
     (std::vector<x3_ast::instruction>, instructions)
     (x3::unused_type, fake_)
@@ -1203,7 +1192,7 @@ namespace x3_grammar {
     x3::rule<global_array_declaration_class, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_class, ast::StandardImport> const standard_import("standard_import");
     x3::rule<import_class, ast::Import> const import("import");
-    x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
+    x3::rule<member_declaration_class, ast::MemberDeclaration> const member_declaration("member_declaration");
     x3::rule<constructor_class, x3_ast::constructor> const constructor("constructor");
     x3::rule<destructor_class, x3_ast::destructor> const destructor("destructor");
     x3::rule<template_struct_class, x3_ast::template_struct> const template_struct("template_struct");

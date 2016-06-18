@@ -253,8 +253,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         >>  lexer.right_brace;
 
     member_declaration %=
-            local_begin
-        >>  type
+            type
         >>  lexer.identifier
         >>  lexer.stop;
 

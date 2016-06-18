@@ -12,7 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
@@ -25,10 +24,9 @@ namespace ast {
 
 /*!
  * \class ASTArrayDeclaration
- * \brief The AST node for a declaration of a local array.  
- * Should only be used from the Deferred version (eddic::ast::ArrayDeclaration).
+ * \brief The AST node for a declaration of a local array.
  */
-struct ASTArrayDeclaration {
+struct ArrayDeclaration {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -39,23 +37,17 @@ struct ASTArrayDeclaration {
     mutable long references = 0;
 };
 
-/*!
- * \typedef ArrayDeclaration
- * \brief The AST node for a declaration of an array. 
- */
-typedef Deferred<ASTArrayDeclaration> ArrayDeclaration;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ArrayDeclaration, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->arrayType)
-    (std::string, Content->arrayName)
-    (eddic::ast::Value, Content->size)
+    eddic::ast::ArrayDeclaration,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, arrayType)
+    (std::string, arrayName)
+    (eddic::ast::Value, size)
 )
 
 #endif

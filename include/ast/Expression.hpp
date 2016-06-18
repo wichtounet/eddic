@@ -15,7 +15,6 @@
 #include <boost/fusion/adapted/boost_tuple.hpp>
 #include <boost/optional.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/Operator.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"

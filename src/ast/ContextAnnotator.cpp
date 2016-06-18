@@ -96,13 +96,13 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::For& for_){
-            currentContext = for_.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
+            currentContext = for_.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
-            visit_optional(*this, for_.Content->start);
-            visit_optional(*this, for_.Content->condition);
-            visit_optional(*this, for_.Content->repeat);
+            visit_optional(*this, for_.start);
+            visit_optional(*this, for_.condition);
+            visit_optional(*this, for_.repeat);
 
-            visit_each(*this, for_.Content->instructions);
+            visit_each(*this, for_.instructions);
 
             currentContext = currentContext->parent();
         }
@@ -168,9 +168,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::ArrayDeclaration& declaration){
-            declaration.Content->context = currentContext;
+            declaration.context = currentContext;
 
-            visit(*this, declaration.Content->size);
+            visit(*this, declaration.size);
         }
 
         void operator()(ast::Assignment& assignment){
@@ -235,7 +235,7 @@ void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool in
             if(auto* ptr = boost::get<ast::GlobalVariableDeclaration>(&block)){
                 ptr->Content->context = currentContext;
             } else if(auto* ptr = boost::get<ast::GlobalArrayDeclaration>(&block)){
-                ptr->Content->context = currentContext;
+                ptr->context = currentContext;
             }
         }
     }

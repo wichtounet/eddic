@@ -88,11 +88,11 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
-        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
+        template_engine->check_type(declaration.arrayType, declaration.position);
     }
 
     void operator()(ast::ArrayDeclaration& declaration){
-        template_engine->check_type(declaration.Content->arrayType, declaration.Content->position);
+        template_engine->check_type(declaration.arrayType, declaration.position);
     }
 
     void operator()(ast::Foreach& foreach){

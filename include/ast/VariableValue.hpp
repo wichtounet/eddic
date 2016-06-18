@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 
 namespace eddic {

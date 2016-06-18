@@ -58,10 +58,10 @@ AUTO_RECURSE_ELSE()
 
 #define AUTO_RECURSE_SIMPLE_LOOPS()\
 void operator()(ast::For& for_){\
-    visit_optional(*this, for_.Content->start);\
-    visit_optional(*this, for_.Content->condition);\
-    visit_optional(*this, for_.Content->repeat);\
-    visit_each(*this, for_.Content->instructions);\
+    visit_optional(*this, for_.start);\
+    visit_optional(*this, for_.condition);\
+    visit_optional(*this, for_.repeat);\
+    visit_each(*this, for_.instructions);\
 }\
 void operator()(ast::While& while_){\
     visit(*this, while_.Content->condition);\
