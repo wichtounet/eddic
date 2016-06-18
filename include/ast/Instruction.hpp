@@ -59,9 +59,17 @@ typedef x3::variant<
 #include "ast/If.hpp"
 #include "ast/While.hpp"
 #include "ast/DoWhile.hpp"
-#include "ast/For.hpp"
 #include "ast/Foreach.hpp"
 #include "ast/ForeachIn.hpp"
 #include "ast/Switch.hpp"
+#include "ast/For.hpp"
+
+X3_FORWARD_AST(eddic::ast::If)
+X3_FORWARD_AST(eddic::ast::While)
+X3_FORWARD_AST(eddic::ast::DoWhile)
+X3_FORWARD_AST(eddic::ast::Foreach)
+X3_FORWARD_AST(eddic::ast::ForeachIn)
+X3_FORWARD_AST(eddic::ast::Switch)
+X3_FORWARD_AST(eddic::ast::For)
 
 #endif
