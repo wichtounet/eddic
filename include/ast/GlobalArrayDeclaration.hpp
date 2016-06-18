@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTGlobalArrayDeclaration
  * \brief The AST node for a global array declaration.
  */
-struct GlobalArrayDeclaration {
+struct GlobalArrayDeclaration : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -44,7 +44,6 @@ struct GlobalArrayDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalArrayDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, arrayType)
     (std::string, arrayName)
     (eddic::ast::Value, size)

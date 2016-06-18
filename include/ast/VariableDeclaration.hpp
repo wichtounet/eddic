@@ -26,7 +26,7 @@ namespace ast {
  * \class VariableDeclaration
  * \brief The AST node for a declaration of a local variable.
  */
-struct VariableDeclaration {
+struct VariableDeclaration : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -44,7 +44,6 @@ struct VariableDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::VariableDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, variableType)
     (std::string, variableName)
     (boost::optional<eddic::ast::Value>, value)

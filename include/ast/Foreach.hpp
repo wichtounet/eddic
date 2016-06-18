@@ -23,7 +23,7 @@ namespace ast {
  * \class Foreach
  * \brief The AST node for a foreach loop.
  */
-struct Foreach {
+struct Foreach : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     ast::Position position;
@@ -43,7 +43,6 @@ struct Foreach {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Foreach,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, variableType)
     (std::string, variableName)
     (int, from)

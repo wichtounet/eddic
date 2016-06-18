@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTArrayDeclaration
  * \brief The AST node for a declaration of a local array.
  */
-struct ArrayDeclaration {
+struct ArrayDeclaration : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -44,7 +44,6 @@ struct ArrayDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::ArrayDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, arrayType)
     (std::string, arrayName)
     (eddic::ast::Value, size)

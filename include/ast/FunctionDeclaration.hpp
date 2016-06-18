@@ -30,7 +30,7 @@ namespace ast {
  * \class ASTFunctionDeclaration
  * \brief The AST node for a function declaration.
  */
-struct FunctionDeclaration {
+struct FunctionDeclaration : x3::position_tagged {
     std::shared_ptr<FunctionContext> context;
 
     std::string mangledName;
@@ -54,7 +54,6 @@ struct FunctionDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, returnType)
     (std::string, functionName)
     (std::vector<eddic::ast::FunctionParameter>, parameters)

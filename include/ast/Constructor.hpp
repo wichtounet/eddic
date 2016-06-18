@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTConstructor
  * \brief The AST node for a constructor declaration.
  */
-struct Constructor {
+struct Constructor : x3::position_tagged {
     std::shared_ptr<FunctionContext> context;
 
     std::string mangledName;
@@ -46,7 +46,6 @@ struct Constructor {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Constructor,
-    (eddic::ast::Position, position)
     (std::vector<eddic::ast::FunctionParameter>, parameters)
     (std::vector<eddic::ast::Instruction>, instructions)
 )

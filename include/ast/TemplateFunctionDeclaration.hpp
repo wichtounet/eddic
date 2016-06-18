@@ -25,7 +25,7 @@ namespace ast {
  * \class TemplateFunctionDeclaration
  * \brief The AST node for a template function declaration.
  */
-struct TemplateFunctionDeclaration {
+struct TemplateFunctionDeclaration : x3::position_tagged {
     std::shared_ptr<FunctionContext> context;
 
     std::string mangledName;
@@ -48,7 +48,6 @@ struct TemplateFunctionDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::TemplateFunctionDeclaration,
-    (eddic::ast::Position, position)
     (std::vector<std::string>, template_types)
     (eddic::ast::Type, returnType)
     (std::string, functionName)

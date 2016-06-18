@@ -53,7 +53,7 @@ typedef x3::variant<
  * \class ASTSourceFile
  * \brief The AST root node for a program.
  */
-struct SourceFile {
+struct SourceFile : x3::position_tagged {
     std::shared_ptr<GlobalContext> context;
 
     Position position;
@@ -69,7 +69,6 @@ struct SourceFile {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::SourceFile,
-    (eddic::ast::Position, position)
     (std::vector<eddic::ast::SourceFileBlock>, blocks)
 )
 

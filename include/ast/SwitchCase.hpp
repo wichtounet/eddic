@@ -23,11 +23,11 @@ class Context;
 namespace ast {
 
 /*!
- * \class SwitchCase 
+ * \class SwitchCase
  * \brief The AST node for a switch case.
  */
-struct SwitchCase {
-    std::shared_ptr<Context> context; 
+struct SwitchCase : x3::position_tagged {
+    std::shared_ptr<Context> context;
 
     Position position;
     Value value;
@@ -40,8 +40,7 @@ struct SwitchCase {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::SwitchCase, 
-    (eddic::ast::Position, position)
+    eddic::ast::SwitchCase,
     (eddic::ast::Value, value)
     (std::vector<eddic::ast::Instruction>, instructions)
 )

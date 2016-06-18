@@ -27,7 +27,7 @@ namespace ast {
  * \class StructDeclaration
  * \brief The AST node for a declaration of a local struct.
  */
-struct StructDeclaration {
+struct StructDeclaration : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -45,7 +45,6 @@ struct StructDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::StructDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, variableType)
     (std::string, variableName)
     (std::vector<eddic::ast::Value>, values)

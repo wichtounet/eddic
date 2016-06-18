@@ -28,7 +28,7 @@ namespace ast {
  * \class ASTSwitch
  * \brief The AST node for a switch case.
  */
-struct Switch {
+struct Switch : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -46,7 +46,6 @@ struct Switch {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Switch,
-    (eddic::ast::Position, position)
     (eddic::ast::Value, value)
     (std::vector<eddic::ast::SwitchCase>, cases)
     (boost::optional<eddic::ast::DefaultCase>, default_case)

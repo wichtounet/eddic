@@ -11,6 +11,7 @@
 #include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/home/x3/support/unused.hpp>
 
 #include "ast/Value.hpp"
 #include "ast/Position.hpp"
@@ -25,12 +26,13 @@ namespace ast {
  * \class ASTReturn
  * \brief The AST node for a return.
  */
-struct Return {
+struct Return : x3::position_tagged {
     std::string mangled_name;
     std::shared_ptr<FunctionContext> context;
 
     Position position;
     Value value;
+    x3::unused_type fake_;
 
     mutable long references = 0;
 };
@@ -42,8 +44,8 @@ struct Return {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Return,
-    (eddic::ast::Position, position)
     (eddic::ast::Value, value)
+    (x3::unused_type, fake_)
 )
 
 #endif

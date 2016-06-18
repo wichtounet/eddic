@@ -25,7 +25,7 @@ namespace ast {
  * \class ASTGlobalVariableDeclaration
  * \brief The AST node for a declaration of a global variable.
  */
-struct GlobalVariableDeclaration {
+struct GlobalVariableDeclaration : x3::position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;
@@ -43,7 +43,6 @@ struct GlobalVariableDeclaration {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::GlobalVariableDeclaration,
-    (eddic::ast::Position, position)
     (eddic::ast::Type, variableType)
     (std::string, variableName)
     (boost::optional<eddic::ast::Value>, value)

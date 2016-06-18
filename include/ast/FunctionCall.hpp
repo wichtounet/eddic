@@ -47,7 +47,6 @@ struct FunctionCall : x3::position_tagged {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::FunctionCall,
-    (eddic::ast::Position, position)
     (std::string, function_name)
     (std::vector<eddic::ast::Type>, template_types)
     (std::vector<eddic::ast::Value>, values)

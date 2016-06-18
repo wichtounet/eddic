@@ -45,7 +45,7 @@ typedef x3::variant<
             TemplateFunctionDeclaration
         > StructBlock;
 
-struct struct_definition {
+struct struct_definition : x3::position_tagged {
     bool standard = false;
     std::string header = "";
 
@@ -77,7 +77,6 @@ struct struct_definition {
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::struct_definition,
-    (eddic::ast::Position, position)
     (std::vector<std::string>, decl_template_types)
     (std::string, name)
     (boost::optional<eddic::ast::Type>, parent_type)

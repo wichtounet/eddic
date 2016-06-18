@@ -21,6 +21,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         value_grammar(lexer),
         type_grammar(lexer)
 {
+#if 0
     auto const value = value_grammar(qi::_a, qi::_b);
     auto const& type = type_grammar;
     auto local_begin = qi::lazy(boost::phoenix::construct<qi::position>(qi::_a, qi::_b));
@@ -277,7 +278,6 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
         >>  *(instruction)
         >>  lexer.right_brace;
 
-#if 0
     template_struct %=
             local_begin
         >>
