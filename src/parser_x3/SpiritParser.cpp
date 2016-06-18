@@ -253,16 +253,11 @@ struct if_ {
 
 //*****************************************
 
-struct function_parameter {
-    ast::Type  parameter_type;
-    std::string parameter_name;
-};
-
 struct template_function_declaration : x3::position_tagged {
     std::vector<std::string> template_types;
     ast::Type return_type;
     std::string name;
-    std::vector<function_parameter> parameters;
+    std::vector<ast::FunctionParameter> parameters;
     std::vector<instruction> instructions;
 };
 
@@ -278,10 +273,6 @@ struct global_array_declaration : x3::position_tagged {
     value_t size;
 };
 
-struct standard_import : x3::position_tagged {
-    std::string file;
-};
-
 struct import : x3::position_tagged {
     std::string file;
 };
@@ -292,12 +283,12 @@ struct member_declaration : x3::position_tagged {
 };
 
 struct constructor : x3::position_tagged {
-    std::vector<function_parameter> parameters;
+    std::vector<ast::FunctionParameter> parameters;
     std::vector<instruction> instructions;
 };
 
 struct destructor {
-    std::vector<function_parameter> parameters;
+    std::vector<ast::FunctionParameter> parameters;
     std::vector<instruction> instructions;
 	x3::unused_type fake_;
 };
@@ -318,7 +309,7 @@ struct template_struct : x3::position_tagged {
 };
 
 typedef x3::variant<
-        standard_import,
+        ast::StandardImport,
         import,
         template_struct,
         template_function_declaration,
@@ -352,8 +343,8 @@ struct printer: public boost::static_visitor<>  {
         i -= 2;
     }
 
-    void operator()(const standard_import& import){
-        std::cout << indent() << "standard_import: " << import.file << std::endl;
+    void operator()(const ast::StandardImport& import){
+        std::cout << indent() << "standard_import: " << import.header << std::endl;
     }
 
     void operator()(const import& import){
@@ -376,10 +367,10 @@ struct printer: public boost::static_visitor<>  {
         std::cout << indent() << "parameters: " << std::endl;
         i += 2;
         for(auto& parameter : function.parameters){
-            std::cout << indent() << "name: " << parameter.parameter_name << std::endl;
+            std::cout << indent() << "name: " << parameter.parameterName << std::endl;
             std::cout << indent() << "type: " << std::endl;
             i += 2;
-            boost::apply_visitor(*this, parameter.parameter_type);
+            boost::apply_visitor(*this, parameter.parameterType);
             i -= 2;
         }
         i -= 2;
@@ -915,14 +906,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<std::string>, template_types)
     (ast::Type, return_type)
     (std::string, name)
-    (std::vector<x3_ast::function_parameter>, parameters)
+    (std::vector<ast::FunctionParameter>, parameters)
     (std::vector<x3_ast::instruction>, instructions)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::function_parameter,
-    (ast::Type, parameter_type)
-    (std::string, parameter_name)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -945,11 +930,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::standard_import,
-    (std::string, file)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::member_declaration,
     (ast::Type, type)
     (std::string, name)
@@ -963,7 +943,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::constructor,
-    (std::vector<x3_ast::function_parameter>, parameters)
+    (std::vector<ast::FunctionParameter>, parameters)
     (std::vector<x3_ast::instruction>, instructions)
 )
 
@@ -1226,11 +1206,11 @@ namespace x3_grammar {
     x3::rule<switch_case_class, x3_ast::switch_case> const switch_case("switch_case");
     x3::rule<default_case_class, x3_ast::default_case_t> const default_case("default_case");
 
-    x3::rule<function_parameter_class, x3_ast::function_parameter> const function_parameter("function_parameter");
+    x3::rule<function_parameter_class, ast::FunctionParameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
     x3::rule<global_variable_declaration_class, x3_ast::global_variable_declaration> const global_variable_declaration("global_variable_declaration");
     x3::rule<global_array_declaration_class, x3_ast::global_array_declaration> const global_array_declaration("global_array_declaration");
-    x3::rule<standard_import_class, x3_ast::standard_import> const standard_import("standard_import");
+    x3::rule<standard_import_class, ast::StandardImport> const standard_import("standard_import");
     x3::rule<import_class, x3_ast::import> const import("import");
     x3::rule<member_declaration_class, x3_ast::member_declaration> const member_declaration("member_declaration");
     x3::rule<constructor_class, x3_ast::constructor> const constructor("constructor");

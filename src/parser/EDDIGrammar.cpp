@@ -280,7 +280,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
 
     template_struct %=
             local_begin
-        >>  
+        >>
             -(
                 lexer.template_
             >>  qi::omit[lexer.less]
@@ -313,17 +313,16 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
              )
         >>  lexer.right_brace;
 
+#if 0
     auto standard_import = boost::spirit::qi::as<ast::StandardImport>()[(
-            local_begin
-        >>  lexer.include
+            lexer.include
         >>  qi::omit[lexer.less]
         >>  lexer.identifier
         >>  qi::omit[lexer.greater]
         )];
 
     auto import = boost::spirit::qi::as<ast::Import>()[(
-            local_begin
-        >>  lexer.include
+            lexer.include
         >>  lexer.string_literal
         )];
 
@@ -339,6 +338,7 @@ parser::EddiGrammar::EddiGrammar(const lexer::StaticLexer& lexer) :
                 //|   struct_
                 |   template_struct
             );
+#endif
 }
 
 #pragma clang diagnostic pop
