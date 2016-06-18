@@ -26,7 +26,7 @@ void operator()(ast::TemplateFunctionDeclaration& function){\
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
 void operator()(ast::FunctionDeclaration& function){\
-    visit_each(*this, function.Content->instructions);\
+    visit_each(*this, function.instructions);\
 }
 
 /* Instructions */
@@ -64,27 +64,27 @@ void operator()(ast::For& for_){\
     visit_each(*this, for_.instructions);\
 }\
 void operator()(ast::While& while_){\
-    visit(*this, while_.Content->condition);\
-    visit_each(*this, while_.Content->instructions);\
+    visit(*this, while_.condition);\
+    visit_each(*this, while_.instructions);\
 }\
 void operator()(ast::DoWhile& while_){\
-    visit(*this, while_.Content->condition);\
-    visit_each(*this, while_.Content->instructions);\
+    visit(*this, while_.condition);\
+    visit_each(*this, while_.instructions);\
 }
 
 #define AUTO_RECURSE_FOREACH()\
 void operator()(ast::Foreach& foreach_){\
-    visit_each(*this, foreach_.Content->instructions);\
+    visit_each(*this, foreach_.instructions);\
 }\
 void operator()(ast::ForeachIn& foreach_){\
-    visit_each(*this, foreach_.Content->instructions);\
+    visit_each(*this, foreach_.instructions);\
 }
 
 #define AUTO_RECURSE_SWITCH()\
 void operator()(ast::Switch& switch_){\
-    visit(*this, switch_.Content->value);\
-    visit_each_non_variant(*this, switch_.Content->cases);\
-    visit_optional_non_variant(*this, switch_.Content->default_case);\
+    visit(*this, switch_.value);\
+    visit_each_non_variant(*this, switch_.cases);\
+    visit_optional_non_variant(*this, switch_.default_case);\
 }
 
 #define AUTO_RECURSE_SWITCH_CASE()\
@@ -109,7 +109,7 @@ void operator()(ast::VariableDeclaration& declaration){\
 
 #define AUTO_RECURSE_RETURN_VALUES()\
 void operator()(ast::Return& return_){\
-    visit(*this, return_.Content->value);\
+    visit(*this, return_.value);\
 }
 
 #define AUTO_RECURSE_STRUCT_DECLARATION()\
@@ -156,12 +156,12 @@ void operator()(ast::PrefixOperation& operation){\
 
 #define AUTO_RECURSE_CONSTRUCTOR()\
 void operator()(ast::Constructor& function){\
-    visit_each(*this, function.Content->instructions);\
+    visit_each(*this, function.instructions);\
 }
 
 #define AUTO_RECURSE_DESTRUCTOR()\
 void operator()(ast::Destructor& function){\
-    visit_each(*this, function.Content->instructions);\
+    visit_each(*this, function.instructions);\
 }
 
 #define AUTO_RECURSE_GLOBAL_DECLARATION()\
@@ -176,7 +176,7 @@ void operator()(ast::New& new_){\
 
 #define AUTO_RECURSE_DELETE()\
 void operator()(ast::Delete& delete_){\
-    visit(*this, delete_.Content->value);\
+    visit(*this, delete_.value);\
 }
 
 #define AUTO_RECURSE_NEW_ARRAY()\

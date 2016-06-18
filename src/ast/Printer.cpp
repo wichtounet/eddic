@@ -131,16 +131,16 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::FunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.Content->functionName << std::endl;
+        std::cout << indent() << "Function " << declaration.functionName << std::endl;
 
         std::cout << indent() << "Parameters:" << std::endl;
         level++;
-        for(auto& param : declaration.Content->parameters){
+        for(auto& param : declaration.parameters){
             std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl;
         }
         level--;
 
-        print_each_sub(declaration.Content->instructions, "Instructions:");
+        print_each_sub(declaration.instructions, "Instructions:");
         std::cout << std::endl;
     }
 
@@ -149,17 +149,17 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         std::cout << indent() << "Parameters:" << std::endl;
         level++;
-        for(auto& param : declaration.Content->parameters){
+        for(auto& param : declaration.parameters){
             std::cout << indent() << param.parameterName << std::endl;
         }
         level--;
 
-        print_each_sub(declaration.Content->instructions, "Instructions:");
+        print_each_sub(declaration.instructions, "Instructions:");
     }
 
     void operator()(ast::Destructor& declaration) const {
         std::cout << indent() << "Destructor" << std::endl;
-        print_each_sub(declaration.Content->instructions, "Instructions:");
+        print_each_sub(declaration.instructions, "Instructions:");
     }
 
     void operator()(ast::MemberDeclaration& declaration) const {
@@ -186,7 +186,7 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::Delete& delete_) const {
         std::cout << indent() << "Delete" << std::endl;
-        print_sub(delete_.Content->value, "Value");
+        print_sub(delete_.value, "Value");
     }
 
     void operator()(ast::For& for_) const {
@@ -194,11 +194,11 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Foreach& for_) const {
-        print_each_sub(for_.Content->instructions, "Foreach");
+        print_each_sub(for_.instructions, "Foreach");
     }
 
     void operator()(ast::ForeachIn& for_) const {
-        print_each_sub(for_.Content->instructions, "Foreach In");
+        print_each_sub(for_.instructions, "Foreach In");
     }
 
     void operator()(ast::Switch& switch_) const {
@@ -206,14 +206,14 @@ struct DebugVisitor : public boost::static_visitor<> {
 
         ++level;
 
-        print_sub(switch_.Content->value, "Value");
+        print_sub(switch_.value, "Value");
 
-        for(auto& case_ : switch_.Content->cases){
+        for(auto& case_ : switch_.cases){
             visit_non_variant(*this, case_);
         }
 
-        if(switch_.Content->default_case){
-            visit_non_variant(*this, *switch_.Content->default_case);
+        if(switch_.default_case){
+            visit_non_variant(*this, *switch_.default_case);
         }
 
         --level;
@@ -236,14 +236,14 @@ struct DebugVisitor : public boost::static_visitor<> {
 
     void operator()(ast::While& while_) const {
         std::cout << indent() << "While" << std::endl;
-        print_sub(while_.Content->condition, "Condition:");
-        print_each_sub(while_.Content->instructions, "Instructions:");
+        print_sub(while_.condition, "Condition:");
+        print_each_sub(while_.instructions, "Instructions:");
     }
 
     void operator()(ast::DoWhile& while_) const {
         std::cout << indent() << "Do while" << std::endl;
-        print_sub(while_.Content->condition, "Condition:");
-        print_each_sub(while_.Content->instructions, "Instructions:");
+        print_sub(while_.condition, "Condition:");
+        print_each_sub(while_.instructions, "Instructions:");
     }
 
     void operator()(ast::If& if_) const {
@@ -318,7 +318,7 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::Return& return_) const {
-        print_sub(return_.Content->value, "Function Return");
+        print_sub(return_.value, "Function Return");
     }
 
     void operator()(ast::Literal& literal) const {

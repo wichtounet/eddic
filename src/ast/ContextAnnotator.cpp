@@ -52,11 +52,11 @@ struct AnnotateVisitor : public boost::static_visitor<> {
 
         template<typename Loop>
         void annotateWhileLoop(Loop& loop){
-            currentContext = loop.Content->context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
+            currentContext = loop.context = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
-            visit(*this, loop.Content->condition);
+            visit(*this, loop.condition);
 
-            visit_each(*this, loop.Content->instructions);
+            visit_each(*this, loop.instructions);
 
             currentContext = currentContext->parent();
         }
@@ -70,11 +70,11 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Switch& switch_){
-            switch_.Content->context = currentContext;
+            switch_.context = currentContext;
 
-            visit(*this, switch_.Content->value);
-            visit_each_non_variant(*this, switch_.Content->cases);
-            visit_optional_non_variant(*this, switch_.Content->default_case);
+            visit(*this, switch_.value);
+            visit_each_non_variant(*this, switch_.cases);
+            visit_optional_non_variant(*this, switch_.default_case);
         }
 
         void operator()(ast::SwitchCase& switch_case){
@@ -109,9 +109,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
 
         template<typename Loop>
         void annotateSimpleLoop(Loop& loop){
-            loop.Content->context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
+            loop.context = currentContext = std::make_shared<BlockContext>(currentContext, functionContext, globalContext);
 
-            visit_each(*this, loop.Content->instructions);
+            visit_each(*this, loop.instructions);
 
             currentContext = currentContext->parent();
         }
@@ -185,9 +185,9 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            return_.Content->context = functionContext;
+            return_.context = functionContext;
 
-            visit(*this, return_.Content->value);
+            visit(*this, return_.value);
         }
 
         void operator()(ast::Cast& cast){
@@ -242,9 +242,9 @@ void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool in
 }
 
 #define HANDLE_FUNCTION() \
-    currentContext = function.Content->context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform, configuration); \
+    currentContext = function.context = functionContext = std::make_shared<FunctionContext>(currentContext, globalContext, platform, configuration); \
     auto visitor = make_visitor(globalContext, functionContext, currentContext); \
-    visit_each(visitor, function.Content->instructions); \
+    visit_each(visitor, function.instructions); \
     currentContext = currentContext->parent();
 
 void ast::ContextAnnotationPass::apply_function(ast::FunctionDeclaration& function){

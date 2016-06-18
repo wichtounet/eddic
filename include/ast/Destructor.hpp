@@ -26,12 +26,11 @@ namespace ast {
 
 /*!
  * \class ASTDestructor
- * \brief The AST node for a destructor declaration.  
- * Should only be used from the Deferred version (eddic::ast::Destructor).
+ * \brief The AST node for a destructor declaration.
  */
-struct ASTDestructor { 
+struct Destructor {
     std::shared_ptr<FunctionContext> context;
-    
+
     std::string mangledName;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
@@ -43,21 +42,15 @@ struct ASTDestructor {
     mutable long references = 0;
 };
 
-/*!
- * \typedef FunctionDeclaration
- * \brief The AST node for a function declaration.
- */
-typedef Deferred<ASTDestructor> Destructor; 
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Destructor, 
-    (eddic::ast::Position, Content->position)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::Destructor,
+    (eddic::ast::Position, position)
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

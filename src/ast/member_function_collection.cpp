@@ -27,7 +27,7 @@ namespace {
 
 template<typename T>
 void annotate(T& declaration, ast::struct_definition& current_struct){
-    declaration.Content->struct_type = current_struct.Content->struct_type;
+    declaration.struct_type = current_struct.Content->struct_type;
 
     ast::PointerType paramType;
 
@@ -49,15 +49,15 @@ void annotate(T& declaration, ast::struct_definition& current_struct){
     param.parameterName = "this";
     param.parameterType = paramType;
 
-    declaration.Content->parameters.insert(declaration.Content->parameters.begin(), param);
+    declaration.parameters.insert(declaration.parameters.begin(), param);
 }
 
 } //end of anonymous namespace
-        
+
 void ast::MemberFunctionCollectionPass::apply_struct(ast::struct_definition& struct_, bool){
     current_struct = struct_;
 }
-    
+
 void ast::MemberFunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
     annotate(function, current_struct);
 }

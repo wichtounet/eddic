@@ -24,28 +24,18 @@ namespace eddic {
 
 namespace ast {
 
-struct ASTWhile;
-typedef Deferred<ASTWhile> While;
-
-struct ASTDoWhile;
-typedef Deferred<ASTDoWhile> DoWhile;
+struct While;
+struct DoWhile;
 
 struct For;
 
 struct ASTIf;
 typedef Deferred<ASTIf> If;
 
-struct ASTForeach;
-typedef Deferred<ASTForeach> Foreach;
-
-struct ASTForeachIn;
-typedef Deferred<ASTForeachIn> ForeachIn;
-
-struct ASTSwitch;
-typedef Deferred<ASTSwitch> Switch;
-
-struct ASTDelete;
-typedef Deferred<ASTDelete> Delete;
+struct Foreach;
+struct ForeachIn;
+struct Switch;
+struct Delete;
 
 typedef boost::variant<
             FunctionCall,
@@ -56,13 +46,13 @@ typedef boost::variant<
             Assignment,
             Return,
             If,
-            While,
-            DoWhile,
-            Foreach,
-            ForeachIn,
+            boost::recursive_wrapper<While>,
+            boost::recursive_wrapper<DoWhile>,
+            boost::recursive_wrapper<Foreach>,
+            boost::recursive_wrapper<ForeachIn>,
             PrefixOperation,
             Delete,
-            Switch,
+            boost::recursive_wrapper<Switch>,
             boost::recursive_wrapper<For>>
         Instruction;
 

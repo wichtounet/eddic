@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
@@ -24,7 +23,6 @@ namespace ast {
 /*!
  * \class ASTNewArray
  * \brief The AST node for a dynamic allocation of array.
- * Should only be used from the Deferred version (eddic::ast::NewArray).
  */
 struct NewArray : x3::position_tagged {
     std::shared_ptr<Context> context;

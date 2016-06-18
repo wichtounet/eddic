@@ -74,22 +74,22 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
 void ast::DefaultValuesPass::apply_function(ast::FunctionDeclaration& function){
     SetDefaultValues visitor;
-    visit_each(visitor, function.Content->instructions);
+    visit_each(visitor, function.instructions);
 }
 
 void ast::DefaultValuesPass::apply_struct_function(ast::FunctionDeclaration& function){
     SetDefaultValues visitor;
-    visit_each(visitor, function.Content->instructions);
+    visit_each(visitor, function.instructions);
 }
 
 void ast::DefaultValuesPass::apply_struct_constructor(ast::Constructor& constructor){
     SetDefaultValues visitor;
-    visit_each(visitor, constructor.Content->instructions);
+    visit_each(visitor, constructor.instructions);
 }
 
 void ast::DefaultValuesPass::apply_struct_destructor(ast::Destructor& destructor){
     SetDefaultValues visitor;
-    visit_each(visitor, destructor.Content->instructions);
+    visit_each(visitor, destructor.instructions);
 }
 
 void ast::DefaultValuesPass::apply_program(ast::SourceFile& program, bool indicator){

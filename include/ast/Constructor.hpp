@@ -24,12 +24,11 @@ namespace ast {
 
 /*!
  * \class ASTConstructor
- * \brief The AST node for a constructor declaration.  
- * Should only be used from the Deferred version (eddic::ast::Constructor).
+ * \brief The AST node for a constructor declaration.
  */
-struct ASTConstructor { 
+struct Constructor {
     std::shared_ptr<FunctionContext> context;
-    
+
     std::string mangledName;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
@@ -40,22 +39,16 @@ struct ASTConstructor {
     mutable long references = 0;
 };
 
-/*!
- * \typedef Constructor
- * \brief The AST node for a constructor declaration.
- */
-typedef Deferred<ASTConstructor> Constructor; 
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Constructor, 
-    (eddic::ast::Position, Content->position)
-    (std::vector<eddic::ast::FunctionParameter>, Content->parameters)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::Constructor,
+    (eddic::ast::Position, position)
+    (std::vector<eddic::ast::FunctionParameter>, parameters)
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

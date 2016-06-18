@@ -13,8 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
-
 namespace eddic {
 
 class Context;
@@ -24,10 +22,9 @@ namespace ast {
 
 /*!
  * \class ASTForeachIn
- * \brief The AST node for a foreach loop over an array. 
- * Should only be used from the Deferred version (eddic::ast::ForeachIn).
+ * \brief The AST node for a foreach loop over an array.
  */
-struct ASTForeachIn {
+struct ForeachIn {
     std::shared_ptr<Context> context;
 
     ast::Position position;
@@ -44,24 +41,18 @@ struct ASTForeachIn {
     mutable long references = 0;
 };
 
-/*!
- * \typedef ForeachIn
- * \brief The AST node for a foreach loop over an array.
- */
-typedef Deferred<ASTForeachIn> ForeachIn;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::ForeachIn, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Type, Content->variableType)
-    (std::string, Content->variableName)
-    (std::string, Content->arrayName)
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
+    eddic::ast::ForeachIn,
+    (eddic::ast::Position, position)
+    (eddic::ast::Type, variableType)
+    (std::string, variableName)
+    (std::string, arrayName)
+    (std::vector<eddic::ast::Instruction>, instructions)
 )
 
 #endif

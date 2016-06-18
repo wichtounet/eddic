@@ -29,11 +29,11 @@ class DependencyVisitor : public boost::static_visitor<> {
 
     public:
         DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& source_program) : parser(p), source_program(source_program) {}
-        
+
         std::vector<ast::SourceFileBlock> blocks;
 
         AUTO_RECURSE_PROGRAM()
-    
+
         void operator()(ast::StandardImport& import){
             if(imported.find(import.header) != imported.end()){
                 return;
@@ -42,19 +42,19 @@ class DependencyVisitor : public boost::static_visitor<> {
             imported.insert(import.header);
 
             auto headerFile = "stdlib/" + import.header + ".eddi";
-            
+
             if(!file_exists(headerFile)){
                 throw SemanticalException("The header " + import.header + " does not exist");
             }
-           
-            ast::SourceFile dependency; 
+
+            ast::SourceFile dependency;
             if(parser.parse(headerFile, dependency, source_program.Content->context)){
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                        ptr->Content->standard = true;
-                        ptr->Content->header = import.header;
+                        ptr->standard = true;
+                        ptr->header = import.header;
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                         ptr->Content->standard = true;
                         ptr->Content->header = import.header;
@@ -66,7 +66,7 @@ class DependencyVisitor : public boost::static_visitor<> {
                 throw SemanticalException("The header " + import.header + " cannot be imported");
             }
         }
-    
+
         void operator()(ast::Import& import){
             auto file = import.file;
             file.erase(0, 1);
@@ -75,14 +75,14 @@ class DependencyVisitor : public boost::static_visitor<> {
             if(!file_exists(file)){
                 throw SemanticalException("The file " + file + " does not exist");
             }
-           
-            ast::SourceFile dependency; 
+
+            ast::SourceFile dependency;
             if(parser.parse(file, dependency, source_program.Content->context)){
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.Content->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                        ptr->Content->header = import.file;
+                        ptr->header = import.file;
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                         ptr->Content->header = import.file;
                     }

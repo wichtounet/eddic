@@ -44,19 +44,19 @@ struct Collector : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& function){
-            for(auto& param : function.Content->parameters){
-                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
+            for(auto& param : function.parameters){
+                positions[function.context->getVariable(param.parameterName)] = function.position;
             }
 
-            visit_each(*this, function.Content->instructions);
+            visit_each(*this, function.instructions);
         }
 
         void operator()(ast::Constructor& function){
-            for(auto& param : function.Content->parameters){
-                positions[function.Content->context->getVariable(param.parameterName)] = function.Content->position;
+            for(auto& param : function.parameters){
+                positions[function.context->getVariable(param.parameterName)] = function.position;
             }
 
-            visit_each(*this, function.Content->instructions);
+            visit_each(*this, function.instructions);
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
@@ -196,10 +196,10 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::FunctionDeclaration& declaration){
-            check(declaration.Content->context);
+            check(declaration.context);
 
-            if(!declaration.Content->standard && !standard){
-                check_each(declaration.Content->instructions);
+            if(!declaration.standard && !standard){
+                check_each(declaration.instructions);
             }
         }
 
@@ -234,13 +234,13 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::While& while_){
-            visit(*this, while_.Content->condition);
-            check_each(while_.Content->instructions);
+            visit(*this, while_.condition);
+            check_each(while_.instructions);
         }
 
         void operator()(ast::DoWhile& while_){
-            visit(*this, while_.Content->condition);
-            check_each(while_.Content->instructions);
+            visit(*this, while_.condition);
+            check_each(while_.instructions);
         }
 
         void operator()(ast::Else& else_){
@@ -248,11 +248,11 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach_){
-            check_each(foreach_.Content->instructions);
+            check_each(foreach_.instructions);
         }
 
         void operator()(ast::ForeachIn& foreach_){
-            check_each(foreach_.Content->instructions);
+            check_each(foreach_.instructions);
         }
 
         void operator()(ast::SwitchCase& switch_case){

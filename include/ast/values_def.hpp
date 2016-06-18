@@ -8,8 +8,6 @@
 #ifndef VALUES_DEF_H
 #define VALUES_DEF_H
 
-#include "ast/Deferred.hpp"
-
 namespace eddic {
 
 namespace ast {

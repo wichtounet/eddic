@@ -37,10 +37,10 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
 
             auto& c = *ptr;
 
-            if(c.Content->parameters.size() == 0){
+            if(c.parameters.size() == 0){
                 default_constructor = true;
-            } else if(c.Content->parameters.size() == 1){
-                auto& parameter = c.Content->parameters.front();
+            } else if(c.parameters.size() == 1){
+                auto& parameter = c.parameters.front();
                 auto parameter_type = visit(ast::TypeTransformer(context), parameter.parameterType);
 
                 if(parameter_type == new_pointer_type(struct_.Content->struct_type)){
@@ -53,11 +53,11 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
     //Generate default constructor if necessary
     if(!default_constructor && !constructor){
         ast::Constructor c;
-        c.Content->context = std::make_shared<FunctionContext>(context, context, platform, configuration);
-        c.Content->struct_type = struct_.Content->struct_type;
+        c.context = std::make_shared<FunctionContext>(context, context, platform, configuration);
+        c.struct_type = struct_.Content->struct_type;
 
         std::vector<std::shared_ptr<const eddic::Type>> types;
-        c.Content->mangledName = mangle_ctor(types, c.Content->struct_type);
+        c.mangledName = mangle_ctor(types, c.struct_type);
 
         struct_.Content->blocks.push_back(c);
     }
@@ -65,9 +65,9 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
     //Generate destructor if necessary
     if(!destructor){
         ast::Destructor d;
-        d.Content->context = std::make_shared<FunctionContext>(context, context, platform, configuration);
-        d.Content->struct_type = struct_.Content->struct_type;
-        d.Content->mangledName = mangle_dtor(d.Content->struct_type);
+        d.context = std::make_shared<FunctionContext>(context, context, platform, configuration);
+        d.struct_type = struct_.Content->struct_type;
+        d.mangledName = mangle_dtor(d.struct_type);
 
         struct_.Content->blocks.push_back(d);
     }
@@ -92,26 +92,26 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
             function_context->addParameter("rhs", new_pointer_type(type));
 
             ast::Constructor c;
-            c.Content->context = function_context;
-            c.Content->struct_type = type;
+            c.context = function_context;
+            c.struct_type = type;
 
             std::vector<std::shared_ptr<const eddic::Type>> types;
             types.push_back(new_pointer_type(type));
-            c.Content->mangledName = mangle_ctor(types, type);
+            c.mangledName = mangle_ctor(types, type);
 
             FunctionParameter parameter;
             parameter.parameterName = "rhs";
 
             ast::SimpleType type;
             type.const_ = false;
-            type.type = c.Content->struct_type->type();
+            type.type = c.struct_type->type();
 
             ast::PointerType ptr_type;
             ptr_type.type = type;
 
             parameter.parameterType = ptr_type;
 
-            c.Content->parameters.push_back(parameter);
+            c.parameters.push_back(parameter);
 
             for(auto& member : struct_type->members){
                 auto& name = member.name;
@@ -142,7 +142,7 @@ void ast::FunctionGenerationPass::apply_struct(ast::struct_definition& struct_, 
                 assignment.left_value = left_expression;
                 assignment.value = right_expression;
 
-                c.Content->instructions.push_back(std::move(assignment));
+                c.instructions.push_back(std::move(assignment));
             }
 
             struct_.Content->blocks.push_back(std::move(c));

@@ -1497,22 +1497,22 @@ class FunctionCompiler : public boost::static_visitor<> {
 
             function.emplace_back(startLabel, mtac::Operator::LABEL);
 
-            visit_each(*this, while_.Content->instructions);
+            visit_each(*this, while_.instructions);
 
-            issue_destructors(while_.Content->context);
+            issue_destructors(while_.context);
 
-            jump_if_true(function, startLabel, while_.Content->condition);
+            jump_if_true(function, startLabel, while_.condition);
         }
 
         void operator()(ast::Return& return_){
-            auto& definition = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
+            auto& definition = return_.context->global()->getFunction(return_.mangled_name);
             auto return_type = definition.return_type();
 
             //If the function returns a struct by value, it does not really returns something
             if(return_type->is_custom_type() || return_type->is_template_type()){
-                copy_construct(function, return_type, function.context->getVariable("__ret"), return_.Content->value);
+                copy_construct(function, return_type, function.context->getVariable("__ret"), return_.value);
             } else {
-                auto arguments = visit(ToArgumentsVisitor<>(function), return_.Content->value);
+                auto arguments = visit(ToArgumentsVisitor<>(function), return_.value);
 
                 if(arguments.size() == 1){
                     function.emplace_back(mtac::Operator::RETURN, arguments[0]);
@@ -1525,8 +1525,8 @@ class FunctionCompiler : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
-            auto arg = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), delete_.Content->value)[0];
-            auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
+            auto arg = visit(ToArgumentsVisitor<ArgumentType::ADDRESS>(function), delete_.value)[0];
+            auto type = visit(ast::GetTypeVisitor(), delete_.value);
             if(type->data_type()->is_structure()){
                 destruct(function, type->data_type(), arg);
             }
@@ -1684,44 +1684,44 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
 
     for(auto& block : source.Content->blocks){
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+            program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
             auto& function = program.functions.back();
-            function.standard() = ptr->Content->standard;
+            function.standard() = ptr->standard;
 
             FunctionCompiler compiler(program, function);
 
-            visit_each(compiler, ptr->Content->instructions);
-            compiler.issue_destructors(ptr->Content->context);
+            visit_each(compiler, ptr->instructions);
+            compiler.issue_destructors(ptr->context);
         } else if(auto* struct_ptr = boost::get<ast::struct_definition>(&block)){
             if(!struct_ptr->Content->is_template_declaration()){
                 for(auto& struct_block : struct_ptr->Content->blocks){
                     if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
-                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
                         function.standard() = struct_ptr->Content->standard;
 
                         FunctionCompiler compiler(program, function);
 
-                        visit_each(compiler, ptr->Content->instructions);
-                        compiler.issue_destructors(ptr->Content->context);
+                        visit_each(compiler, ptr->instructions);
+                        compiler.issue_destructors(ptr->context);
                     } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
-                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
                         function.standard() = struct_ptr->Content->standard;
 
                         FunctionCompiler compiler(program, function);
 
-                        visit_each(compiler, ptr->Content->instructions);
-                        compiler.issue_destructors(ptr->Content->context);
+                        visit_each(compiler, ptr->instructions);
+                        compiler.issue_destructors(ptr->context);
                     } else if(auto* ptr = boost::get<ast::Destructor>(&struct_block)){
-                        program.functions.emplace_back(ptr->Content->context, ptr->Content->mangledName, program.context->getFunction(ptr->Content->mangledName));
+                        program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();
                         function.standard() = struct_ptr->Content->standard;
 
                         FunctionCompiler compiler(program, function);
 
-                        visit_each(compiler, ptr->Content->instructions);
-                        compiler.issue_destructors(ptr->Content->context);
+                        visit_each(compiler, ptr->instructions);
+                        compiler.issue_destructors(ptr->context);
                     }
                 }
             }

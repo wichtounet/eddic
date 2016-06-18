@@ -22,14 +22,9 @@ typedef Deferred<ast_struct_definition> struct_definition;
 
 //Functions
 
-struct ASTFunctionDeclaration;
-typedef Deferred<ASTFunctionDeclaration> FunctionDeclaration;
-
-struct ASTConstructor;
-typedef Deferred<ASTConstructor> Constructor;
-
-struct ASTDestructor;
-typedef Deferred<ASTDestructor> Destructor;
+struct FunctionDeclaration;
+struct Constructor;
+struct Destructor;
 
 struct ASTTemplateFunctionDeclaration;
 typedef Deferred<ASTTemplateFunctionDeclaration> TemplateFunctionDeclaration;

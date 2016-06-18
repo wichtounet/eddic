@@ -73,39 +73,39 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach){
-            visit_each(*this, foreach.Content->instructions);
+            visit_each(*this, foreach.instructions);
         }
 
         void operator()(ast::ForeachIn& foreach){
-            auto var_type = foreach.Content->var->type();
-            auto array_type = foreach.Content->arrayVar->type();
+            auto var_type = foreach.var->type();
+            auto array_type = foreach.arrayVar->type();
 
             if(array_type->is_array()){
                 if(var_type != array_type->data_type()){
-                    throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.Content->variableName, foreach.Content->position);
+                    throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.variableName, foreach.position);
                 }
             } else if(array_type == STRING){
                 if(var_type != CHAR){
-                    throw SemanticalException("Foreach in string yields a char", foreach.Content->position);
+                    throw SemanticalException("Foreach in string yields a char", foreach.position);
                 }
             } else {
-                throw SemanticalException("Cannot use foreach in variable " + foreach.Content->arrayName, foreach.Content->position);
+                throw SemanticalException("Cannot use foreach in variable " + foreach.arrayName, foreach.position);
             }
 
-            visit_each(*this, foreach.Content->instructions);
+            visit_each(*this, foreach.instructions);
         }
 
         void operator()(ast::Switch& switch_){
-            visit(*this, switch_.Content->value);
+            visit(*this, switch_.value);
 
-            auto value_type = visit(ast::GetTypeVisitor(), switch_.Content->value);
+            auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
             if(value_type != INT && value_type != STRING){
-                throw SemanticalException("Switch can only work on int and string types", switch_.Content->position);
+                throw SemanticalException("Switch can only work on int and string types", switch_.position);
             }
 
-            visit_each_non_variant(*this, switch_.Content->cases);
-            visit_optional_non_variant(*this, switch_.Content->default_case);
+            visit_each_non_variant(*this, switch_.cases);
+            visit_optional_non_variant(*this, switch_.default_case);
         }
 
         void operator()(ast::SwitchCase& switch_){
@@ -193,12 +193,12 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            visit(*this, return_.Content->value);
+            visit(*this, return_.value);
 
-            auto return_type = visit(ast::GetTypeVisitor(), return_.Content->value);
-            auto& function = return_.Content->context->global()->getFunction(return_.Content->mangled_name);
+            auto return_type = visit(ast::GetTypeVisitor(), return_.value);
+            auto& function = return_.context->global()->getFunction(return_.mangled_name);
             if(return_type != function.return_type()){
-                throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.Content->position);
+                throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.position);
             }
         }
 
@@ -380,10 +380,10 @@ class CheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
-            auto type = visit(ast::GetTypeVisitor(), delete_.Content->value);
+            auto type = visit(ast::GetTypeVisitor(), delete_.value);
 
             if(!type->is_pointer() && !type->is_dynamic_array()){
-                throw SemanticalException("Only pointers can be deleted", delete_.Content->position);
+                throw SemanticalException("Only pointers can be deleted", delete_.position);
             }
         }
 

@@ -13,7 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Deferred.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
@@ -24,11 +23,10 @@ namespace ast {
 
 /*!
  * \class ASTDoWhile
- * \brief The AST node for a do while loop. 
- * Should only be used from the Deferred version (eddic::ast::DoWhile).
+ * \brief The AST node for a do while loop.
  */
-struct ASTDoWhile {
-    std::shared_ptr<Context> context; 
+struct DoWhile {
+    std::shared_ptr<Context> context;
 
     Value condition;
     std::vector<Instruction> instructions;
@@ -36,21 +34,15 @@ struct ASTDoWhile {
     mutable long references = 0;
 };
 
-/*!
- * \typedef While
- * \brief The AST node for a while loop.
- */
-typedef Deferred<ASTDoWhile> DoWhile;
-
 } //end of ast
 
 } //end of eddic
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::DoWhile, 
-    (std::vector<eddic::ast::Instruction>, Content->instructions)
-    (eddic::ast::Value, Content->condition)
+    eddic::ast::DoWhile,
+    (std::vector<eddic::ast::Instruction>, instructions)
+    (eddic::ast::Value, condition)
 )
 
 #endif

@@ -53,7 +53,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::struct_definition& struct_
         }
     }
 }
-    
+
 void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::shared_ptr<Configuration> configuration){
     LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\"" << log::endl;
     program.Content->context->stats().inc_counter("passes");
@@ -90,10 +90,10 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
 }
 
 template<typename Pass>
-std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::TemplateEngine> template_engine, 
+std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::TemplateEngine> template_engine,
             Platform platform, std::shared_ptr<Configuration> configuration, std::shared_ptr<StringPool> pool){
     auto pass = std::make_shared<Pass>();
-    
+
     pass->set_name(name);
     pass->set_template_engine(template_engine);
     pass->set_platform(platform);
@@ -105,7 +105,7 @@ std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::Te
 
 } //end of anonymous namespace
 
-ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program, std::shared_ptr<StringPool> pool) : 
+ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program, std::shared_ptr<StringPool> pool) :
         platform(platform), configuration(configuration), program(program), pool(pool) {
     template_engine = std::make_shared<ast::TemplateEngine>(*this);
 }
@@ -113,58 +113,58 @@ ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> 
 void ast::PassManager::init_passes(){
     //Clean pass
     passes.push_back(make_pass<ast::CleanPass>("clean", template_engine, platform, configuration, pool));
-    
+
     //Context annotation pass
     passes.push_back(make_pass<ast::ContextAnnotationPass>("context annotation", template_engine, platform, configuration, pool));
-    
+
     //Structures collection pass
     passes.push_back(make_pass<ast::StructureCollectionPass>("structures collection", template_engine, platform, configuration, pool));
-    
+
     //Structures inheritance pass
     passes.push_back(make_pass<ast::StructureInheritancePass>("structures inheritance", template_engine, platform, configuration, pool));
 
     //Template Collection pass
     passes.push_back(make_pass<ast::TemplateCollectionPass>("templates collection", template_engine, platform, configuration, pool));
-    
+
     //Structures member collection pass
     passes.push_back(make_pass<ast::StructureMemberCollectionPass>("structures member collection", template_engine, platform, configuration, pool));
 
     //Function Generation Pass
     passes.push_back(make_pass<ast::FunctionGenerationPass>("function generation", template_engine, platform, configuration, pool));
-    
+
     //Structures check pass
     passes.push_back(make_pass<ast::StructureCheckPass>("structure check", template_engine, platform, configuration, pool));
-    
+
     //Add default values to declarations
     passes.push_back(make_pass<ast::DefaultValuesPass>("default values", template_engine, platform, configuration, pool));
-    
+
     //Member function collection pass
     passes.push_back(make_pass<ast::MemberFunctionCollectionPass>("member function collection", template_engine, platform, configuration, pool));
-    
+
     //Function collection pass
     passes.push_back(make_pass<ast::FunctionCollectionPass>("function collection", template_engine, platform, configuration, pool));
-    
+
     //Function check pass
     passes.push_back(make_pass<ast::VariableAnnotationPass>("variables annotation", template_engine, platform, configuration, pool));
-    
+
     //Function check pass
     passes.push_back(make_pass<ast::FunctionCheckPass>("function check", template_engine, platform, configuration, pool));
-    
+
     //String collection pass
     passes.push_back(make_pass<ast::StringCollectionPass>("string collection", template_engine, platform, configuration, pool));
-    
+
     //Type checking pass
     passes.push_back(make_pass<ast::TypeCheckingPass>("Type checking", template_engine, platform, configuration, pool));
-    
+
     //Transform pass
     passes.push_back(make_pass<ast::TransformPass>("Transform", template_engine, platform, configuration, pool));
-    
+
     //Transform pass
     passes.push_back(make_pass<ast::WarningsPass>("Warnings", template_engine, platform, configuration, pool));
 }
-        
+
 void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
-    LOG<Info>("Passes") << "Apply passes to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
+    LOG<Info>("Passes") << "Apply passes to instantiated function \"" << function.functionName << "\"" << " in context " << context << log::endl;
 
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
@@ -190,9 +190,9 @@ void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function,
             }
         }
     }
-    
-    LOG<Info>("Passes") << "Passes applied to instantiated function \"" << function.Content->functionName << "\"" << " in context " << context << log::endl;
-        
+
+    LOG<Info>("Passes") << "Passes applied to instantiated function \"" << function.functionName << "\"" << " in context " << context << log::endl;
+
     functions_instantiated.push_back(std::make_pair(context, function));
 }
 
@@ -215,9 +215,9 @@ void ast::PassManager::struct_instantiated(ast::struct_definition& struct_){
     }
 
     dec_depth();
-    
+
     LOG<Info>("Passes") << "Passes applied to instantiated struct \"" << struct_.Content->name << "\"" << log::endl;
-    
+
     class_instantiated.push_back(struct_);
 }
 
@@ -244,11 +244,11 @@ void ast::PassManager::run_passes(){
 
             for(unsigned int i = 0; i < pass->passes(); ++i){
                 pass->set_current_pass(i);
-                
+
                 //It is up to the simple pass to recurse into the program
                 pass->apply_program(program, false);
             }
-        } 
+        }
         //Normal pass are applied until all function and structures have been handled
         else {
             //The next passes will have to apply it again to fresh functions
@@ -257,15 +257,15 @@ void ast::PassManager::run_passes(){
             apply_pass(pass, program, configuration);
 
             //Add the instantiated class and function templates to the actual program
-    
+
             for(auto& struct_ : class_instantiated){
                 program.Content->blocks.push_back(struct_);
             }
-            
+
             for(auto& function_pair : functions_instantiated){
                 auto& context = function_pair.first;
                 auto& function = function_pair.second;
-                
+
                 if(context.empty()){
                     program.Content->blocks.push_back(function);
                 } else {

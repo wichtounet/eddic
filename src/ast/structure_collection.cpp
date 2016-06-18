@@ -47,24 +47,24 @@ void ast::StructureCollectionPass::apply_struct(ast::struct_definition& struct_,
         if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
             auto& function = *ptr;
 
-            if(function.Content->context){
-                function.Content->context->struct_type = struct_.Content->struct_type; 
+            if(function.context){
+                function.context->struct_type = struct_.Content->struct_type;
             }
         } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
             auto& function = *ptr;
 
-            if(function.Content->context){
-                function.Content->context->struct_type = struct_.Content->struct_type; 
+            if(function.context){
+                function.context->struct_type = struct_.Content->struct_type;
             }
         } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
             auto& function = *ptr;
 
-            if(function.Content->context){
-                function.Content->context->struct_type = struct_.Content->struct_type; 
+            if(function.context){
+                function.context->struct_type = struct_.Content->struct_type;
             }
         }
     }
-    
+
     auto mangled_name = struct_.Content->struct_type->mangle();
 
     if(context->struct_exists(mangled_name)){

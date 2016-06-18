@@ -40,41 +40,41 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach){
-            template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
+            template_engine->check_type(foreach.variableType, foreach.position);
 
-            if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
-                auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
+            if(check_variable(foreach.context, foreach.variableName, foreach.position)){
+                auto type = visit(ast::TypeTransformer(context), foreach.variableType);
 
-                auto var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
-                var->set_source_position(foreach.Content->position);
+                auto var = foreach.context->addVariable(foreach.variableName, type);
+                var->set_source_position(foreach.position);
             }
 
-            check_each(foreach.Content->instructions);
+            check_each(foreach.instructions);
         }
 
         void operator()(ast::ForeachIn& foreach){
-            template_engine->check_type(foreach.Content->variableType, foreach.Content->position);
+            template_engine->check_type(foreach.variableType, foreach.position);
 
-            if(check_variable(foreach.Content->context, foreach.Content->variableName, foreach.Content->position)){
-                if(!foreach.Content->context->exists(foreach.Content->arrayName)){
-                    throw SemanticalException("The foreach array " + foreach.Content->arrayName  + " has not been declared", foreach.Content->position);
+            if(check_variable(foreach.context, foreach.variableName, foreach.position)){
+                if(!foreach.context->exists(foreach.arrayName)){
+                    throw SemanticalException("The foreach array " + foreach.arrayName  + " has not been declared", foreach.position);
                 }
 
-                auto type = visit(ast::TypeTransformer(context), foreach.Content->variableType);
+                auto type = visit(ast::TypeTransformer(context), foreach.variableType);
 
-                foreach.Content->var = foreach.Content->context->addVariable(foreach.Content->variableName, type);
-                foreach.Content->var->set_source_position(foreach.Content->position);
+                foreach.var = foreach.context->addVariable(foreach.variableName, type);
+                foreach.var->set_source_position(foreach.position);
 
-                foreach.Content->arrayVar = foreach.Content->context->getVariable(foreach.Content->arrayName);
-                foreach.Content->iterVar = foreach.Content->context->generate_variable("foreach_iter", INT);
+                foreach.arrayVar = foreach.context->getVariable(foreach.arrayName);
+                foreach.iterVar = foreach.context->generate_variable("foreach_iter", INT);
 
                 //Add references to variables
-                foreach.Content->var->add_reference();
-                foreach.Content->iterVar->add_reference();
-                foreach.Content->arrayVar->add_reference();
+                foreach.var->add_reference();
+                foreach.iterVar->add_reference();
+                foreach.arrayVar->add_reference();
             }
 
-            check_each(foreach.Content->instructions);
+            check_each(foreach.instructions);
         }
 
         void operator()(ast::If& if_){
@@ -235,13 +235,13 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::While& while_){
-            check_value(while_.Content->condition);
-            check_each(while_.Content->instructions);
+            check_value(while_.condition);
+            check_each(while_.instructions);
         }
 
         void operator()(ast::DoWhile& while_){
-            check_value(while_.Content->condition);
-            check_each(while_.Content->instructions);
+            check_value(while_.condition);
+            check_each(while_.instructions);
         }
 
         void operator()(ast::SourceFile& program){
@@ -267,9 +267,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Switch& switch_){
-            check_value(switch_.Content->value);
-            visit_each_non_variant(*this, switch_.Content->cases);
-            visit_optional_non_variant(*this, switch_.Content->default_case);
+            check_value(switch_.value);
+            visit_each_non_variant(*this, switch_.cases);
+            visit_optional_non_variant(*this, switch_.default_case);
         }
 
         void operator()(ast::SwitchCase& switch_case){
@@ -413,9 +413,9 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Return& return_){
-            return_.Content->mangled_name = mangled_name;
+            return_.mangled_name = mangled_name;
 
-            check_value(return_.Content->value);
+            check_value(return_.value);
         }
 
         void operator()(ast::Ternary& ternary){
@@ -533,7 +533,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Delete& delete_){
-            check_value(delete_.Content->value);
+            check_value(delete_.value);
         }
 
         bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
@@ -591,21 +591,21 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         template<typename Function>
         void visit_function(Function& declaration){
             //Add all the parameters to the function context
-            for(auto& parameter : declaration.Content->parameters){
-                template_engine->check_type(parameter.parameterType, declaration.Content->position);
+            for(auto& parameter : declaration.parameters){
+                template_engine->check_type(parameter.parameterType, declaration.position);
 
-                if(check_variable(declaration.Content->context, parameter.parameterName, declaration.Content->position)){
+                if(check_variable(declaration.context, parameter.parameterName, declaration.position)){
                     if(!is_valid(parameter.parameterType)){
-                        throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.Content->position);
+                        throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.position);
                     }
 
                     auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
-                    auto var = declaration.Content->context->addParameter(parameter.parameterName, type);
-                    var->set_source_position(declaration.Content->position);
+                    auto var = declaration.context->addParameter(parameter.parameterName, type);
+                    var->set_source_position(declaration.position);
                 }
             }
 
-            check_each(declaration.Content->instructions);
+            check_each(declaration.instructions);
         }
 
         void operator()(ast::FunctionCall&){
@@ -628,13 +628,13 @@ void ast::FunctionCheckPass::apply_struct(ast::struct_definition& struct_, bool 
 }
 
 void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
-    FunctionCheckerVisitor visitor(template_engine, declaration.Content->mangledName);
+    FunctionCheckerVisitor visitor(template_engine, declaration.mangledName);
     visitor.context = context;
     visitor.visit_function(declaration);
 
-    auto return_type = visit(ast::TypeTransformer(context), declaration.Content->returnType);
+    auto return_type = visit(ast::TypeTransformer(context), declaration.returnType);
     if(return_type->is_custom_type() || return_type->is_template_type()){
-        declaration.Content->context->addParameter("__ret", new_pointer_type(return_type));
+        declaration.context->addParameter("__ret", new_pointer_type(return_type));
     }
 }
 
@@ -643,13 +643,13 @@ void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& dec
 }
 
 void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){
-    FunctionCheckerVisitor visitor(template_engine, constructor.Content->mangledName);
+    FunctionCheckerVisitor visitor(template_engine, constructor.mangledName);
     visitor.context = context;
     visitor.visit_function(constructor);
 }
 
 void ast::FunctionCheckPass::apply_struct_destructor(ast::Destructor& destructor){
-    FunctionCheckerVisitor visitor(template_engine, destructor.Content->mangledName);
+    FunctionCheckerVisitor visitor(template_engine, destructor.mangledName);
     visitor.context = context;
     visitor.visit_function(destructor);
 }

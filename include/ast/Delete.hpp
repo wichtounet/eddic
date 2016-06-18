@@ -8,7 +8,6 @@
 #ifndef AST_DELETE_H
 #define AST_DELETE_H
 
-#include "ast/Deferred.hpp"
 #include "ast/Position.hpp"
 
 namespace eddic {
@@ -16,22 +15,15 @@ namespace eddic {
 namespace ast {
 
 /*!
- * \class ASTDelete
- * \brief The AST node for delete a variable. 
- * Should only be used from the Deferred version (eddic::ast::Delete).
+ * \class Delete
+ * \brief The AST node for delete a variable.
  */
-struct ASTDelete {
+struct Delete {
     Position position;
     Value value;
 
     mutable long references = 0;
 };
-
-/*!
- * \typedef Delete
- * \brief The AST node for delete a pointer.
- */
-typedef Deferred<ASTDelete> Delete;
 
 } //end of ast
 
@@ -39,9 +31,9 @@ typedef Deferred<ASTDelete> Delete;
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Delete, 
-    (eddic::ast::Position, Content->position)
-    (eddic::ast::Value, Content->value)
+    eddic::ast::Delete,
+    (eddic::ast::Position, position)
+    (eddic::ast::Value, value)
 )
 
 #endif
