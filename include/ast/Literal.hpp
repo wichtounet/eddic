@@ -16,11 +16,14 @@ namespace ast {
 
 /*!
  * \class Literal
- * \brief The AST node for a string literal.    
+ * \brief The AST node for a string literal.
  */
 struct Literal {
     std::string value;
     std::string label;
+
+    Literal(){}
+    Literal(std::string value) : value(value) {}
 };
 
 } //end of ast
@@ -29,7 +32,7 @@ struct Literal {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Literal, 
+    eddic::ast::Literal,
     (std::string, value)
 )
 

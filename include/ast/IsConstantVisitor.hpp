@@ -64,15 +64,15 @@ struct IsConstantVisitor : public boost::static_visitor<bool> {
         if(visit(*this, value.first)){
             for(auto& op : value.operations){
                 if(ast::has_operation_value(op)){
-                    if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){
-                        if(!visit(*this, *ptr)){
-                            return false;
-                        }
-                    } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){
+                    if(auto* ptr = boost::smart_get<ast::FunctionCall>(&op.get<1>())){
                         for(auto& v : ptr->values){
                             if(!visit(*this, v)){
                                 return false;
                             }
+                        }
+                    } else {
+                        if(!visit(*this, op.get<1>())){
+                            return false;
                         }
                     }
                 }

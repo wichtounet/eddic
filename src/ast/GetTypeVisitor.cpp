@@ -90,7 +90,7 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
             type = type->data_type();
         }
 
-        auto& operation_value = boost::get<ast::CallOperationValue>(operation.get<1>());
+        auto& operation_value = boost::smart_get<ast::FunctionCall>(operation.get<1>());
 
         if(!operation_value.mangled_name.empty()){
             return global_context->getFunction(operation_value.mangled_name).return_type();
@@ -112,7 +112,7 @@ std::shared_ptr<const eddic::Type> ast::operation_type(const std::shared_ptr<con
             type = type->data_type();
         }
 
-        auto member = boost::get<std::string>(operation.get<1>());
+        auto& member = boost::smart_get<Literal>(operation.get<1>()).value;
 
         auto struct_type = global_context->get_struct(type->mangle());
 

@@ -363,17 +363,7 @@ struct DebugVisitor : public boost::static_visitor<> {
             std::cout << indent() << ast::toString(operation.get<0>()) << std::endl;
 
             if(ast::has_operation_value(operation)){
-                if(auto* ptr = boost::get<ast::Value>(&operation.get<1>())){
-                    visit(*this, *ptr);
-                } else if(auto* ptr = boost::get<ast::CallOperationValue>(&operation.get<1>())){
-                    std::cout << indent() << ptr->function_name << std::endl;
-                    if(!ptr->template_types.empty()){
-                        print_template_list(ptr->template_types);
-                    }
-                    print_each_sub(ptr->values, "Values");
-                } else if(auto* ptr = boost::get<std::string>(&operation.get<1>())){
-                    std::cout << indent() << *ptr << std::endl;
-                }
+                visit(*this, operation.get<1>());
             }
         }
 

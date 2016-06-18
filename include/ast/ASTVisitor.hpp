@@ -131,11 +131,7 @@ void operator()(ast::BuiltinOperator& builtin){\
 visit(*this, value.first);\
 for(auto& op : value.operations){\
     if(ast::has_operation_value(op)){\
-        if(auto* ptr = boost::get<ast::Value>(&op.get<1>())){\
-            visit(*this, *ptr);\
-        } else if(auto* ptr = boost::get<ast::CallOperationValue>(&op.get<1>())){\
-            visit_each(*this, ptr->values);\
-        }\
+        visit(*this, op.get<1>());\
     }\
 }
 

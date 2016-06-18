@@ -262,7 +262,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                         throw SemanticalException("The left value is not an array, neither a string", value.position);
                     }
 
-                    auto index_type = visit(visitor, boost::get<ast::Value>(operation.get<1>()));
+                    auto index_type = visit(visitor, operation.get<1>());
                     if (index_type != INT || index_type->is_array()) {
                         throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.position);
                     }
@@ -279,7 +279,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 } else if(op == ast::Operator::CALL){
                     //Checked by the function checkers
                 } else {
-                    auto operationType = visit(visitor, boost::get<ast::Value>(operation.get<1>()));
+                    auto operationType = visit(visitor, operation.get<1>());
 
                     if(type->is_pointer()){
                         if(!operationType->is_pointer()){

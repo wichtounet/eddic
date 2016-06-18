@@ -86,10 +86,9 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
         for(auto& operation : source.operations){
             if(ast::has_operation_value(operation)){
-                if(auto* ptr = boost::smart_get<ast::Value>(&operation.get<1>())){
-                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), visit(*this, *ptr)));
-                } else if(auto* ptr = boost::smart_get<ast::CallOperationValue>(&operation.get<1>())){
-                    ast::CallOperationValue value_copy;
+                if(auto* ptr = boost::smart_get<ast::FunctionCall>(&operation.get<1>())){
+                    ast::FunctionCall value_copy;
+
                     value_copy.function_name = ptr->function_name;
                     value_copy.template_types = ptr->template_types;
                     value_copy.mangled_name = ptr->mangled_name;
@@ -103,13 +102,9 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
 
                     value_copy.values = values;
 
-                    copy.operations.push_back(
-                            boost::make_tuple(
-                                operation.get<0>(),
-                                value_copy
-                                ));
+                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), value_copy));
                 } else {
-                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), boost::smart_get<std::string>(operation.get<1>())));
+                    copy.operations.push_back(boost::make_tuple(operation.get<0>(), operation.get<1>()));
                 }
             } else {
                 copy.operations.push_back(operation);
@@ -581,7 +576,7 @@ struct Adaptor : public boost::static_visitor<> {
     void operator()(ast::Expression& expression){
         for(auto& op : expression.operations){
             if(op.get<0>() == ast::Operator::CALL){
-                auto& value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
+                auto& value = boost::smart_get<ast::FunctionCall>(op.get<1>());
 
                 for(auto& type : value.template_types){
                     type = replace(type);
@@ -779,7 +774,7 @@ void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
 
 void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Type> type, ast::Operation& op, ast::Position& position){
     if(op.get<0>() == ast::Operator::CALL){
-        auto& value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
+        auto& value = boost::smart_get<ast::FunctionCall>(op.get<1>());
 
         if(!value.template_types.empty()){
             auto object_type = type->is_pointer() ? type->data_type() : type;

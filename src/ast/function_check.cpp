@@ -154,7 +154,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                                 cast_value.resolved_type = new_pointer_type(struct_type);
                                 cast_value.value = this_variable(functionCall.context, functionCall.position);
 
-                                ast::CallOperationValue function_call_operation;
+                                ast::FunctionCall function_call_operation;
                                 function_call_operation.function_name = functionCall.function_name;
                                 function_call_operation.template_types = functionCall.template_types;
                                 function_call_operation.values = functionCall.values;
@@ -440,11 +440,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             auto type = visit(ast::GetTypeVisitor(), value.first);
             for(auto& op : value.operations){
                 if(ast::has_operation_value(op)){
-                    if(auto* ptr = boost::smart_get<ast::Value>(&op.get<1>())){
-                        check_value(*ptr);
-                    } else if(auto* ptr = boost::smart_get<ast::CallOperationValue>(&op.get<1>())){
-                        check_each(ptr->values);
-                    }
+                    check_value(op.get<1>());
                 }
 
                 template_engine->check_member_function(type, op, value.position);
@@ -461,7 +457,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     //Reference the structure
                     struct_type->add_reference();
 
-                    auto member = boost::smart_get<std::string>(op.get<1>());
+                    auto& member = boost::smart_get<ast::Literal>(op.get<1>()).value;
                     bool found = false;
 
                     do {
@@ -488,7 +484,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         throw SemanticalException("Member functions can only be used with structures", value.position);
                     }
 
-                    auto& call_value = boost::smart_get<ast::CallOperationValue>(op.get<1>());
+                    auto& call_value = boost::smart_get<ast::FunctionCall>(op.get<1>());
                     std::string name = call_value.function_name;
 
                     auto types = get_types(call_value.values);

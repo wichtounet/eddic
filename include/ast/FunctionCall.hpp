@@ -30,6 +30,7 @@ namespace ast {
 struct FunctionCall : x3::position_tagged {
     std::shared_ptr<Context> context;
     std::string mangled_name;
+    std::shared_ptr<const eddic::Type> left_type;
 
     Position position;
     std::string function_name;

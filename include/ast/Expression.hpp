@@ -27,21 +27,7 @@ class Type;
 
 namespace ast {
 
-struct CallOperationValue {
-    std::string function_name;
-    std::vector<ast::Type> template_types;
-    std::vector<ast::Value> values;
-    std::string mangled_name;
-    std::shared_ptr<const eddic::Type> left_type;
-};
-
-typedef boost::variant<
-        Value,
-        std::string,
-        CallOperationValue
-    >  OperationValue;
-
-typedef boost::tuple<Operator, OperationValue> Operation;
+typedef boost::tuple<Operator, Value> Operation;
 typedef std::vector<Operation> Operations;
 
 /*!
@@ -71,13 +57,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     eddic::ast::Expression,
     (eddic::ast::Value, first)
     (eddic::ast::Operations, operations)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::CallOperationValue,
-    (std::string, function_name)
-    (std::vector<eddic::ast::Type>, template_types)
-    (std::vector<eddic::ast::Value>, values)
 )
 
 #endif
