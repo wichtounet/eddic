@@ -177,7 +177,7 @@ struct template_function_declaration : x3::position_tagged {
     ast::Type return_type;
     std::string name;
     std::vector<ast::FunctionParameter> parameters;
-    std::vector<instruction> instructions;
+    std::vector<ast::Instruction> instructions;
 };
 
 struct global_variable_declaration : x3::position_tagged {
@@ -194,12 +194,12 @@ struct global_array_declaration : x3::position_tagged {
 
 struct constructor : x3::position_tagged {
     std::vector<ast::FunctionParameter> parameters;
-    std::vector<instruction> instructions;
+    std::vector<ast::Instruction> instructions;
 };
 
 struct destructor {
     std::vector<ast::FunctionParameter> parameters;
-    std::vector<instruction> instructions;
+    std::vector<ast::Instruction> instructions;
 	x3::unused_type fake_;
 };
 
@@ -755,7 +755,7 @@ BOOST_FUSION_ADAPT_STRUCT(
     (ast::Type, return_type)
     (std::string, name)
     (std::vector<ast::FunctionParameter>, parameters)
-    (std::vector<x3_ast::instruction>, instructions)
+    (std::vector<ast::Instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -774,14 +774,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::destructor,
-    (std::vector<x3_ast::instruction>, instructions)
+    (std::vector<ast::Instruction>, instructions)
     (x3::unused_type, fake_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::constructor,
     (std::vector<ast::FunctionParameter>, parameters)
-    (std::vector<x3_ast::instruction>, instructions)
+    (std::vector<ast::Instruction>, instructions)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -807,7 +807,7 @@ namespace x3_grammar {
 
     struct error_handler_base {
         template <typename Iterator, typename Exception, typename Context>
-        x3::error_handler_result on_error(Iterator& first, Iterator const& last, Exception const& x, Context const& context){
+        x3::error_handler_result on_error(Iterator& /*first*/, Iterator const& /*last*/, Exception const& x, Context const& context){
             std::string message = "Error! Expecting: " + x.which() + " here:";
             auto& error_handler = x3::get<error_handler_tag>(context).get();
             error_handler(x.where(), message);
@@ -1023,25 +1023,25 @@ namespace x3_grammar {
     x3::rule<value_class, ast::Value> const value("value");
     x3::rule<primary_value_class, ast::Value> const primary_value("primary_value");
 
-    x3::rule<instruction_class, x3_ast::instruction> const instruction("instruction");
-    x3::rule<start_instruction_class, x3_ast::instruction> const start_instruction("start_instruction");
-    x3::rule<repeatable_instruction_class, x3_ast::instruction> const repeatable_instruction("repeatable_instruction");
-    x3::rule<for_class, x3_ast::for_> const for_("for");
-    x3::rule<foreach_class, x3_ast::foreach> const foreach("foreach");
-    x3::rule<foreach_in_class, x3_ast::foreach_in> const foreach_in("foreach_in");
-    x3::rule<while_class, x3_ast::while_> const while_("while");
-    x3::rule<do_while_class, x3_ast::do_while> const do_while("do_while");
-    x3::rule<variable_declaration_class, x3_ast::variable_declaration> const variable_declaration("variable_declaration");
-    x3::rule<struct_declaration_class, x3_ast::struct_declaration> const struct_declaration("struct_declaration");
-    x3::rule<array_declaration_class, x3_ast::array_declaration> const array_declaration("array_declaration");
-    x3::rule<return_class, x3_ast::return_> const return_("return");
-    x3::rule<delete_class, x3_ast::delete_> const delete_("delete");
-    x3::rule<if_class, x3_ast::if_> const if_("if");
-    x3::rule<else_if_class, x3_ast::else_if> const else_if("else_if");
-    x3::rule<else_class, x3_ast::else_> const else_("else");
-    x3::rule<switch_class, x3_ast::switch_> const switch_("switch");
-    x3::rule<switch_case_class, x3_ast::switch_case> const switch_case("switch_case");
-    x3::rule<default_case_class, x3_ast::default_case_t> const default_case("default_case");
+    x3::rule<instruction_class, ast::Instruction> const instruction("instruction");
+    x3::rule<start_instruction_class, ast::Instruction> const start_instruction("start_instruction");
+    x3::rule<repeatable_instruction_class, ast::Instruction> const repeatable_instruction("repeatable_instruction");
+    x3::rule<for_class, ast::For> const for_("for");
+    x3::rule<foreach_class, ast::Foreach> const foreach("foreach");
+    x3::rule<foreach_in_class, ast::ForeachIn> const foreach_in("foreach_in");
+    x3::rule<while_class, ast::While> const while_("while");
+    x3::rule<do_while_class, ast::DoWhile> const do_while("do_while");
+    x3::rule<variable_declaration_class, ast::VariableDeclaration> const variable_declaration("variable_declaration");
+    x3::rule<struct_declaration_class, ast::StructDeclaration> const struct_declaration("struct_declaration");
+    x3::rule<array_declaration_class, ast::ArrayDeclaration> const array_declaration("array_declaration");
+    x3::rule<return_class, ast::Return> const return_("return");
+    x3::rule<delete_class, ast::Delete> const delete_("delete");
+    x3::rule<if_class, ast::If> const if_("if");
+    x3::rule<else_if_class, ast::ElseIf> const else_if("else_if");
+    x3::rule<else_class, ast::Else> const else_("else");
+    x3::rule<switch_class, ast::Switch> const switch_("switch");
+    x3::rule<switch_case_class, ast::SwitchCase> const switch_case("switch_case");
+    x3::rule<default_case_class, ast::DefaultCase> const default_case("default_case");
 
     x3::rule<function_parameter_class, ast::FunctionParameter> const function_parameter("function_parameter");
     x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");

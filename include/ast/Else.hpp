@@ -12,6 +12,7 @@
 #include <memory>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/home/x3/support/unused.hpp>
 
 namespace eddic {
 
@@ -24,8 +25,9 @@ namespace ast {
  * \brief The AST node for an else construction.
  */
 struct Else {
-    std::shared_ptr<Context> context; 
+    std::shared_ptr<Context> context;
     std::vector<Instruction> instructions;
+    x3::unused_type fake_;
 };
 
 } //end of ast
@@ -34,8 +36,9 @@ struct Else {
 
 //Adapt the struct for the AST
 BOOST_FUSION_ADAPT_STRUCT(
-    eddic::ast::Else, 
+    eddic::ast::Else,
     (std::vector<eddic::ast::Instruction>, instructions)
+    (x3::unused_type, fake_)
 )
 
 #endif
