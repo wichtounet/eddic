@@ -31,6 +31,10 @@ struct TemplateFunctionDeclaration : x3::position_tagged {
     std::string mangledName;
     std::string struct_name;
 
+    std::shared_ptr<const eddic::Type> struct_type = nullptr;
+    bool standard = false;
+    std::string header = "";
+
     Position position;
     std::vector<std::string> template_types;
     Type returnType;
