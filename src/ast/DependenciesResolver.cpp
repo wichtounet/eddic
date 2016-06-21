@@ -16,19 +16,19 @@
 #include "VisitorUtils.hpp"
 #include "Utils.hpp"
 
-#include "parser/SpiritParser.hpp"
+#include "parser_x3/SpiritParser.hpp"
 
 using namespace eddic;
 
 class DependencyVisitor : public boost::static_visitor<> {
     private:
-        parser::SpiritParser& parser;
+        parser_x3::SpiritParser& parser;
         ast::SourceFile& source_program;
 
         std::unordered_set<std::string> imported;
 
     public:
-        DependencyVisitor(parser::SpiritParser& p, ast::SourceFile& source_program) : parser(p), source_program(source_program) {}
+        DependencyVisitor(parser_x3::SpiritParser& p, ast::SourceFile& source_program) : parser(p), source_program(source_program) {}
 
         std::vector<ast::SourceFileBlock> blocks;
 
@@ -101,7 +101,7 @@ class DependencyVisitor : public boost::static_visitor<> {
         AUTO_IGNORE_OTHERS()
 };
 
-void ast::resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser){
+void ast::resolveDependencies(ast::SourceFile& program, parser_x3::SpiritParser& parser){
     DependencyVisitor visitor(parser, program);
     visitor(program);
 

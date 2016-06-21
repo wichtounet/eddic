@@ -13,7 +13,7 @@
 #include "GlobalContext.hpp"
 #include "PerfsTimer.hpp"
 
-#include "parser/SpiritParser.hpp"
+#include "parser_x3/SpiritParser.hpp"
 
 #include "ast/SourceFile.hpp"
 #include "ast/PassManager.hpp"
@@ -33,8 +33,8 @@ std::unique_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
     source.context = std::make_shared<GlobalContext>(platform);
 
     //Parse the file into the program
-    parser::SpiritParser parser;
-    bool parsing = parser.parse(file, source, source.context); 
+    parser_x3::SpiritParser parser;
+    bool parsing = parser.parse(file, source, source.context);
 
     //If the parsing was successfully
     if(parsing){
@@ -42,13 +42,13 @@ std::unique_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
 
         //Read dependencies
         resolveDependencies(source, parser);
-        
+
         //If the user asked for it, print the Abstract Syntax Tree coming from the parser
         if(configuration->option_defined("ast-raw")){
             ast::Printer printer;
             printer.print(source);
         }
-        
+
         //AST Passes
         generate_program(source, configuration, platform, pool);
 
@@ -57,7 +57,7 @@ std::unique_ptr<mtac::Program> EDDIFrontEnd::compile(const std::string& file, Pl
             ast::Printer printer;
             printer.print(source);
         }
-        
+
         //If the user wants only the AST prints, it is not necessary to compile the AST
         if(configuration->option_defined("ast-only")){
             return nullptr;
@@ -92,6 +92,6 @@ void generate_program(ast::SourceFile& source, std::shared_ptr<Configuration> co
 
 void check_for_main(std::shared_ptr<GlobalContext> context){
     if(!context->exists("_F4main") && !context->exists("_F4mainAS")){
-        throw SemanticalException("The program does not contain a valid main function"); 
+        throw SemanticalException("The program does not contain a valid main function");
     }
 }

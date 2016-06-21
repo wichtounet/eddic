@@ -12,13 +12,13 @@
 
 namespace eddic {
 
-namespace parser {
+namespace parser_x3 {
     struct SpiritParser;
 }
 
 namespace ast {
 
-void resolveDependencies(ast::SourceFile& program, parser::SpiritParser& parser);
+void resolveDependencies(ast::SourceFile& program, parser_x3::SpiritParser& parser);
 
 } //end of ast
 
