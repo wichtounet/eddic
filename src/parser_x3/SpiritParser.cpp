@@ -48,18 +48,11 @@ using namespace eddic;
 
 namespace x3_ast {
 
-struct template_function_declaration : x3::position_tagged {
-    std::vector<std::string> template_types;
-    ast::Type return_type;
-    std::string name;
-    std::vector<ast::FunctionParameter> parameters;
-    std::vector<ast::Instruction> instructions;
-};
 
 typedef x3::variant<
         ast::MemberDeclaration,
         ast::ArrayDeclaration,
-        template_function_declaration,
+        ast::TemplateFunctionDeclaration,
         ast::Constructor,
         ast::Destructor
     > struct_block;
@@ -75,7 +68,7 @@ typedef x3::variant<
         ast::StandardImport,
         ast::Import,
         template_struct,
-        template_function_declaration,
+        ast::TemplateFunctionDeclaration,
         ast::GlobalArrayDeclaration,
         ast::GlobalVariableDeclaration
     > block;
@@ -490,15 +483,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-    x3_ast::template_function_declaration,
-    (std::vector<std::string>, template_types)
-    (ast::Type, return_type)
-    (std::string, name)
-    (std::vector<ast::FunctionParameter>, parameters)
-    (std::vector<ast::Instruction>, instructions)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(
     x3_ast::template_struct,
     (std::vector<std::string>, template_types)
     (std::string, name)
@@ -754,7 +738,7 @@ namespace x3_grammar {
     x3::rule<default_case_class, ast::DefaultCase> const default_case("default_case");
 
     x3::rule<function_parameter_class, ast::FunctionParameter> const function_parameter("function_parameter");
-    x3::rule<template_function_declaration_class, x3_ast::template_function_declaration> const template_function_declaration("template_function_declaration");
+    x3::rule<template_function_declaration_class, ast::TemplateFunctionDeclaration> const template_function_declaration("template_function_declaration");
     x3::rule<global_variable_declaration_class, ast::GlobalVariableDeclaration> const global_variable_declaration("global_variable_declaration");
     x3::rule<global_array_declaration_class, ast::GlobalArrayDeclaration> const global_array_declaration("global_array_declaration");
     x3::rule<standard_import_class, ast::StandardImport> const standard_import("standard_import");
