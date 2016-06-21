@@ -18,14 +18,14 @@ parser::ValueGrammar::ValueGrammar(const lexer::StaticLexer& lexer) :
         ValueGrammar::base_type(start, "_value Grammar"),
         type(lexer)
 {
+#if 0 //Disable for X3
+
     auto local_begin     = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_a, qi::_b) );
     auto inherited_begin = qi::lazy ( boost::phoenix::construct<qi::position>(qi::_r1, qi::_r2) );
 
     start %= qi::eps [ qi::_a = qi::_r1, qi::_b = qi::_r2 ] >> value;
 
     /* Match operators into symbols */
-
-#if 0 //Disable for X3
 
     unary_op.add
         ("+", ast::Operator::ADD)

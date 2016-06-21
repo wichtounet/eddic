@@ -506,10 +506,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::vector<x3_ast::struct_block>, blocks)
 )
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-shift-op-parentheses"
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
 /* Error handling */
 
 namespace x3_grammar {
@@ -1393,8 +1389,6 @@ namespace x3_grammar {
     );
 
 } // end of grammar namespace
-
-#pragma clang diagnostic pop
 
 bool parser_x3::SpiritParser::parse(const std::string& file/*, ast::SourceFile& , std::shared_ptr<GlobalContext> context*/){
     //timing_timer timer(context->timing(), "parsing_x3");
