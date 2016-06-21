@@ -3,7 +3,7 @@
 
 #include "parser_x3/SpiritParser.hpp"
 
-//#include "GlobalContext.hpp"
+#include "GlobalContext.hpp"
 
 using namespace eddic;
 
@@ -12,11 +12,11 @@ int main(int argc, char** args){
 
     for (int i=0; i<100; i++){
         for (auto& file : argv){
-            //auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
+            auto context = std::make_shared<GlobalContext>(Platform::INTEL_X86_64);
             parser_x3::SpiritParser parser;
-            //ast::SourceFile source;
+            ast::SourceFile source;
 
-            parser.parse(file/*, source, context*/);
+            parser.parse(file, source, context);
         }
     }
 
