@@ -17,7 +17,6 @@ struct struct_definition;
 
 //Functions
 
-struct FunctionDeclaration;
 struct Constructor;
 struct Destructor;
 struct TemplateFunctionDeclaration;

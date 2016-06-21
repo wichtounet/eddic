@@ -623,19 +623,23 @@ void ast::FunctionCheckPass::apply_struct(ast::struct_definition& struct_, bool 
     }
 }
 
-void ast::FunctionCheckPass::apply_function(ast::FunctionDeclaration& declaration){
-    FunctionCheckerVisitor visitor(template_engine, declaration.mangledName);
-    visitor.context = context;
-    visitor.visit_function(declaration);
+void ast::FunctionCheckPass::apply_function(ast::TemplateFunctionDeclaration& declaration){
+    if(!declaration.is_template()){
+        FunctionCheckerVisitor visitor(template_engine, declaration.mangledName);
+        visitor.context = context;
+        visitor.visit_function(declaration);
 
-    auto return_type = visit(ast::TypeTransformer(context), declaration.returnType);
-    if(return_type->is_custom_type() || return_type->is_template_type()){
-        declaration.context->addParameter("__ret", new_pointer_type(return_type));
+        auto return_type = visit(ast::TypeTransformer(context), declaration.returnType);
+        if(return_type->is_custom_type() || return_type->is_template_type()){
+            declaration.context->addParameter("__ret", new_pointer_type(return_type));
+        }
     }
 }
 
-void ast::FunctionCheckPass::apply_struct_function(ast::FunctionDeclaration& declaration){
-    apply_function(declaration);
+void ast::FunctionCheckPass::apply_struct_function(ast::TemplateFunctionDeclaration& declaration){
+    if(!declaration.is_template()){
+        apply_function(declaration);
+    }
 }
 
 void ast::FunctionCheckPass::apply_struct_constructor(ast::Constructor& constructor){

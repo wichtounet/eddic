@@ -124,24 +124,24 @@ struct DebugVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::TemplateFunctionDeclaration& declaration) const {
-        std::cout << indent() << "Template Function";
-        print_template_list(declaration.template_types);
-        std::cout << declaration.functionName << std::endl;
-        std::cout << std::endl;
-    }
+        if(declaration.is_template()){
+            std::cout << indent() << "Template Function";
+            print_template_list(declaration.template_types);
+            std::cout << declaration.functionName << std::endl;
+            std::cout << std::endl;
+        } else {
+            std::cout << indent() << "Function " << declaration.functionName << std::endl;
 
-    void operator()(ast::FunctionDeclaration& declaration) const {
-        std::cout << indent() << "Function " << declaration.functionName << std::endl;
+            std::cout << indent() << "Parameters:" << std::endl;
+            level++;
+            for(auto& param : declaration.parameters){
+                std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl;
+            }
+            level--;
 
-        std::cout << indent() << "Parameters:" << std::endl;
-        level++;
-        for(auto& param : declaration.parameters){
-            std::cout << indent() << param.parameterName << " : " << to_string(param.parameterType) << std::endl;
+            print_each_sub(declaration.instructions, "Instructions:");
+            std::cout << std::endl;
         }
-        level--;
-
-        print_each_sub(declaration.instructions, "Instructions:");
-        std::cout << std::endl;
     }
 
     void operator()(ast::Constructor& declaration) const {

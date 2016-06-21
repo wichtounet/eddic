@@ -24,9 +24,11 @@ struct Collector : public boost::static_visitor<> {
     AUTO_RECURSE_PROGRAM()
 
     void operator()(ast::TemplateFunctionDeclaration& declaration){
-        template_engine.add_template_function(parent_struct, declaration.functionName, declaration);
+        if(declaration.is_template()){
+            template_engine.add_template_function(parent_struct, declaration.functionName, declaration);
+        }
     }
-    
+
     void operator()(ast::struct_definition& template_struct){
         if(template_struct.is_template_declaration()){
             template_engine.add_template_struct(template_struct.name, template_struct);
@@ -44,7 +46,7 @@ void ast::TemplateCollectionPass::apply_program(ast::SourceFile& program, bool i
         collector(program);
     }
 }
-    
+
 void ast::TemplateCollectionPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(!indicator){
         Collector collector(*template_engine);

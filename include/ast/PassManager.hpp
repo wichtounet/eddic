@@ -32,7 +32,7 @@ class PassManager {
         void init_passes();
         void run_passes();
 
-        void function_instantiated(ast::FunctionDeclaration& function, const std::string& context);
+        void function_instantiated(ast::TemplateFunctionDeclaration& function, const std::string& context);
         void struct_instantiated(ast::struct_definition& struct_);
 
     private:
@@ -46,9 +46,9 @@ class PassManager {
 
         std::vector<std::shared_ptr<Pass>> passes;
         std::vector<std::shared_ptr<Pass>> applied_passes;
-        
+
         std::vector<ast::struct_definition> class_instantiated;
-        std::vector<std::pair<std::string, ast::FunctionDeclaration>> functions_instantiated;
+        std::vector<std::pair<std::string, ast::TemplateFunctionDeclaration>> functions_instantiated;
 
         void inc_depth();
         void dec_depth();

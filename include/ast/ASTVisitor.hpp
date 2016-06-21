@@ -21,11 +21,20 @@ void operator()(ast::SourceFile& program){\
 
 #define AUTO_RECURSE_TEMPLATE_FUNCTION_DECLARATION()\
 void operator()(ast::TemplateFunctionDeclaration& function){\
-    visit_each(*this, function.instructions);\
+    if(function.is_template()){ \
+        visit_each(*this, function.instructions);\
+    } \
 }
 
 #define AUTO_RECURSE_FUNCTION_DECLARATION()\
-void operator()(ast::FunctionDeclaration& function){\
+void operator()(ast::TemplateFunctionDeclaration& function){\
+    if(!function.is_template()){ \
+        visit_each(*this, function.instructions);\
+    } \
+}
+
+#define AUTO_RECURSE_ALL_FUNCTION_DECLARATION()\
+void operator()(ast::TemplateFunctionDeclaration& function){\
     visit_each(*this, function.instructions);\
 }
 

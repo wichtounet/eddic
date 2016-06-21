@@ -558,14 +558,16 @@ struct Adaptor : public boost::static_visitor<> {
         visit_each(*this, declaration.instructions);
     }
 
-    void operator()(ast::FunctionDeclaration& declaration){
-        declaration.returnType = replace(declaration.returnType);
+    void operator()(ast::TemplateFunctionDeclaration& declaration){
+        if(!declaration.is_template()){
+            declaration.returnType = replace(declaration.returnType);
 
-        for(auto& param : declaration.parameters){
-            param.parameterType = replace(param.parameterType);
+            for(auto& param : declaration.parameters){
+                param.parameterType = replace(param.parameterType);
+            }
+
+            visit_each(*this, declaration.instructions);
         }
-
-        visit_each(*this, declaration.instructions);
     }
 
     void operator()(ast::Assignment& assignment){
@@ -661,19 +663,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
     destination.reserve(blocks.size());
 
     for(auto& block : blocks){
-        if(auto* ptr = boost::smart_get<ast::FunctionDeclaration>(&block)){
-            auto& function = *ptr;
-
-            ast::FunctionDeclaration f;
-            f.context = function.context;
-            f.position = function.position;
-            f.returnType = function.returnType;
-            f.functionName = function.functionName;
-            f.instructions = copy(function.instructions);
-            f.parameters = function.parameters;
-
-            destination.emplace_back(f);
-        } else if(auto* ptr = boost::smart_get<ast::Destructor>(&block)){
+        if(auto* ptr = boost::smart_get<ast::Destructor>(&block)){
             auto& destructor = *ptr;
 
             ast::Destructor d;
@@ -714,19 +704,33 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             destination.emplace_back(member);
         } else if(auto* ptr = boost::smart_get<ast::TemplateFunctionDeclaration>(&block)){
-            auto& function = *ptr;
+            if(ptr->is_template()){
+                auto& function = *ptr;
 
-            ast::TemplateFunctionDeclaration f;
-            f.context = function.context;
-            f.position = function.position;
-            f.struct_name = function.struct_name;
-            f.template_types = function.template_types;
-            f.returnType = function.returnType;
-            f.functionName = function.functionName;
-            f.instructions = copy(function.instructions);
-            f.parameters = function.parameters;
+                ast::TemplateFunctionDeclaration f;
+                f.context = function.context;
+                f.position = function.position;
+                f.struct_name = function.struct_name;
+                f.template_types = function.template_types;
+                f.returnType = function.returnType;
+                f.functionName = function.functionName;
+                f.instructions = copy(function.instructions);
+                f.parameters = function.parameters;
 
-            destination.emplace_back(f);
+                destination.emplace_back(f);
+            } else {
+                auto& function = *ptr;
+
+                ast::TemplateFunctionDeclaration f;
+                f.context = function.context;
+                f.position = function.position;
+                f.returnType = function.returnType;
+                f.functionName = function.functionName;
+                f.instructions = copy(function.instructions);
+                f.parameters = function.parameters;
+
+                destination.emplace_back(f);
+            }
         }
     }
 
@@ -806,7 +810,7 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
                 LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
 
                 //Instantiate the function
-                ast::FunctionDeclaration declaration;
+                ast::TemplateFunctionDeclaration declaration;
                 declaration.position = function_declaration.position;
                 declaration.returnType = function_declaration.returnType;
                 declaration.functionName = function_declaration.functionName;

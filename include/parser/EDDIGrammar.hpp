@@ -44,7 +44,7 @@ struct EddiGrammar : qi::grammar<lexer::StaticIterator,
     Rule<ast::GlobalVariableDeclaration>   globalDeclaration;
     Rule<ast::GlobalArrayDeclaration>      globalArrayDeclaration;
     Rule<ast::TemplateFunctionDeclaration> template_function;
-    Rule<ast::FunctionDeclaration>         function;
+    Rule<ast::TemplateFunctionDeclaration>         function;
     Rule<ast::FunctionParameter>           arg;
 
     /* Instructions */

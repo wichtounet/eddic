@@ -72,12 +72,12 @@ struct SetDefaultValues : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::DefaultValuesPass::apply_function(ast::FunctionDeclaration& function){
+void ast::DefaultValuesPass::apply_function(ast::TemplateFunctionDeclaration& function){
     SetDefaultValues visitor;
     visit_each(visitor, function.instructions);
 }
 
-void ast::DefaultValuesPass::apply_struct_function(ast::FunctionDeclaration& function){
+void ast::DefaultValuesPass::apply_struct_function(ast::TemplateFunctionDeclaration& function){
     SetDefaultValues visitor;
     visit_each(visitor, function.instructions);
 }

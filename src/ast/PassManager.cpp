@@ -44,8 +44,10 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::struct_definition& struct_
     pass->apply_struct(struct_, false);
 
     for(auto& block : struct_.blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            pass->apply_struct_function(*ptr);
+        if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+            if(!ptr->is_template()){
+                pass->apply_struct_function(*ptr);
+            }
         } else if(auto* ptr = boost::get<ast::Destructor>(&block)){
             pass->apply_struct_destructor(*ptr);
         } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
@@ -67,8 +69,10 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
         std::vector<ast::SourceFileBlock> blocks = program.blocks;
         for(auto& block : blocks){
             try {
-                if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                    pass->apply_function(*ptr);
+                if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+                    if(ptr->is_template()){
+                        pass->apply_function(*ptr);
+                    }
                 } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                     if(!ptr->is_template_declaration()){
                         apply_pass(pass, *ptr);
@@ -163,7 +167,7 @@ void ast::PassManager::init_passes(){
     passes.push_back(make_pass<ast::WarningsPass>("Warnings", template_engine, platform, configuration, pool));
 }
 
-void ast::PassManager::function_instantiated(ast::FunctionDeclaration& function, const std::string& context){
+void ast::PassManager::function_instantiated(ast::TemplateFunctionDeclaration& function, const std::string& context){
     LOG<Info>("Passes") << "Apply passes to instantiated function \"" << function.functionName << "\"" << " in context " << context << log::endl;
 
     for(auto& pass : applied_passes){

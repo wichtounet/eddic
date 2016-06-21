@@ -22,7 +22,7 @@
 
 using namespace eddic;
 
-void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& declaration){
+void ast::FunctionCollectionPass::apply_function(ast::TemplateFunctionDeclaration& declaration){
     auto return_type = visit(ast::TypeTransformer(context), declaration.returnType);
 
     if(return_type->is_array()){
@@ -57,7 +57,7 @@ void ast::FunctionCollectionPass::apply_function(ast::FunctionDeclaration& decla
     }
 }
 
-void ast::FunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
+void ast::FunctionCollectionPass::apply_struct_function(ast::TemplateFunctionDeclaration& function){
    apply_function(function);
 }
 

@@ -52,9 +52,11 @@ class DependencyVisitor : public boost::static_visitor<> {
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.blocks){
-                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                        ptr->standard = true;
-                        ptr->header = import.header;
+                    if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+                        if(!ptr->is_template()){
+                            ptr->standard = true;
+                            ptr->header = import.header;
+                        }
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                         ptr->standard = true;
                         ptr->header = import.header;
@@ -81,8 +83,10 @@ class DependencyVisitor : public boost::static_visitor<> {
                 (*this)(dependency);
 
                 for(ast::SourceFileBlock& block : dependency.blocks){
-                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-                        ptr->header = import.file;
+                    if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+                        if(!ptr->is_template()){
+                            ptr->header = import.file;
+                        }
                     } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                         ptr->header = import.file;
                     }

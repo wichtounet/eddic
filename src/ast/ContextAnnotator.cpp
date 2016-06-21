@@ -247,11 +247,11 @@ void ast::ContextAnnotationPass::apply_program(ast::SourceFile& program, bool in
     visit_each(visitor, function.instructions); \
     currentContext = currentContext->parent();
 
-void ast::ContextAnnotationPass::apply_function(ast::FunctionDeclaration& function){
+void ast::ContextAnnotationPass::apply_function(ast::TemplateFunctionDeclaration& function){
     HANDLE_FUNCTION();
 }
 
-void ast::ContextAnnotationPass::apply_struct_function(ast::FunctionDeclaration& function){
+void ast::ContextAnnotationPass::apply_struct_function(ast::TemplateFunctionDeclaration& function){
     HANDLE_FUNCTION();
 }
 

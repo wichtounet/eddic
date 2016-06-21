@@ -43,12 +43,14 @@ struct Collector : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::FunctionDeclaration& function){
-            for(auto& param : function.parameters){
-                positions[function.context->getVariable(param.parameterName)] = function.position;
-            }
+        void operator()(ast::TemplateFunctionDeclaration& function){
+            if(!function.is_template()){
+                for(auto& param : function.parameters){
+                    positions[function.context->getVariable(param.parameterName)] = function.position;
+                }
 
-            visit_each(*this, function.instructions);
+                visit_each(*this, function.instructions);
+            }
         }
 
         void operator()(ast::Constructor& function){
@@ -195,11 +197,13 @@ struct Inspector : public boost::static_visitor<> {
             }
         }
 
-        void operator()(ast::FunctionDeclaration& declaration){
-            check(declaration.context);
+        void operator()(ast::TemplateFunctionDeclaration& declaration){
+            if(!declaration.is_template()){
+                check(declaration.context);
 
-            if(!declaration.standard && !standard){
-                check_each(declaration.instructions);
+                if(!declaration.standard && !standard){
+                    check_each(declaration.instructions);
+                }
             }
         }
 

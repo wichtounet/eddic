@@ -61,14 +61,16 @@ struct VariablesVisitor : public boost::static_visitor<> {
         visit(*this, assignment.value);
     }
 
-    void visit_function(ast::FunctionDeclaration& declaration){
-        template_engine->check_type(declaration.returnType, declaration.position);
+    void visit_function(ast::TemplateFunctionDeclaration& declaration){
+        if(!declaration.is_template()){
+            template_engine->check_type(declaration.returnType, declaration.position);
 
-        for(auto& parameter : declaration.parameters){
-            template_engine->check_type(parameter.parameterType, declaration.position);
+            for(auto& parameter : declaration.parameters){
+                template_engine->check_type(parameter.parameterType, declaration.position);
+            }
+
+            visit_each(*this, declaration.instructions);
         }
-
-        visit_each(*this, declaration.instructions);
     }
 
     void visit_function(ast::Constructor& declaration){
@@ -120,12 +122,12 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
 } //end of anonymous namespace
 
-void ast::VariableAnnotationPass::apply_function(ast::FunctionDeclaration& function){
+void ast::VariableAnnotationPass::apply_function(ast::TemplateFunctionDeclaration& function){
     VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);
 }
 
-void ast::VariableAnnotationPass::apply_struct_function(ast::FunctionDeclaration& function){
+void ast::VariableAnnotationPass::apply_struct_function(ast::TemplateFunctionDeclaration& function){
     VariablesVisitor visitor(context, template_engine);
     visitor.visit_function(function);
 }

@@ -24,7 +24,6 @@
 #include "ast/StandardImport.hpp"
 #include "ast/Import.hpp"
 #include "ast/struct_definition.hpp"
-#include "ast/FunctionDeclaration.hpp"
 #include "ast/TemplateFunctionDeclaration.hpp"
 
 #include "Context.hpp"
@@ -40,7 +39,6 @@ namespace ast {
  * \brief A first level block in a source file.
  */
 typedef x3::variant<
-            FunctionDeclaration,
             TemplateFunctionDeclaration,
             GlobalVariableDeclaration,
             GlobalArrayDeclaration,

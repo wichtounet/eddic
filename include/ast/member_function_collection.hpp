@@ -16,7 +16,7 @@ namespace ast {
 
 struct MemberFunctionCollectionPass : Pass {
     void apply_struct(ast::struct_definition& struct_, bool indicator) override;
-    void apply_struct_function(ast::FunctionDeclaration& function) override;
+    void apply_struct_function(ast::TemplateFunctionDeclaration& function) override;
     void apply_struct_constructor(ast::Constructor& constructor) override;
     void apply_struct_destructor(ast::Destructor& destructor) override;
 

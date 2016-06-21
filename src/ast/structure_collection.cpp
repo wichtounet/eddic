@@ -44,11 +44,13 @@ void ast::StructureCollectionPass::apply_struct(ast::struct_definition& struct_,
 
     //Annotate functions with the parent struct
     for(auto& block : struct_.blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            auto& function = *ptr;
+        if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+            if(!ptr->is_template()){
+                auto& function = *ptr;
 
-            if(function.context){
-                function.context->struct_type = struct_.struct_type;
+                if(function.context){
+                    function.context->struct_type = struct_.struct_type;
+                }
             }
         } else if(auto* ptr = boost::get<ast::Constructor>(&block)){
             auto& function = *ptr;

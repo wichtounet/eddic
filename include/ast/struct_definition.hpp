@@ -25,7 +25,6 @@
 #include "ast/MemberDeclaration.hpp"
 #include "ast/Constructor.hpp"
 #include "ast/Destructor.hpp"
-#include "ast/FunctionDeclaration.hpp"
 #include "ast/TemplateFunctionDeclaration.hpp"
 
 namespace eddic {
@@ -41,7 +40,6 @@ typedef x3::variant<
             ArrayDeclaration,
             Constructor,
             Destructor,
-            FunctionDeclaration,
             TemplateFunctionDeclaration
         > StructBlock;
 

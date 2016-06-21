@@ -27,9 +27,9 @@ struct TemplateEngine;
 class Pass {
     public:
         virtual void apply_program(ast::SourceFile& program, bool indicator);
-        virtual void apply_function(ast::FunctionDeclaration& function);
+        virtual void apply_function(ast::TemplateFunctionDeclaration& function);
         virtual void apply_struct(ast::struct_definition& struct_, bool indicator);
-        virtual void apply_struct_function(ast::FunctionDeclaration& function);
+        virtual void apply_struct_function(ast::TemplateFunctionDeclaration& function);
         virtual void apply_struct_constructor(ast::Constructor& constructor);
         virtual void apply_struct_destructor(ast::Destructor& destructor);
 
@@ -40,7 +40,7 @@ class Pass {
         void set_current_pass(unsigned int i);
         void set_name(const std::string& name);
         std::string name();
-        
+
         virtual unsigned int passes();
         virtual bool is_simple();
 

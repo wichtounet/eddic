@@ -1683,27 +1683,31 @@ void mtac::Compiler::compile(ast::SourceFile& source, std::shared_ptr<StringPool
     program.context = source.context;
 
     for(auto& block : source.blocks){
-        if(auto* ptr = boost::get<ast::FunctionDeclaration>(&block)){
-            program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
-            auto& function = program.functions.back();
-            function.standard() = ptr->standard;
+        if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+            if(!ptr->is_template()){
+                program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
+                auto& function = program.functions.back();
+                function.standard() = ptr->standard;
 
-            FunctionCompiler compiler(program, function);
+                FunctionCompiler compiler(program, function);
 
-            visit_each(compiler, ptr->instructions);
-            compiler.issue_destructors(ptr->context);
+                visit_each(compiler, ptr->instructions);
+                compiler.issue_destructors(ptr->context);
+            }
         } else if(auto* struct_ptr = boost::get<ast::struct_definition>(&block)){
             if(!struct_ptr->is_template_declaration()){
                 for(auto& struct_block : struct_ptr->blocks){
-                    if(auto* ptr = boost::get<ast::FunctionDeclaration>(&struct_block)){
-                        program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
-                        auto& function = program.functions.back();
-                        function.standard() = struct_ptr->standard;
+                    if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&struct_block)){
+                        if(!ptr->is_template()){
+                            program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
+                            auto& function = program.functions.back();
+                            function.standard() = struct_ptr->standard;
 
-                        FunctionCompiler compiler(program, function);
+                            FunctionCompiler compiler(program, function);
 
-                        visit_each(compiler, ptr->instructions);
-                        compiler.issue_destructors(ptr->context);
+                            visit_each(compiler, ptr->instructions);
+                            compiler.issue_destructors(ptr->context);
+                        }
                     } else if(auto* ptr = boost::get<ast::Constructor>(&struct_block)){
                         program.functions.emplace_back(ptr->context, ptr->mangledName, program.context->getFunction(ptr->mangledName));
                         auto& function = program.functions.back();

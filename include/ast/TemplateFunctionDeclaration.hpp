@@ -43,6 +43,10 @@ struct TemplateFunctionDeclaration : x3::position_tagged {
     std::vector<Instruction> instructions;
 
     mutable long references = 0;
+
+    bool is_template() const {
+        return !template_types.empty();
+    }
 };
 
 } //end of ast

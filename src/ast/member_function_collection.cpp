@@ -58,7 +58,7 @@ void ast::MemberFunctionCollectionPass::apply_struct(ast::struct_definition& str
     current_struct = &struct_;
 }
 
-void ast::MemberFunctionCollectionPass::apply_struct_function(ast::FunctionDeclaration& function){
+void ast::MemberFunctionCollectionPass::apply_struct_function(ast::TemplateFunctionDeclaration& function){
     annotate(function, *current_struct);
 }
 
