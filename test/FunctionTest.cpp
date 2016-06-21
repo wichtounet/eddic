@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( bb_entry_exit_count ){
 
     BOOST_CHECK_EQUAL(function->entry_bb()->index, -1);
     BOOST_CHECK_EQUAL(function->exit_bb()->index, -2);
-    
+
     BOOST_CHECK(function->entry_bb()->next == function->exit_bb());
     BOOST_CHECK(function->exit_bb()->prev == function->entry_bb());
 
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE( bb_iterators ){
 
     auto it = function->begin();
     auto end = function->end();
-    
+
     BOOST_CHECK_EQUAL((*it)->index, -1);
     BOOST_CHECK(it != end);
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( bb_iterators ){
     BOOST_CHECK_EQUAL((*it)->index, 2);
     ++it;
     BOOST_CHECK_EQUAL((*it)->index, 3);
-    
+
     ++it;
     BOOST_CHECK_EQUAL((*it)->index, -2);
 
@@ -73,23 +73,23 @@ BOOST_AUTO_TEST_CASE( bb_iterators ){
 BOOST_AUTO_TEST_CASE( bb_new_bb ){
     Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
-    
+
     BOOST_CHECK_EQUAL(function->bb_count(), 0u);
 
     function->create_entry_bb();
     function->create_exit_bb();
 
     auto bb = function->new_bb();
-    
+
     BOOST_CHECK_EQUAL(function->bb_count(), 2u);
 
     auto it = function->begin();
     ++it;
 
     function->insert_before(it, bb);
-    
+
     BOOST_CHECK_EQUAL(function->bb_count(), 3u);
-    
+
     BOOST_CHECK(bb->next == function->exit_bb());
     BOOST_CHECK(bb->prev == function->entry_bb());
     BOOST_CHECK(function->entry_bb()->next == bb);
@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE( bb_remove_bb ){
     function->create_exit_bb();
 
     BOOST_CHECK_EQUAL(function->bb_count(), 6u);
-    
-    function->remove(bb2); 
-    
+
+    function->remove(bb2);
+
     BOOST_CHECK_EQUAL(function->bb_count(), 5u);
-    
+
     BOOST_CHECK(bb1->next == bb3);
     BOOST_CHECK(bb3->prev == bb1);
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( bb_remove_bb ){
     ++it;
     ++it;
 
-    function->remove(it); 
+    function->remove(it);
 
     BOOST_CHECK(bb1->next == bb4);
     BOOST_CHECK(bb4->prev == bb1);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( bb_remove_bb ){
 BOOST_AUTO_TEST_CASE( bb_at ){
     Function definition(nullptr, "test_function", "test_function");
     auto function = std::make_shared<mtac::Function>(nullptr, "test_function", definition);
-    
+
     function->create_entry_bb();
     auto bb1 = function->append_bb();
     auto bb2 = function->append_bb();
@@ -141,11 +141,11 @@ BOOST_AUTO_TEST_CASE( bb_at ){
     ++it;
     auto it_at = function->at(bb1);
     BOOST_CHECK(it == it_at);
-    
+
     ++it;
     it_at = function->at(bb2);
     BOOST_CHECK(it == it_at);
-    
+
     ++it;
     it_at = function->at(function->exit_bb());
     BOOST_CHECK(it == it_at);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( bb_at ){
     BOOST_CHECK(it_at == function->end());
 
     auto it_end = function->end();
-   
+
     --it_end;
     --it_at;
     --it;
