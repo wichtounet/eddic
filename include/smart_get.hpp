@@ -47,33 +47,37 @@ struct x3_smart_get {
 
 } //end of namespace boost
 
-#define X3_FORWARD_AST(Type) \
+#define X3_FORWARD_AST(MacroType) \
 namespace boost { \
 template <typename ...Types> \
-struct x3_smart_get<Type, Types...> { \
-    static inline const Type& get(boost::spirit::x3::variant<Types...> const& x){ \
-        return boost::get<x3::forward_ast<Type>>(x.get()).get(); \
+struct x3_smart_get<MacroType, Types...> { \
+    static inline const MacroType& get(boost::spirit::x3::variant<Types...> const& x){ \
+        return boost::get<x3::forward_ast<MacroType>>(x.get()).get(); \
     } \
-    static inline Type& get(boost::spirit::x3::variant<Types...>& x){ \
-        return boost::get<x3::forward_ast<Type>>(x.get()).get(); \
+    static inline MacroType& get(boost::spirit::x3::variant<Types...>& x){ \
+        return boost::get<x3::forward_ast<MacroType>>(x.get()).get(); \
     } \
-    static inline const Type* get(boost::spirit::x3::variant<Types...> const* x){ \
-        return boost::get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    static inline const MacroType* get(boost::spirit::x3::variant<Types...> const* x){ \
+        auto* ptr = boost::get<x3::forward_ast<MacroType>>(&x->get()); \
+        return ptr ? ptr->get_pointer() : nullptr; \
     } \
-    static inline Type* get(boost::spirit::x3::variant<Types...>* x){ \
-        return boost::get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    static inline MacroType* get(boost::spirit::x3::variant<Types...>* x){ \
+        auto* ptr = boost::get<x3::forward_ast<MacroType>>(&x->get()); \
+        return ptr ? ptr->get_pointer() : nullptr; \
     } \
-    static inline const Type& relaxed_get(boost::spirit::x3::variant<Types...> const& x){ \
-        return boost::relaxed_get<x3::forward_ast<Type>>(x.get()).get(); \
+    static inline const MacroType& relaxed_get(boost::spirit::x3::variant<Types...> const& x){ \
+        return boost::relaxed_get<x3::forward_ast<MacroType>>(x.get()).get(); \
     } \
-    static inline Type& relaxed_get(boost::spirit::x3::variant<Types...>& x){ \
-        return boost::relaxed_get<x3::forward_ast<Type>>(x.get()).get(); \
+    static inline MacroType& relaxed_get(boost::spirit::x3::variant<Types...>& x){ \
+        return boost::relaxed_get<x3::forward_ast<MacroType>>(x.get()).get(); \
     } \
-    static inline const Type* relaxed_get(boost::spirit::x3::variant<Types...> const* x){ \
-        return boost::relaxed_get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    static inline const MacroType* relaxed_get(boost::spirit::x3::variant<Types...> const* x){ \
+        auto* ptr = boost::relaxed_get<x3::forward_ast<MacroType>>(&x->get()); \
+        return ptr ? ptr->get_pointer() : nullptr; \
     } \
-    static inline Type* relaxed_get(boost::spirit::x3::variant<Types...>* x){ \
-        return boost::relaxed_get<x3::forward_ast<Type>>(&x->get())->get_pointer(); \
+    static inline MacroType* relaxed_get(boost::spirit::x3::variant<Types...>* x){ \
+        auto* ptr = boost::relaxed_get<x3::forward_ast<MacroType>>(&x->get()); \
+        return ptr ? ptr->get_pointer() : nullptr; \
     } \
 };\
 }
