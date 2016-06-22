@@ -23,10 +23,7 @@
 #include <fstream>
 #include <string>
 
-//#include "boost_cfg.hpp"
-
-//#define BOOST_SPIRIT_X3_DEBUG
-#define BOOST_SPIRIT_X3_NO_RTTI
+#include "boost_cfg.hpp"
 
 #include "ast/SourceFile.hpp"
 
