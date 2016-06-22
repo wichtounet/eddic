@@ -56,8 +56,6 @@ struct SourceFile : x3::position_tagged {
 
     Position position;
     std::vector<SourceFileBlock> blocks;
-
-    mutable long references = 0;
 };
 
 } //end of ast
