@@ -69,7 +69,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
         for(auto& block : program.blocks){
             try {
                 if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
-                    if(ptr->is_template()){
+                    if(!ptr->is_template()){
                         pass->apply_function(*ptr);
                     }
                 } else if(auto* ptr = boost::get<ast::struct_definition>(&block)){
