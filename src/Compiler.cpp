@@ -48,13 +48,13 @@ int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> co
     if(configuration->option_defined("32")){
         platform = Platform::INTEL_X86;
     }
-    
+
     if(configuration->option_defined("64")){
         platform = Platform::INTEL_X86_64;
     }
 
     StopWatch timer;
-    
+
     int code = compile_only(file, platform, configuration);
 
     if(!configuration->option_defined("quiet")){
@@ -65,12 +65,12 @@ int Compiler::compile(const std::string& file, std::shared_ptr<Configuration> co
 }
 
 int Compiler::compile_only(const std::string& file, Platform platform, std::shared_ptr<Configuration> configuration) {
-    int code = 0; 
+    int code = 0;
 
     std::unique_ptr<mtac::Program> program;
 
     try {
-        //Make sure that the file exists 
+        //Make sure that the file exists
         if(!file_exists(file)){
             throw SemanticalException("The file \"" + file + "\" does not exists");
         }
@@ -93,7 +93,11 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
         }
     } catch (const SemanticalException& e) {
         if(!configuration->option_defined("quiet")){
-            output_exception(e, program->context);
+            if(program){
+                output_exception(e, program->context);
+            } else {
+                output_exception(e, nullptr);
+            }
         }
 
         code = 1;
@@ -109,7 +113,7 @@ int Compiler::compile_only(const std::string& file, Platform platform, std::shar
             std::cout << "\t" << counter.first << ":" << counter.second << std::endl;
         }
     }
-    
+
     //Display timings if necessary
     if(program && configuration->option_defined("time")){
         program->context->timing().display();
@@ -135,7 +139,7 @@ std::unique_ptr<mtac::Program> Compiler::compile_mtac(const std::string& file, P
         if(configuration->option_defined("mtac-opt")){
             std::cout << *program << std::endl;
         }
-            
+
         //Build the call graph (will be used for each optimization level)
         mtac::build_call_graph(*program);
 
@@ -156,7 +160,7 @@ std::unique_ptr<mtac::Program> Compiler::compile_mtac(const std::string& file, P
 
     return std::move(program);
 }
-    
+
 void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, FrontEnd& front_end){
     //Compute the definitive reachable flag for functions
     program.call_graph.compute_reachable();
