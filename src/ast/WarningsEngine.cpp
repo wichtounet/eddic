@@ -80,6 +80,7 @@ struct Collector : public boost::static_visitor<> {
             positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
         }
 
+        AUTO_FORWARD()
         AUTO_IGNORE_OTHERS()
 
         const ast::Position& getPosition(std::shared_ptr<Variable> var){
@@ -289,6 +290,8 @@ struct Inspector : public boost::static_visitor<> {
                 visit(*this, instruction);
             }
         }
+
+        AUTO_FORWARD()
 
         //No warnings for other types
         AUTO_IGNORE_OTHERS()

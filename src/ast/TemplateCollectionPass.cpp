@@ -35,6 +35,7 @@ struct Collector : public boost::static_visitor<> {
         }
     }
 
+    AUTO_FORWARD()
     AUTO_IGNORE_OTHERS()
 };
 

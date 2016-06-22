@@ -117,6 +117,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
         template_engine->check_type(declaration.variableType, declaration.position);
     }
 
+    AUTO_FORWARD()
     AUTO_IGNORE_OTHERS()
 };
 

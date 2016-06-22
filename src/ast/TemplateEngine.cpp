@@ -642,6 +642,7 @@ struct Adaptor : public boost::static_visitor<> {
         visit(*this, source.size);
     }
 
+    AUTO_FORWARD()
     AUTO_IGNORE_OTHERS()
 };
 

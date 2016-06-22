@@ -67,6 +67,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
         setDefaultValue(declaration);
     }
 
+    AUTO_FORWARD()
     AUTO_IGNORE_OTHERS()
 };
 

@@ -22,10 +22,10 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         StringCheckerVisitor(StringPool& p) : pool(p) {}
 
         AUTO_RECURSE_PROGRAM()
-        AUTO_RECURSE_FUNCTION_DECLARATION() 
+        AUTO_RECURSE_FUNCTION_DECLARATION()
         AUTO_RECURSE_CONSTRUCTOR()
         AUTO_RECURSE_DESTRUCTOR()
-        AUTO_RECURSE_GLOBAL_DECLARATION() 
+        AUTO_RECURSE_GLOBAL_DECLARATION()
         AUTO_RECURSE_FUNCTION_CALLS()
         AUTO_RECURSE_BUILTIN_OPERATORS()
         AUTO_RECURSE_SIMPLE_LOOPS()
@@ -41,7 +41,7 @@ class StringCheckerVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_DEFAULT_CASE()
         AUTO_RECURSE_NEW()
         AUTO_RECURSE_DELETE()
-        
+
         void operator()(ast::struct_definition& struct_){
             if(!struct_.is_template_declaration()){
                 visit_each(*this, struct_.blocks);
@@ -52,12 +52,13 @@ class StringCheckerVisitor : public boost::static_visitor<> {
             literal.label = pool.label(literal.value);
         }
 
+        AUTO_FORWARD()
         AUTO_IGNORE_OTHERS()
 };
 
 void ast::StringCollectionPass::apply_program(ast::SourceFile& program, bool){
    StringCheckerVisitor visitor(*pool);
-   visitor(program); 
+   visitor(program);
 }
 
 bool ast::StringCollectionPass::is_simple(){

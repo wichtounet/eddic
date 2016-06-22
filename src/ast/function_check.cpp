@@ -194,7 +194,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                                 member_value.context = variable.context;
                                 member_value.position = variable.position;
                                 member_value.first = this_variable(variable.context, variable.position);
-                                member_value.operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName));
+                                member_value.operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName)); //TODO CHECK SECOND PARAMETER (SHOULD NOT BE STRING)
 
                                 value = member_value;
 
@@ -612,6 +612,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             cpp_unreachable("Should be handled by check_value");
         }
 
+        AUTO_FORWARD()
         AUTO_IGNORE_OTHERS()
 };
 

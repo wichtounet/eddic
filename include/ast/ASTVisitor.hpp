@@ -265,6 +265,10 @@ void operator()(ast::NewArray& new_){\
 #define AUTO_RETURN_OTHERS(return_type) template<typename T> return_type operator()(T& t){return return_type(t);}
 #define AUTO_RETURN_OTHERS_CONST(return_type) template<typename T> return_type operator()(T& t) const {return return_type(t);}
 
+/* Forward macros */
+
+#define AUTO_FORWARD() template <typename T> void operator()(x3::forward_ast<T>& x){ (*this)(x.get()); }
+
 /* Break macros  */
 
 #define AUTO_BREAK_OTHERS() template<typename T> result_type operator()(T&){ cpp_unreachable("Type not supported in the visitor"); }
