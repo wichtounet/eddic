@@ -496,7 +496,7 @@ namespace x3_grammar {
         |   integer_literal
         |   string_literal
         |   char_literal
-        |   '(' >> value > ')'
+        |   '(' >> value >> ')'
         ;
 
     auto const postfix_expression_def =
