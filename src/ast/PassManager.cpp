@@ -66,8 +66,7 @@ void apply_pass(std::shared_ptr<ast::Pass> pass, ast::SourceFile& program, std::
 
         bool valid = true;
 
-        std::vector<ast::SourceFileBlock> blocks = program.blocks;
-        for(auto& block : blocks){
+        for(auto& block : program.blocks){
             try {
                 if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
                     if(ptr->is_template()){
