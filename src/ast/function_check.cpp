@@ -114,7 +114,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         template<typename V>
         void check_value(V& value){
             if(auto* ptr = boost::smart_relaxed_get<ast::FunctionCall>(&value)){
-                auto functionCall = *ptr;
+                auto& functionCall = *ptr;
 
                 template_engine->check_function(functionCall);
 
