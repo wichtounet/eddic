@@ -27,8 +27,8 @@ namespace eddic {
 
 namespace ast {
 
-template<typename... V1>
-std::ostream& operator<<(std::ostream& os, const boost::spirit::x3::variant<V1...>& v1){
+template<typename V1, typename... V2>
+std::ostream& operator<<(std::ostream& os, const boost::spirit::x3::variant<V1, V2...>& v1){
     return os << v1.get();
 }
 
