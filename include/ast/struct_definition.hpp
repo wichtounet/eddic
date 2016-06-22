@@ -47,7 +47,7 @@ struct struct_definition : x3::position_tagged {
     bool standard = false;
     std::string header = "";
 
-    std::shared_ptr<const eddic::Type> struct_type;
+    std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
     Position position;
     std::vector<std::string> decl_template_types;
