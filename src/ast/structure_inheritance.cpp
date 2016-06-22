@@ -39,13 +39,13 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
 
                 //If already resolved
                 if(struct_type->parent_type){
-                    resolved_structures.insert(type->mangle()); 
+                    resolved_structures.insert(type->mangle());
                     continue;
                 }
 
                 //If no parent type, already resolved
                 if(!ptr->parent_type){
-                    resolved_structures.insert(type->mangle()); 
+                    resolved_structures.insert(type->mangle());
                     continue;
                 }
 
@@ -57,8 +57,8 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
 
                 if(resolved_structures.find(parent_type->mangle()) != resolved_structures.end()){
                     struct_type->parent_type = parent_type;
-                    resolved_structures.insert(type->mangle()); 
-                } 
+                    resolved_structures.insert(type->mangle());
+                }
             }
         }
 
