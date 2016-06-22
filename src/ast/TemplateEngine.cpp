@@ -532,7 +532,7 @@ struct Adaptor : public boost::static_visitor<> {
             if(has_to_be_replaced(ptr->type)){
                 auto replacement = replacements.at(ptr->type);
 
-                auto simple = boost::smart_get<ast::SimpleType>(replacement);
+                decltype(auto) simple = boost::smart_get<ast::SimpleType>(replacement);
                 ptr->type = simple.type;
             }
 
