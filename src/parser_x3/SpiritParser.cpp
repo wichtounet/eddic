@@ -415,10 +415,10 @@ namespace x3_grammar {
 
     BOOST_SPIRIT_DEFINE(
         type,
-        simple_type,
-        template_type,
         array_type,
-        pointer_type
+        pointer_type,
+        template_type,
+        simple_type
     );
 
     /* Values */
