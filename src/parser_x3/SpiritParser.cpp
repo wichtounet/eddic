@@ -518,7 +518,7 @@ namespace x3_grammar {
                      >>  identifier_literal
                 |
                          postfix_op
-                     >   x3::attr(ast::VariableValue())
+                     >   x3::attr(ast::Literal())
             );
 
     auto const prefix_expression_def =
