@@ -21,7 +21,6 @@ endif
 $(eval $(call auto_folder_compile,src))
 $(eval $(call auto_folder_compile,src/ast))
 $(eval $(call auto_folder_compile,src/lexer))
-$(eval $(call auto_folder_compile,src/parser))
 $(eval $(call auto_folder_compile,src/parser_x3,-fno-rtti))
 $(eval $(call auto_folder_compile,src/asm,-fno-rtti -fno-exceptions))
 $(eval $(call auto_folder_compile,src/mtac,-fno-rtti -fno-exceptions))
@@ -30,11 +29,11 @@ $(eval $(call auto_folder_compile,test))
 
 # Gather files
 
-SRC_CPP_FILES_ALL=$(wildcard src/*.cpp) $(wildcard src/ast/*.cpp) $(wildcard src/asm/*.cpp) $(wildcard src/ltac/*.cpp) $(wildcard src/mtac/*.cpp) $(wildcard src/lexer/*.cpp) $(wildcard src/parser/*.cpp) $(wildcard src/parser_x3/*.cpp)
+SRC_CPP_FILES_ALL=$(wildcard src/*.cpp) $(wildcard src/ast/*.cpp) $(wildcard src/asm/*.cpp) $(wildcard src/ltac/*.cpp) $(wildcard src/mtac/*.cpp) $(wildcard src/lexer/*.cpp) $(wildcard src/parser_x3/*.cpp)
 
+# Remove executables
 SRC_CPP_FILES_NON_EXEC := $(filter-out src/eddi.cpp,$(SRC_CPP_FILES_ALL))
 SRC_CPP_FILES_NON_EXEC := $(filter-out src/lexer/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
-SRC_CPP_FILES_NON_EXEC := $(filter-out src/parser/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
 SRC_CPP_FILES_NON_EXEC := $(filter-out src/parser_x3/main.cpp,$(SRC_CPP_FILES_NON_EXEC))
 
 TEST_CPP_FILES=$(wildcard test/*.cpp) $(SRC_CPP_FILES_NON_EXEC)
@@ -42,7 +41,6 @@ TEST_CPP_FILES=$(wildcard test/*.cpp) $(SRC_CPP_FILES_NON_EXEC)
 # Link the various binaries
 
 $(eval $(call add_executable,eddic,src/eddi.cpp $(SRC_CPP_FILES_NON_EXEC)))
-$(eval $(call add_executable,time_parse,src/parser/main.cpp $(SRC_CPP_FILES_NON_EXEC)))
 $(eval $(call add_executable,x3_test,src/parser_x3/main.cpp $(SRC_CPP_FILES_NON_EXEC)))
 $(eval $(call add_executable,generate_lexer,src/lexer/main.cpp $(SRC_CPP_FILES_NON_EXEC)))
 $(eval $(call add_executable,test,$(TEST_CPP_FILES), -lboost_unit_test_framework))
