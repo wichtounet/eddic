@@ -174,6 +174,7 @@ namespace x3_grammar {
     struct integer_suffix_literal_class;
     struct float_literal_class;
     struct string_literal_class;
+    struct identifier_literal_class;
     struct char_literal_class;
     struct value_class;
     struct primary_value_class;
@@ -244,6 +245,7 @@ namespace x3_grammar {
     x3::rule<integer_suffix_literal_class, ast::IntegerSuffix> const integer_suffix_literal("integer_suffix_literal");
     x3::rule<float_literal_class, ast::Float> const float_literal("float_literal");
     x3::rule<string_literal_class, ast::Literal> const string_literal("string_literal");
+    x3::rule<identifier_literal_class, ast::Literal> const identifier_literal("identifier_literal");
     x3::rule<char_literal_class, ast::CharLiteral> const char_literal("char_literal");
     x3::rule<new_array_class, ast::NewArray> const new_array("new_array");
     x3::rule<new_class, ast::New> const new_("new_");
@@ -423,6 +425,9 @@ namespace x3_grammar {
     auto const integer_literal_def =
         x3::int_;
 
+    auto const identifier_literal_def =
+        identifier;
+
     auto const integer_suffix_literal_def =
         x3::lexeme[
                 x3::int_
@@ -510,7 +515,7 @@ namespace x3_grammar {
                 |
                          '.'
                      >>  x3::attr(ast::Operator::DOT)
-                     >>  variable_value
+                     >>  identifier_literal
                 |
                          postfix_op
                      >   x3::attr(ast::VariableValue())
@@ -591,6 +596,7 @@ namespace x3_grammar {
         float_literal,
         char_literal,
         string_literal,
+        identifier_literal,
         variable_value,
         new_array,
         new_,
