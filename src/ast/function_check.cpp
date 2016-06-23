@@ -168,7 +168,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                                 value = member_function_call;
 
-                                check_value(value);
+                                (*this)(value);
 
                                 return;
                             }
@@ -440,7 +440,14 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             auto type = visit(ast::GetTypeVisitor(), value.first);
             for(auto& op : value.operations){
                 if(ast::has_operation_value(op)){
-                    check_value(op.get<1>());
+                    decltype(auto) op_value = op.get<1>();
+
+                    if(op.get<0>() == ast::Operator::CALL){
+                        decltype(auto) function_call = boost::smart_get<ast::FunctionCall>(op_value);
+                        check_each(function_call.values);
+                    } else {
+                        check_value(op.get<1>());
+                    }
                 }
 
                 template_engine->check_member_function(type, op, value.position);
