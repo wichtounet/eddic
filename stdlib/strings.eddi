@@ -10,15 +10,15 @@ struct string {
             data[i] = raw[i];
         }
     }
-   
+
     this(string* rhs){
         data = new char[rhs.size()];
-        
+
         for(int i = 0; i < size(); ++i){
             data[i] = rhs.data[i];
         }
     }
-    
+
     ~this(){
         delete data;
     }
@@ -48,7 +48,7 @@ struct string {
         for(int i = 0; i < this.size(); ++i){
             new_data[i] = data[i];
         }
-        
+
         //Copy the other string
         for(int i = this.size(); i < this.size() + other.size(); ++i){
             new_data[i] = other.data[i - this.size()];
@@ -71,7 +71,7 @@ struct string {
         for(int i = 0; i < this.size(); ++i){
             new_data[i] = data[i];
         }
-        
+
         int number = other;
 
         if(other < 0){
@@ -81,12 +81,12 @@ struct string {
 
         int i = size(new_data) - 1;
 
-        while (number != 0) { 
+        while (number != 0) {
             int remaining = number % 10;
 
             new_data[i--] = (char) (remaining + 48);
 
-            number /= 10; 
+            number /= 10;
         }
 
         delete data;
