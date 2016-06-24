@@ -411,14 +411,14 @@ namespace x3_grammar {
         identifier;
 
     auto const new_array_def =
-            x3::lit("new")
+            x3::lexeme["new" >> !(x3::ascii::alnum | '_')]
         >>  type
         >>  '['
         >   value
         >   ']';
 
     auto const new__def =
-            x3::lit("new")
+            x3::lexeme["new" >> !(x3::ascii::alnum | '_')]
         >>  type
         >>  '('
         >   -(value % ',')
