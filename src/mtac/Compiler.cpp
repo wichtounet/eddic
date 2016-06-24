@@ -1298,6 +1298,8 @@ struct AssignmentVisitor : public boost::static_visitor<> {
         }
     }
 
+    AUTO_FORWARD()
+
     //Other ast::Value type does not yield a left value
 
     template<typename T>
@@ -1598,6 +1600,9 @@ class FunctionCompiler : public boost::static_visitor<> {
         void operator()(ast::FunctionCall& functionCall){
             visit_non_variant(ToArgumentsVisitor<>(function), functionCall);
         }
+
+        AUTO_RECURSE_SCOPE()
+        AUTO_FORWARD()
 
         //All the other statements should have been transformed during the AST passes
 
