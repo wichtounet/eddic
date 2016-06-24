@@ -35,6 +35,7 @@ struct AnnotateVisitor : public boost::static_visitor<> {
         AUTO_RECURSE_TERNARY()
         AUTO_RECURSE_PREFIX()
         AUTO_RECURSE_DELETE()
+        AUTO_RECURSE_SCOPE()
 
         AUTO_IGNORE_BOOLEAN()
         AUTO_IGNORE_NULL()

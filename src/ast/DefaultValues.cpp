@@ -25,6 +25,7 @@ struct SetDefaultValues : public boost::static_visitor<> {
     AUTO_RECURSE_SIMPLE_LOOPS()
     AUTO_RECURSE_FOREACH()
     AUTO_RECURSE_BRANCHES()
+    AUTO_RECURSE_SCOPE()
 
     template<typename T>
     void setDefaultValue(T& declaration){

@@ -47,6 +47,11 @@ void operator()(ast::Ternary& ternary){\
     visit(*this, ternary.false_value);\
 }
 
+#define AUTO_RECURSE_SCOPE()\
+void operator()(ast::Scope& scope){\
+    visit_each(*this, scope.instructions);\
+}
+
 #define AUTO_RECURSE_ELSE()\
 void operator()(ast::Else& else_){\
     visit_each(*this, else_.instructions);\

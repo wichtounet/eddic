@@ -27,6 +27,8 @@ using namespace eddic;
 
 namespace {
 
+//TODO Most of this shit can be easily optimized...
+
 struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Integer& source) const {
         ast::Integer copy;
@@ -349,6 +351,18 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         return ast::Instruction{copy};
     }
 
+    ast::Instruction operator()(const ast::Scope& source) const {
+        ast::Scope copy;
+
+        copy.instructions.reserve(source.instructions.size());
+
+        for(auto& instruction : source.instructions){
+            copy.instructions.push_back(visit(*this, instruction));
+        }
+
+        return ast::Instruction{copy};
+    }
+
     ast::Instruction operator()(const ast::While& source) const {
         ast::While copy;
 
@@ -643,6 +657,7 @@ struct Adaptor : public boost::static_visitor<> {
     }
 
     AUTO_FORWARD()
+    AUTO_RECURSE_SCOPE()
     AUTO_IGNORE_OTHERS()
 };
 

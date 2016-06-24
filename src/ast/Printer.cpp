@@ -162,6 +162,11 @@ struct DebugVisitor : public boost::static_visitor<> {
         print_each_sub(declaration.instructions, "Instructions:");
     }
 
+    void operator()(ast::Scope& declaration) const {
+        std::cout << indent() << "Scope" << std::endl;
+        print_each_sub(declaration.instructions, "Instructions:");
+    }
+
     void operator()(ast::MemberDeclaration& declaration) const {
         std::cout << indent() << ast::to_string(declaration.type)  << " " << declaration.name << std::endl;
     }

@@ -31,6 +31,7 @@ struct Foreach;
 struct ForeachIn;
 struct Switch;
 struct Delete;
+struct Scope;
 
 typedef x3::variant<
             FunctionCall,
@@ -48,7 +49,8 @@ typedef x3::variant<
             PrefixOperation,
             Delete,
             x3::forward_ast<Switch>,
-            x3::forward_ast<For>>
+            x3::forward_ast<For>,
+            x3::forward_ast<Scope>>
         Instruction;
 
 } //end of ast
@@ -63,6 +65,7 @@ typedef x3::variant<
 #include "ast/ForeachIn.hpp"
 #include "ast/Switch.hpp"
 #include "ast/For.hpp"
+#include "ast/Scope.hpp"
 
 X3_FORWARD_AST(eddic::ast::If)
 X3_FORWARD_AST(eddic::ast::While)
@@ -71,5 +74,6 @@ X3_FORWARD_AST(eddic::ast::Foreach)
 X3_FORWARD_AST(eddic::ast::ForeachIn)
 X3_FORWARD_AST(eddic::ast::Switch)
 X3_FORWARD_AST(eddic::ast::For)
+X3_FORWARD_AST(eddic::ast::Scope)
 
 #endif

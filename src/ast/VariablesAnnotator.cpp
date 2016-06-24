@@ -118,6 +118,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     AUTO_FORWARD()
+    AUTO_RECURSE_SCOPE()
     AUTO_IGNORE_OTHERS()
 };
 

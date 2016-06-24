@@ -80,6 +80,7 @@ struct Collector : public boost::static_visitor<> {
             positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
         }
 
+        AUTO_RECURSE_SCOPE()
         AUTO_FORWARD()
         AUTO_IGNORE_OTHERS()
 
@@ -292,6 +293,7 @@ struct Inspector : public boost::static_visitor<> {
         }
 
         AUTO_FORWARD()
+        AUTO_RECURSE_SCOPE()
 
         //No warnings for other types
         AUTO_IGNORE_OTHERS()
