@@ -34,7 +34,6 @@ struct Return : x3::file_position_tagged {
     Value value;
     x3::unused_type fake_;
 
-    mutable long references = 0;
 };
 
 } //end of ast

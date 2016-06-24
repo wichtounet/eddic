@@ -35,7 +35,6 @@ struct BuiltinOperator : x3::file_position_tagged {
     BuiltinType type;
     std::vector<Value> values;
 
-    mutable long references = 0;
 };
 
 } //end of ast

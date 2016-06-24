@@ -31,7 +31,6 @@ struct NewArray : x3::file_position_tagged {
     Type type;
     Value size;
 
-    mutable long references = 0;
 };
 
 } //end of ast

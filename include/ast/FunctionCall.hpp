@@ -38,7 +38,6 @@ struct FunctionCall : x3::file_position_tagged {
     std::vector<ast::Type> template_types;
     std::vector<Value> values;
 
-    mutable long references = 0;
 };
 
 } //end of ast

@@ -23,7 +23,6 @@ struct PrefixOperation: x3::file_position_tagged  {
     Value left_value;
     ast::Operator op;
 
-    mutable long references = 0;
 };
 
 } //end of ast

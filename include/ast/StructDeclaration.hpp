@@ -35,7 +35,6 @@ struct StructDeclaration : x3::file_position_tagged {
     std::string variableName;
     std::vector<Value> values;
 
-    mutable long references = 0;
 };
 
 } //end of ast

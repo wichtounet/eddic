@@ -36,7 +36,6 @@ struct Switch : x3::file_position_tagged {
     std::vector<SwitchCase> cases;
     boost::optional<DefaultCase> default_case;
 
-    mutable long references = 0;
 };
 
 } //end of ast

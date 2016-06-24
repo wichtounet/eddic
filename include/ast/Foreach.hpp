@@ -33,7 +33,6 @@ struct Foreach : x3::file_position_tagged {
     int to;
     std::vector<Instruction> instructions;
 
-    mutable long references = 0;
 };
 
 } //end of ast

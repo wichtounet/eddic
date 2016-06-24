@@ -57,7 +57,6 @@ struct struct_definition : x3::file_position_tagged {
 
     std::vector<ast::Type> inst_template_types;
 
-    mutable long references = 0;
 
     bool is_template_declaration(){
         return !decl_template_types.empty();

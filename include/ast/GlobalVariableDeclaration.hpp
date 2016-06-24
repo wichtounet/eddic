@@ -33,7 +33,6 @@ struct GlobalVariableDeclaration : x3::file_position_tagged {
     std::string variableName;
     boost::optional<Value> value;
 
-    mutable long references = 0;
 };
 
 } //end of ast

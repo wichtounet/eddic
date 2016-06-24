@@ -33,7 +33,6 @@ struct For {
     boost::optional<Instruction> repeat;
     std::vector<Instruction> instructions;
 
-    mutable long references = 0;
 };
 
 } //end of ast

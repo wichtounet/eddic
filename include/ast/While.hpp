@@ -31,7 +31,6 @@ struct While {
     Value condition;
     std::vector<Instruction> instructions;
 
-    mutable long references = 0;
 };
 
 } //end of ast

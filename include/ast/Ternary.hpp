@@ -26,7 +26,6 @@ struct Ternary : x3::file_position_tagged {
     Value true_value;
     Value false_value;
 
-    mutable long references = 0;
 };
 
 } //end of ast

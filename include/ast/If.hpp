@@ -35,7 +35,6 @@ struct If {
     std::vector<ElseIf> elseIfs;
     boost::optional<Else> else_;
 
-    mutable long references = 0;
 };
 
 } //end of ast

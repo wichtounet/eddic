@@ -32,7 +32,6 @@ struct New: x3::file_position_tagged  {
     Type type;
     std::vector<Value> values;
 
-    mutable long references = 0;
 };
 
 } //end of ast

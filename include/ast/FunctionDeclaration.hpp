@@ -44,7 +44,6 @@ struct FunctionDeclaration : x3::file_position_tagged {
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 
-    mutable long references = 0;
 };
 
 } //end of ast

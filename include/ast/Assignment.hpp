@@ -33,7 +33,6 @@ struct Assignment : x3::file_position_tagged {
     Value value;
     ast::Operator op = ast::Operator::ASSIGN; //If not specified, it is not a compound operator
 
-    mutable long references = 0;
 };
 
 } //end of ast

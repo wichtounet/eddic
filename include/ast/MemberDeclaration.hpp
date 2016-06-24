@@ -26,7 +26,6 @@ struct MemberDeclaration : x3::file_position_tagged {
     Type type;
     std::string name;
 
-    mutable long references = 0;
 };
 
 } //end of ast

@@ -41,8 +41,6 @@ struct Expression : x3::file_position_tagged {
     Position position;
     Value first;
     Operations operations;
-
-    mutable long references = 0;
 };
 
 bool has_operation_value(const ast::Operation& operation);

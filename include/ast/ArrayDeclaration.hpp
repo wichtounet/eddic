@@ -34,7 +34,6 @@ struct ArrayDeclaration : x3::file_position_tagged {
     std::string arrayName;
     Value size;
 
-    mutable long references = 0;
 };
 
 } //end of ast
