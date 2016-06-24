@@ -24,7 +24,7 @@ namespace ast {
  * \class ASTForeachIn
  * \brief The AST node for a foreach loop over an array.
  */
-struct ForeachIn : x3::position_tagged {
+struct ForeachIn : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     ast::Position position;

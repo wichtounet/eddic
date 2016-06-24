@@ -20,7 +20,7 @@ namespace ast {
  * \class Import
  * \brief The AST node for an import.
  */
-struct Import : x3::position_tagged {
+struct Import : x3::file_position_tagged {
     Position position;
     std::string file;
 };

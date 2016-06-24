@@ -27,7 +27,7 @@ namespace ast {
  * \class StructDeclaration
  * \brief The AST node for a declaration of a local struct.
  */
-struct StructDeclaration : x3::position_tagged {
+struct StructDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

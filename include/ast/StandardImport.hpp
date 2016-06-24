@@ -20,7 +20,7 @@ namespace ast {
  * \class StandardImport
  * \brief The AST node for an import of the standard import.
  */
-struct StandardImport : x3::position_tagged {
+struct StandardImport : x3::file_position_tagged {
     Position position;
     std::string header;
 };

@@ -24,7 +24,7 @@ namespace ast {
  * \class ASTNewArray
  * \brief The AST node for a dynamic allocation of array.
  */
-struct NewArray : x3::position_tagged {
+struct NewArray : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

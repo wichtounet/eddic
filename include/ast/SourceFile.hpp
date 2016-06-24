@@ -13,10 +13,7 @@
 //Must be done before any other boost include
 #include "variant.hpp"
 
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/spirit/home/support/attributes.hpp>
-#include <boost/spirit/home/classic/iterator.hpp>
-#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
+#include "parser_x3/error_handling.hpp"
 
 #include "ast/Position.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
@@ -51,7 +48,7 @@ typedef x3::variant<
  * \class ASTSourceFile
  * \brief The AST root node for a program.
  */
-struct SourceFile : x3::position_tagged {
+struct SourceFile : x3::file_position_tagged {
     std::shared_ptr<GlobalContext> context;
 
     Position position;

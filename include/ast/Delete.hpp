@@ -20,7 +20,7 @@ namespace ast {
  * \class Delete
  * \brief The AST node for delete a variable.
  */
-struct Delete : x3::position_tagged {
+struct Delete : x3::file_position_tagged {
     Position position;
     Value value;
 	x3::unused_type fake_;

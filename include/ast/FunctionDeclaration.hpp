@@ -30,7 +30,7 @@ namespace ast {
  * \class ASTFunctionDeclaration
  * \brief The AST node for a function declaration.
  */
-struct FunctionDeclaration : x3::position_tagged {
+struct FunctionDeclaration : x3::file_position_tagged {
     std::shared_ptr<FunctionContext> context;
 
     std::string mangledName;

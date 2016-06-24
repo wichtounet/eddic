@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTArrayDeclaration
  * \brief The AST node for a declaration of a local array.
  */
-struct ArrayDeclaration : x3::position_tagged {
+struct ArrayDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

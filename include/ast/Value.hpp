@@ -10,7 +10,7 @@
 
 #include "variant.hpp"
 
-#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
+#include "parser_x3/error_handling.hpp"
 
 #include "ast/values_def.hpp"
 #include "ast/Integer.hpp"

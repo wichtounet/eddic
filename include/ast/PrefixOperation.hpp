@@ -18,7 +18,7 @@ namespace eddic {
 
 namespace ast {
 
-struct PrefixOperation: x3::position_tagged  {
+struct PrefixOperation: x3::file_position_tagged  {
     Position position;
     Value left_value;
     ast::Operator op;

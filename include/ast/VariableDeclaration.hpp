@@ -26,7 +26,7 @@ namespace ast {
  * \class VariableDeclaration
  * \brief The AST node for a declaration of a local variable.
  */
-struct VariableDeclaration : x3::position_tagged {
+struct VariableDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

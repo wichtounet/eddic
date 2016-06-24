@@ -20,7 +20,7 @@ namespace ast {
  * \class ASTTernary
  * \brief The AST node for a ternary operator.
  */
-struct Ternary : x3::position_tagged {
+struct Ternary : x3::file_position_tagged {
     Position position;
     Value condition;
     Value true_value;

@@ -43,7 +43,7 @@ typedef x3::variant<
             TemplateFunctionDeclaration
         > StructBlock;
 
-struct struct_definition : x3::position_tagged {
+struct struct_definition : x3::file_position_tagged {
     bool standard = false;
     std::string header = "";
 

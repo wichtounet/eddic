@@ -28,7 +28,7 @@ namespace ast {
  * \class ASTSwitch
  * \brief The AST node for a switch case.
  */
-struct Switch : x3::position_tagged {
+struct Switch : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

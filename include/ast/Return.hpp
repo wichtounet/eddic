@@ -26,7 +26,7 @@ namespace ast {
  * \class ASTReturn
  * \brief The AST node for a return.
  */
-struct Return : x3::position_tagged {
+struct Return : x3::file_position_tagged {
     std::string mangled_name;
     std::shared_ptr<FunctionContext> context;
 

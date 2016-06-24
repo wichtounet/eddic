@@ -9,13 +9,18 @@
 #define AST_PRINTER_H
 
 #include "ast/source_def.hpp"
+#include "ast/Value.hpp"
+#include "ast/Instruction.hpp"
 
 namespace eddic {
 
 namespace ast {
 
 struct Printer {
-    void print(SourceFile& program); 
+    void print(SourceFile& program);
+    void print(Value& value);
+    void print(Instruction& value);
+    void print(Expression& value);
 };
 
 } //end of ast

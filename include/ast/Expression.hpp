@@ -35,7 +35,7 @@ typedef std::vector<Operation> Operations;
  * \brief The AST node for an expression.
  * An expression can be a mathematical expression or a postfix expression (member function calls, array values or member values).
  */
-struct Expression : x3::position_tagged {
+struct Expression : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

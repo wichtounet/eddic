@@ -24,7 +24,7 @@ namespace ast {
  * \class New
  * \brief The AST node for a dynamic allocation.
  */
-struct New: x3::position_tagged  {
+struct New: x3::file_position_tagged  {
     std::shared_ptr<Context> context;
     std::string mangled_name;
 

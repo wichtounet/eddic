@@ -25,7 +25,7 @@ namespace ast {
  * \class ASTGlobalVariableDeclaration
  * \brief The AST node for a declaration of a global variable.
  */
-struct GlobalVariableDeclaration : x3::position_tagged {
+struct GlobalVariableDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
     Position position;

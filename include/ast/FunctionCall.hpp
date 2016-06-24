@@ -28,7 +28,7 @@ namespace ast {
  * \class ASTFunctionCall
  * \brief The AST node for a function call.
  */
-struct FunctionCall : x3::position_tagged {
+struct FunctionCall : x3::file_position_tagged {
     std::shared_ptr<Context> context;
     std::string mangled_name;
     std::shared_ptr<const eddic::Type> left_type;

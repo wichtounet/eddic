@@ -26,7 +26,7 @@ namespace ast {
  * \class Cast
  * \brief The AST node for a cast of a variable to another type.
  */
-struct Cast : x3::position_tagged {
+struct Cast : x3::file_position_tagged {
     std::shared_ptr<Context> context;
     std::shared_ptr<const eddic::Type> resolved_type;
 

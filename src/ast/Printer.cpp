@@ -388,3 +388,18 @@ void ast::Printer::print(SourceFile& program){
     DebugVisitor visitor;
     visit_non_variant(visitor, program);
 }
+
+void ast::Printer::print(Expression& program){
+    DebugVisitor visitor;
+    visit_non_variant(visitor, program);
+}
+
+void ast::Printer::print(Value& value){
+    DebugVisitor visitor;
+    visit(visitor, value);
+}
+
+void ast::Printer::print(Instruction& value){
+    DebugVisitor visitor;
+    visit(visitor, value);
+}

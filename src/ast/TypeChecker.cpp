@@ -147,10 +147,10 @@ class CheckerVisitor : public boost::static_visitor<> {
                 if(left_value_type->is_pointer()){
                     //Addresses are taken implicitly
                     if(left_value_type->data_type() != right_value_type){
-                        throw SemanticalException("Incompatible type in assignment", assignment.position);
+                        context->error_handler.semantical_exception("Incompatible type in assignment", assignment);
                     }
                 } else {
-                    throw SemanticalException("Incompatible type in assignment", assignment.position);
+                    context->error_handler.semantical_exception("Incompatible type in assignment", assignment);
                 }
             }
 

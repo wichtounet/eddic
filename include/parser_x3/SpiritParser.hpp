@@ -8,9 +8,7 @@
 #ifndef SPIRIT_PARSER_X3_H
 #define SPIRIT_PARSER_X3_H
 
-#include <string>
-#include <memory>
-
+#include "parser_x3/error_handling.hpp"
 #include "ast/SourceFile.hpp"
 
 namespace eddic {

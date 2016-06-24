@@ -29,7 +29,7 @@ namespace ast {
  * \class ASTDestructor
  * \brief The AST node for a destructor declaration.
  */
-struct Destructor : x3::position_tagged {
+struct Destructor : x3::file_position_tagged {
     std::shared_ptr<FunctionContext> context;
 
     std::string mangledName;
