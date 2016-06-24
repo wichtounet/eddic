@@ -653,7 +653,7 @@ struct ToArgumentsVisitor : public boost::static_visitor<arguments> {
     mtac::Function& function;
 
     result_type operator()(ast::Literal& literal) const {
-        return {literal.label, (int) literal.value.size() - 2};
+        return {literal.label, (int) literal.value.size()};
     }
 
     result_type operator()(ast::CharLiteral& literal) const {

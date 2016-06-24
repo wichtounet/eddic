@@ -14,7 +14,7 @@
 using namespace eddic;
 
 StringPool::StringPool() : currentString(0) {
-    label("\"\"");      //- special label for default string value
+    label("");      //- special label for default string value
 }
 
 std::string StringPool::label(const std::string& value) {
