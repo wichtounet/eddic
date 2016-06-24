@@ -47,8 +47,8 @@ $(eval $(call add_executable,test,$(TEST_CPP_FILES), -lboost_unit_test_framework
 
 # Management targets
 
-debug: debug/bin/eddic debug/bin/time_parse debug/bin/generate_lexer debug/bin/test
-release: release/bin/eddic release/bin/time_parse release/bin/generate_lexer release/bin/test
+debug: debug/bin/eddic debug/bin/test
+release: release/bin/eddic release/bin/test
 
 all: debug release
 
