@@ -702,15 +702,9 @@ struct TransformerVisitor : public boost::static_visitor<> {
 
             if(transformed.size() == 1){
                 *start = transformed[0];
-            } else if(transformed.size() == 2){
-                //Replace the current instruction with the first one
-                *start = transformed[0];
-
-                //Insert the other instructions after the previously inserted
-                start = instructions.insert(start+1, transformed[1]);
-
-                //Update the end iterator
-                end = instructions.end();
+            } else if(transformed.size() > 1){
+                //Replace the current instruction with a scope of instructions
+                *start = ast::Scope{{std::move(transformed)}};
             }
 
             ++start;
