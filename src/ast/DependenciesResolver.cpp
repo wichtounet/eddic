@@ -71,8 +71,6 @@ class DependencyVisitor : public boost::static_visitor<> {
 
         void operator()(ast::Import& import){
             auto file = import.file;
-            file.erase(0, 1);
-            file.resize(file.size() - 1);
 
             if(!file_exists(file)){
                 throw SemanticalException("The file " + file + " does not exist");
