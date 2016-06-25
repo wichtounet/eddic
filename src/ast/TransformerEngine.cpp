@@ -427,7 +427,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         return instructions;
     }
 
-    result_type operator()(ast::Switch& switch_){
+    result_type operator()(ast::Switch& switch_) const {
         auto cases = switch_.cases;
         auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
@@ -435,7 +435,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             ast::Expression first_condition;
             first_condition.context = switch_.context;
             first_condition.first = ast::Value(switch_.value);
-            first_condition.operations.push_back(boost::make_tuple(ast::Operator::EQUALS, ast::Value(cases[0].value)));
+            first_condition.operations.emplace_back(ast::Operator::EQUALS, cases[0].value);
 
             ast::If if_;
             if_.context = switch_.context;
@@ -446,7 +446,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
                 ast::Expression condition;
                 condition.context = switch_.context;
                 condition.first = ast::Value(switch_.value);
-                condition.operations.push_back(boost::make_tuple(ast::Operator::EQUALS, ast::Value(case_.value)));
+                condition.operations.emplace_back(ast::Operator::EQUALS, case_.value);
 
                 ast::ElseIf else_if;
                 else_if.context = case_.context;
@@ -511,10 +511,9 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
     }
 
     //No transformation for the other nodes
-    //template<typename T, std::enable_if_t<std::is_same<x3::forward_ast<>, T>::value, int> = 43>
     template<typename T>
     result_type operator()(x3::forward_ast<T>& a) const {
-        return {(*this)((T&)(a))};
+        return (*this)(a.get());
     }
 
     template<typename T>
