@@ -31,37 +31,19 @@ namespace {
 
 struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Integer& source) const {
-        ast::Integer copy;
-
-        copy.value = source.value;
-
-        return ast::Value{copy};
+        return ast::Value{ast::Integer(source)};
     }
 
     ast::Value operator()(const ast::IntegerSuffix& source) const {
-        ast::IntegerSuffix copy;
-
-        copy.value = source.value;
-        copy.suffix = source.suffix;
-
-        return ast::Value{copy};
+        return ast::Value{ast::IntegerSuffix(source)};
     }
 
     ast::Value operator()(const ast::Float& source) const {
-        ast::Float copy;
-
-        copy.value = source.value;
-
-        return ast::Value{copy};
+        return ast::Value{ast::Float(source)};
     }
 
     ast::Value operator()(const ast::Literal& source) const {
-        ast::Literal copy;
-
-        copy.value = source.value;
-        copy.label = source.label;
-
-        return ast::Value{copy};
+        return ast::Value{ast::Literal(source)};
     }
 
     ast::Value operator()(const ast::CharLiteral& source) const {
@@ -668,7 +650,7 @@ std::vector<ast::Instruction> copy(const std::vector<ast::Instruction>& source){
     InstructionCopier copier;
 
     for(auto& instruction : source){
-        destination.push_back(visit(copier, instruction));
+        destination.emplace_back(visit(copier, instruction));
     }
 
     return destination;
