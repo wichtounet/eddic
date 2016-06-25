@@ -95,16 +95,16 @@ struct ConstantCollector : public boost::static_visitor<> {
     void operator()(int value){
         out[offset] = value;
     }
-    
+
     //Warning : Do not pass it by reference to avoid going to the template function
     void operator()(std::string value){
         out[offset] = value;
     }
-    
+
     void operator()(double value){
         out[offset] = value;
     }
-    
+
     void operator()(std::shared_ptr<Variable> variable){
         out[offset] = variable;
     }
@@ -166,7 +166,7 @@ void mtac::OffsetConstantPropagationProblem::transfer(mtac::basic_block_p /*basi
             }
         }
     }
-            
+
     //Remove escaped variables from the result
     for(auto it = std::begin(out.values()); it != std::end(out.values());){
         auto offset = it->first;
@@ -204,7 +204,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
         if(results.top()){
             continue;
         }
-        
+
         for(auto& quadruple : block->statements){
             //If constant replace the value assigned to result by the value stored for arg1+arg2
             if(quadruple.op == mtac::Operator::DOT){
@@ -231,7 +231,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
                         auto string_value = string_pool->value(*string_ptr);
 
                         quadruple.op = mtac::Operator::ASSIGN;
-                        *quadruple.arg1 = static_cast<int>(string_value[*ptr + 1]); //+1 because of the " in front of the value
+                        *quadruple.arg1 = static_cast<int>(string_value[*ptr]);
                         quadruple.arg2.reset();
 
                         optimized = true;
@@ -250,7 +250,7 @@ bool mtac::OffsetConstantPropagationProblem::optimize(mtac::Function& function, 
                     }
                 }
             }
-            
+
             transfer(block, quadruple, results);
         }
     }
