@@ -171,8 +171,12 @@ struct DebugVisitor : public boost::static_visitor<> {
         std::cout << indent() << ast::to_string(declaration.type)  << " " << declaration.name << std::endl;
     }
 
-    void operator()(ast::GlobalVariableDeclaration&) const {
-        std::cout << indent() << "Global Variable" << std::endl;
+    void operator()(ast::GlobalVariableDeclaration& declaration) const {
+        std::cout << indent() << "Global Variable declaration [" << declaration.variableName << "]" << std::endl;
+
+        if(declaration.value){
+            print_sub(*declaration.value);
+        }
     }
 
     void operator()(ast::GlobalArrayDeclaration&) const {
