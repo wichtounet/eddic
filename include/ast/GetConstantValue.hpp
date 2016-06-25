@@ -16,6 +16,7 @@
 #include "variant.hpp"
 
 #include "ast/values_def.hpp"
+#include "ast/ASTVisitor.hpp"
 
 namespace eddic {
 
@@ -37,6 +38,11 @@ struct GetConstantValue : public boost::static_visitor<Val> {
     Val operator()(const Float& literal) const;
     Val operator()(const VariableValue& variable) const;
     Val operator()(const PrefixOperation& unary) const;
+
+    template<typename T>
+    Val operator()(const x3::forward_ast<T>& v) const {
+        return (*this)(v.get());
+    }
 
     template<typename T>
     Val operator()(const T&) const {
