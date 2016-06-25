@@ -818,8 +818,8 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
     }
 
     do{
-        auto function_declaration = *it_pair.first->second;
-        auto source_types = function_declaration.template_types;
+        auto& function_declaration = *it_pair.first->second;
+        auto& source_types = function_declaration.template_types;
 
         if(source_types.size() == template_types.size()){
             if(!is_instantiated(name, context, template_types)){
