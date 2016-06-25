@@ -860,8 +860,8 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
 
 void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
     if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
-        auto template_types = ptr->template_types;
-        auto name = ptr->type;
+        auto& template_types = ptr->template_types;
+        auto& name = ptr->type;
 
         auto it = class_templates.find(name);
 
@@ -870,8 +870,8 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
         }
 
         while(it != class_templates.end()){
-            auto struct_declaration = *it->second;
-            auto source_types = struct_declaration.decl_template_types;
+            auto& struct_declaration = *it->second;
+            auto& source_types = struct_declaration.decl_template_types;
 
             if(source_types.size() == template_types.size()){
                 if(!is_class_instantiated(name, template_types)){
