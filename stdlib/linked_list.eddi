@@ -22,7 +22,7 @@ struct linked_list_iterator {
     void next(){
         current = current.next;
     }
-    
+
     void previous(){
         current = current.previous;
     }
@@ -82,14 +82,14 @@ struct linked_list {
 
     void pop_front(){
         linked_list_node<T>* old = head;
-        
+
         if(size == 1){
             tail = head = (linked_list_node<T>*) null;
         } else {
             head = head.next;
             head.previous = (linked_list_node<T>*) null;
         }
-            
+
         delete old;
 
         --size;
@@ -104,7 +104,7 @@ struct linked_list {
             tail = tail.previous;
             tail.next = (linked_list_node<T>*) null;
         }
-        
+
         delete old;
 
         --size;
@@ -163,7 +163,7 @@ struct linked_list {
     int size(){
         return size;
     }
-    
+
     bool empty(){
         return size == 0;
     }
@@ -171,7 +171,7 @@ struct linked_list {
     linked_list_iterator<T>* begin(){
         return new linked_list_iterator<T>(head);
     }
-    
+
     linked_list_iterator<T>* end(){
         return new linked_list_iterator<T>(tail);
     }
