@@ -100,11 +100,11 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             }
         }
 
-        ast::VariableValue this_variable(std::shared_ptr<Context> context, ast::Position position){
+        ast::VariableValue this_variable(std::shared_ptr<Context> context, x3::file_position_tagged position){
             ast::VariableValue variable_value;
 
             variable_value.context = context;
-            variable_value.position = position;
+            (x3::file_position_tagged&) variable_value = position;
             variable_value.variableName = "this";
             variable_value.var = context->getVariable("this");
 
@@ -152,7 +152,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             if(context->exists(mangled)){
                                 ast::Cast cast_value;
                                 cast_value.resolved_type = new_pointer_type(struct_type);
-                                cast_value.value = this_variable(functionCall.context, functionCall.position);
+                                cast_value.value = this_variable(functionCall.context, functionCall);
 
                                 ast::FunctionCall function_call_operation;
                                 function_call_operation.function_name = functionCall.function_name;
@@ -162,7 +162,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                                 ast::Expression member_function_call;
                                 member_function_call.context = functionCall.context;
-                                member_function_call.position = functionCall.position;
+                                (x3::file_position_tagged&) member_function_call = functionCall;
                                 member_function_call.first = cast_value;
                                 member_function_call.operations.push_back(boost::make_tuple(ast::Operator::CALL, function_call_operation));
 
@@ -192,8 +192,8 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                             if(struct_type->member_exists(variable.variableName)){
                                 ast::Expression member_value;
                                 member_value.context = variable.context;
-                                member_value.position = variable.position;
-                                member_value.first = this_variable(variable.context, variable.position);
+                                (x3::file_position_tagged&) member_value = variable;
+                                member_value.first = this_variable(variable.context, variable);
                                 member_value.operations.push_back(boost::make_tuple(ast::Operator::DOT, variable.variableName)); //TODO CHECK SECOND PARAMETER (SHOULD NOT BE STRING)
 
                                 value = member_value;

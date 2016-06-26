@@ -13,7 +13,6 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/VariableType.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -30,7 +29,6 @@ struct Cast : x3::file_position_tagged {
     std::shared_ptr<Context> context;
     std::shared_ptr<const eddic::Type> resolved_type;
 
-    Position position;
     Type type;
     Value value;
 };

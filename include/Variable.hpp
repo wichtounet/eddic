@@ -16,7 +16,6 @@
 #include "variant.hpp"
 #include "Position.hpp"
 
-#include "ast/Position.hpp"
 #include "parser_x3/error_handling.hpp"
 
 namespace eddic {

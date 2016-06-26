@@ -13,7 +13,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Position.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
@@ -31,7 +30,6 @@ std::ostream& operator<< (std::ostream& stream, BuiltinType type);
  * \brief The AST node for a function call.
  */
 struct BuiltinOperator : x3::file_position_tagged {
-    Position position;
     BuiltinType type;
     std::vector<Value> values;
 

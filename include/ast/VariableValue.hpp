@@ -11,8 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "ast/Position.hpp"
-
 namespace eddic {
 
 class Context;
@@ -28,7 +26,6 @@ struct VariableValue : x3::file_position_tagged {
     std::shared_ptr<Context> context;
     std::shared_ptr<Variable> var;
 
-    Position position;
     std::string variableName;
 
     std::shared_ptr<Variable> variable() const {

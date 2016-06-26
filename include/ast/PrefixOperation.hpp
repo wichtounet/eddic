@@ -11,7 +11,6 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Operator.hpp"
-#include "ast/Position.hpp"
 #include "ast/Value.hpp"
 
 namespace eddic {
@@ -19,7 +18,6 @@ namespace eddic {
 namespace ast {
 
 struct PrefixOperation: x3::file_position_tagged  {
-    Position position;
     Value left_value;
     ast::Operator op;
 

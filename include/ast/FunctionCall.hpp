@@ -14,7 +14,6 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "Type.hpp"
-#include "ast/Position.hpp"
 #include "ast/Value.hpp"
 #include "ast/VariableType.hpp"
 
@@ -33,7 +32,6 @@ struct FunctionCall : x3::file_position_tagged {
     std::string mangled_name;
     std::shared_ptr<const eddic::Type> left_type;
 
-    Position position;
     std::string function_name;
     std::vector<ast::Type> template_types;
     std::vector<Value> values;

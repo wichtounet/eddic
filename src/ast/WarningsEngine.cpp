@@ -22,7 +22,6 @@
 #include "ast/WarningsEngine.hpp"
 #include "ast/SourceFile.hpp"
 #include "ast/ASTVisitor.hpp"
-#include "ast/Position.hpp"
 #include "ast/GetTypeVisitor.hpp"
 #include "ast/TypeTransformer.hpp"
 
@@ -215,7 +214,7 @@ struct Inspector : public boost::static_visitor<> {
                 auto dest_type = visit(ast::TypeTransformer(context), cast.type);
 
                 if(src_type == dest_type){
-                    warn(cast.position, "useless cast");
+                    warn(context->error_handler.to_string(cast), "useless cast");
                 }
             }
         }
@@ -284,7 +283,7 @@ struct Inspector : public boost::static_visitor<> {
                     }
 
                     if(!effects){
-                        warn(value.position, "Statement without any effect");
+                        warn(context->error_handler.to_string(value), "Statement without any effect");
                     }
                 }
 

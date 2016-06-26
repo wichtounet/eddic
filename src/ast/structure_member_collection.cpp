@@ -48,7 +48,7 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& st
             auto& name = member.arrayName;
 
             if(std::find(names.begin(), names.end(), name) != names.end()){
-                throw SemanticalException("The member " + name + " has already been defined", member.position);
+                context->error_handler.semantical_exception("The member " + name + " has already been defined", member);
             }
 
             names.push_back(name);
@@ -56,13 +56,13 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& st
             auto data_member_type = visit(ast::TypeTransformer(context), member.arrayType);
 
             if(data_member_type->is_array()){
-                throw SemanticalException("Multidimensional arrays are not permitted", member.position);
+                context->error_handler.semantical_exception("Multidimensional arrays are not permitted", member);
             }
 
             if(auto* ptr = boost::get<ast::Integer>(&member.size)){
                 signature->members.emplace_back(name, new_array_type(data_member_type, ptr->value));
             } else {
-                throw SemanticalException("Only arrays of fixed size are supported", member.position);
+                context->error_handler.semantical_exception("Only arrays of fixed size are supported", member);
             }
         }
     }

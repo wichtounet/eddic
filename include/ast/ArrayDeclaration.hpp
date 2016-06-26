@@ -12,7 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
 
@@ -29,7 +28,6 @@ namespace ast {
 struct ArrayDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Type arrayType;
     std::string arrayName;
     Value size;

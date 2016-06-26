@@ -16,7 +16,6 @@
 #include <boost/optional.hpp>
 
 #include "ast/Operator.hpp"
-#include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 
 namespace eddic {
@@ -38,7 +37,6 @@ typedef std::vector<Operation> Operations;
 struct Expression : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Value first;
     Operations operations;
 };

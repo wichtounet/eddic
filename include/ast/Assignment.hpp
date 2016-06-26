@@ -12,7 +12,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Position.hpp"
 #include "ast/Operator.hpp"
 
 namespace eddic {
@@ -28,7 +27,6 @@ namespace ast {
 struct Assignment : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Value left_value;
     Value value;
     ast::Operator op = ast::Operator::ASSIGN; //If not specified, it is not a compound operator

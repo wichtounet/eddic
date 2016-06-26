@@ -10,8 +10,6 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "ast/Position.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -21,7 +19,6 @@ namespace ast {
  * \brief The AST node for a ternary operator.
  */
 struct Ternary : x3::file_position_tagged {
-    Position position;
     Value condition;
     Value true_value;
     Value false_value;
