@@ -82,14 +82,14 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             if(array_type->is_array()){
                 if(var_type != array_type->data_type()){
-                    throw SemanticalException("Incompatible type in declaration of the foreach variable " + foreach.variableName, foreach.position);
+                    context->error_handler.semantical_exception("Incompatible type in declaration of the foreach variable " + foreach.variableName, foreach);
                 }
             } else if(array_type == STRING){
                 if(var_type != CHAR){
-                    throw SemanticalException("Foreach in string yields a char", foreach.position);
+                    context->error_handler.semantical_exception("Foreach in string yields a char", foreach);
                 }
             } else {
-                throw SemanticalException("Cannot use foreach in variable " + foreach.arrayName, foreach.position);
+                context->error_handler.semantical_exception("Cannot use foreach in variable " + foreach.arrayName, foreach);
             }
 
             visit_each(*this, foreach.instructions);
@@ -127,13 +127,13 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto condition_type = visit(ast::GetTypeVisitor(), ternary.condition);
             if(condition_type != BOOL){
-                throw SemanticalException("Ternary can only be applied to bool", ternary.position);
+                context->error_handler.semantical_exception("Ternary can only be applied to bool", ternary);
             }
 
             auto true_type = visit(ast::GetTypeVisitor(), ternary.true_value);
             auto false_type = visit(ast::GetTypeVisitor(), ternary.false_value);
             if(true_type != false_type){
-                throw SemanticalException("Incompatible values in ternary operator", ternary.position);
+                context->error_handler.semantical_exception("Incompatible values in ternary operator", ternary);
             }
         }
 
@@ -160,7 +160,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                 auto ctor_name = mangle_ctor(ctor_types, left_value_type);
 
                 if(!context->exists(ctor_name)){
-                    throw SemanticalException("Assigning to a structure needs a copy constructor", assignment.position);
+                    context->error_handler.semantical_exception("Assigning to a structure needs a copy constructor", assignment);
                 }
             }
 
@@ -169,11 +169,11 @@ class CheckerVisitor : public boost::static_visitor<> {
                 auto var = (*ptr).variable();
 
                 if(var->type()->is_const()){
-                    throw SemanticalException("The variable " + var->name() + " is const, cannot edit it", assignment.position);
+                    context->error_handler.semantical_exception("The variable " + var->name() + " is const, cannot edit it", assignment);
                 }
 
                 if(var->position().isParameter() || var->position().isParamRegister()){
-                    throw SemanticalException("Cannot change the value of the parameter " + var->name(), assignment.position);
+                    context->error_handler.semantical_exception("Cannot change the value of the parameter " + var->name(), assignment);
                 }
             }
         }
@@ -183,11 +183,11 @@ class CheckerVisitor : public boost::static_visitor<> {
                 auto type = visit(ast::GetTypeVisitor(), operation.left_value);
 
                 if(type != INT && type != FLOAT){
-                    throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", operation.position);
+                    context->error_handler.semantical_exception("The value is not of type int or float, cannot increment or decrement it", operation);
                 }
 
                 if(type->is_const()){
-                    throw SemanticalException("The value is const, cannot edit it", operation.position);
+                    context->error_handler.semantical_exception("The value is const, cannot edit it", operation);
                 }
             }
         }
@@ -198,7 +198,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto return_type = visit(ast::GetTypeVisitor(), return_.value);
             auto& function = return_.context->global()->getFunction(return_.mangled_name);
             if(return_type != function.return_type()){
-                throw SemanticalException("The return value is not of the good type in the function " + function.name(), return_.position);
+                context->error_handler.semantical_exception("The return value is not of the good type in the function " + function.name(), return_);
             }
         }
 
@@ -210,7 +210,7 @@ class CheckerVisitor : public boost::static_visitor<> {
 
                 auto valueType = visit(ast::GetTypeVisitor(), *declaration.value);
                 if (valueType != var->type()) {
-                    throw SemanticalException("Incompatible type in declaration of variable " + declaration.variableName, declaration.position);
+                    context->error_handler.semantical_exception("Incompatible type in declaration of variable " + declaration.variableName, declaration);
                 }
             }
         }
@@ -230,18 +230,18 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             if(dst_type == INT){
                 if(src_type != FLOAT && src_type != CHAR){
-                    throw SemanticalException("Invalid cast to int", cast.position);
+                    context->error_handler.semantical_exception("Invalid cast to int", cast);
                 }
             } else if(dst_type == FLOAT){
                 if(src_type != INT){
-                    throw SemanticalException("Invalid cast to float", cast.position);
+                    context->error_handler.semantical_exception("Invalid cast to float", cast);
                 }
             } else if(dst_type == CHAR){
                 if(src_type != INT){
-                    throw SemanticalException("Invalid cast to char", cast.position);
+                    context->error_handler.semantical_exception("Invalid cast to char", cast);
                 }
             } else {
-                throw SemanticalException("Invalid cast", cast.position);
+                context->error_handler.semantical_exception("Invalid cast", cast);
             }
         }
 
@@ -259,20 +259,20 @@ class CheckerVisitor : public boost::static_visitor<> {
                 //1. Verify that the left type is OK for the current operation
                 if(op == ast::Operator::BRACKET){
                     if(!type->is_array() && type != STRING){
-                        throw SemanticalException("The left value is not an array, neither a string", value.position);
+                        context->error_handler.semantical_exception("The left value is not an array, neither a string", value);
                     }
 
                     auto index_type = visit(visitor, operation.get<1>());
                     if (index_type != INT || index_type->is_array()) {
-                        throw SemanticalException("Invalid type for the index value, only int indices are allowed", value.position);
+                        context->error_handler.semantical_exception("Invalid type for the index value, only int indices are allowed", value);
                     }
                 } else if(op == ast::Operator::INC || op == ast::Operator::DEC){
                     if(type != INT && type != FLOAT){
-                        throw SemanticalException("The value is not of type int or float, cannot increment or decrement it", value.position);
+                        context->error_handler.semantical_exception("The value is not of type int or float, cannot increment or decrement it", value);
                     }
 
                     if(type->is_const()){
-                        throw SemanticalException("The value is const, cannot edit it", value.position);
+                        context->error_handler.semantical_exception("The value is const, cannot edit it", value);
                     }
                 } else if(op == ast::Operator::DOT){
                     //Checked by structure and variables annotators
@@ -283,17 +283,17 @@ class CheckerVisitor : public boost::static_visitor<> {
 
                     if(type->is_pointer()){
                         if(!operationType->is_pointer()){
-                            throw SemanticalException("Incompatible type", value.position);
+                            context->error_handler.semantical_exception("Incompatible type", value);
                         }
                     } else if(type != operationType){
-                        throw SemanticalException("Incompatible type", value.position);
+                        context->error_handler.semantical_exception("Incompatible type", value);
                     }
 
                     auto op = operation.get<0>();
 
                     if(type->is_pointer()){
                         if(op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on pointers", value.position);
+                            context->error_handler.semantical_exception("The " + ast::toString(op) + " operator cannot be applied on pointers", value);
                         }
                     }
 
@@ -301,7 +301,7 @@ class CheckerVisitor : public boost::static_visitor<> {
                         if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD && op != ast::Operator::MOD &&
                                 op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                                 op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on int", value.position);
+                            context->error_handler.semantical_exception("The " + ast::toString(op) + " operator cannot be applied on int", value);
                         }
                     }
 
@@ -309,17 +309,17 @@ class CheckerVisitor : public boost::static_visitor<> {
                         if(op != ast::Operator::DIV && op != ast::Operator::MUL && op != ast::Operator::SUB && op != ast::Operator::ADD &&
                                 op != ast::Operator::GREATER && op != ast::Operator::GREATER_EQUALS && op != ast::Operator::LESS && op != ast::Operator::LESS_EQUALS &&
                                 op != ast::Operator::EQUALS && op != ast::Operator::NOT_EQUALS){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on float", value.position);
+                            context->error_handler.semantical_exception("The " + ast::toString(op) + " operator cannot be applied on float", value);
                         }
                     }
 
                     if(type == STRING){
-                        throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on string", value.position);
+                        context->error_handler.semantical_exception("The " + ast::toString(op) + " operator cannot be applied on string", value);
                     }
 
                     if(type == BOOL){
                         if(op != ast::Operator::AND && op != ast::Operator::OR){
-                            throw SemanticalException("The " + ast::toString(op) + " operator cannot be applied on bool", value.position);
+                            context->error_handler.semantical_exception("The " + ast::toString(op) + " operator cannot be applied on bool", value);
                         }
                     }
                 }
@@ -333,22 +333,22 @@ class CheckerVisitor : public boost::static_visitor<> {
             for_each(builtin.values, [&](ast::Value& value){ visit(*this, value); });
 
             if(builtin.values.size() < 1){
-                throw SemanticalException("Too few arguments to the builtin operator", builtin.position);
+                context->error_handler.semantical_exception("Too few arguments to the builtin operator", builtin);
             }
 
             if(builtin.values.size() > 1){
-                throw SemanticalException("Too many arguments to the builtin operator", builtin.position);
+                context->error_handler.semantical_exception("Too many arguments to the builtin operator", builtin);
             }
 
             auto type = visit(ast::GetTypeVisitor(), builtin.values[0]);
 
             if(builtin.type == ast::BuiltinType::SIZE){
                 if(!type->is_array()){
-                    throw SemanticalException("The builtin size() operator takes only array as arguments", builtin.position);
+                    context->error_handler.semantical_exception("The builtin size() operator takes only array as arguments", builtin);
                 }
             } else if(builtin.type == ast::BuiltinType::LENGTH){
                 if(type != STRING){
-                    throw SemanticalException("The builtin length() operator takes only string as arguments", builtin.position);
+                    context->error_handler.semantical_exception("The builtin length() operator takes only string as arguments", builtin);
                 }
             }
         }
@@ -383,7 +383,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto type = visit(ast::GetTypeVisitor(), delete_.value);
 
             if(!type->is_pointer() && !type->is_dynamic_array()){
-                throw SemanticalException("Only pointers can be deleted", delete_.position);
+                context->error_handler.semantical_exception("Only pointers can be deleted", delete_);
             }
         }
 

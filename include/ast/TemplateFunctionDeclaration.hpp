@@ -12,7 +12,6 @@
 
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
-#include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 
 namespace eddic {
@@ -35,7 +34,6 @@ struct TemplateFunctionDeclaration : x3::file_position_tagged {
     bool standard = false;
     std::string header = "";
 
-    Position position;
     std::vector<std::string> template_types;
     Type returnType;
     std::string functionName;

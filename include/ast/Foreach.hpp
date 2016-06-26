@@ -26,7 +26,6 @@ namespace ast {
 struct Foreach : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    ast::Position position;
     ast::Type variableType;
     std::string variableName;
     int from;

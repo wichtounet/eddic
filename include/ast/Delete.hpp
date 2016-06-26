@@ -10,8 +10,6 @@
 
 #include <boost/spirit/home/x3/support/unused.hpp>
 
-#include "ast/Position.hpp"
-
 namespace eddic {
 
 namespace ast {
@@ -21,7 +19,6 @@ namespace ast {
  * \brief The AST node for delete a variable.
  */
 struct Delete : x3::file_position_tagged {
-    Position position;
     Value value;
 	x3::unused_type fake_;
 

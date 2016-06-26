@@ -26,7 +26,7 @@ void ast::FunctionCollectionPass::apply_function(ast::TemplateFunctionDeclaratio
     auto return_type = visit(ast::TypeTransformer(context), declaration.returnType);
 
     if(return_type->is_array()){
-        throw SemanticalException("Cannot return array from function", declaration.position);
+        context->error_handler.semantical_exception("Cannot return array from function", declaration);
     }
 
     std::vector<Parameter> parameters;
@@ -38,7 +38,7 @@ void ast::FunctionCollectionPass::apply_function(ast::TemplateFunctionDeclaratio
     auto mangled_name = mangle(declaration.functionName, parameters, declaration.struct_type);
 
     if(context->exists(mangled_name)){
-        throw SemanticalException("The function " + mangled_name + " has already been defined", declaration.position);
+        context->error_handler.semantical_exception("The function " + mangled_name + " has already been defined", declaration);
     }
 
     auto& signature = context->add_function(return_type, declaration.functionName, mangled_name);
@@ -71,7 +71,7 @@ void ast::FunctionCollectionPass::apply_struct_constructor(ast::Constructor& con
     auto mangled_name = mangle_ctor(parameters, constructor.struct_type);
 
     if(context->exists(mangled_name)){
-        throw SemanticalException("The constructor " + mangled_name + " has already been defined", constructor.position);
+        context->error_handler.semantical_exception("The constructor " + mangled_name + " has already been defined", constructor);
     }
 
     auto& signature = context->add_function(VOID, "ctor", mangled_name);
@@ -94,7 +94,7 @@ void ast::FunctionCollectionPass::apply_struct_destructor(ast::Destructor& destr
     auto mangled_name = mangle_dtor(destructor.struct_type);
 
     if(context->exists(mangled_name)){
-        throw SemanticalException("Only one destructor per struct is allowed", destructor.position);
+        context->error_handler.semantical_exception("Only one destructor per struct is allowed", destructor);
     }
 
     auto& signature = context->add_function(VOID, "dtor", mangled_name);

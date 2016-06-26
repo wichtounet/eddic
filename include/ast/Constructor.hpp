@@ -16,7 +16,6 @@
 
 #include "ast/FunctionParameter.hpp"
 #include "ast/Instruction.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -32,7 +31,6 @@ struct Constructor : x3::file_position_tagged {
     std::string mangledName;
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
-    Position position;
     std::vector<FunctionParameter> parameters;
     std::vector<Instruction> instructions;
 

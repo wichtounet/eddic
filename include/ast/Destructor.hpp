@@ -16,7 +16,6 @@
 #include <boost/spirit/home/x3/support/unused.hpp>
 
 #include "ast/Instruction.hpp"
-#include "ast/Position.hpp"
 #include "ast/FunctionParameter.hpp"
 
 namespace eddic {
@@ -37,7 +36,6 @@ struct Destructor : x3::file_position_tagged {
 
     std::vector<FunctionParameter> parameters;
 
-    Position position;
     std::vector<Instruction> instructions;
     x3::unused_type fake_;
 };

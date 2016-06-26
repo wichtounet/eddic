@@ -51,21 +51,14 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     }
 
     ast::Value operator()(const ast::VariableValue& source) const {
-        ast::VariableValue copy;
-
-        copy.context = source.context;
-        copy.var = source.var;
-        copy.position = source.position;
-        copy.variableName = source.variableName;
-
-        return ast::Value{copy};
+        return ast::Value{ast::VariableValue(source)};
     }
 
     ast::Value operator()(const ast::Expression& source) const {
         ast::Expression copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.first = visit(*this, source.first);
 
         for(auto& operation : source.operations){
@@ -110,7 +103,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         ast::FunctionCall copy;
 
         copy.mangled_name = source.mangled_name;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.function_name = source.function_name;
         copy.template_types = source.template_types;
 
@@ -125,7 +118,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         ast::Cast copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.type = source.type;
         copy.value = visit(*this, source.value);
 
@@ -135,7 +128,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::BuiltinOperator& source) const {
         ast::BuiltinOperator copy;
 
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.type = source.type;
 
         for(auto& value : source.values){
@@ -149,7 +142,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
         ast::Assignment copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.op = source.op;
         copy.value = visit(*this, source.value);
         copy.left_value = visit(*this, source.left_value);
@@ -160,7 +153,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::PrefixOperation& source) const {
         ast::PrefixOperation copy;
 
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.op = source.op;
         copy.left_value = visit(*this, source.left_value);
 
@@ -170,7 +163,7 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::Ternary& source) const {
         ast::Ternary copy;
 
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.condition = visit(*this, source.condition);
         copy.false_value = visit(*this, source.false_value);
         copy.true_value = visit(*this, source.true_value);
@@ -219,7 +212,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::FunctionCall copy;
 
         copy.mangled_name = source.mangled_name;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.template_types = source.template_types;
         copy.function_name = source.function_name;
 
@@ -234,7 +227,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::VariableDeclaration copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.variableType = source.variableType;
         copy.variableName = source.variableName;
 
@@ -249,7 +242,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::StructDeclaration copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.variableType = source.variableType;
         copy.variableName = source.variableName;
 
@@ -264,7 +257,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::ArrayDeclaration copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.arrayType = source.arrayType;
         copy.arrayName = source.arrayName;
         copy.size = source.size;
@@ -276,7 +269,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::Assignment copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.left_value = visit(ValueCopier(), source.left_value);
         copy.value = visit(ValueCopier(), source.value);
         copy.op = source.op;
@@ -289,7 +282,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
 
         copy.mangled_name = source.mangled_name;
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = source;
         copy.value = visit(ValueCopier(), source.value);
 
         return ast::Instruction{copy};
@@ -375,7 +368,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::Foreach copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.variableType = source.variableType;
         copy.variableName = source.variableName;
         copy.from = source.from;
@@ -392,7 +385,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
         ast::ForeachIn copy;
 
         copy.context = source.context;
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.variableType = source.variableType;
         copy.variableName = source.variableName;
         copy.arrayName = source.arrayName;
@@ -410,7 +403,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::PrefixOperation& source) const {
         ast::PrefixOperation copy;
 
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.left_value = visit(ValueCopier(), source.left_value);
         copy.op = source.op;
 
@@ -480,7 +473,7 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Delete& source) const {
         ast::Delete copy;
 
-        copy.position = source.position;
+        (x3::file_position_tagged&) copy = source;
         copy.value = visit(ValueCopier(), source.value);
 
         return ast::Instruction{copy};
@@ -667,7 +660,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Destructor d;
             d.context = destructor.context;
-            d.position = destructor.position;
+            (x3::file_position_tagged&) d = destructor;
             d.parameters = destructor.parameters;
             d.instructions = copy(destructor.instructions);
 
@@ -677,7 +670,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::Constructor c;
             c.context = constructor.context;
-            c.position = constructor.position;
+            (x3::file_position_tagged&) c = constructor;
             c.parameters = constructor.parameters;
             c.instructions = copy(constructor.instructions);
 
@@ -687,7 +680,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             ast::ArrayDeclaration copy;
             copy.context = array_declaration.context;
-            copy.position = array_declaration.position;
+            (x3::file_position_tagged&) copy = array_declaration;
             copy.arrayType = array_declaration.arrayType;
             copy.arrayName = array_declaration.arrayName;
             copy.size = array_declaration.size;
@@ -701,7 +694,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
                 ast::TemplateFunctionDeclaration f;
                 f.context = function.context;
-                f.position = function.position;
+                (x3::file_position_tagged&) f = function;
                 f.struct_name = function.struct_name;
                 f.template_types = function.template_types;
                 f.returnType = function.returnType;
@@ -715,7 +708,7 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
                 ast::TemplateFunctionDeclaration f;
                 f.context = function.context;
-                f.position = function.position;
+                (x3::file_position_tagged&) f = function;
                 f.returnType = function.returnType;
                 f.functionName = function.functionName;
                 f.instructions = copy(function.instructions);
@@ -789,7 +782,7 @@ void ast::TemplateEngine::instantiate_function(ast::TemplateFunctionDeclaration&
 
         //Instantiate the function
         ast::TemplateFunctionDeclaration declaration;
-        declaration.position = function.position;
+        (x3::file_position_tagged&) declaration = function;
         declaration.returnType = function.returnType;
         declaration.functionName = function.functionName;
         declaration.parameters = function.parameters;

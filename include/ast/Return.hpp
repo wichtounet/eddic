@@ -14,7 +14,6 @@
 #include <boost/spirit/home/x3/support/unused.hpp>
 
 #include "ast/Value.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -30,7 +29,6 @@ struct Return : x3::file_position_tagged {
     std::string mangled_name;
     std::shared_ptr<FunctionContext> context;
 
-    Position position;
     Value value;
     x3::unused_type fake_;
 
