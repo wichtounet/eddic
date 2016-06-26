@@ -936,6 +936,8 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
                 return;
             }
+
+            ++it;
         }
     } else if(auto* ptr = boost::smart_get<ast::ArrayType>(&type)){
         check_type(ptr->type, position);
