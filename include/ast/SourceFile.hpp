@@ -15,7 +15,6 @@
 
 #include "parser_x3/error_handling.hpp"
 
-#include "ast/Position.hpp"
 #include "ast/GlobalVariableDeclaration.hpp"
 #include "ast/GlobalArrayDeclaration.hpp"
 #include "ast/StandardImport.hpp"
