@@ -515,7 +515,7 @@ namespace x3_grammar {
 
     auto const relational_expression_def =
             additive_expression
-        >>  *(relational_op >> additive_expression);
+        >>  *(relational_op >> additive_expression); //TODO Not sure why > cannot be used here (X3 regression)
 
     auto const logical_and_expression_def =
             relational_expression
