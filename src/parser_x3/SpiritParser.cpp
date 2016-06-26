@@ -515,7 +515,7 @@ namespace x3_grammar {
 
     auto const relational_expression_def =
             additive_expression
-        >>  *(relational_op > additive_expression);
+        >>  *(relational_op >> additive_expression);
 
     auto const logical_and_expression_def =
             relational_expression
