@@ -109,7 +109,7 @@ std::shared_ptr<Pass> make_pass(const std::string& name, std::shared_ptr<ast::Te
 } //end of anonymous namespace
 
 ast::PassManager::PassManager(Platform platform, std::shared_ptr<Configuration> configuration, ast::SourceFile& program, std::shared_ptr<StringPool> pool) :
-        platform(platform), configuration(configuration), program(program), pool(pool) {
+        platform(platform), configuration(configuration), program_(program), pool(pool) {
     template_engine = std::make_shared<ast::TemplateEngine>(*this);
 }
 
@@ -172,15 +172,15 @@ void ast::PassManager::function_instantiated(ast::TemplateFunctionDeclaration& f
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
-            program.context->stats().inc_counter("passes");
+            program_.context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
-            pass->apply_program(program, true);
+            pass->apply_program(program_, true);
 
             if(context.empty()){
                 pass->apply_function(function);
             } else {
-                for(auto& block : program.blocks){
+                for(auto& block : program_.blocks){
                     if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
                         if(!struct_type->is_template_declaration() && struct_type->struct_type->mangle() == context){
                             pass->apply_struct(*struct_type, true);
@@ -209,10 +209,10 @@ void ast::PassManager::struct_instantiated(ast::struct_definition& struct_){
     for(auto& pass : applied_passes){
         for(unsigned int i = 0; i < pass->passes(); ++i){
             LOG<Info>("Passes") << "Run pass \"" << pass->name() << "\":" << i << log::endl;
-            program.context->stats().inc_counter("passes");
+            program_.context->stats().inc_counter("passes");
 
             pass->set_current_pass(i);
-            pass->apply_program(program, true);
+            pass->apply_program(program_, true);
             apply_pass(pass, struct_);
         }
     }
@@ -237,7 +237,7 @@ void ast::PassManager::dec_depth(){
 }
 
 void ast::PassManager::run_passes(){
-    timing_timer timer(program.context->timing(), "ast_passes");
+    timing_timer timer(program_.context->timing(), "ast_passes");
 
     for(auto& pass : passes){
         //A simple pass is only applied once to the whole program
@@ -249,7 +249,7 @@ void ast::PassManager::run_passes(){
                 pass->set_current_pass(i);
 
                 //It is up to the simple pass to recurse into the program
-                pass->apply_program(program, false);
+                pass->apply_program(program_, false);
             }
         }
         //Normal pass are applied until all function and structures have been handled
@@ -257,12 +257,12 @@ void ast::PassManager::run_passes(){
             //The next passes will have to apply it again to fresh functions
             applied_passes.push_back(pass);
 
-            apply_pass(pass, program, configuration);
+            apply_pass(pass, program_, configuration);
 
             //Add the instantiated class and function templates to the actual program
 
             for(auto& struct_ : class_instantiated){
-                program.blocks.emplace_back(struct_);
+                program_.blocks.emplace_back(struct_);
             }
 
             for(auto& function_pair : functions_instantiated){
@@ -270,9 +270,9 @@ void ast::PassManager::run_passes(){
                 auto& function = function_pair.second;
 
                 if(context.empty()){
-                    program.blocks.emplace_back(function);
+                    program_.blocks.emplace_back(function);
                 } else {
-                    for(auto& block : program.blocks){
+                    for(auto& block : program_.blocks){
                         if(auto* struct_type = boost::get<ast::struct_definition>(&block)){
                             if(!struct_type->is_template_declaration() && struct_type->struct_type->mangle() == context){
                                 struct_type->blocks.emplace_back(function);

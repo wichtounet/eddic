@@ -35,13 +35,17 @@ class PassManager {
         void function_instantiated(ast::TemplateFunctionDeclaration& function, const std::string& context);
         void struct_instantiated(ast::struct_definition& struct_);
 
+        ast::SourceFile& program() {
+            return program_;
+        }
+
     private:
         unsigned int template_depth = 0;
 
         std::shared_ptr<ast::TemplateEngine> template_engine;
         Platform platform;
         std::shared_ptr<Configuration> configuration;
-        ast::SourceFile& program;
+        ast::SourceFile& program_;
         std::shared_ptr<StringPool> pool;
 
         std::vector<std::shared_ptr<Pass>> passes;
