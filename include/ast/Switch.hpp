@@ -16,7 +16,6 @@
 #include "ast/Value.hpp"
 #include "ast/SwitchCase.hpp"
 #include "ast/DefaultCase.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -31,7 +30,6 @@ namespace ast {
 struct Switch : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Value value;
     std::vector<SwitchCase> cases;
     boost::optional<DefaultCase> default_case;

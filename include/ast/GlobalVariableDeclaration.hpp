@@ -28,7 +28,6 @@ namespace ast {
 struct GlobalVariableDeclaration : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Type variableType;
     std::string variableName;
     boost::optional<Value> value;

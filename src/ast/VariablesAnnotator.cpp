@@ -63,10 +63,10 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void visit_function(ast::TemplateFunctionDeclaration& declaration){
         if(!declaration.is_template()){
-            template_engine->check_type(declaration.returnType, declaration.position);
+            template_engine->check_type(declaration.returnType, declaration);
 
             for(auto& parameter : declaration.parameters){
-                template_engine->check_type(parameter.parameterType, declaration.position);
+                template_engine->check_type(parameter.parameterType, declaration);
             }
 
             visit_each(*this, declaration.instructions);
@@ -75,7 +75,7 @@ struct VariablesVisitor : public boost::static_visitor<> {
 
     void visit_function(ast::Constructor& declaration){
         for(auto& parameter : declaration.parameters){
-            template_engine->check_type(parameter.parameterType, declaration.position);
+            template_engine->check_type(parameter.parameterType, declaration);
         }
 
         visit_each(*this, declaration.instructions);
@@ -86,35 +86,35 @@ struct VariablesVisitor : public boost::static_visitor<> {
     }
 
     void operator()(ast::GlobalVariableDeclaration& declaration){
-        template_engine->check_type(declaration.variableType, declaration.position);
+        template_engine->check_type(declaration.variableType, declaration);
     }
 
     void operator()(ast::GlobalArrayDeclaration& declaration){
-        template_engine->check_type(declaration.arrayType, declaration.position);
+        template_engine->check_type(declaration.arrayType, declaration);
     }
 
     void operator()(ast::ArrayDeclaration& declaration){
-        template_engine->check_type(declaration.arrayType, declaration.position);
+        template_engine->check_type(declaration.arrayType, declaration);
     }
 
     void operator()(ast::Foreach& foreach){
-        template_engine->check_type(foreach.variableType, foreach.position);
+        template_engine->check_type(foreach.variableType, foreach);
 
         visit_each(*this, foreach.instructions);
     }
 
     void operator()(ast::ForeachIn& foreach){
-        template_engine->check_type(foreach.variableType, foreach.position);
+        template_engine->check_type(foreach.variableType, foreach);
 
         visit_each(*this, foreach.instructions);
     }
 
     void operator()(ast::StructDeclaration& declaration){
-        template_engine->check_type(declaration.variableType, declaration.position);
+        template_engine->check_type(declaration.variableType, declaration);
     }
 
     void operator()(ast::VariableDeclaration& declaration){
-        template_engine->check_type(declaration.variableType, declaration.position);
+        template_engine->check_type(declaration.variableType, declaration);
     }
 
     AUTO_FORWARD()

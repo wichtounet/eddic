@@ -68,7 +68,7 @@ class CheckerVisitor : public boost::static_visitor<> {
 
             auto valueType = visit(ast::GetTypeVisitor(), *declaration.value);
             if (valueType != type) {
-                throw SemanticalException("Incompatible type for global variable " + declaration.variableName, declaration.position);
+                context->error_handler.semantical_exception("Incompatible type for global variable " + declaration.variableName, declaration);
             }
         }
 
@@ -101,7 +101,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
             if(value_type != INT && value_type != STRING){
-                throw SemanticalException("Switch can only work on int and string types", switch_.position);
+                context->error_handler.semantical_exception("Switch can only work on int and string types", switch_);
             }
 
             visit_each_non_variant(*this, switch_.cases);
@@ -114,7 +114,7 @@ class CheckerVisitor : public boost::static_visitor<> {
             auto value_type = visit(ast::GetTypeVisitor(), switch_.value);
 
             if(value_type != INT && value_type != STRING){
-                throw SemanticalException("Switch can only work on int and string types", switch_.position);
+                context->error_handler.semantical_exception("Switch can only work on int and string types", switch_);
             }
 
             visit_each(*this, switch_.instructions);

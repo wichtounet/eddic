@@ -40,11 +40,11 @@ void Variable::setPosition(Position position){
     m_position = position;
 }
 
-const ast::Position& Variable::source_position() const {
+const x3::file_position_tagged& Variable::source_position() const {
     return m_source_position;
 }
 
-void Variable::set_source_position(const ast::Position& position){
+void Variable::set_source_position(const x3::file_position_tagged& position){
     m_source_position = position;
 }
 

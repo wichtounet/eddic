@@ -40,30 +40,30 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::Foreach& foreach){
-            template_engine->check_type(foreach.variableType, foreach.position);
+            template_engine->check_type(foreach.variableType, foreach);
 
-            if(check_variable(foreach.context, foreach.variableName, foreach.position)){
+            if(check_variable(foreach.context, foreach.variableName, foreach)){
                 auto type = visit(ast::TypeTransformer(context), foreach.variableType);
 
                 auto var = foreach.context->addVariable(foreach.variableName, type);
-                var->set_source_position(foreach.position);
+                var->set_source_position(foreach);
             }
 
             check_each(foreach.instructions);
         }
 
         void operator()(ast::ForeachIn& foreach){
-            template_engine->check_type(foreach.variableType, foreach.position);
+            template_engine->check_type(foreach.variableType, foreach);
 
-            if(check_variable(foreach.context, foreach.variableName, foreach.position)){
+            if(check_variable(foreach.context, foreach.variableName, foreach)){
                 if(!foreach.context->exists(foreach.arrayName)){
-                    throw SemanticalException("The foreach array " + foreach.arrayName  + " has not been declared", foreach.position);
+                    this->context->error_handler.semantical_exception("The foreach array " + foreach.arrayName  + " has not been declared", foreach);
                 }
 
                 auto type = visit(ast::TypeTransformer(context), foreach.variableType);
 
                 foreach.var = foreach.context->addVariable(foreach.variableName, type);
-                foreach.var->set_source_position(foreach.position);
+                foreach.var->set_source_position(foreach);
 
                 foreach.arrayVar = foreach.context->getVariable(foreach.arrayName);
                 foreach.iterVar = foreach.context->generate_variable("foreach_iter", INT);
@@ -133,7 +133,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         auto ctor_name = mangle_ctor(ctor_types, type);
 
                         if(!context->exists(ctor_name)){
-                            throw SemanticalException("Passing a structure by value needs a copy constructor", functionCall.position);
+                            this->context->error_handler.semantical_exception("Passing a structure by value needs a copy constructor", functionCall);
                         }
                     }
                 }
@@ -177,7 +177,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         } while(struct_type);
                     }
 
-                    throw SemanticalException("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall.position);
+                    this->context->error_handler.semantical_exception("The function \"" + unmangle(original_mangled) + "\" does not exists", functionCall);
                 }
             } else if(auto* ptr = boost::smart_relaxed_get<ast::VariableValue>(&value)){
                 auto& variable = *ptr;
@@ -207,7 +207,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                         } while(struct_type);
                     }
 
-                    throw SemanticalException("Variable " + variable.variableName + " has not been declared", variable.position);
+                    this->context->error_handler.semantical_exception("Variable " + variable.variableName + " has not been declared", variable);
                 }
 
                 //Reference the variable
@@ -283,46 +283,46 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            template_engine->check_type(declaration.variableType, declaration.position);
+            template_engine->check_type(declaration.variableType, declaration);
 
             if(declaration.value){
                 check_value(*declaration.value);
             }
 
-            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+            if(check_variable(declaration.context, declaration.variableName, declaration)){
                 auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
                 //If it's a standard type
                 if(type->is_standard_type()){
                     if(type->is_const()){
                         if(!declaration.value){
-                            throw SemanticalException("A constant variable must have a value", declaration.position);
+                            this->context->error_handler.semantical_exception("A constant variable must have a value", declaration);
                         }
 
                         if(!visit(ast::IsConstantVisitor(), *declaration.value)){
-                            throw SemanticalException("The value must be constant", declaration.position);
+                            this->context->error_handler.semantical_exception("The value must be constant", declaration);
                         }
 
                         auto var = declaration.context->addVariable(declaration.variableName, type, *declaration.value);
-                        var->set_source_position(declaration.position);
+                        var->set_source_position(declaration);
                     } else {
                         auto var = declaration.context->addVariable(declaration.variableName, type);
-                        var->set_source_position(declaration.position);
+                        var->set_source_position(declaration);
                     }
                 }
                 //If it's a pointer type
                 else if(type->is_pointer()){
                     if(type->is_const()){
-                        throw SemanticalException("Pointer types cannot be const", declaration.position);
+                        this->context->error_handler.semantical_exception("Pointer types cannot be const", declaration);
                     }
 
                     auto var = declaration.context->addVariable(declaration.variableName, type);
-                    var->set_source_position(declaration.position);
+                    var->set_source_position(declaration);
                 }
                 //If it's a array
                 else if(type->is_array()){
                     auto var = declaration.context->addVariable(declaration.variableName, type);
-                    var->set_source_position(declaration.position);
+                    var->set_source_position(declaration);
                 }
                 //If it's a template or custom type
                 else {
@@ -330,13 +330,13 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
                     if(context->struct_exists(mangled)){
                         if(type->is_const()){
-                            throw SemanticalException("Custom types cannot be const", declaration.position);
+                            this->context->error_handler.semantical_exception("Custom types cannot be const", declaration);
                         }
 
                         auto var = declaration.context->addVariable(declaration.variableName, type);
-                        var->set_source_position(declaration.position);
+                        var->set_source_position(declaration);
                     } else {
-                        throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.position);
+                        this->context->error_handler.semantical_exception("The type \"" + mangled + "\" does not exists", declaration);
                     }
                 }
             }
@@ -347,56 +347,56 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::StructDeclaration& declaration){
-            template_engine->check_type(declaration.variableType, declaration.position);
+            template_engine->check_type(declaration.variableType, declaration);
 
             check_each(declaration.values);
 
-            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+            if(check_variable(declaration.context, declaration.variableName, declaration)){
                 auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
                 if(!type->is_custom_type() && !type->is_template_type()){
-                    throw SemanticalException("Only custom types take parameters when declared", declaration.position);
+                    this->context->error_handler.semantical_exception("Only custom types take parameters when declared", declaration);
                 }
 
                 auto mangled = type->mangle();
 
                 if(context->struct_exists(mangled)){
                     if(type->is_const()){
-                        throw SemanticalException("Custom types cannot be const", declaration.position);
+                        this->context->error_handler.semantical_exception("Custom types cannot be const", declaration);
                     }
 
                     auto var = declaration.context->addVariable(declaration.variableName, type);
-                    var->set_source_position(declaration.position);
+                    var->set_source_position(declaration);
                 } else {
-                    throw SemanticalException("The type \"" + mangled + "\" does not exists", declaration.position);
+                    this->context->error_handler.semantical_exception("The type \"" + mangled + "\" does not exists", declaration);
                 }
             }
         }
 
         template<typename ArrayDeclaration>
         void declare_array(ArrayDeclaration& declaration){
-            template_engine->check_type(declaration.arrayType, declaration.position);
+            template_engine->check_type(declaration.arrayType, declaration);
 
             check_value(declaration.size);
 
-            if(check_variable(declaration.context, declaration.arrayName, declaration.position)){
+            if(check_variable(declaration.context, declaration.arrayName, declaration)){
                 auto element_type = visit(ast::TypeTransformer(context), declaration.arrayType);
 
                 if(element_type->is_array()){
-                    throw SemanticalException("Arrays of arrays are not supported", declaration.position);
+                    this->context->error_handler.semantical_exception("Arrays of arrays are not supported", declaration);
                 }
 
                 auto constant = visit(ast::IsConstantVisitor(), declaration.size);
 
                 if(!constant){
-                    throw SemanticalException("Array size must be constant", declaration.position);
+                    this->context->error_handler.semantical_exception("Array size must be constant", declaration);
                 }
 
                 auto value = visit(ast::GetConstantValue(), declaration.size);
                 auto size = boost::smart_get<int>(value);
 
                 auto var = declaration.context->addVariable(declaration.arrayName, new_array_type(element_type, size));
-                var->set_source_position(declaration.position);
+                var->set_source_position(declaration);
             }
         }
 
@@ -450,7 +450,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     }
                 }
 
-                template_engine->check_member_function(type, op, value.position);
+                template_engine->check_member_function(type, op, value);
 
                 if(op.get<0>() == ast::Operator::DOT){
                     auto struct_type = value.context->global()->get_struct(type);
@@ -477,7 +477,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     } while(struct_type);
 
                     if(!found){
-                        throw SemanticalException("The struct " + orig->name + " has no member named " + member, value.position);
+                        this->context->error_handler.semantical_exception("The struct " + orig->name + " has no member named " + member, value);
                     }
 
                     //Add a reference to the member
@@ -488,7 +488,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     auto struct_type = type->is_pointer() ? type->data_type() : type;
 
                     if(!struct_type->is_structure()){
-                        throw SemanticalException("Member functions can only be used with structures", value.position);
+                        this->context->error_handler.semantical_exception("Member functions can only be used with structures", value);
                     }
 
                     auto& call_value = boost::smart_get<ast::FunctionCall>(op.get<1>());
@@ -519,7 +519,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                     } while(struct_type);
 
                     if(!found){
-                        throw SemanticalException("The member function \"" + unmangle(mangled) + "\" does not exists", value.position);
+                        this->context->error_handler.semantical_exception("The member function \"" + unmangle(mangled) + "\" does not exists", value);
                     }
                 }
 
@@ -539,7 +539,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
             check_value(delete_.value);
         }
 
-        bool check_variable(std::shared_ptr<Context> context, const std::string& name, const ast::Position& position){
+        bool check_variable(std::shared_ptr<Context> context, const std::string& name, const x3::file_position_tagged& position){
             if(context->exists(name)){
                 auto var = context->getVariable(name);
 
@@ -549,7 +549,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
                 if(var->source_position() == position){
                     return false;
                 } else {
-                    throw SemanticalException("The Variable " + name + " has already been declared", position);
+                    this->context->error_handler.semantical_exception("The Variable " + name + " has already been declared", position);
                 }
             }
 
@@ -557,17 +557,17 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
-            template_engine->check_type(declaration.variableType, declaration.position);
+            template_engine->check_type(declaration.variableType, declaration);
 
-            if(check_variable(declaration.context, declaration.variableName, declaration.position)){
+            if(check_variable(declaration.context, declaration.variableName, declaration)){
                 if(!visit(ast::IsConstantVisitor(), *declaration.value)){
-                    throw SemanticalException("The value must be constant", declaration.position);
+                    this->context->error_handler.semantical_exception("The value must be constant", declaration);
                 }
 
                 auto type = visit(ast::TypeTransformer(context), declaration.variableType);
 
                 auto var = declaration.context->addVariable(declaration.variableName, type, *declaration.value);
-                var->set_source_position(declaration.position);
+                var->set_source_position(declaration);
             }
         }
 
@@ -595,16 +595,16 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
         void visit_function(Function& declaration){
             //Add all the parameters to the function context
             for(auto& parameter : declaration.parameters){
-                template_engine->check_type(parameter.parameterType, declaration.position);
+                template_engine->check_type(parameter.parameterType, declaration);
 
-                if(check_variable(declaration.context, parameter.parameterName, declaration.position)){
+                if(check_variable(declaration.context, parameter.parameterName, declaration)){
                     if(!is_valid(parameter.parameterType)){
-                        throw SemanticalException("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration.position);
+                        this->context->error_handler.semantical_exception("Invalid parameter type " + ast::to_string(parameter.parameterType), declaration);
                     }
 
                     auto type = visit(ast::TypeTransformer(context), parameter.parameterType);
                     auto var = declaration.context->addParameter(parameter.parameterName, type);
-                    var->set_source_position(declaration.position);
+                    var->set_source_position(declaration);
                 }
             }
 

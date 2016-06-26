@@ -27,6 +27,14 @@ namespace boost { namespace spirit { namespace x3 {
 
 struct file_position_tagged : position_tagged {
     int id_file = -1;
+
+    bool operator==(const x3::file_position_tagged& rhs) const {
+        return id_first == rhs.id_first && id_last == rhs.id_last && id_file == rhs.id_file;
+    }
+
+    bool operator!=(const x3::file_position_tagged& rhs) const {
+        return id_first != rhs.id_first || id_last != rhs.id_last || id_file != rhs.id_file;
+    }
 };
 
 }}}

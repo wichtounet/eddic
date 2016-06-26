@@ -17,6 +17,7 @@
 #include "Position.hpp"
 
 #include "ast/Position.hpp"
+#include "parser_x3/error_handling.hpp"
 
 namespace eddic {
 
@@ -38,7 +39,7 @@ class Variable {
         std::shared_ptr<const Type> m_type;
 
         Position m_position;
-        ast::Position m_source_position;
+        x3::file_position_tagged m_source_position;
         Val v_value;
 
         //For temporary references
@@ -63,8 +64,8 @@ class Variable {
 
         Val val() const ;
 
-        const ast::Position& source_position() const ;
-        void set_source_position(const ast::Position& position);
+        const x3::file_position_tagged& source_position() const ;
+        void set_source_position(const x3::file_position_tagged& position);
 
         void setPosition(Position position);
 

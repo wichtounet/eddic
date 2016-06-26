@@ -444,13 +444,14 @@ struct InstructionCopier : public boost::static_visitor<ast::Instruction> {
     ast::Instruction operator()(const ast::Switch& source) const {
         ast::Switch copy;
 
+        (x3::file_position_tagged&) copy = source;
         copy.context = source.context;
-        copy.position = source.position;
         copy.value = visit(ValueCopier(), source.value);
 
         for(auto& switch_case : source.cases){
             ast::SwitchCase case_;
 
+            (x3::file_position_tagged&) case_ = switch_case;
             case_.value = visit(ValueCopier(), switch_case.value);
             case_.context = switch_case.context;
 
@@ -763,11 +764,11 @@ bool ast::TemplateEngine::is_class_instantiated(const std::string& name, const s
 
 void ast::TemplateEngine::check_function(ast::FunctionCall& function_call){
    if(function_call.template_types.size() > 0){
-        check_function(function_call.template_types, function_call.function_name, function_call.position, "");
+        check_function(function_call.template_types, function_call.function_name, function_call, "");
    }
 }
 
-void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Type> type, ast::Operation& op, ast::Position& position){
+void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Type> type, ast::Operation& op, x3::file_position_tagged& position){
     if(op.get<0>() == ast::Operator::CALL){
         auto& value = boost::smart_get<ast::FunctionCall>(op.get<1>());
 
@@ -813,11 +814,11 @@ void ast::TemplateEngine::instantiate_function(ast::TemplateFunctionDeclaration&
     return;
 }
 
-void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
+void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, x3::file_position_tagged& position, const std::string& context){
     LOG<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
 
     if(!function_templates.count(context) || !function_templates[context].count(name)){
-        throw SemanticalException("There are no registered template function named " + name, position);
+        pass_manager.program().context->error_handler.semantical_exception("There are no registered template function named " + name, position);
     }
 
     if(context.empty()){
@@ -879,11 +880,11 @@ void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types,
         }
     }
 
-    throw SemanticalException("No matching template function " + name, position);
+    pass_manager.program().context->error_handler.semantical_exception("No matching template function " + name, position);
 }
 
 
-void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
+void ast::TemplateEngine::check_type(ast::Type& type, x3::file_position_tagged& position){
     if(auto* ptr = boost::smart_get<ast::TemplateType>(&type)){
         auto& template_types = ptr->template_types;
         auto& name = ptr->type;
@@ -891,7 +892,7 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
         auto it = class_templates.find(name);
 
         if(it == class_templates.end()){
-            throw SemanticalException("There are no class template named " + name, position);
+            pass_manager.program().context->error_handler.semantical_exception("There are no class template named " + name, position);
         }
 
         while(it != class_templates.end()){

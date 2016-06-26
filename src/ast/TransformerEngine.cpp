@@ -468,7 +468,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
         } else if(value_type == STRING){
             ast::FunctionCall first_condition;
             first_condition.context = switch_.context;
-            first_condition.position = switch_.position;
+            (x3::file_position_tagged&) first_condition = switch_;
             first_condition.function_name = "str_equals";
             first_condition.mangled_name = "_F10str_equalsSS";
             first_condition.values.push_back(switch_.value);
@@ -482,7 +482,7 @@ struct InstructionTransformer : public boost::static_visitor<std::vector<ast::In
             for(const auto& case_ : cases){
                 ast::FunctionCall condition;
                 condition.context = switch_.context;
-                condition.position = case_.position;
+                (x3::file_position_tagged&) condition = case_;
                 condition.function_name = "str_equals";
                 condition.mangled_name = "_F10str_equalsSS";
                 condition.values.push_back(switch_.value);

@@ -30,7 +30,7 @@ using namespace eddic;
 
 namespace {
 
-typedef std::unordered_map<std::shared_ptr<Variable>, ast::Position> Positions;
+typedef std::unordered_map<std::shared_ptr<Variable>, x3::file_position_tagged> Positions;
 
 struct Collector : public boost::static_visitor<> {
     public:
@@ -46,7 +46,7 @@ struct Collector : public boost::static_visitor<> {
         void operator()(ast::TemplateFunctionDeclaration& function){
             if(!function.is_template()){
                 for(auto& param : function.parameters){
-                    positions[function.context->getVariable(param.parameterName)] = function.position;
+                    positions[function.context->getVariable(param.parameterName)] = function;
                 }
 
                 visit_each(*this, function.instructions);
@@ -55,36 +55,36 @@ struct Collector : public boost::static_visitor<> {
 
         void operator()(ast::Constructor& function){
             for(auto& param : function.parameters){
-                positions[function.context->getVariable(param.parameterName)] = function.position;
+                positions[function.context->getVariable(param.parameterName)] = function;
             }
 
             visit_each(*this, function.instructions);
         }
 
         void operator()(ast::GlobalVariableDeclaration& declaration){
-            positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
+            positions[declaration.context->getVariable(declaration.variableName)] = declaration;
         }
 
         void operator()(ast::GlobalArrayDeclaration& declaration){
-            positions[declaration.context->getVariable(declaration.arrayName)] = declaration.position;
+            positions[declaration.context->getVariable(declaration.arrayName)] = declaration;
         }
 
         void operator()(ast::ArrayDeclaration& declaration){
             //If this is null, it means that this an array inside a structure
             if(declaration.context){
-                positions[declaration.context->getVariable(declaration.arrayName)] = declaration.position;
+                positions[declaration.context->getVariable(declaration.arrayName)] = declaration;
             }
         }
 
         void operator()(ast::VariableDeclaration& declaration){
-            positions[declaration.context->getVariable(declaration.variableName)] = declaration.position;
+            positions[declaration.context->getVariable(declaration.variableName)] = declaration;
         }
 
         AUTO_RECURSE_SCOPE()
         AUTO_FORWARD()
         AUTO_IGNORE_OTHERS()
 
-        const ast::Position& getPosition(std::shared_ptr<Variable> var){
+        const x3::file_position_tagged& getPosition(std::shared_ptr<Variable> var){
             assert(positions.find(var) != positions.end());
 
             return positions[var];
@@ -128,11 +128,11 @@ struct Inspector : public boost::static_visitor<> {
 
                     if(var->references() == 0){
                         if(var->position().isStack()){
-                            warn(collector.getPosition(var), "unused variable '" + var->name() + "'");
+                            warn(context->global()->error_handler.to_string(collector.getPosition(var)), "unused variable '" + var->name() + "'");
                         } else if(var->position().isGlobal()){
-                            warn(collector.getPosition(var), "unused global variable '" + var->name() + "'");
+                            warn(context->global()->error_handler.to_string(collector.getPosition(var)), "unused global variable '" + var->name() + "'");
                         } else if(var->position().isParameter()){
-                            warn(collector.getPosition(var), "unused parameter '" + var->name() + "'");
+                            warn(context->global()->error_handler.to_string(collector.getPosition(var)), "unused parameter '" + var->name() + "'");
                         }
                     }
                 }

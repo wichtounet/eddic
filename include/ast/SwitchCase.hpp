@@ -14,7 +14,6 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include "ast/Value.hpp"
-#include "ast/Position.hpp"
 
 namespace eddic {
 
@@ -29,7 +28,6 @@ namespace ast {
 struct SwitchCase : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Value value;
     std::vector<Instruction> instructions;
 };
