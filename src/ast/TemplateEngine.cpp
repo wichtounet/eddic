@@ -781,8 +781,7 @@ void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Typ
         if(!value.template_types.empty()){
             auto object_type = type->is_pointer() ? type->data_type() : type;
 
-            check_function(
-                    value.template_types,
+            check_function( value.template_types,
                     value.function_name,
                     position,
                     object_type->mangle());
@@ -790,53 +789,104 @@ void ast::TemplateEngine::check_member_function(std::shared_ptr<const eddic::Typ
     }
 }
 
+void ast::TemplateEngine::instantiate_function(ast::TemplateFunctionDeclaration& function, const std::string& context, const std::string& name, std::vector<ast::Type>& template_types){
+    if(!is_instantiated(name, context, template_types)){
+        LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
+
+        //Instantiate the function
+        ast::TemplateFunctionDeclaration declaration;
+        declaration.position = function.position;
+        declaration.returnType = function.returnType;
+        declaration.functionName = function.functionName;
+        declaration.parameters = function.parameters;
+        declaration.instructions = copy(function.instructions);
+
+        std::unordered_map<std::string, ast::Type> replacements;
+
+        auto& source_types = function.template_types;
+        for(std::size_t i = 0; i < template_types.size(); ++i){
+            replacements[source_types[i]] = template_types[i];
+        }
+
+        Adaptor adaptor(replacements);
+        visit_non_variant(adaptor, declaration);
+
+        //Mark it as instantiated
+        function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
+
+        pass_manager.function_instantiated(declaration, context);
+    }
+
+    return;
+}
+
 void ast::TemplateEngine::check_function(std::vector<ast::Type>& template_types, const std::string& name, ast::Position& position, const std::string& context){
     LOG<Info>("Template") << "Look for function template " << name << " in " << context << log::endl;
 
-    auto it_pair = function_templates[context].equal_range(name);
-
-    if(it_pair.first == it_pair.second && it_pair.second == function_templates[context].end()){
-        throw SemanticalException("There are no template function named " + name, position);
+    if(!function_templates.count(context) || !function_templates[context].count(name)){
+        throw SemanticalException("There are no registered template function named " + name, position);
     }
 
-    do{
-        auto& function_declaration = *it_pair.first->second;
-        auto& source_types = function_declaration.template_types;
+    if(context.empty()){
+        for(auto& block : pass_manager.program().blocks){
+            if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&block)){
+                auto& function = *ptr;
 
-        if(source_types.size() == template_types.size()){
-            if(!is_instantiated(name, context, template_types)){
-                LOG<Info>("Template") << "Instantiate function template " << name << log::endl;
-
-                //Instantiate the function
-                ast::TemplateFunctionDeclaration declaration;
-                declaration.position = function_declaration.position;
-                declaration.returnType = function_declaration.returnType;
-                declaration.functionName = function_declaration.functionName;
-                declaration.parameters = function_declaration.parameters;
-                declaration.instructions = copy(function_declaration.instructions);
-
-                std::unordered_map<std::string, ast::Type> replacements;
-
-                for(std::size_t i = 0; i < template_types.size(); ++i){
-                    replacements[source_types[i]] = template_types[i];
+                if(!function.is_template()){
+                    continue;
                 }
 
-                Adaptor adaptor(replacements);
-                visit_non_variant(adaptor, declaration);
+                if(function.functionName != name){
+                    continue;
+                }
 
-                //Mark it as instantiated
-                function_template_instantiations[context].insert(ast::TemplateEngine::LocalFunctionInstantiationMap::value_type(name, template_types));
+                auto& source_types = function.template_types;
 
-                pass_manager.function_instantiated(declaration, context);
+                if(source_types.size() == template_types.size()){
+                    instantiate_function(function, context, name, template_types);
+
+                    return;
+                }
             }
-
-            return;
         }
+    } else {
+        for(auto& block : pass_manager.program().blocks){
+            if(auto* ptr = boost::get<ast::struct_definition>(&block)){
+                auto& struct_ = *ptr;
 
-        ++it_pair.first;
-    } while(it_pair.first != it_pair.second);
+                if(!struct_.struct_type || struct_.struct_type->mangle() != context){
+                    continue;
+                }
 
-    throw SemanticalException("No matching function " + name, position);
+                for(auto& struct_block : struct_.blocks){
+                    if(auto* ptr = boost::get<ast::TemplateFunctionDeclaration>(&struct_block)){
+                        auto& function = *ptr;
+
+                        if(!function.is_template()){
+                            continue;
+                        }
+
+                        if(function.functionName != name){
+                            continue;
+                        }
+
+                        auto& source_types = function.template_types;
+
+                        if(source_types.size() == template_types.size()){
+                            instantiate_function(function, context, name, template_types);
+
+                            return;
+                        }
+                    }
+                }
+
+                // struct names are unique
+                break;
+            }
+        }
+    }
+
+    throw SemanticalException("No matching template function " + name, position);
 }
 
 
@@ -904,8 +954,8 @@ void ast::TemplateEngine::add_template_struct(const std::string& struct_, ast::s
     class_templates.insert(ast::TemplateEngine::ClassTemplateMap::value_type(struct_, &declaration));
 }
 
-void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration){
+void ast::TemplateEngine::add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration&){
     LOG<Trace>("Template") << "Collected function template " << function <<" in context " << context << log::endl;
 
-    function_templates[context].insert(ast::TemplateEngine::LocalFunctionTemplateMap::value_type(function, &declaration));
+    function_templates[context].insert(function);
 }

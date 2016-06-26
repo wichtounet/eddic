@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ast/source_def.hpp"
 
@@ -25,8 +26,7 @@ struct TemplateEngine {
     public:
         TemplateEngine(ast::PassManager& pass_manager);
 
-        typedef std::unordered_multimap<std::string, ast::TemplateFunctionDeclaration*> LocalFunctionTemplateMap;
-        typedef std::unordered_map<std::string, LocalFunctionTemplateMap> FunctionTemplateMap;
+        using function_template_map = std::unordered_map<std::string, std::unordered_set<std::string>>;
 
         typedef std::unordered_multimap<std::string, std::vector<ast::Type>> LocalFunctionInstantiationMap;
         typedef std::unordered_map<std::string, LocalFunctionInstantiationMap> FunctionInstantiationMap;
@@ -41,7 +41,7 @@ struct TemplateEngine {
         void add_template_struct(const std::string& struct_, ast::struct_definition& declaration);
         void add_template_function(const std::string& context, const std::string& function, ast::TemplateFunctionDeclaration& declaration);
 
-        FunctionTemplateMap function_templates;
+        function_template_map function_templates;
         FunctionInstantiationMap function_template_instantiations;
 
         ClassTemplateMap class_templates;
@@ -51,6 +51,8 @@ struct TemplateEngine {
         ast::PassManager& pass_manager;
 
         void check_function(std::vector<ast::Type>& template_types, const std::string& function, ast::Position& position, const std::string& context);
+
+        void instantiate_function(ast::TemplateFunctionDeclaration& function, const std::string& context, const std::string& name, std::vector<ast::Type>& template_types);
 
         bool is_instantiated(const std::string& name, const std::string& context, const std::vector<ast::Type>& template_types);
         bool is_class_instantiated(const std::string& name, const std::vector<ast::Type>& template_types);
