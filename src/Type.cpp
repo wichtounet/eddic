@@ -32,7 +32,7 @@ const std::shared_ptr<const Type> CFLOAT = std::make_shared<StandardType>(BaseTy
 const std::shared_ptr<const Type> CSTRING = std::make_shared<StandardType>(BaseType::STRING, true);
 const std::shared_ptr<const Type> CVOID = std::make_shared<StandardType>(BaseType::VOID, true);
 
-/* Implementation of Type */ 
+/* Implementation of Type */
 
 Type::Type() {}
 
@@ -51,7 +51,7 @@ bool Type::is_structure() const {
 bool Type::is_pointer() const {
     return false;
 }
-        
+
 bool Type::is_custom_type() const {
     return false;
 }
@@ -127,7 +127,7 @@ bool eddic::operator==(std::shared_ptr<const Type> lhs, std::shared_ptr<const Ty
 }
 
 bool eddic::operator!=(std::shared_ptr<const Type> lhs, std::shared_ptr<const Type> rhs){
-    return !(lhs == rhs); 
+    return !(lhs == rhs);
 }
 
 /* Implementation of StandardType  */
@@ -153,7 +153,7 @@ unsigned int StandardType::size(Platform platform) const {
 
 /* Implementation of CustomType */
 
-CustomType::CustomType(std::shared_ptr<GlobalContext> context, const std::string& type) : 
+CustomType::CustomType(std::shared_ptr<GlobalContext> context, const std::string& type) :
     context(context), m_type(type) {}
 
 std::string CustomType::type() const {
@@ -167,7 +167,7 @@ bool CustomType::is_custom_type() const {
 unsigned int CustomType::size(Platform) const {
     return context->total_size_of_struct(context->get_struct(shared_from_this()));
 }
-        
+
 /* Implementation of ArrayType  */
 
 ArrayType::ArrayType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {}
@@ -193,15 +193,15 @@ bool ArrayType::is_array() const {
 
 unsigned int ArrayType::size(Platform platform) const {
     if(has_elements()){
-        return data_type()->size(platform) * elements() + INT->size(platform); 
+        return data_type()->size(platform) * elements() + INT->size(platform);
     } else {
-        return INT->size(platform); 
+        return INT->size(platform);
     }
 }
-        
+
 /* Implementation of PointerType  */
 
-PointerType::PointerType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {} 
+PointerType::PointerType(std::shared_ptr<const Type> sub_type) : sub_type(sub_type) {}
 
 std::shared_ptr<const Type> PointerType::data_type() const {
     return sub_type;
@@ -214,10 +214,10 @@ bool PointerType::is_pointer() const {
 unsigned int PointerType::size(Platform platform) const {
     return INT->size(platform);
 }
-        
+
 /* Implementation of TemplateType  */
 
-TemplateType::TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) : 
+TemplateType::TemplateType(std::shared_ptr<GlobalContext> context, std::string main_type, std::vector<std::shared_ptr<const Type>> sub_types) :
     context(context), main_type(main_type), sub_types(sub_types) {}
 
 std::string TemplateType::type() const {

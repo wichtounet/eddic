@@ -406,7 +406,7 @@ void as::IntelX86_64CodeGenerator::writeRuntimeSupport(){
     writer.stream() << "_start:" << '\n';
 
     //If necessary init memory manager
-    if(context->exists("_F4mainAS") || program.call_graph.is_reachable(context->getFunction("_F4freePI")) || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
+    if(context->exists("_F4mainAS") || program.cg.is_reachable(context->getFunction("_F4freePI")) || program.cg.is_reachable(context->getFunction("_F5allocI"))){
         writer.stream() << "call _F4init" << '\n';
     }
 
@@ -512,32 +512,30 @@ void as::IntelX86_64CodeGenerator::declareFloat(const std::string& label, double
 }
 
 void as::IntelX86_64CodeGenerator::addStandardFunctions(){
-    if(program.call_graph.is_reachable(context->getFunction("_F5printC"))){
+    if(program.cg.is_reachable(context->getFunction("_F5printC"))){
         output_function("x86_64_printC");
     }
 
-    if(program.call_graph.is_reachable(context->getFunction("_F5printS"))){
+    if(program.cg.is_reachable(context->getFunction("_F5printS"))){
         output_function("x86_64_printS");
     }
 
     //Memory management functions are included the three together
-    if(context->exists("_F4mainAS")
-            || program.call_graph.is_reachable(context->getFunction("_F4freePI"))
-            || program.call_graph.is_reachable(context->getFunction("_F5allocI"))){
+    if(context->exists("_F4mainAS") || program.cg.is_reachable(context->getFunction("_F4freePI")) || program.cg.is_reachable(context->getFunction("_F5allocI"))){
         output_function("x86_64_alloc");
         output_function("x86_64_init");
         output_function("x86_64_free");
     }
 
-    if(program.call_graph.is_reachable(context->getFunction("_F4timeAI"))){
+    if(program.cg.is_reachable(context->getFunction("_F4timeAI"))){
         output_function("x86_64_time");
     }
 
-    if(program.call_graph.is_reachable(context->getFunction("_F8durationAIAI"))){
+    if(program.cg.is_reachable(context->getFunction("_F8durationAIAI"))){
         output_function("x86_64_duration");
     }
 
-    if(program.call_graph.is_reachable(context->getFunction("_F9read_char"))){
+    if(program.cg.is_reachable(context->getFunction("_F9read_char"))){
         output_function("x86_64_read_char");
     }
 }

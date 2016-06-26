@@ -29,7 +29,7 @@ class ConstantPropagationLattice {
     public:
         ConstantPropagationLattice(){}; //NAC
         ConstantPropagationLattice(ConstantValue value) : m_value(value) {}
-        
+
         ConstantPropagationLattice(const ConstantPropagationLattice& rhs) : m_value(rhs.m_value) {}
         ConstantPropagationLattice& operator=(const ConstantPropagationLattice& rhs){
             m_value = rhs.m_value;
@@ -47,8 +47,8 @@ class ConstantPropagationLattice {
         ConstantValue& value(){
             return *m_value;
         }
-        
-        ConstantValue value() const { 
+
+        ConstantValue value() const {
             return *m_value;
         }
 
@@ -85,7 +85,7 @@ class ConstantPropagationProblem {
         void meet(ProblemDomain& in, const ProblemDomain& out);
         void transfer(mtac::basic_block_p basic_block, mtac::Quadruple& quadruple, ProblemDomain& in);
         bool optimize(mtac::Function& function, std::shared_ptr<DataFlowResults<ProblemDomain>> global_results);
-    
+
     private:
         ProblemDomain top_element();
         ProblemDomain default_element();

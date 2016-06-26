@@ -163,7 +163,7 @@ std::unique_ptr<mtac::Program> Compiler::compile_mtac(const std::string& file, P
 
 void Compiler::compile_ltac(mtac::Program& program, Platform platform, std::shared_ptr<Configuration> configuration, FrontEnd& front_end){
     //Compute the definitive reachable flag for functions
-    program.call_graph.compute_reachable();
+    program.cg.compute_reachable();
 
     auto back_end = get_back_end(Output::NATIVE_EXECUTABLE);
 

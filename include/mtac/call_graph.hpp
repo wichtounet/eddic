@@ -78,10 +78,10 @@ class call_graph {
         void release_reachable();
 
         /*!
-         * \brief Generate the list of functions in topological order from 
-         * the call graph. 
+         * \brief Generate the list of functions in topological order from
+         * the call graph.
          *
-         * The topological sort is performed in O(|E|). 
+         * The topological sort is performed in O(|E|).
          *
          * \return A list of functions in topological order.
          */

@@ -17,18 +17,18 @@
 using namespace eddic;
 
 bool mtac::remove_unused_functions::operator()(mtac::Program& program){
-    program.call_graph.compute_reachable();
+    program.cg.compute_reachable();
 
     program.functions.erase(std::remove_if(program.functions.begin(), program.functions.end(), [&program](auto& function){
-        if(!program.call_graph.is_reachable(function.definition())){
+        if(!program.cg.is_reachable(function.definition())){
             LOG<Debug>("Optimizer") << "Remove unused function " << function.get_name() << log::endl;
             return true;
-        } 
+        }
 
         return false;
     }), program.functions.end());
 
-    program.call_graph.release_reachable();
+    program.cg.release_reachable();
 
     //Not necessary to restart the other passes
     return false;

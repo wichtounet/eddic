@@ -18,6 +18,8 @@
 
 using namespace eddic;
 
+//TODO Recheck this to avoid regressions after merge of 26.06.2016
+
 namespace {
 
 void remove_back_edge(mtac::loop& loop){
@@ -61,7 +63,7 @@ void peel(mtac::loop& loop, mtac::Function& function, mtac::Program& program){
     for(auto& bb : loop){
         for(auto& statement : bb->statements){
             if(statement.op == mtac::Operator::CALL){
-                program.call_graph.edge(function.definition(), statement.function())->count += (iterations - 1);
+                program.cg.edge(function.definition(), statement.function())->count += (iterations - 1);
             }
         }
     }
@@ -75,7 +77,7 @@ void peel(mtac::loop& loop, mtac::Function& function, mtac::Program& program){
         source_bbs.push_back(bb);
     }
 
-    std::sort(source_bbs.begin(), source_bbs.end(), 
+    std::sort(source_bbs.begin(), source_bbs.end(),
         [&function](const mtac::basic_block_p& lhs, const mtac::basic_block_p& rhs){ return function.position(lhs) > function.position(rhs);});
 
     std::vector<mtac::basic_block_p> cloned;
@@ -169,7 +171,7 @@ bool mtac::complete_loop_peeling::operator()(mtac::Function& function){
 
         return false;
     }), loops.end());
-    
+
 
     return optimized;
 }

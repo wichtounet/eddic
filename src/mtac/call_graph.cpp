@@ -15,7 +15,7 @@
 #include "mtac/Function.hpp"
 
 using namespace eddic;
-        
+
 mtac::call_graph::~call_graph(){
     for(auto& node_key : nodes){
         auto& node = node_key.second;
@@ -24,7 +24,7 @@ mtac::call_graph::~call_graph(){
             edge->source = nullptr;
             edge->target = nullptr;
         }
-        
+
         for(auto& edge : node->out_edges){
             edge->source = nullptr;
             edge->target = nullptr;
@@ -46,7 +46,7 @@ mtac::call_graph_node_p mtac::call_graph::node(eddic::Function& function){
 
     return it->second;
 }
-        
+
 mtac::call_graph_edge_p mtac::call_graph::edge(eddic::Function& source, eddic::Function& target){
     auto source_node = node(source);
     auto target_node = node(target);
@@ -59,10 +59,10 @@ mtac::call_graph_edge_p mtac::call_graph::edge(eddic::Function& source, eddic::F
 
     return nullptr;
 }
-        
+
 void mtac::call_graph::add_edge(eddic::Function& source, eddic::Function& target){
     auto edge = this->edge(source, target);
-    
+
     if(!edge){
         auto source_node = node(source);
         auto target_node = node(target);
@@ -72,7 +72,7 @@ void mtac::call_graph::add_edge(eddic::Function& source, eddic::Function& target
         source_node->out_edges.push_back(edge);
         target_node->in_edges.push_back(edge);
     }
-    
+
     ++edge->count;
 }
 
@@ -107,7 +107,7 @@ bool mtac::call_graph::is_reachable(eddic::Function& function){
 void mtac::build_call_graph(mtac::Program& program){
     timing_timer timer(program.context->timing(), "build_cg");
 
-    auto& cg = program.call_graph;
+    auto& cg = program.cg;
 
     for(auto& function : program){
         for(auto& block : function){
@@ -133,9 +133,9 @@ void post_dfs_visit(mtac::call_graph_node_p& node, std::vector<std::reference_wr
 
     order.push_back(node->function);
 }
-        
+
 std::vector<std::reference_wrapper<eddic::Function>> mtac::call_graph::topological_order(){
-    std::vector<std::reference_wrapper<eddic::Function>> order;   
+    std::vector<std::reference_wrapper<eddic::Function>> order;
 
     post_dfs_visit(entry, order);
 

@@ -83,23 +83,23 @@ struct LivenessCollector : public boost::static_visitor<> {
 
     template<typename Arg>
     inline void set_live(Arg& arg){
-        if(auto* ptr = boost::get<Reg>(&arg)){
+        if(auto* ptr = boost::relaxed_get<Reg>(&arg)){
             in.values().insert(*ptr);
-        } else if(auto* ptr = boost::get<FloatReg>(&arg)){
+        } else if(auto* ptr = boost::relaxed_get<FloatReg>(&arg)){
             in.values().insert(*ptr);
         } else if(auto* ptr = boost::relaxed_get<ltac::Address>(&arg)){
             set_live_opt(ptr->base_register);
             set_live_opt(ptr->scaled_register);
         }
     }
-    
+
     template<typename Arg>
     inline void set_dead(Arg& arg){
         if(auto* ptr = boost::get<Reg>(&arg)){
             in.values().erase(*ptr);
         } else if(auto* ptr = boost::get<FloatReg>(&arg)){
             in.values().erase(*ptr);
-        }     
+        }
     }
 
     template<typename Arg>
@@ -162,7 +162,7 @@ ProblemDomain ltac::LiveRegistersProblem::Init(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
 }
-    
+
 PseudoProblemDomain ltac::LivePseudoRegistersProblem::Boundary(mtac::Function& /*function*/){
     auto value = default_element();
     return value;
@@ -183,7 +183,7 @@ void ltac::LivePseudoRegistersProblem::meet(PseudoProblemDomain& in, const Pseud
 
 ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Instruction& statement, ProblemDomain& in){
     auto out = in;
-    
+
     LivenessCollector<ltac::Register, ltac::FloatRegister, ProblemDomain> collector(out);
     collector.collect(statement);
 
@@ -192,7 +192,7 @@ ProblemDomain ltac::LiveRegistersProblem::transfer(mtac::basic_block_p /*basic_b
 
 PseudoProblemDomain ltac::LivePseudoRegistersProblem::transfer(mtac::basic_block_p /*basic_block*/, ltac::Instruction& statement, PseudoProblemDomain& in){
     auto out = in;
-    
+
     LivenessCollector<ltac::PseudoRegister, ltac::PseudoFloatRegister, PseudoProblemDomain> collector(out);
     collector.collect(statement);
 

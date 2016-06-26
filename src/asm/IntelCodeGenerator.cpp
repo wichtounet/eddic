@@ -26,7 +26,7 @@ as::IntelCodeGenerator::IntelCodeGenerator(AssemblyFileWriter& w, mtac::Program&
 void as::IntelCodeGenerator::generate(StringPool& pool, FloatPool& float_pool){
     resetNumbering();
 
-    writeRuntimeSupport(); 
+    writeRuntimeSupport();
 
     for(auto& function : program){
         compile(function);
@@ -39,10 +39,10 @@ void as::IntelCodeGenerator::generate(StringPool& pool, FloatPool& float_pool){
 
 void as::IntelCodeGenerator::addGlobalVariables(StringPool& pool, FloatPool& float_pool){
     defineDataSection();
-     
+
     for(auto& it : context->getVariables()){
         auto type = it.second->type();
-        
+
         //The const variables are not stored
         if(type->is_const()){
             continue;
@@ -62,10 +62,10 @@ void as::IntelCodeGenerator::addGlobalVariables(StringPool& pool, FloatPool& flo
             } else if(type == STRING) {
                 auto value = boost::get<std::pair<std::string, int>>(it.second->val());
 
-                //If that's not the case, there is a problem with the pool 
+                //If that's not the case, there is a problem with the pool
                 assert(value.first.size() > 0);
 
-                declareStringVariable(it.second->position().name(), pool.label(value.first), value.second);            
+                declareStringVariable(it.second->position().name(), pool.label(value.first), value.second);
             } else if(type == CHAR){
                 //TODO Normally a strict get should be enough here,
                 //there seems to be a problem with global char var
@@ -77,11 +77,11 @@ void as::IntelCodeGenerator::addGlobalVariables(StringPool& pool, FloatPool& flo
             }
         }
     }
-    
+
     for (auto it : pool.getPool()){
         declareString(it.second, it.first);
     }
-    
+
     for (auto it : float_pool.get_pool()){
         declareFloat(it.second, it.first);
     }
@@ -102,6 +102,6 @@ void as::IntelCodeGenerator::output_function(const std::string& function){
             writer.stream() << line << '\n';
         }
     }
-    
+
     writer.stream() << '\n';
 }

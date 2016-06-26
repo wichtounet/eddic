@@ -32,12 +32,12 @@ enum class Mode : unsigned int {
 
 /*!
  * \struct Program
- * \brief Represent an EDDI program in its intermediate representation. 
+ * \brief Represent an EDDI program in its intermediate representation.
  *
  * This structure to represent both MTAC and LTAC programs. It contains a list
- * of functions that form the whole program. 
+ * of functions that form the whole program.
  *
- * Only one instance of Program should be instantiated at the same time. 
+ * Only one instance of Program should be instantiated at the same time.
  *
  * \see eddic::mtac::Function
  */
@@ -46,7 +46,7 @@ struct Program {
     std::vector<Function> functions;
     Mode mode = Mode::MTAC;
 
-    mtac::call_graph call_graph;
+    mtac::call_graph cg;
 
     /*!
      * Create a new Program
@@ -60,7 +60,7 @@ struct Program {
     Function& mtac_function(const eddic::Function& function);
 
     /*!
-     * Returns an iterator to the beginning of the functions. 
+     * Returns an iterator to the beginning of the functions.
      * \return An iterator to the beginning of the functions.
      */
     std::vector<Function>::iterator begin(){
@@ -68,8 +68,8 @@ struct Program {
     }
 
     /*!
-     * Returns an iterator to the end of the functions. 
-     * \return An iterator to the end of the functions. 
+     * Returns an iterator to the end of the functions.
+     * \return An iterator to the end of the functions.
      */
     std::vector<Function>::iterator end(){
         return functions.end();

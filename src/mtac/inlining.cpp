@@ -403,7 +403,7 @@ bool will_inline(mtac::Program& program, mtac::Function& source_function, mtac::
         }
 
         //function called once
-        if(program.call_graph.node(target_function.definition())->in_edges.size() == 1){
+        if(program.cg.node(target_function.definition())->in_edges.size() == 1){
             return caller_size < 100 && callee_size < 100;
         }
 
@@ -472,13 +472,13 @@ bool call_site_inlining(mtac::Function& dest_function, mtac::Function& source_fu
                         adapt_instructions(variable_clones, bb_clones, call, safe);
 
                         //The target function is called one less time
-                        --program.call_graph.edge(dest_definition, source_definition)->count;
+                        --program.cg.edge(dest_definition, source_definition)->count;
 
                         //There are perhaps new references to functions
                         for(auto& block : source_function){
                             for(auto& statement : block){
                                 if(statement.op == mtac::Operator::CALL){
-                                    program.call_graph.add_edge(dest_definition, statement.function());
+                                    program.cg.add_edge(dest_definition, statement.function());
                                 }
                             }
                         }
@@ -513,7 +513,7 @@ bool mtac::inline_functions::operator()(mtac::Program& program){
     bool optimized = false;
     auto global_context = program.context;
 
-    auto& call_graph = program.call_graph;
+    auto& call_graph = program.cg;
 
     auto order = call_graph.topological_order();
     call_graph.compute_reachable();
