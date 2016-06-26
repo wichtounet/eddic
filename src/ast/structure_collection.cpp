@@ -70,7 +70,7 @@ void ast::StructureCollectionPass::apply_struct(ast::struct_definition& struct_,
     auto mangled_name = struct_.struct_type->mangle();
 
     if(context->struct_exists(mangled_name)){
-        throw SemanticalException("The structure " + mangled_name + " has already been defined", struct_.position);
+        context->error_handler.semantical_exception("The structure " + mangled_name + " has already been defined", struct_);
     }
 
     auto signature = std::make_shared<eddic::Struct>(mangled_name);

@@ -65,7 +65,7 @@ namespace x3_grammar {
         void operator()(iterator_type err_pos, iterator_type err_last, const std::string& message);
         void operator()(const boost::spirit::x3::file_position_tagged& t, const std::string& message);
 
-        std::string to_string(const boost::spirit::x3::file_position_tagged& t, const std::string& message);
+        std::string to_string(const boost::spirit::x3::file_position_tagged& t, const std::string& message = "");
 
         void semantical_exception(const std::string& message, const boost::spirit::x3::file_position_tagged& t);
 

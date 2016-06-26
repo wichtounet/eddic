@@ -904,8 +904,9 @@ void ast::TemplateEngine::check_type(ast::Type& type, ast::Position& position){
 
                     //Instantiate the struct
                     ast::struct_definition declaration;
+
+                    (x3::file_position_tagged&) declaration = struct_declaration;
                     declaration.name = struct_declaration.name;
-                    declaration.position = struct_declaration.position;
                     declaration.inst_template_types = template_types;
                     declaration.header = struct_declaration.header;
                     declaration.standard = struct_declaration.standard;

@@ -14,18 +14,27 @@
 
 namespace eddic {
 
+//TODO Warn functions should be moved into the global error handler
+
 /*!
- * \brief Produces a warning on the command line. 
- * \param warning The warning message to produce.  
+ * \brief Produces a warning on the command line.
+ * \param warning The warning message to produce.
  */
 void warn(const std::string& warning);
 
 /*!
- * \brief Produces a warning on the command line and display the source of the warning. 
- * \param position The position of the warning in the source file.  
- * \param warning The warning message to produce.  
+ * \brief Produces a warning on the command line and display the source of the warning.
+ * \param position The position of the warning in the source file.
+ * \param warning The warning message to produce.
  */
 void warn(const ast::Position& position, const std::string& warning);
+
+/*!
+ * \brief Produces a warning on the command line and display the source of the warning.
+ * \param position The position of the warning in the source file.
+ * \param warning The warning message to produce.
+ */
+void warn(const std::string& position, const std::string& warning);
 
 } //end of eddic
 

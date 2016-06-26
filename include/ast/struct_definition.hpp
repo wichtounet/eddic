@@ -20,7 +20,6 @@
 
 #include "Type.hpp"
 
-#include "ast/Position.hpp"
 #include "ast/ArrayDeclaration.hpp"
 #include "ast/MemberDeclaration.hpp"
 #include "ast/Constructor.hpp"
@@ -49,7 +48,6 @@ struct struct_definition : x3::file_position_tagged {
 
     std::shared_ptr<const eddic::Type> struct_type = nullptr;
 
-    Position position;
     std::vector<std::string> decl_template_types;
     std::string name;
     boost::optional<Type> parent_type;

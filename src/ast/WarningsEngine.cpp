@@ -145,7 +145,7 @@ struct Inspector : public boost::static_visitor<> {
             visit_each(*this, program.blocks);
         }
 
-        void check_header(const std::string& file, const ast::Position& position){
+        void check_header(const std::string& file, const x3::file_position_tagged& position){
             for(auto& block : program.blocks){
                 if(auto* ptr = boost::get<ast::struct_definition>(&block)){
                     if(!ptr->is_template_declaration() && ptr->header == file){
@@ -158,18 +158,18 @@ struct Inspector : public boost::static_visitor<> {
                 }
             }
 
-            warn(position, "Useless import: " + file);
+            warn(context->error_handler.to_string(position), "Useless import: " + file);
         }
 
         void operator()(ast::StandardImport& import){
             if(configuration->option_defined("warning-includes")){
-                check_header(import.header, import.position);
+                check_header(import.header, import);
             }
         }
 
         void operator()(ast::Import& import){
             if(configuration->option_defined("warning-includes")){
-                check_header(import.file, import.position);
+                check_header(import.file, import);
             }
         }
 
@@ -187,11 +187,11 @@ struct Inspector : public boost::static_visitor<> {
                     auto struct_ = context->get_struct(declaration.struct_type->mangle());
 
                     if(struct_->get_references() == 0){
-                        warn(declaration.position, "unused structure '" + declaration.name + "'");
+                        warn(context->error_handler.to_string(declaration), "unused structure '" + declaration.name + "'");
                     } else {
                         for(auto& member : struct_->members){
                             if(member.get_references() == 0){
-                                warn(declaration.position, "unused member '" + declaration.name + ".'" + member.name);
+                                warn(context->error_handler.to_string(declaration), "unused member '" + declaration.name + ".'" + member.name);
                             }
                         }
                     }

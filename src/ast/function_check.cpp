@@ -628,7 +628,7 @@ class FunctionCheckerVisitor : public boost::static_visitor<> {
 
 void ast::FunctionCheckPass::apply_struct(ast::struct_definition& struct_, bool indicator){
     if(!indicator && context->is_recursively_nested(context->get_struct(struct_.struct_type))){
-        throw SemanticalException("The structure " + struct_.struct_type->mangle() + " is invalidly nested", struct_.position);
+        context->error_handler.semantical_exception("The structure " + struct_.struct_type->mangle() + " is invalidly nested", struct_);
     }
 }
 

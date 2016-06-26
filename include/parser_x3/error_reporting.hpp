@@ -64,7 +64,9 @@ struct error_handler {
         skip_whitespace(err_pos, last);
 
         print_file_line(stream, position(err_pos));
-        stream << error_message << std::endl;
+        if(!error_message.empty()){
+            stream << error_message << std::endl;
+        }
 
         Iterator start = get_line_start(first, err_pos);
         if (start != first)
@@ -82,7 +84,9 @@ struct error_handler {
         skip_whitespace(err_first, last);
 
         print_file_line(stream, position(err_first));
-        stream << error_message << std::endl;
+        if(!error_message.empty()){
+            stream << error_message << std::endl;
+        }
 
         Iterator start = get_line_start(first, err_first);
         if (start != first)

@@ -52,7 +52,7 @@ void ast::StructureInheritancePass::apply_program(ast::SourceFile& program, bool
                 auto parent_type = visit(ast::TypeTransformer(context), *ptr->parent_type);
 
                 if(!context->struct_exists(parent_type)){
-                    throw SemanticalException("The parent type is not a valid structure type", ptr->position);
+                    context->error_handler.semantical_exception("The parent type is not a valid structure type", *ptr);
                 }
 
                 if(resolved_structures.find(parent_type->mangle()) != resolved_structures.end()){

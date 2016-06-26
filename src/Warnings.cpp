@@ -16,3 +16,7 @@ void eddic::warn(const std::string& warning){
 void eddic::warn(const eddic::ast::Position& position, const std::string& warning){
     std::cout << position.file << ":" << position.line << ": warning: " << warning << std::endl;
 }
+
+void eddic::warn(const std::string& position, const std::string& warning){
+    std::cout << position << std::endl << "warning: " << warning << std::endl;
+}
