@@ -181,9 +181,9 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::New& source) const {
         ast::New copy;
 
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.context = source.context;
         copy.mangled_name = source.mangled_name;
-        copy.position = source.position;
         copy.type = source.type;
 
         for(auto& value : source.values){
@@ -196,8 +196,8 @@ struct ValueCopier : public boost::static_visitor<ast::Value> {
     ast::Value operator()(const ast::NewArray& source) const {
         ast::NewArray copy;
 
+        (x3::file_position_tagged&) copy = (x3::file_position_tagged&) source;
         copy.context = source.context;
-        copy.position = source.position;
         copy.type = source.type;
         copy.size = visit(*this, source.size);
 

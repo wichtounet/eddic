@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
 
@@ -28,7 +27,6 @@ struct New: x3::file_position_tagged  {
     std::shared_ptr<Context> context;
     std::string mangled_name;
 
-    Position position;
     Type type;
     std::vector<Value> values;
 

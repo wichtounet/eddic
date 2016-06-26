@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "ast/Position.hpp"
 #include "ast/VariableType.hpp"
 #include "ast/Value.hpp"
 
@@ -27,7 +26,6 @@ namespace ast {
 struct NewArray : x3::file_position_tagged {
     std::shared_ptr<Context> context;
 
-    Position position;
     Type type;
     Value size;
 
