@@ -51,7 +51,6 @@ typedef x3::variant<
 struct SourceFile : x3::file_position_tagged {
     std::shared_ptr<GlobalContext> context;
 
-    Position position;
     std::vector<SourceFileBlock> blocks;
 };
 

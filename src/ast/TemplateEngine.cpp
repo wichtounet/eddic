@@ -693,14 +693,14 @@ std::vector<ast::StructBlock> copy(const std::vector<ast::StructBlock>& blocks){
 
             destination.emplace_back(copy);
         } else if(auto* ptr = boost::smart_get<ast::MemberDeclaration>(&block)){
-            auto& member_declaration = *ptr;
+            //auto& member_declaration = *ptr;
 
-            ast::MemberDeclaration member;
-            member.position = member_declaration.position;
-            member.type = member_declaration.type;
-            member.name = member_declaration.name;
+            //ast::MemberDeclaration member;
+            //member.position = member_declaration.position;
+            //member.type = member_declaration.type;
+            //member.name = member_declaration.name;
 
-            destination.emplace_back(member);
+            destination.emplace_back(*ptr);
         } else if(auto* ptr = boost::smart_get<ast::TemplateFunctionDeclaration>(&block)){
             if(ptr->is_template()){
                 auto& function = *ptr;

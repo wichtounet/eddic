@@ -36,7 +36,7 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& st
             auto& member = *ptr;
 
             if(std::find(names.begin(), names.end(), member.name) != names.end()){
-                throw SemanticalException("The member " + member.name + " has already been defined", member.position);
+                context->error_handler.semantical_exception("The member " + member.name + " has already been defined", member);
             }
 
             names.push_back(member.name);
@@ -45,8 +45,7 @@ void ast::StructureMemberCollectionPass::apply_struct(ast::struct_definition& st
             signature->members.emplace_back(member.name, member_type);
         } else if(auto* ptr = boost::get<ast::ArrayDeclaration>(&block)){
             auto& member = *ptr;
-
-            auto name = member.arrayName;
+            auto& name = member.arrayName;
 
             if(std::find(names.begin(), names.end(), name) != names.end()){
                 throw SemanticalException("The member " + name + " has already been defined", member.position);

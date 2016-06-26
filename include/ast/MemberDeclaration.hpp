@@ -22,7 +22,6 @@ namespace ast {
  * \brief The AST node for a declaration of a member variable.
  */
 struct MemberDeclaration : x3::file_position_tagged {
-    Position position;
     Type type;
     std::string name;
 
