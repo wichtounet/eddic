@@ -1,4 +1,5 @@
-eddic 1.3.0 - in development
+eddic 1.2.4 - 2016.06.27
+
 * Migrated from Boost Program Options to cxxopts
 * Migrate from Spirit Qi to Spirit X3
 * Replaced CMake by plain old makefiles
