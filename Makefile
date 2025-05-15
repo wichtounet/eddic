@@ -47,6 +47,11 @@ $(eval $(call add_executable,test,$(TEST_CPP_FILES), -lboost_unit_test_framework
 
 # Management targets
 
+release_debug_bin: $(release_debug)/bin/eddic
+release_debug_test: $(release_debug)/bin/test
+run_release_debug_test: $(release_debug)/bin/test
+	./$(release_debug)/bin/test
+
 debug: $(debug)/bin/eddic $(debug)/bin/test
 release: $(release)/bin/eddic $(release)/bin/test
 
