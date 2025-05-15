@@ -1,6 +1,14 @@
 EDDI Compiler 1.2.3
 ===================
 
+.. image:: https://github.com/wichtounet/eddic/actions/workflows/make.yml/badge.svg
+   :target: https://github.com/wichtounet/eddic/actions/workflows/make.yml
+   :alt: Linux Build
+
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+   :target: https://opensource.org/licenses/MIT
+   :alt: MIT License
+
 **Update**: This project is not actively maintained, for lack of time.
 
 The compiler of the EDDI programming language.
