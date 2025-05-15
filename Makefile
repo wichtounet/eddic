@@ -16,8 +16,8 @@ ifeq (1,$(EDDIC_COVERAGE))
 $(eval $(call enable_coverage))
 endif
 
-# Use C++23
-$(eval $(call use_cpp23))
+# Use C++26
+$(eval $(call use_cpp26))
 
 # Compile the sources files
 
@@ -47,15 +47,15 @@ $(eval $(call add_executable,test,$(TEST_CPP_FILES), -lboost_unit_test_framework
 
 # Management targets
 
-debug: debug/bin/eddic debug/bin/test
-release: release/bin/eddic release/bin/test
+debug: $(debug)/bin/eddic $(debug)/bin/test
+release: $(release)/bin/eddic $(release)/bin/test
 
 all: debug release
 
 # Custom targets
 
-update_test_list: release/bin/test
-	./release/bin/test --log_level=test_suite --log_sink=stdout > tests.tmp.log
+update_test_list: $(release)/bin/test
+	./$(release)/bin/test --log_level=test_suite --log_sink=stdout > tests.tmp.log
 	bash tools/generate_tests.sh
 
 cppcheck:
